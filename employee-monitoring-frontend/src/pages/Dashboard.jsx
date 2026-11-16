@@ -43,6 +43,10 @@ const getImageUrl = (url) => {
     return `${BASE_URL}${url.startsWith('/') ? '' : '/'}${url}`;
 };
 import { WorkSessionBanner } from '../components/dashboard/WorkSessionBanner';
+import { ComparativeKpiGrid } from '../components/dashboard/ComparativeKpiGrid';
+import { ProductivityStackedChart } from '../components/dashboard/ProductivityStackedChart';
+import { PeriodComparisonBar } from '../components/dashboard/PeriodComparisonBar';
+import { EmployeeWorkforceAnalytics } from '../components/dashboard/EmployeeWorkforceAnalytics';
 
 const LiveSummaryCard = ({ title, baseSeconds, live, trend, subValue, icon, color = 'primary' }) => {
     const value = useLiveTimeDisplay(baseSeconds, live);
@@ -227,8 +231,11 @@ const categories = [
 export function Dashboard() {
     const { employees: contextEmployees, teams: contextTeams, stats: realTimeStats, isLoading: isRealTimeLoading } = useRealTime();
     const { role, isClockedIn, isOnBreak } = useAuthStore();
-    const { dateRange } = useFilterStore();
+    const { dateRange, setDateRange } = useFilterStore();
     const { start: startDate, end: endDate } = dateRange || {};
+    const [compareStartDate, setCompareStartDate] = useState(null);
+    const [compareEndDate, setCompareEndDate] = useState(null);
+    const [activeFilter, setActiveFilter] = useState({ employeeId: null, teamId: null, role: null });
     const [activeChartTab, setActiveChartTab] = useState('Activities');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [dashboardData, setDashboardData] = useState(null);
@@ -243,11 +250,11 @@ export function Dashboard() {
             try {
                 let data;
                 if (role === 'ADMIN') {
-                    data = await dashboardService.getAdminDashboard(startDate, endDate);
+                    data = await dashboardService.getAdminDashboard(startDate, endDate, compareStartDate, compareEndDate);
                 } else if (role === 'MANAGER') {
-                    data = await dashboardService.getManagerDashboard(startDate, endDate);
+                    data = await dashboardService.getManagerDashboard(startDate, endDate, compareStartDate, compareEndDate);
                 } else {
-                    data = await dashboardService.getEmployeeDashboard(startDate, endDate);
+                    data = await dashboardService.getEmployeeDashboard(startDate, endDate, compareStartDate, compareEndDate);
                 }
                 setDashboardData(data);
             } catch (error) {
@@ -262,7 +269,7 @@ export function Dashboard() {
         // Auto-refresh every 30 seconds (seconds tick live between refreshes)
         const interval = setInterval(fetchDashboardData, 30000);
         return () => clearInterval(interval);
-    }, [role, startDate, endDate]);
+    }, [role, startDate, endDate, compareStartDate, compareEndDate]);
 
     const handleDownload = () => {
         const empMetricsData = realTimeStats.empMetrics || [];
@@ -348,216 +355,74 @@ export function Dashboard() {
     }));
 
     return (
-        <div className="min-h-screen bg-[#fcfdfe] dark:bg-slate-950 pb-12 px-2 sm:px-4 lg:px-8">
-            {/* Top Bar / Filter Hub */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 py-8 mb-4">
-                <div className="flex items-center gap-3">
-                    <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Productivity Trends</h1>
-                </div>
-                <div className="flex items-center gap-3">
-                    <GlobalCalendar />
-                    
-                    <button
-                        onClick={handleDownload}
-                        title="Export productivity report as CSV"
-                        className="h-10 w-10 border border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 rounded-xl bg-white dark:bg-slate-900 flex items-center justify-center hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:border-primary-200 dark:hover:border-primary-900/30 transition-all hover:text-primary-600 dark:hover:text-primary-400 active:scale-95 shadow-sm"
-                    >
-                        <Download size={18} strokeWidth={2.5} />
-                    </button>
-
-                    {role !== 'EMPLOYEE' && (
-                        <div className="relative">
-                            <button
-                                onClick={() => navigate(`/${role.toLowerCase()}/employees`)}
-                                title="View All Employees"
-                                className="h-10 w-10 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-primary-50 hover:border-primary-200 hover:text-primary-600 dark:hover:bg-primary-900/20 dark:hover:text-primary-400 transition-all active:scale-95"
-                            >
-                                <Users size={18} />
-                            </button>
-                            <span className="absolute -top-1 -right-1 h-5 w-5 bg-rose-500 text-white text-[10px] font-black flex items-center justify-center rounded-full border-2 border-[#fcfdfe] dark:border-slate-950 pointer-events-none">{contextEmployees.length || 0}</span>
-                        </div>
-                    )}
-                </div>
-            </div>
-
+        <div className="min-h-screen bg-[#fcfdfe] dark:bg-slate-950 pb-12 px-2 sm:px-4 lg:px-8 pt-6">
             {role === 'EMPLOYEE' && <WorkSessionBanner />}
 
-            {/* Summary Metrics */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6 mb-8">
-                <LiveSummaryCard title="Work Time" baseSeconds={sec.workTime} live={liveTick} trend="" subValue={(role === 'ADMIN' || role === 'MANAGER') ? `${(stats.empMetrics || stats.employees || []).length} employees tracked` : 'Personal activity'} icon={Clock} color="primary" />
-                <LiveSummaryCard title="Active Time" baseSeconds={sec.activeTime} live={liveTick} trend="" subValue="Computer activity" icon={Activity} color="indigo" />
-                
-                {role !== 'EMPLOYEE' && (
-                    <>
-                        <LiveSummaryCard title="Idle Time" baseSeconds={sec.idleTime} live={liveTick} trend="" subValue="Keyboard/mouse inactive" icon={Clock} color="amber" />
-                        <LiveSummaryCard title="Manual Time" baseSeconds={sec.manualTime} live={liveTick} subValue="User-entered time" icon={Plus} color="orange" />
-                    </>
-                )}
-
-                <LiveSummaryCard title="Productive Time" baseSeconds={sec.productiveTime} live={liveTick} trend="" subValue="High-value work" icon={TrendingUp} color="emerald" />
-
-                {role !== 'EMPLOYEE' && (
-                    <>
-                        <LiveSummaryCard title="Unproductive Time" baseSeconds={sec.unproductiveTime} live={liveTick} trend="" subValue="Low-value activity" icon={TrendingDown} color="rose" />
-                        <LiveSummaryCard title="Neutral Time" baseSeconds={sec.neutralTime} live={liveTick} trend="" subValue="Mixed activity" icon={ArrowRightLeft} color="slate" />
-                    </>
-                )}
-
-                <SummaryCard title="Productivity Score" value={`${stats.summary?.utilization ?? 0}%`} subValue={`Work / Productive`} icon={TrendingUp} color="cyan" />
-                
-                {role === 'MANAGER' && (
-                    <div className="sm:col-span-2 lg:col-span-1 bg-gradient-to-br from-indigo-600 to-indigo-700 p-4 rounded-lg border border-indigo-500 shadow-lg transition-all hover:scale-[1.02] cursor-pointer" onClick={() => navigate('/manager/tasks')}>
-                        <div className="flex justify-between items-start mb-2 text-white/80">
-                            <span className="text-[11px] font-black uppercase tracking-wider">Active Strategic Goals</span>
-                            <Zap size={14} fill="currentColor" />
-                        </div>
-                        <h3 className="text-xl font-black text-white mb-1">OKR Oversight</h3>
-                        <p className="text-[10px] text-indigo-100 font-medium">Manage milestones & progress</p>
-                    </div>
-                )}
+            {/* Insightful Module Quick Switcher */}
+            <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-1 scrollbar-none">
+                <button
+                    onClick={() => navigate(role === 'EMPLOYEE' ? '/employee' : '/admin')}
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black bg-primary-600 text-white shadow-md shadow-primary-500/20 whitespace-nowrap"
+                >
+                    <Zap size={14} />
+                    <span>Productivity Trends</span>
+                </button>
+                <button
+                    onClick={() => navigate(`${role === 'EMPLOYEE' ? '/employee' : '/admin'}/activities`)}
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 transition-all shadow-sm whitespace-nowrap"
+                >
+                    <Activity size={14} className="text-purple-500" />
+                    <span>Activities Timeline</span>
+                </button>
+                <button
+                    onClick={() => navigate(`${role === 'EMPLOYEE' ? '/employee' : '/admin'}/reports/location-insights`)}
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 transition-all shadow-sm whitespace-nowrap"
+                >
+                    <Globe size={14} className="text-sky-500" />
+                    <span>Office vs Remote</span>
+                </button>
+                <button
+                    onClick={() => navigate(`${role === 'EMPLOYEE' ? '/employee' : '/admin'}/reports/apps-websites`)}
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 transition-all shadow-sm whitespace-nowrap"
+                >
+                    <Monitor size={14} className="text-emerald-500" />
+                    <span>Apps & Websites Usage</span>
+                </button>
             </div>
 
-            {/* Main Visualizations */}
-            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm mb-8 overflow-hidden">
-                <div className="flex items-center gap-6 px-6 pt-6 border-b border-slate-100 dark:border-slate-800">
-                    {['Activities', 'Utilization'].map(tab => (
-                        <button
-                            key={tab}
-                            onClick={() => setActiveChartTab(tab)}
-                            className={`pb-4 text-xs font-black uppercase tracking-widest transition-all relative ${activeChartTab === tab ? 'text-primary-600 dark:text-primary-400' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}
-                        >
-                            {tab}
-                            {activeChartTab === tab && <div className="absolute bottom-0 left-0 w-full h-[3px] bg-primary-600 rounded-full" />}
-                        </button>
-                    ))}
-                </div>
-                <div className="h-[400px] w-full p-6 pt-10">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <ComposedChart data={chartData}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                            <XAxis
-                                dataKey="name"
-                                axisLine={false}
-                                tickLine={false}
-                                tick={{ fontSize: 10, fill: '#94a3b8', fontWeight: 800 }}
-                                dy={15}
-                            />
-                            <YAxis
-                                axisLine={false}
-                                tickLine={false}
-                                tick={{ fontSize: 10, fill: '#94a3b8', fontWeight: 800 }}
-                                tickFormatter={(val) => activeChartTab === 'Utilization' ? `${val}%` : `${val}h`}
-                                domain={activeChartTab === 'Utilization' ? [0, 100] : [0, 'auto']}
-                            />
-                            <Tooltip
-                                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)', fontWeight: 800, fontSize: '12px' }}
-                                cursor={{ fill: '#f8fafc' }}
-                            />
-                            <Legend
-                                verticalAlign="bottom"
-                                align="center"
-                                iconType="circle"
-                                wrapperStyle={{ fontSize: '11px', fontWeight: 700, paddingTop: '30px' }}
-                            />
-                            {activeChartTab === 'Activities' ? (
-                                <>
-                                    <Area type="monotone" name="Active Time" dataKey="active" fill="url(#colorActive)" stroke="#4f46e5" strokeWidth={3} fillOpacity={1} />
-                                    <Area type="monotone" name="Break Time" dataKey="break" fill="url(#colorBreak)" stroke="#06b6d4" strokeWidth={2} fillOpacity={1} />
-                                    <Area type="monotone" name="Idle Time" dataKey="idle" fill="url(#colorIdle)" stroke="#94a3b8" strokeWidth={2} fillOpacity={1} />
-                                    <Bar name="Manual Time" dataKey="manual" fill="#fbbf24" radius={[4, 4, 0, 0]} barSize={20} />
-                                </>
-                            ) : (
-                                <Area type="monotone" name="Utilization %" dataKey="utilization" fill="url(#colorUtil)" stroke="#10b981" strokeWidth={3} fillOpacity={1} />
-                            )}
-                            <defs>
-                                <linearGradient id="colorActive" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
-                                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
-                                </linearGradient>
-                                <linearGradient id="colorBreak" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#22d3ee" stopOpacity={0.2} />
-                                    <stop offset="95%" stopColor="#22d3ee" stopOpacity={0} />
-                                </linearGradient>
-                                <linearGradient id="colorIdle" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#cbd5e1" stopOpacity={0.2} />
-                                    <stop offset="95%" stopColor="#cbd5e1" stopOpacity={0} />
-                                </linearGradient>
-                                <linearGradient id="colorUtil" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-                                    <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
-                                </linearGradient>
-                            </defs>
-                        </ComposedChart>
-                    </ResponsiveContainer>
-                </div>
-            </div>
+            {/* Reference Period vs Compared Period Bar (Insightful Image 1) */}
+            <PeriodComparisonBar
+                startDate={startDate}
+                endDate={endDate}
+                compareStartDate={compareStartDate || stats.comparison?.comparedPeriod?.startDate}
+                compareEndDate={compareEndDate || stats.comparison?.comparedPeriod?.endDate}
+                onDateRangeChange={(start, end) => setDateRange(start, end)}
+                onCompareRangeChange={(start, end) => {
+                    setCompareStartDate(start);
+                    setCompareEndDate(end);
+                }}
+                onFilterChange={(filters) => setActiveFilter(filters)}
+                onExport={handleDownload}
+                employees={dashboardData?.employees || []}
+                teams={dashboardData?.teams || []}
+                role={role}
+            />
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 mb-8">
-                {role !== 'EMPLOYEE' && (
-                    <>
-                        <EmployeeTable title="Top Productive/Unproductive Employees" data={employeesProd} type="up" />
-                        <EmployeeTable title="Top Productive/Unproductive Teams" data={teamsList} type="up" />
-                    </>
-                )}
-            </div>
+            {/* 8 Comparative KPI Cards (Insightful Image 1) */}
+            <ComparativeKpiGrid
+                sec={sec}
+                stats={stats}
+                deltas={stats.comparison?.deltas}
+                liveTick={liveTick}
+                role={role}
+            />
 
-            {/* Removed unused mock widgets: Analytical Insights & Asset Monitoring */}
-
-            {stats.screenshots?.length > 0 && (
-                <div className="mt-8 mb-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-2">
-                            <div className="h-5 w-1 bg-primary-600 rounded-full"></div>
-                            <h3 className="text-[11px] font-bold text-slate-800 dark:text-slate-100 uppercase tracking-widest">
-                                {role === 'EMPLOYEE' ? 'My Recent Work Captures' : 'Recent Team Activity'}
-                            </h3>
-                        </div>
-                        {/* <button
-                            onClick={() => navigate(role === 'EMPLOYEE' ? '/employee/screenshots' : '/screenshots')}
-                            className="text-[10px] font-black text-primary-600/60 dark:text-primary-400/60 hover:text-primary-600 dark:hover:text-primary-400 uppercase tracking-widest transition-colors flex items-center gap-1"
-                        >
-                            View All <ArrowRightLeft size={10} />
-                        </button> */}
-                    </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                        {stats.screenshots
-                            .filter(shot => role === 'EMPLOYEE' ? shot.imageUrl?.startsWith('/uploads') : true) // Employees only see REAL data
-                            .slice(0, 5)
-                            .map((shot) => (
-                                <div key={shot.id} className="group relative aspect-video rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 shadow-sm transition-all hover:shadow-xl hover:-translate-y-1">
-                                    <img
-                                        src={getImageUrl(shot.imageUrl)}
-                                        alt="Capture"
-                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                        onError={(e) => {
-                                            e.target.src = 'https://placehold.co/600x400?text=Processing...';
-                                        }}
-                                    />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end p-3">
-                                        <div className="flex flex-col transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <div className="h-4 w-4 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-[7px] font-bold text-white uppercase">
-                                                    {shot.employee?.fullName?.charAt(0) || 'E'}
-                                                </div>
-                                                <span className="text-[9px] font-bold text-white truncate max-w-[80px]">
-                                                    {role === 'EMPLOYEE' ? 'Me' : (shot.employee?.fullName || 'Employee')}
-                                                </span>
-                                            </div>
-                                            <span className="text-[8px] font-bold text-white/70 uppercase flex items-center gap-1 tracking-wider">
-                                                <Clock size={8} />
-                                                {new Date(shot.capturedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    {/* Status Badge */}
-                                    <div className="absolute top-2 right-2 px-1.5 py-0.5 bg-emerald-500/90 backdrop-blur-md rounded text-[8px] font-black text-white uppercase tracking-tighter opacity-0 group-hover:opacity-100 transition-opacity">
-                                        {shot.imageUrl.startsWith('/uploads') ? 'Live' : 'Simulator'}
-                                    </div>
-                                </div>
-                            ))}
-                    </div>
-                </div>
-            )}
+            {/* Main Visualizations: Stacked Productivity, Activities & Timeline (Insightful Image 2) */}
+            <ProductivityStackedChart
+                intradayData={chartData}
+                productivityBreakdown={stats.productivityBreakdown}
+                onExport={handleDownload}
+            />
 
             <AddEmployeeModal
                 isOpen={isModalOpen}

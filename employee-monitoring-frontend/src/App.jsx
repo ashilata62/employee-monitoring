@@ -3,6 +3,7 @@ import { DashboardLayout } from './layouts/DashboardLayout';
 import { Dashboard } from './pages/Dashboard';
 import { TimeAndAttendance } from './pages/TimeAndAttendance';
 import { ActivityMonitoring } from './pages/ActivityMonitoring';
+import { ActivitiesTimeline } from './pages/ActivitiesTimeline';
 import { ScreenshotMonitoring } from './pages/ScreenshotMonitoring';
 import { EmployeeManagement } from './pages/EmployeeManagement';
 import { EmployeeProfile } from './pages/EmployeeProfile';
@@ -139,6 +140,7 @@ function App() {
                                         <Route path="/" element={<Dashboard />} />
                                         <Route path="real-time" element={<RealTimeInsights />} />
                                         <Route path="time-attendance" element={<TimeAndAttendance />} />
+                                        <Route path="activities" element={<ActivitiesTimeline />} />
                                         <Route path="monitoring" element={<ActivityMonitoring />} />
                                         <Route path="screenshots" element={<ScreenshotMonitoring />} />
                                         <Route path="location" element={<LocationTracking />} />
