@@ -15,7 +15,8 @@ router.post('/tags', roleMiddleware(['ADMIN', 'MANAGER']), productivityControlle
 router.put('/tags/:id', roleMiddleware(['ADMIN', 'MANAGER']), productivityController.updateTag);
 router.delete('/tags/:id', roleMiddleware(['ADMIN', 'MANAGER']), productivityController.deleteTag);
 
-// Rule/Label Assignment
+// Rules Management
+router.get('/rules', productivityController.getRules);
 router.post('/rules', roleMiddleware(['ADMIN', 'MANAGER']), productivityController.updateRule);
 router.post('/auto-label', roleMiddleware(['ADMIN', 'MANAGER']), productivityController.autoLabel);
 

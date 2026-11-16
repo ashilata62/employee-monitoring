@@ -1,12 +1,13 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, Settings2, Search, Zap, Lightbulb, X, Loader2 } from 'lucide-react';
+import { ChevronLeft, Settings2, Search, Zap, Lightbulb, X, Loader2, Building2 } from 'lucide-react';
 import { useProductivityStore } from '../../store/productivityStore';
 import { AppsTable } from '../../components/productivity/AppsTable';
 import { TagsDrawer } from '../../components/productivity/TagsDrawer';
 import { ToggleSwitch } from '../../components/ui/ToggleSwitch';
 import { cn } from '../../utils/cn';
 import { useAuthStore } from '../../store/authStore';
+import teamService from '../../services/teamService';
 
 const VIEW_OPTIONS = [
     'All apps & websites',
@@ -117,6 +118,7 @@ export function ProductivityApps() {
     const {
         apps, filters, tags, loading, error,
         fetchProductivityData, updateFilter, toggleThreshold, toggleSelectApp, toggleSelectAll, setAppTag, bulkSetTag, autoLabel,
+        setDepartmentFilter,
     } = useProductivityStore();
 
     const [drawerOpen, setDrawerOpen] = useState(false);
@@ -124,9 +126,24 @@ export function ProductivityApps() {
     const [activeSubTab, setActiveSubTab] = useState('apps');
     const [tagChangeFor, setTagChangeFor] = useState(null); // id or appName
     const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+    const [teams, setTeams] = useState([]);
+    const [teamsLoading, setTeamsLoading] = useState(false);
 
     useEffect(() => {
         fetchProductivityData();
+        // Fetch teams for the department selector
+        const loadTeams = async () => {
+            setTeamsLoading(true);
+            try {
+                const res = await teamService.getTeams();
+                setTeams(res.data || []);
+            } catch (e) {
+                console.error('Failed to load teams:', e);
+            } finally {
+                setTeamsLoading(false);
+            }
+        };
+        loadTeams();
     }, []);
 
     const showToast = (msg, type = 'success') => {
@@ -200,6 +217,12 @@ export function ProductivityApps() {
                             {filters.thresholdEnabled && (
                                 <span className="px-2.5 py-1 rounded-xl bg-violet-100 dark:bg-violet-900/20 text-violet-700 dark:text-violet-400 text-[10px] font-black uppercase tracking-widest">Threshold Active</span>
                             )}
+                            {filters.selectedTeamId && (
+                                <span className="px-2.5 py-1 rounded-xl bg-indigo-100 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400 text-[10px] font-black uppercase tracking-widest flex items-center gap-1">
+                                    <Building2 size={10} />
+                                    Dept Rules
+                                </span>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -242,6 +265,22 @@ export function ProductivityApps() {
                 <>
                     {/* Filters toolbar */}
                     <div className="flex items-center gap-3 mb-6 flex-wrap">
+                        {/* Department Selector */}
+                        <div className="relative">
+                            <select
+                                value={filters.selectedTeamId || ''}
+                                onChange={(e) => setDepartmentFilter(e.target.value || null)}
+                                className="h-9 pl-9 pr-8 rounded-xl border-2 border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/10 text-xs font-black text-indigo-700 dark:text-indigo-400 outline-none appearance-none cursor-pointer transition-all hover:bg-indigo-100/50 min-w-[180px]"
+                            >
+                                <option value="">All Departments (Global)</option>
+                                {teams.map((t) => (
+                                    <option key={t.id} value={t.id}>{t.name}</option>
+                                ))}
+                            </select>
+                            <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 text-indigo-400 pointer-events-none" size={14} />
+                            <svg className="absolute right-2.5 top-1/2 -translate-y-1/2 text-indigo-400 pointer-events-none" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="6 9 12 15 18 9" /></svg>
+                        </div>
+
                         <div className="relative">
                             <select
                                 value={filters.view}

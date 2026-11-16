@@ -108,6 +108,8 @@ export function ProjectDetailModal({ isOpen, onClose, project }) {
                                             <th className="px-6 py-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Assignee</th>
                                             <th className="px-6 py-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Status</th>
                                             <th className="px-6 py-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Priority</th>
+                                            <th className="px-6 py-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Est. Hours</th>
+                                            <th className="px-6 py-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Actual Hours</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -149,6 +151,16 @@ export function ProjectDetailModal({ isOpen, onClose, project }) {
                                                         task.priority === 'MEDIUM' ? 'text-amber-500' : 'text-blue-500'
                                                     )}>
                                                         {task.priority}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <span className="text-[12px] font-bold text-slate-600 dark:text-slate-400">
+                                                        {task.estimatedHours ? `${task.estimatedHours}h` : '-'}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <span className="text-[12px] font-bold text-slate-600 dark:text-slate-400">
+                                                        {task.actualHours ? `${task.actualHours}h` : (task.timeSpent || '-')}
                                                     </span>
                                                 </td>
                                             </tr>

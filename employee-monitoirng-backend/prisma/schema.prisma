@@ -156,6 +156,7 @@ model Team {
   organization   Organization @relation(fields: [organizationId], references: [id])
   organizationId String
   employees      Employee[]
+  productivityRules ProductivityRule[]
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
@@ -643,12 +644,14 @@ model ProductivityRule {
   isBlocked      Boolean          @default(false)
   tag            ProductivityTag? @relation(fields: [tagId], references: [id])
   tagId          String?
+  team           Team?            @relation(fields: [teamId], references: [id])
+  teamId         String?
   organization   Organization     @relation(fields: [organizationId], references: [id])
   organizationId String
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
 
-  @@unique([organizationId, domain])
+  @@unique([organizationId, domain, teamId])
   @@map("productivity_rules")
 }
 

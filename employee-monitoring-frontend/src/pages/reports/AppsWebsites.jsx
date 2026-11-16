@@ -20,6 +20,7 @@ import { useReportsStore } from '../../store/reportsStore';
 import { useFilterStore } from '../../store/filterStore';
 import { FilterDropdown } from '../../components/FilterDropdown';
 import { ReportsCalendar } from '../../components/ReportsCalendar';
+import { ExportDropdown } from '../../components/common/ExportDropdown';
 
 const presets = [
     "Today", "Yesterday", "This Week", "Last 7 Days",
@@ -212,9 +213,20 @@ export function AppsWebsites() {
                         )}
                     </div>
 
-                    <button className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-slate-400 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50 dark:bg-slate-900 dark:ring-slate-800 transition-all">
-                        <Download size={18} />
-                    </button>
+                    <ExportDropdown
+                        data={displayData}
+                        columns={[
+                            { header: 'Application / Website', key: 'name' },
+                            { header: 'Productivity Classification', key: 'type' },
+                            { header: 'Usage Duration (Hours)', key: 'usage', formatter: (val) => `${val}h` }
+                        ]}
+                        fileName="apps-websites-report"
+                        metadata={{
+                            title: 'Apps & Websites Report',
+                            dateRange: selectedPreset,
+                            filters: searchTerm ? `Search: "${searchTerm}"` : 'All Applications'
+                        }}
+                    />
                 </div>
             </div>
 

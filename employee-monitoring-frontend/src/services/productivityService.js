@@ -26,6 +26,13 @@ const productivityService = {
         return response.data.data;
     },
 
+    getRules: async (teamId = null) => {
+        const params = {};
+        if (teamId) params.teamId = teamId;
+        const response = await api.get("/productivity/rules", { params });
+        return response.data.data;
+    },
+
     updateRule: async (ruleData) => {
         const response = await api.post("/productivity/rules", ruleData);
         return response.data.data;

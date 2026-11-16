@@ -14,20 +14,35 @@ export const useProductivityStore = create((set, get) => ({
         thresholdHours: 4,
         search: '',
         activeTag: null,
+        selectedTeamId: null,
     },
 
     // ── Data fetching ────────────────────────────────────────────────
     fetchProductivityData: async (params = {}) => {
         set({ loading: true, error: null });
         try {
+            const { filters } = get();
+            const fetchParams = { ...params };
+            if (filters.selectedTeamId) {
+                fetchParams.teamId = filters.selectedTeamId;
+            }
             const [apps, tags] = await Promise.all([
-                productivityService.getApps(params),
+                productivityService.getApps(fetchParams),
                 productivityService.getTags()
             ]);
             set({ apps, tags, loading: false });
         } catch (error) {
             set({ error: error.message, loading: false });
         }
+    },
+
+    // ── Department filter ────────────────────────────────────────────
+    setDepartmentFilter: (teamId) => {
+        set((s) => ({
+            filters: { ...s.filters, selectedTeamId: teamId || null }
+        }));
+        // Refetch with new department filter
+        get().fetchProductivityData();
     },
 
     // ── App & Rule actions ──────────────────────────────────────────
@@ -41,7 +56,7 @@ export const useProductivityStore = create((set, get) => ({
 
     setAppTag: async (appId, tagId) => {
         try {
-            const { apps, tags } = get();
+            const { apps, tags, filters } = get();
             const app = apps.find((a) => (a.id || a.appName) === appId);
             if (!app) return;
 
@@ -59,6 +74,7 @@ export const useProductivityStore = create((set, get) => ({
                 tagId: tagId,
                 category: app.category,
                 productivity: tag ? productivityMap[tag.name] || 'NEUTRAL' : 'NEUTRAL',
+                teamId: filters.selectedTeamId || null,
             });
 
             set((s) => ({
@@ -68,6 +84,7 @@ export const useProductivityStore = create((set, get) => ({
                             ...a,
                             tagId,
                             productivity: tag ? productivityMap[tag.name] || 'NEUTRAL' : 'NEUTRAL',
+                            isTeamSpecific: !!filters.selectedTeamId,
                         }
                         : a
                 ),
