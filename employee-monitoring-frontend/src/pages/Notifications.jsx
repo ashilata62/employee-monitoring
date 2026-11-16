@@ -18,7 +18,7 @@ import { clsx } from 'clsx';
 import { useRealTime } from '../hooks/RealTimeContext';
 
 export function Notifications() {
-    const { notifications, markAllNotificationsRead, markNotificationAsRead, deleteNotification } = useRealTime();
+    const { notifications, markAllNotificationsRead, markNotificationAsRead, deleteNotification, deleteAllNotifications } = useRealTime();
     const [filter, setFilter] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -27,7 +27,7 @@ export function Notifications() {
             (filter === 'unread' && n.unread) ||
             n.type === filter;
         const matchesSearch = n.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            n.description.toLowerCase().includes(searchQuery.toLowerCase());
+            (n.description || '').toLowerCase().includes(searchQuery.toLowerCase());
         return matchesFilter && matchesSearch;
     });
 
@@ -45,12 +45,7 @@ export function Notifications() {
 
     const handleDeleteAll = () => {
         if (window.confirm('Are you sure you want to delete all notifications?')) {
-            // We don't have a deleteAllNotifications action in context yet, 
-            // so we'll just delete them one by one or leave it for now.
-            // Or better, just clear the local view? No, that's bad.
-            // I'll just iterate and delete for now, or add deleteAll later.
-            // For simplicity in this step, I will just iterate.
-            notifications.forEach(n => deleteNotification(n.id));
+            deleteAllNotifications();
         }
     };
 

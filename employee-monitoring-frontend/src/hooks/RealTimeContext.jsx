@@ -21,6 +21,8 @@ import taskService from '../services/taskService';
 import projectService from '../services/projectService';
 import goalService from '../services/goalService';
 import screenshotService from '../services/screenshotService';
+import notificationService from '../services/notificationService';
+import alertService from '../services/alertService';
 import { io } from 'socket.io-client';
 
 const SOCKET_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
@@ -43,6 +45,28 @@ const mapStatus = (status) => {
     if (s === 'QUALITY_ASSURANCE') return 'Quality Assurance';
     if (s === 'FINALIZED') return 'Finalized';
     return status;
+};
+
+// Web Audio API Synthesized Chime for Critical & Warning Alerts
+const playAlertChime = () => {
+    try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+        osc.frequency.setValueAtTime(880, ctx.currentTime + 0.1); // A5
+        gain.gain.setValueAtTime(0.12, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.35);
+    } catch (e) {
+        // Autoplay policy or audio context restriction
+    }
 };
 
 export function RealTimeProvider({ children }) {
@@ -312,6 +336,36 @@ export function RealTimeProvider({ children }) {
         }
     }, [isAuthenticated]);
 
+    const syncNotifications = useCallback(async () => {
+        if (!isAuthenticated) return;
+        try {
+            const res = await notificationService.getNotifications({ limit: 50 });
+            if (res && res.notifications) {
+                setState(prev => ({
+                    ...prev,
+                    notifications: res.notifications
+                }));
+            }
+        } catch (err) {
+            console.error('Failed to sync notifications:', err);
+        }
+    }, [isAuthenticated]);
+
+    const syncAlerts = useCallback(async () => {
+        if (!isAuthenticated) return;
+        try {
+            const res = await alertService.getAlertHistory({ limit: 50 });
+            if (res && res.alerts) {
+                setState(prev => ({
+                    ...prev,
+                    alerts: res.alerts
+                }));
+            }
+        } catch (err) {
+            console.error('Failed to sync alerts:', err);
+        }
+    }, [isAuthenticated]);
+
     // ─── POLLING INTERVALS ──────────────────────────────────────────────────
     useEffect(() => {
         if (isLoading || !isAuthenticated) return;
@@ -321,6 +375,8 @@ export function RealTimeProvider({ children }) {
         syncProjects();
         syncGoals();
         syncLogs();
+        syncNotifications();
+        syncAlerts();
 
         const empInt = setInterval(syncEmployees, 5000);
         const teamInt = setInterval(syncTeams, 5000);
@@ -328,6 +384,8 @@ export function RealTimeProvider({ children }) {
         const taskInt = setInterval(syncTasks, 5000);
         const projInt = setInterval(syncProjects, 5000);
         const goalInt = setInterval(syncGoals, 10000);
+        const notifInt = setInterval(syncNotifications, 10000);
+        const alertInt = setInterval(syncAlerts, 10000);
 
         return () => {
             clearInterval(empInt);
@@ -336,8 +394,10 @@ export function RealTimeProvider({ children }) {
             clearInterval(taskInt);
             clearInterval(projInt);
             clearInterval(goalInt);
+            clearInterval(notifInt);
+            clearInterval(alertInt);
         };
-    }, [isLoading, isAuthenticated, syncEmployees, syncTeams, syncTasks, syncProjects, syncGoals, syncLogs]);
+    }, [isLoading, isAuthenticated, syncEmployees, syncTeams, syncTasks, syncProjects, syncGoals, syncLogs, syncNotifications, syncAlerts]);
 
     const [socketInstance, setSocketInstance] = useState(null);
 
@@ -361,6 +421,8 @@ export function RealTimeProvider({ children }) {
             syncTasks();
             syncProjects();
             syncGoals();
+            syncNotifications();
+            syncAlerts();
         });
 
         socket.on('employee:status', ({ employeeId, status }) => {
@@ -469,6 +531,48 @@ export function RealTimeProvider({ children }) {
 
         socket.on('employee:notification', ({ title, type }) => {
             addNotification(title, type || 'info');
+        });
+
+        // ─── DEVELOPER 4 REAL-TIME LISTENERS ─────────────────────────────────
+        socket.on('alert:new', (alertData) => {
+            console.log('RealTimeContext: Real-time alert received:', alertData);
+            playAlertChime();
+            setState(prev => ({
+                ...prev,
+                alerts: [alertData, ...prev.alerts.filter(a => a.id !== alertData.id)]
+            }));
+            if (alertData.severity === 'critical') {
+                toast.error(alertData.message);
+            } else {
+                toast.warning(alertData.message);
+            }
+        });
+
+        socket.on('notification:new', (notifData) => {
+            console.log('RealTimeContext: Real-time notification received:', notifData);
+            setState(prev => ({
+                ...prev,
+                notifications: [notifData, ...prev.notifications.filter(n => n.id !== notifData.id)]
+            }));
+        });
+
+        socket.on('screenshot:violation', (violationData) => {
+            console.log('RealTimeContext: Real-time violation screenshot:', violationData);
+            playAlertChime();
+            toast.error(`Security Violation: Prohibited app "${violationData.appName}" accessed by ${violationData.employeeName}!`);
+            if (violationData.imageUrl) {
+                setState(prev => ({
+                    ...prev,
+                    screenshots: [{
+                        employeeId: violationData.employeeId,
+                        employeeName: violationData.employeeName,
+                        imageUrl: violationData.imageUrl,
+                        capturedAt: violationData.capturedAt || new Date(),
+                        productivity: 'UNPRODUCTIVE',
+                        isViolation: true
+                    }, ...prev.screenshots].slice(0, 50)
+                }));
+            }
         });
 
         return () => socket.disconnect();
@@ -1130,12 +1234,22 @@ export function RealTimeProvider({ children }) {
     }, []);
 
     // Alerts
-    const dismissAlert = useCallback((id) => {
+    const dismissAlert = useCallback(async (id) => {
         setState(prev => ({ ...prev, alerts: prev.alerts.map(a => a.id === id ? { ...a, read: true } : a) }));
+        try {
+            await alertService.dismissAlert(id);
+        } catch (e) {
+            console.error('Failed to dismiss alert:', e);
+        }
     }, []);
 
-    const dismissAllAlerts = useCallback(() => {
+    const dismissAllAlerts = useCallback(async () => {
         setState(prev => ({ ...prev, alerts: prev.alerts.map(a => ({ ...a, read: true })) }));
+        try {
+            await alertService.dismissAllAlerts();
+        } catch (e) {
+            console.error('Failed to dismiss all alerts:', e);
+        }
     }, []);
 
     // Compliance
@@ -1150,14 +1264,40 @@ export function RealTimeProvider({ children }) {
     }, []);
 
     // Notifications
-    const markAllNotificationsRead = useCallback(() => {
+    const markAllNotificationsRead = useCallback(async () => {
         setState(prev => ({ ...prev, notifications: prev.notifications.map(n => ({ ...n, unread: false })) }));
+        try {
+            await notificationService.markAllAsRead();
+        } catch (e) {
+            console.error('Failed to mark all notifications read:', e);
+        }
     }, []);
-    const markNotificationAsRead = useCallback((id) => {
+
+    const markNotificationAsRead = useCallback(async (id) => {
         setState(prev => ({ ...prev, notifications: prev.notifications.map(n => n.id === id ? { ...n, unread: false } : n) }));
+        try {
+            await notificationService.markAsRead(id);
+        } catch (e) {
+            console.error('Failed to mark notification read:', e);
+        }
     }, []);
-    const deleteNotification = useCallback((id) => {
+
+    const deleteNotification = useCallback(async (id) => {
         setState(prev => ({ ...prev, notifications: prev.notifications.filter(n => n.id !== id) }));
+        try {
+            await notificationService.deleteNotification(id);
+        } catch (e) {
+            console.error('Failed to delete notification:', e);
+        }
+    }, []);
+
+    const deleteAllNotifications = useCallback(async () => {
+        setState(prev => ({ ...prev, notifications: [] }));
+        try {
+            await notificationService.deleteAllNotifications();
+        } catch (e) {
+            console.error('Failed to delete all notifications:', e);
+        }
     }, []);
 
     // Goals Actions
@@ -1262,7 +1402,7 @@ export function RealTimeProvider({ children }) {
         updateComplianceSetting,
         setSelectedDate,
         addCheckIn,
-        addNotification, markAllNotificationsRead, markNotificationAsRead, deleteNotification,
+        addNotification, markAllNotificationsRead, markNotificationAsRead, deleteNotification, deleteAllNotifications,
         socket: socketInstance,
         // Live Screening
         startLiveScreen: (employeeId) => {
@@ -1289,7 +1429,7 @@ export function RealTimeProvider({ children }) {
         addLeaveRequest, updateLeaveStatus, deleteLeaveRequest,
         dismissAlert, dismissAllAlerts, updateComplianceSetting,
         setSelectedDate, addCheckIn,
-        addNotification, markAllNotificationsRead, markNotificationAsRead, deleteNotification,
+        addNotification, markAllNotificationsRead, markNotificationAsRead, deleteNotification, deleteAllNotifications,
     ]);
 
     return (

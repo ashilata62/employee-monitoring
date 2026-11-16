@@ -29,6 +29,21 @@ const alertService = {
     updateAlertSettings: async (updates) => {
         const response = await api.put("/alerts/settings", updates);
         return response.data;
+    },
+
+    getAlertHistory: async (params = {}) => {
+        const response = await api.get("/alerts/history", { params });
+        return response.data;
+    },
+
+    dismissAlert: async (id) => {
+        const response = await api.patch(`/alerts/${id}/dismiss`);
+        return response.data;
+    },
+
+    dismissAllAlerts: async () => {
+        const response = await api.patch("/alerts/dismiss-all");
+        return response.data;
     }
 };
 
