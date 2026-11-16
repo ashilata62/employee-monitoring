@@ -5,6 +5,7 @@ import { clsx } from 'clsx';
 import { useTheme } from '../hooks/useTheme';
 import { useAuthStore } from '../store/authStore';
 import { ProfileDropdown } from '../components/header/ProfileDropdown';
+import { HeaderTaskTimer } from '../components/header/HeaderTaskTimer';
 import { useRealTime } from '../hooks/RealTimeContext';
 import { WebTrackerAgent } from '../components/agent/WebTrackerAgent';
 
@@ -40,6 +41,7 @@ export function Header({ onMenuClick }) {
             </div>
 
             <div className="flex items-center gap-2 md:gap-3">
+                <HeaderTaskTimer />
                 <WebTrackerAgent />
 
                 <button
