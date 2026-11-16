@@ -30,7 +30,6 @@ class TasksService {
             throw new Error('Organization ID is required to create a task');
         }
 
-<<<<<<< HEAD
         if (employeeId) {
             const emp = await prisma.employee.findUnique({ where: { id: employeeId }, select: { status: true } });
             if (!emp) throw new Error('Employee not found');
@@ -41,9 +40,7 @@ class TasksService {
                 throw err;
             }
         }
-=======
         const taskStatus = status || 'BACKLOG';
->>>>>>> a96bc35a91c152afc51a5d3a6ad36c720732058d
 
         const task = await prisma.task.create({
             data: {
@@ -98,7 +95,6 @@ class TasksService {
     async updateTask(id, data) {
         const { name, priority, dueDate, status, employeeId } = data;
         
-<<<<<<< HEAD
         if (employeeId) {
             const emp = await prisma.employee.findUnique({ where: { id: employeeId }, select: { status: true } });
             if (!emp) throw new Error('Employee not found');
@@ -109,10 +105,9 @@ class TasksService {
                 throw err;
             }
         }
-=======
+
         // Check existing status to track transition if status changes
         const existingTask = await prisma.task.findUnique({ where: { id } });
->>>>>>> a96bc35a91c152afc51a5d3a6ad36c720732058d
 
         const updateData = {};
         if (name) updateData.name = name;

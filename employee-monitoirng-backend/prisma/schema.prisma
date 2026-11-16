@@ -126,12 +126,9 @@ model Organization {
   screenshotSetting ScreenshotSetting?
   videoRecordings  VideoRecording[]
   timesheets       Timesheet[]
-<<<<<<< HEAD
   taskTimeLogs     TaskTimeLog[]
-=======
   notifications    Notification[]
   alertLogs        AlertLog[]
->>>>>>> a96bc35a91c152afc51a5d3a6ad36c720732058d
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
 
@@ -207,11 +204,8 @@ model Employee {
   tracking           Tracking[]
   videoRecordings    VideoRecording[]
   timesheets         Timesheet[]
-<<<<<<< HEAD
   taskTimeLogs       TaskTimeLog[]
-=======
   alertLogs          AlertLog[]
->>>>>>> a96bc35a91c152afc51a5d3a6ad36c720732058d
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
 
@@ -839,7 +833,6 @@ model TimesheetApproval {
   @@map("timesheet_approvals")
 }
 
-<<<<<<< HEAD
 model TaskTimeLog {
   id             String       @id @default(uuid())
   taskId         String
@@ -861,7 +854,8 @@ model TaskTimeLog {
   @@index([taskId])
   @@index([organizationId])
   @@map("task_time_logs")
-=======
+}
+
 model AlertLog {
   id             String       @id @default(uuid())
   organization   Organization @relation(fields: [organizationId], references: [id])
@@ -899,5 +893,4 @@ model Notification {
 
   @@index([organizationId, unread, createdAt])
   @@map("notifications")
->>>>>>> a96bc35a91c152afc51a5d3a6ad36c720732058d
 }
