@@ -31,11 +31,13 @@ import { useFilterStore } from '../store/filterStore';
 import { format, addDays, startOfWeek, parseISO, isWithinInterval, isSameDay } from 'date-fns';
 import { createPortal } from 'react-dom';
 import { useAuthStore } from '../store/authStore';
+import { WeeklyTimesheetsView } from '../components/timesheets/WeeklyTimesheetsView';
+import { ApprovalsQueueView } from '../components/timesheets/ApprovalsQueueView';
 
 export function TimeAndAttendance() {
     const { employees } = useRealTime();
     const { role } = useAuthStore();
-    const [activeTab, setActiveTab] = useState('Timesheets');
+    const [activeTab, setActiveTab] = useState('Weekly Timesheets');
     const [viewMode, setViewMode] = useState('Day View');
     const [isManualTimeModalOpen, setIsManualTimeModalOpen] = useState(false);
     const [isTimeOffMenuOpen, setIsTimeOffMenuOpen] = useState(false);
@@ -195,50 +197,66 @@ export function TimeAndAttendance() {
             {/* Tabs */}
             <div className="overflow-x-auto mb-8">
                 <div className="flex items-center gap-10 border-b border-slate-100 dark:border-slate-800 min-w-max">
-                    {['Timesheets', 'Attendance']
-                        .map(tab => (
-                            <button
-                                key={tab}
-                                onClick={() => setActiveTab(tab)}
-                                className={`pb-4 text-sm font-black transition-all relative ${activeTab === tab ? 'text-primary-600 dark:text-primary-400' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
-                                    }`}
-                            >
-                                {tab}
-                                {activeTab === tab && <div className="absolute bottom-0 left-0 w-full h-[3px] bg-primary-600 rounded-full" />}
-                            </button>
-                        ))}
-                </div>
-            </div>
-
-            {/* Filter Hub */}
-            <div className="flex flex-wrap items-center gap-4 mb-8">
-                <GlobalCalendar />
-
-                <div className="ml-auto flex items-center gap-3">
-                    <div className="relative group w-full md:w-64">
-                        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-500 transition-colors" />
-                        <input
-                            type="text"
-                            placeholder="Search employee or team"
-                            value={generalSearch}
-                            onChange={(e) => setGeneralSearch(e.target.value)}
-                            className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg pl-9 pr-4 py-2 text-xs font-medium dark:text-slate-200 focus:ring-2 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all placeholder:text-slate-400"
-                        />
-                    </div>
-                    {activeTab === 'Timesheets' && (
+                    {[
+                        'Weekly Timesheets',
+                        'Daily Attendance',
+                        ...(role === 'ADMIN' || role === 'MANAGER' ? ['Approvals Queue'] : []),
+                        'Attendance Matrix'
+                    ].map(tab => (
                         <button
-                            onClick={handleDownload}
-                            title="Download CSV"
-                            className="p-2 border border-slate-200 dark:border-slate-800 text-primary-600 dark:text-primary-400 rounded-lg hover:bg-primary-50 dark:hover:bg-slate-800/50 transition-colors shadow-sm"
+                            key={tab}
+                            onClick={() => setActiveTab(tab)}
+                            className={`pb-4 text-sm font-black transition-all relative ${activeTab === tab ? 'text-primary-600 dark:text-primary-400' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                                }`}
                         >
-                            <Download size={18} strokeWidth={2.5} />
+                            {tab}
+                            {activeTab === tab && <div className="absolute bottom-0 left-0 w-full h-[3px] bg-primary-600 rounded-full" />}
                         </button>
-                    )}
+                    ))}
                 </div>
             </div>
 
-            {/* Tab Specific Content */}
-            {activeTab === 'Timesheets' && (
+            {/* Weekly Timesheets Tab (Punchcard Workflow) */}
+            {activeTab === 'Weekly Timesheets' && (
+                <WeeklyTimesheetsView employees={employees} />
+            )}
+
+            {/* Approvals Queue Tab (Manager & Admin Workflow) */}
+            {activeTab === 'Approvals Queue' && (
+                <ApprovalsQueueView />
+            )}
+
+            {/* Filter Hub (For Daily Attendance & Matrix) */}
+            {(activeTab === 'Daily Attendance' || activeTab === 'Attendance Matrix') && (
+                <div className="flex flex-wrap items-center gap-4 mb-8">
+                    <GlobalCalendar />
+
+                    <div className="ml-auto flex items-center gap-3">
+                        <div className="relative group w-full md:w-64">
+                            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-500 transition-colors" />
+                            <input
+                                type="text"
+                                placeholder="Search employee or team"
+                                value={generalSearch}
+                                onChange={(e) => setGeneralSearch(e.target.value)}
+                                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg pl-9 pr-4 py-2 text-xs font-medium dark:text-slate-200 focus:ring-2 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all placeholder:text-slate-400"
+                            />
+                        </div>
+                        {activeTab === 'Daily Attendance' && (
+                            <button
+                                onClick={handleDownload}
+                                title="Download CSV"
+                                className="p-2 border border-slate-200 dark:border-slate-800 text-primary-600 dark:text-primary-400 rounded-lg hover:bg-primary-50 dark:hover:bg-slate-800/50 transition-colors shadow-sm"
+                            >
+                                <Download size={18} strokeWidth={2.5} />
+                            </button>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* Tab Specific Content: Daily Attendance */}
+            {activeTab === 'Daily Attendance' && (
                 <div className="space-y-6">
                     {viewMode === 'Day View' ? (
                         <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden overflow-x-auto">
@@ -433,7 +451,7 @@ export function TimeAndAttendance() {
                 </div>
             )}
 
-            {activeTab === 'Attendance' && (
+            {activeTab === 'Attendance Matrix' && (
                 <div className="space-y-6">
                     {/* Legend and Threshold block removed */}
 

@@ -24,6 +24,7 @@ const trackingRoutes = require('../modules/tracking/tracking.routes');
 const agentRoutes = require('../modules/agent/agent.routes');
 const goalsRoutes = require('../modules/goals/goals.routes');
 const videosRoutes = require('../modules/videos/videos.routes');
+const timesheetsRoutes = require('../modules/timesheets/timesheets.routes');
 const { successResponse } = require('../utils/response');
 
 // Routes
@@ -51,6 +52,7 @@ router.use('/tracking', trackingRoutes);
 router.use('/agent', agentRoutes);
 router.use('/goals', goalsRoutes);
 router.use('/videos', videosRoutes);
+router.use('/timesheets', timesheetsRoutes);
 
 router.get('/health', (req, res) => {
     return successResponse(res, null, 'Backend Running', 200);
