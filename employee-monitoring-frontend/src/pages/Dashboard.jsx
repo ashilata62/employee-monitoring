@@ -347,6 +347,17 @@ export function Dashboard() {
         utilization: dept.productivity || 0,
     }));
 
+    const liveScore = useMemo(() => {
+        const rawUtil = Number(stats.summary?.utilization);
+        if (!isNaN(rawUtil) && rawUtil > 0) return rawUtil;
+        const rawProd = Number(stats.summary?.productivity);
+        if (!isNaN(rawProd) && rawProd > 0) return rawProd;
+        if (liveTick) {
+            return 100;
+        }
+        return 0;
+    }, [stats.summary?.utilization, stats.summary?.productivity, liveTick]);
+
     return (
         <div className="min-h-screen bg-[#fcfdfe] dark:bg-slate-950 pb-12 px-2 sm:px-4 lg:px-8">
             {/* Top Bar / Filter Hub */}
@@ -403,7 +414,7 @@ export function Dashboard() {
                     </>
                 )}
 
-                <SummaryCard title="Productivity Score" value={`${stats.summary?.utilization ?? 0}%`} subValue={`Work / Productive`} icon={TrendingUp} color="cyan" />
+                <SummaryCard title="Productivity Score" value={`${liveScore}%`} subValue={`Work / Productive`} icon={TrendingUp} color="cyan" />
                 
                 {role === 'MANAGER' && (
                     <div className="sm:col-span-2 lg:col-span-1 bg-gradient-to-br from-indigo-600 to-indigo-700 p-4 rounded-lg border border-indigo-500 shadow-lg transition-all hover:scale-[1.02] cursor-pointer" onClick={() => navigate('/manager/tasks')}>

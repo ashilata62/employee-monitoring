@@ -26,6 +26,13 @@ function AlertRow({ alert, onDismiss }) {
                     {!alert.read && <div className={`h-2 w-2 rounded-full ${cfg.dot}`} />}
                 </div>
                 <p className="text-xs font-medium text-slate-600 dark:text-slate-400 leading-relaxed">{alert.message}</p>
+                {alert.screenshotUrl && (
+                    <div className="mt-1.5">
+                        <a href={alert.screenshotUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[10px] font-bold text-primary-600 dark:text-primary-400 hover:underline">
+                            View Violation Screenshot
+                        </a>
+                    </div>
+                )}
                 <div className="flex items-center gap-3 mt-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                     <span>{alert.team}</span>
                     <span>•</span>

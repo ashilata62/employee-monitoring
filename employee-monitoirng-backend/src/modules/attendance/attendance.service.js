@@ -104,6 +104,18 @@ const attendanceService = {
             io.to(`org_${organizationId}`).emit('employee:status', { employeeId, status: 'ACTIVE' });
         }
 
+        // Evaluate Late Arrival Alert in background (non-blocking)
+        try {
+            const alertsService = require('../alerts/alerts.service');
+            alertsService.evaluateLateArrival({
+                employeeId,
+                organizationId,
+                clockInTime: now
+            }).catch(err => console.error('[AttendanceService] Late alert evaluation failed:', err.message));
+        } catch (e) {
+            console.error('[AttendanceService] Could not trigger late alert:', e.message);
+        }
+
         return attendance;
     },
 

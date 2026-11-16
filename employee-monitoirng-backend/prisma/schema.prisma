@@ -126,7 +126,12 @@ model Organization {
   screenshotSetting ScreenshotSetting?
   videoRecordings  VideoRecording[]
   timesheets       Timesheet[]
+<<<<<<< HEAD
   taskTimeLogs     TaskTimeLog[]
+=======
+  notifications    Notification[]
+  alertLogs        AlertLog[]
+>>>>>>> a96bc35a91c152afc51a5d3a6ad36c720732058d
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
 
@@ -155,6 +160,7 @@ model Team {
   organization   Organization @relation(fields: [organizationId], references: [id])
   organizationId String
   employees      Employee[]
+  productivityRules ProductivityRule[]
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
@@ -201,7 +207,11 @@ model Employee {
   tracking           Tracking[]
   videoRecordings    VideoRecording[]
   timesheets         Timesheet[]
+<<<<<<< HEAD
   taskTimeLogs       TaskTimeLog[]
+=======
+  alertLogs          AlertLog[]
+>>>>>>> a96bc35a91c152afc51a5d3a6ad36c720732058d
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
 
@@ -643,12 +653,14 @@ model ProductivityRule {
   isBlocked      Boolean          @default(false)
   tag            ProductivityTag? @relation(fields: [tagId], references: [id])
   tagId          String?
+  team           Team?            @relation(fields: [teamId], references: [id])
+  teamId         String?
   organization   Organization     @relation(fields: [organizationId], references: [id])
   organizationId String
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
 
-  @@unique([organizationId, domain])
+  @@unique([organizationId, domain, teamId])
   @@map("productivity_rules")
 }
 
@@ -827,6 +839,7 @@ model TimesheetApproval {
   @@map("timesheet_approvals")
 }
 
+<<<<<<< HEAD
 model TaskTimeLog {
   id             String       @id @default(uuid())
   taskId         String
@@ -848,4 +861,43 @@ model TaskTimeLog {
   @@index([taskId])
   @@index([organizationId])
   @@map("task_time_logs")
+=======
+model AlertLog {
+  id             String       @id @default(uuid())
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+  employee       Employee     @relation(fields: [employeeId], references: [id])
+  employeeId     String
+  ruleType       String       // "LATE_ARRIVAL", "CONTINUOUS_IDLE", "PROHIBITED_APP", "SECURITY"
+  trigger        String       // e.g., "Late Arrival (18m)", "Idle (30m)", "Prohibited Application"
+  severity       String       @default("warning") // "critical", "warning", "info"
+  message        String       @db.Text
+  screenshotUrl  String?      @db.LongText
+  metadata       Json?
+  resolved       Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([organizationId, createdAt])
+  @@index([employeeId, createdAt])
+  @@map("alert_logs")
+}
+
+model Notification {
+  id             String       @id @default(uuid())
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+  targetUserId   String?      // null for all managers/admins, or specific userId
+  title          String
+  description    String?      @db.Text
+  type           String       @default("info") // "alert", "warning", "success", "info"
+  unread         Boolean      @default(true)
+  link           String?
+  metadata       Json?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([organizationId, unread, createdAt])
+  @@map("notifications")
+>>>>>>> a96bc35a91c152afc51a5d3a6ad36c720732058d
 }

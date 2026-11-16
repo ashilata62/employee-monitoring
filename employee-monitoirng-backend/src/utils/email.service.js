@@ -13,7 +13,7 @@ function createTransport() {
     });
 }
 
-async function sendMail({ to, subject, html, text }) {
+async function sendMail({ to, subject, html, text, attachments }) {
     const transport = createTransport();
     const from = process.env.SMTP_FROM || 'Employee Monitoring <noreply@localhost>';
 
@@ -21,12 +21,13 @@ async function sendMail({ to, subject, html, text }) {
         console.log('\n========== EMAIL (SMTP not configured) ==========');
         console.log(`To: ${to}`);
         console.log(`Subject: ${subject}`);
+        console.log(`Attachments: ${attachments ? attachments.map(a => a.filename).join(', ') : 'None'}`);
         console.log(text || html);
         console.log('=================================================\n');
         return { sent: false, simulated: true };
     }
 
-    await transport.sendMail({ from, to, subject, html, text });
+    await transport.sendMail({ from, to, subject, html, text, attachments });
     return { sent: true };
 }
 

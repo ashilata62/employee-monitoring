@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { LayoutGrid, List, Monitor, Activity, MapPin, Search, Filter, RefreshCw, Clock, Shield, ShieldAlert, User, ChevronRight, ExternalLink, Image as ImageIcon, Video } from 'lucide-react';
 import api from '../services/apiClient';
 import { toast } from '../utils/toastManager';
+import { ExportDropdown } from '../components/common/ExportDropdown';
 
 export const ActivityMonitoring = () => {
     const [employees, setEmployees] = useState([]);
@@ -69,6 +70,22 @@ export const ActivityMonitoring = () => {
                             className="pl-12 pr-6 py-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full md:w-80 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all font-medium"
                         />
                     </div>
+                    <ExportDropdown
+                        data={filteredEmployees}
+                        columns={[
+                            { header: 'Employee Name', key: 'fullName' },
+                            { header: 'Role', key: 'role' },
+                            { header: 'Team', key: 'team', formatter: (_, row) => row.team?.name || 'No Team' },
+                            { header: 'Agent Status', key: 'agentStatus', formatter: (val) => val === 'active' ? 'Connected' : 'Missing' },
+                            { header: 'Current Activity', key: 'currentActivity' },
+                            { header: 'Last Activity', key: 'lastSeen', formatter: (val) => val ? new Date(val).toLocaleString() : 'N/A' },
+                        ]}
+                        fileName="activity-timeline-report"
+                        metadata={{
+                            title: 'Employee Activity & Compliance Report',
+                            filters: `Status: ${filter.toUpperCase()}${searchQuery ? `, Search: "${searchQuery}"` : ''}`
+                        }}
+                    />
                 </div>
             </div>
 

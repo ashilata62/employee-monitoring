@@ -1,4 +1,5 @@
 const integrationsService = require('./integrations.service');
+const { getConnector } = require('./connectors');
 const { successResponse, errorResponse } = require('../../utils/response');
 const { getOrganizationId } = require('../../utils/orgId');
 
@@ -74,13 +75,93 @@ const disconnectIntegration = async (req, res) => {
         return successResponse(res, null, 'Integration disconnected successfully');
     } catch (error) {
         console.error('Error disconnecting integration:', error);
-        // It might fail if record does not exist, but we can treat as success
         return successResponse(res, null, 'Integration disconnected successfully');
+    }
+};
+
+/**
+ * Phase 3 Groundwork: Test connector credentials & connection
+ */
+const testConnector = async (req, res) => {
+    try {
+        const { provider } = req.params;
+        const connector = getConnector(provider);
+        const organizationId = await getOrganizationId(req);
+
+        // Fetch saved config from database if not explicitly passed in body
+        let config = req.body?.config || req.body || {};
+        if (!config || Object.keys(config).length === 0) {
+            const saved = await integrationsService.getIntegrations(organizationId);
+            const found = saved.find(i => i.integrationId.toLowerCase() === provider.toLowerCase());
+            if (found?.config) config = found.config;
+        }
+
+        const result = await connector.testConnection(config);
+        return successResponse(res, result, `${provider.toUpperCase()} connection successful`);
+    } catch (error) {
+        console.error(`[Connector test error] ${req.params.provider}:`, error.message);
+        return errorResponse(res, error.message, 400);
+    }
+};
+
+/**
+ * Phase 3 Groundwork: Fetch & normalize external tasks
+ */
+const fetchConnectorTasks = async (req, res) => {
+    try {
+        const { provider } = req.params;
+        const connector = getConnector(provider);
+        const organizationId = await getOrganizationId(req);
+        const { limit, jql, listId, teamId } = req.query;
+
+        // Fetch saved config
+        let config = {};
+        const saved = await integrationsService.getIntegrations(organizationId);
+        const found = saved.find(i => i.integrationId.toLowerCase() === provider.toLowerCase());
+        if (found?.config) config = found.config;
+
+        const options = {
+            limit: limit ? parseInt(limit, 10) : 50,
+            jql,
+            listId,
+            teamId,
+        };
+
+        const result = await connector.fetchTasks(config, options);
+        return successResponse(res, result, `Successfully fetched tasks from ${provider.toUpperCase()}`);
+    } catch (error) {
+        console.error(`[Connector fetch tasks error] ${req.params.provider}:`, error.message);
+        return errorResponse(res, error.message, 400);
+    }
+};
+
+/**
+ * Phase 3 Groundwork: Webhook receiver with signature verification
+ */
+const handleWebhook = async (req, res) => {
+    try {
+        const { provider } = req.params;
+        const connector = getConnector(provider);
+
+        // Validate webhook signature
+        const isValid = connector.validateWebhookSignature(req);
+        if (!isValid) {
+            return errorResponse(res, 'Invalid webhook signature', 401);
+        }
+
+        const result = await connector.handleWebhook(req.body, req.headers);
+        return successResponse(res, result, 'Webhook processed successfully');
+    } catch (error) {
+        console.error(`[Connector webhook error] ${req.params.provider}:`, error.message);
+        return errorResponse(res, error.message, 500);
     }
 };
 
 module.exports = {
     getIntegrations,
     configureIntegration,
-    disconnectIntegration
+    disconnectIntegration,
+    testConnector,
+    fetchConnectorTasks,
+    handleWebhook,
 };

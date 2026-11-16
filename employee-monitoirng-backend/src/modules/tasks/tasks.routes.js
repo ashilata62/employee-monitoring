@@ -16,6 +16,7 @@ router.get('/:id/time-logs', tasksController.getTaskTimeLogs);
 router.post('/', tasksController.createTask);
 router.get('/', tasksController.getTasks);
 router.get('/board', tasksController.getBoardTasks);
+router.get('/analytics/cycle-time', tasksController.getCycleTimeAnalytics);
 router.patch('/:id/status', tasksController.updateTaskStatus);
 router.patch('/:id', tasksController.updateTask);
 router.delete('/:id', tasksController.deleteTask);

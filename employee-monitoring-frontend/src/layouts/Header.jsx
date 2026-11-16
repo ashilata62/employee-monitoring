@@ -5,6 +5,7 @@ import { clsx } from 'clsx';
 import { useTheme } from '../hooks/useTheme';
 import { useAuthStore } from '../store/authStore';
 import { ProfileDropdown } from '../components/header/ProfileDropdown';
+import { HeaderTaskTimer } from '../components/header/HeaderTaskTimer';
 import { useRealTime } from '../hooks/RealTimeContext';
 import { WebTrackerAgent } from '../components/agent/WebTrackerAgent';
 
@@ -12,9 +13,19 @@ export function Header({ onMenuClick }) {
     const { theme, toggleTheme } = useTheme();
     const navigate = useNavigate();
     const { user, role, logout } = useAuthStore();
-    const { notifications: liveNotifications, deleteNotification } = useRealTime();
+    const { notifications: liveNotifications, markAllNotificationsRead, markNotificationAsRead, deleteNotification } = useRealTime();
     const [showNotifications, setShowNotifications] = useState(false);
     const notificationRef = useRef(null);
+
+    const rolePath = role?.toLowerCase() || 'admin';
+    const resolveRolePath = (path) => {
+        if (!path) return `/${rolePath}/notifications`;
+        const clean = path.startsWith('/') ? path.slice(1) : path;
+        if (clean.startsWith('admin/') || clean.startsWith('manager/') || clean.startsWith('employee/')) {
+            return `/${clean}`;
+        }
+        return `/${rolePath}/${clean}`;
+    };
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -40,6 +51,7 @@ export function Header({ onMenuClick }) {
             </div>
 
             <div className="flex items-center gap-2 md:gap-3">
+                <HeaderTaskTimer />
                 <WebTrackerAgent />
 
                 <button
@@ -71,7 +83,10 @@ export function Header({ onMenuClick }) {
                         <div className="fixed left-4 right-4 top-[4.5rem] w-auto md:absolute md:right-0 md:top-full md:left-auto md:w-80 md:mt-2 origin-top-right rounded-2xl border border-slate-200 bg-white shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none dark:border-slate-800 dark:bg-slate-900 animate-in fade-in slide-in-from-top-1 z-50">
                             <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 dark:border-slate-800">
                                 <h3 className="text-sm font-bold dark:text-white">Notifications</h3>
-                                <button className="text-xs font-semibold text-primary-600 hover:text-primary-700">
+                                <button
+                                    onClick={markAllNotificationsRead}
+                                    className="text-xs font-semibold text-primary-600 hover:text-primary-700 transition-colors"
+                                >
                                     Mark all as read
                                 </button>
                             </div>
@@ -80,6 +95,13 @@ export function Header({ onMenuClick }) {
                                     liveNotifications.map((n) => (
                                         <div
                                             key={n.id}
+                                            onClick={() => {
+                                                markNotificationAsRead(n.id);
+                                                if (n.link) {
+                                                    setShowNotifications(false);
+                                                    navigate(resolveRolePath(n.link));
+                                                }
+                                            }}
                                             className={clsx(
                                                 "group relative flex gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer",
                                                 n.unread && "bg-primary-50/30 dark:bg-primary-900/10"
@@ -124,6 +146,17 @@ export function Header({ onMenuClick }) {
                                         No new notifications
                                     </div>
                                 )}
+                            </div>
+                            <div className="border-t border-slate-100 dark:border-slate-800 p-2 text-center bg-slate-50/50 dark:bg-slate-800/30 rounded-b-2xl">
+                                <button
+                                    onClick={() => {
+                                        setShowNotifications(false);
+                                        navigate(resolveRolePath('/notifications'));
+                                    }}
+                                    className="text-xs font-bold text-primary-600 dark:text-primary-400 hover:underline w-full py-1 block"
+                                >
+                                    View All Notifications
+                                </button>
                             </div>
                         </div>
                     )}

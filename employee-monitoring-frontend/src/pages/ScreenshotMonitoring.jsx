@@ -1201,7 +1201,7 @@ export function ScreenshotMonitoring() {
   useEffect(() => {
     if (contextScreenshots && contextScreenshots.length > 0) {
         setBackendScreenshots(prev => {
-            const newOnes = contextScreenshots.filter(cs => !prev.some(ps => ps.id === cs.id));
+            const newOnes = contextScreenshots.filter(cs => !prev.some(ps => (cs.id && ps.id === cs.id) || (cs.imageUrl && ps.imageUrl === cs.imageUrl)));
             if (newOnes.length === 0) return prev;
             return [...newOnes, ...prev];
         });
