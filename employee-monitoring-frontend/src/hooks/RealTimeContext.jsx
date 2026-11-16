@@ -21,6 +21,7 @@ import taskService from '../services/taskService';
 import projectService from '../services/projectService';
 import goalService from '../services/goalService';
 import screenshotService from '../services/screenshotService';
+import useTaskStore from '../store/taskStore';
 import { io } from 'socket.io-client';
 
 const SOCKET_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
@@ -47,6 +48,7 @@ const mapStatus = (status) => {
 
 export function RealTimeProvider({ children }) {
     const { toast } = useToast();
+    const taskTimer = useTaskStore();
     const [step, setStep] = useState('choice');
     const [copied, setCopied] = useState(false);
 
@@ -136,6 +138,14 @@ export function RealTimeProvider({ children }) {
         } catch (e) { /* ignore corrupt cache */ }
         setIsLoading(false);
     }, []);
+
+    // Restore active task timer for the authenticated employee
+    useEffect(() => {
+        const empId = user?.employeeId || user?.id;
+        if (empId) {
+            useTaskStore.getState().restoreActiveTask(empId);
+        }
+    }, [user?.employeeId, user?.id]);
 
     // Persistence — only save ephemeral user-interactive data (not seed logs which are huge)
     useEffect(() => {
@@ -240,7 +250,8 @@ export function RealTimeProvider({ children }) {
     const syncTasks = useCallback(async () => {
         if (!isAuthenticated) return;
         try {
-            const res = await taskService.getTasks(role === 'EMPLOYEE' ? user?.employeeId : null);
+            const currentEmpId = user?.employeeId || state.employees.find(e => e.email === user?.email)?.id || user?.id;
+            const res = await taskService.getTasks(role === 'EMPLOYEE' ? currentEmpId : null);
             if (res.success && res.data) {
                 setState(prev => ({
                     ...prev,
@@ -256,7 +267,16 @@ export function RealTimeProvider({ children }) {
                         status: mapStatus(task.status),
                         progress: task.status === 'FINALIZED' ? 100 : (task.status === 'QUALITY_ASSURANCE' ? 80 : (task.status === 'IN_OPERATIONS' ? 40 : 0)),
                         dueDate: task.dueDate ? task.dueDate.split('T')[0] : 'No Date',
+                        estimatedHours: task.estimatedHours !== undefined && task.estimatedHours !== null ? Number(task.estimatedHours) : null,
+                        actualHours: task.actualHours !== undefined && task.actualHours !== null ? Number(task.actualHours) : null,
+                        actualSeconds: task.actualSeconds !== undefined ? Number(task.actualSeconds) : (task.totalSeconds !== undefined ? Number(task.totalSeconds) : null),
                         timeSpent: (() => {
+                            if (task.actualHours !== undefined && task.actualHours !== null) {
+                                return `${task.actualHours}h`;
+                            }
+                            if (task.actualSeconds !== undefined && task.actualSeconds !== null) {
+                                return `${Math.round((task.actualSeconds / 3600) * 10) / 10}h`;
+                            }
                             let totalHrs = 0;
                             state.activityLogs.forEach(log => {
                                 if (log.taskHours && log.taskHours[task.id]) {
@@ -272,7 +292,7 @@ export function RealTimeProvider({ children }) {
         } catch (err) {
             console.error('Failed to sync tasks:', err);
         }
-    }, [isAuthenticated]);
+    }, [isAuthenticated, role, user?.employeeId, user?.id, user?.email, state.employees]);
 
     const syncProjects = useCallback(async () => {
         if (!isAuthenticated) return;
@@ -804,69 +824,19 @@ export function RealTimeProvider({ children }) {
         setState(prev => ({ ...prev, timeEntries: prev.timeEntries.filter(e => e.id !== id) }));
     }, []);
 
-    // Task Timer Actions
+    // Task Timer Actions (Delegated to centralized useTaskStore)
     const startTask = useCallback((taskId) => {
-        setState(prev => ({
-            ...prev,
-            timer: {
-                ...prev.timer,
-                isRunning: true,
-                currentTask: taskId,
-                seconds: 0,
-                startTime: new Date()
-            }
-        }));
-        addNotification('Task tracking started', 'success');
-    }, [addNotification]);
+        const targetTask = state.tasks?.find(t => t.id === taskId) || { id: taskId };
+        return taskTimer.startTask(targetTask);
+    }, [state.tasks, taskTimer]);
 
     const stopTask = useCallback(async () => {
-        const { currentTask, seconds } = state.timer;
-        if (currentTask && seconds > 0) {
-            try {
-                const currentEmp = state.employees.find(e => e.email === user?.email);
-                await activityService.logActivity({
-                    employeeId: currentEmp?.id || user?.id,
-                    organizationId: currentEmp?.organizationId || user?.organizationId || 'default-org-id',
-                    activityType: 'ACTIVE',
-                    duration: seconds,
-                    taskId: currentTask,
-                    appWebsite: 'Web Dashboard'
-                });
-                // Sync tasks to reflect new time
-                syncTasks();
-            } catch (err) {
-                console.error('Failed to log final task activity:', err);
-            }
+        const result = await useTaskStore.getState().stopTask();
+        if (result) {
+            syncTasks();
         }
-        setState(prev => ({
-            ...prev,
-            timer: { ...prev.timer, isRunning: false, currentTask: null, seconds: 0 }
-        }));
-        addNotification('Task tracking stopped', 'success');
-    }, [state.timer, user, state.employees, syncTasks, addNotification]);
-
-    // Periodic Task Logging (every 60 seconds)
-    useEffect(() => {
-        let interval;
-        if (state.timer.isRunning && state.timer.currentTask) {
-            interval = setInterval(async () => {
-                try {
-                    const currentEmp = state.employees.find(e => e.email === user?.email);
-                    await activityService.logActivity({
-                        employeeId: currentEmp?.id || user?.id,
-                        organizationId: currentEmp?.organizationId || user?.organizationId || 'default-org-id',
-                        activityType: 'ACTIVE',
-                        duration: 60,
-                        taskId: state.timer.currentTask,
-                        appWebsite: 'Web Dashboard (Heartbeat)'
-                    });
-                } catch (err) {
-                    console.error('Task heartbeat failed:', err);
-                }
-            }, 60000);
-        }
-        return () => clearInterval(interval);
-    }, [state.timer.isRunning, state.timer.currentTask, user, state.employees]);
+        return result;
+    }, [syncTasks]);
 
     // Tasks
     // Tasks
@@ -1250,7 +1220,14 @@ export function RealTimeProvider({ children }) {
         addEmployee, updateEmployee, deleteEmployee, mergeEmployees,
         addTeam, updateTeam, deleteTeam,
         toggleTimer, startTimer, stopTimer, pauseTimer,
-        startTask, stopTask, timer: state.timer,
+        startTask, stopTask, 
+        timer: {
+            isRunning: taskTimer.isRunning,
+            currentTask: taskTimer.activeTask?.id || null,
+            activeTask: taskTimer.activeTask,
+            seconds: taskTimer.seconds,
+            startTime: taskTimer.startTime
+        },
         addTimeEntry, updateTimeEntry, deleteTimeEntry,
         addTask, updateTaskStatus, deleteTask, updateTask,
         addProject,
@@ -1282,7 +1259,7 @@ export function RealTimeProvider({ children }) {
         addEmployee, updateEmployee, deleteEmployee, mergeEmployees,
         addTeam, updateTeam, deleteTeam,
         toggleTimer, startTimer, stopTimer, pauseTimer,
-        startTask, stopTask,
+        startTask, stopTask, taskTimer,
         addTimeEntry, updateTimeEntry, deleteTimeEntry,
         addTask, updateTaskStatus, deleteTask, updateTask,
         addProject, addGoal, deleteGoal, updateGoal, deleteScreenshot, addGeofence, toggleGeofence,

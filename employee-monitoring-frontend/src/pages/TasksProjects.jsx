@@ -38,6 +38,7 @@ import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { performanceKPIs as mockKPIs, projectProductivity, workLogs as mockLogs } from '../data/mockData'; // Fallbacks if needed
 import { useRealTime } from '../hooks/RealTimeContext';
+import { formatDuration, formatFriendlyDuration, useTaskStore } from '../store/taskStore';
 import { useFilterStore } from '../store/filterStore';
 import { useAuthStore } from '../store/authStore';
 import {
@@ -72,6 +73,7 @@ const CreateTaskModal = ({ isOpen, onClose, onSave, defaultStatus = 'To Do', emp
     const [status, setStatus] = useState(defaultStatus);
     const [selectedProjectId, setSelectedProjectId] = useState('');
     const [assigneeId, setAssigneeId] = useState('');
+    const [estimatedHours, setEstimatedHours] = useState('');
     const [showSuggestions, setShowSuggestions] = useState(false);
 
     useEffect(() => {
@@ -88,6 +90,11 @@ const CreateTaskModal = ({ isOpen, onClose, onSave, defaultStatus = 'To Do', emp
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        const estNum = estimatedHours !== '' ? Number(estimatedHours) : null;
+        if (estNum !== null && (isNaN(estNum) || estNum <= 0)) {
+            alert('Estimated hours must be greater than zero');
+            return;
+        }
         const project = projects.find(p => p.id === selectedProjectId);
         onSave({
             title,
@@ -96,12 +103,14 @@ const CreateTaskModal = ({ isOpen, onClose, onSave, defaultStatus = 'To Do', emp
             priority,
             dueDate,
             status,
+            estimatedHours: estNum,
             project: project ? project.name : 'Internal',
             projectId: selectedProjectId
         });
         onClose();
         setTitle('');
         setDueDate('');
+        setEstimatedHours('');
     };
 
     return createPortal(
@@ -181,6 +190,18 @@ const CreateTaskModal = ({ isOpen, onClose, onSave, defaultStatus = 'To Do', emp
                             <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Due Date</label>
                             <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-sm" required />
                         </div>
+                    </div>
+                    <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Estimated Hours (Optional)</label>
+                        <input 
+                            type="number" 
+                            step="0.5" 
+                            min="0.1" 
+                            value={estimatedHours} 
+                            onChange={e => setEstimatedHours(e.target.value)} 
+                            className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-sm" 
+                            placeholder="e.g. 8" 
+                        />
                     </div>
                     <div>
                         <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Project</label>
@@ -331,6 +352,7 @@ const EditTaskModal = ({ isOpen, onClose, onSave, task, employees = [], projects
     const [priority, setPriority] = useState(task?.priority || 'Medium');
     const [dueDate, setDueDate] = useState(task?.dueDate && task?.dueDate !== 'No Date' ? task.dueDate : '');
     const [status, setStatus] = useState(task?.status || 'Backlog');
+    const [estimatedHours, setEstimatedHours] = useState(task?.estimatedHours || '');
     const [showSuggestions, setShowSuggestions] = useState(false);
 
     // Reset form whenever task changes
@@ -342,6 +364,7 @@ const EditTaskModal = ({ isOpen, onClose, onSave, task, employees = [], projects
             setPriority(task.priority || 'Medium');
             setDueDate(task.dueDate && task.dueDate !== 'No Date' ? task.dueDate : '');
             setStatus(task.status || 'Backlog');
+            setEstimatedHours(task.estimatedHours || '');
         }
     }, [task]);
 
@@ -355,7 +378,20 @@ const EditTaskModal = ({ isOpen, onClose, onSave, task, employees = [], projects
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        onSave(task.id, { title, assignee, assigneeId, priority, dueDate, status });
+        const estNum = estimatedHours !== '' ? Number(estimatedHours) : null;
+        if (estNum !== null && (isNaN(estNum) || estNum <= 0)) {
+            alert('Estimated hours must be greater than zero');
+            return;
+        }
+        onSave(task.id, { 
+            title, 
+            assignee, 
+            assigneeId, 
+            priority, 
+            dueDate, 
+            status,
+            estimatedHours: estNum 
+        });
         onClose();
     };
 
@@ -423,6 +459,18 @@ const EditTaskModal = ({ isOpen, onClose, onSave, task, employees = [], projects
                             <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Due Date</label>
                             <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-sm" />
                         </div>
+                    </div>
+                    <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Estimated Hours</label>
+                        <input 
+                            type="number" 
+                            step="0.5" 
+                            min="0.1" 
+                            value={estimatedHours} 
+                            onChange={e => setEstimatedHours(e.target.value)} 
+                            className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-sm" 
+                            placeholder="e.g. 8" 
+                        />
                     </div>
                     <div className="pt-2 flex gap-2">
                         <button type="button" onClick={onClose} className="flex-1 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">Cancel</button>
@@ -553,7 +601,7 @@ const KPICard = ({ title, value, subValue, trend, icon: Icon, color, delay }) =>
     </div>
 );
 
-const KanbanColumn = ({ title, tasks, status, color, onAdd, updateTaskStatus, onEdit, onDelete, startTask, stopTask, timer, role }) => {
+const KanbanColumn = ({ title, tasks, status, color, onAdd, updateTaskStatus, onEdit, onDelete, startTask, stopTask, timer, role, taskDurations = {} }) => {
     // Determine gradient based on column color/status
     const getGradient = () => {
         if (status === 'IN_OPERATIONS') return 'from-blue-500 to-transparent';
@@ -587,7 +635,7 @@ const KanbanColumn = ({ title, tasks, status, color, onAdd, updateTaskStatus, on
                 )}
             </div>
 
-            <div className="flex-1 space-y-4 overflow-y-auto pr-1 pl-1 -ml-1 custom-scrollbar thin-scrollbar">
+            <div className="flex-1 space-y-4 overflow-y-auto overflow-x-hidden pr-1 pl-1 -ml-1 custom-scrollbar thin-scrollbar">
                 <style>{`
                     .thin-scrollbar::-webkit-scrollbar { width: 4px; }
                     .thin-scrollbar::-webkit-scrollbar-track { background: transparent; }
@@ -616,15 +664,15 @@ const KanbanColumn = ({ title, tasks, status, color, onAdd, updateTaskStatus, on
                         <div
                             key={task.id}
                             className={cn(
-                                "bg-white dark:bg-slate-900 p-5 cursor-grab active:cursor-grabbing group animate-in slide-in-from-bottom-2 fade-in fill-mode-both hover:-translate-y-1 hover:scale-[1.01]",
+                                "bg-white dark:bg-slate-900 p-4 cursor-grab active:cursor-grabbing group animate-in slide-in-from-bottom-2 fade-in fill-mode-both hover:-translate-y-1 hover:scale-[1.01] overflow-hidden",
                                 getCardStyle(status)
                             )}
                             style={{ animationDelay: `${index * 75}ms`, animationDuration: '400ms' }}
                         >
                             {/* Priority Header */}
-                            <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center justify-between mb-3 gap-1">
                                 <span className={cn(
-                                    "px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border transition-all",
+                                    "px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border transition-all truncate max-w-[110px]",
                                     status === 'IN_OPERATIONS' ? "bg-blue-50 text-blue-600 border-blue-100" :
                                     status === 'FINALIZED' ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
                                     status === 'QUALITY_ASSURANCE' ? "bg-amber-50 text-amber-600 border-amber-100" :
@@ -633,97 +681,136 @@ const KanbanColumn = ({ title, tasks, status, color, onAdd, updateTaskStatus, on
                                     {task.project}
                                 </span>
                                 
-                                {/* Priority Badge */}
-                                <div className={cn(
-                                    "flex items-center gap-1.5 px-2.5 py-1 rounded-full border shadow-sm",
-                                    task.priority === 'High' || task.priority === 'Critical' ? "bg-rose-50 border-rose-100 text-rose-600" :
-                                    task.priority === 'Medium' ? "bg-amber-50 border-amber-100 text-amber-600" :
-                                    "bg-emerald-50 border-emerald-100 text-emerald-600"
-                                )}>
-                                    <div className={cn("h-1.5 w-1.5 rounded-full animate-pulse", 
-                                        task.priority === 'High' || task.priority === 'Critical' ? "bg-rose-500" :
-                                        task.priority === 'Medium' ? "bg-amber-500" :
-                                        "bg-emerald-500"
-                                    )} />
-                                    <span className="text-[8px] font-black uppercase tracking-tighter">{task.priority || 'Normal'}</span>
+                                <div className="flex items-center gap-1 shrink-0">
+                                    {/* Action Buttons (visible on hover) */}
+                                    <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); onEdit && onEdit(task); }}
+                                            className="h-6 w-6 flex items-center justify-center rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition-colors"
+                                            title="Edit Task"
+                                        >
+                                            <Edit2 size={11} strokeWidth={2.5} />
+                                        </button>
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); onDelete && onDelete(task.id); }}
+                                            className="h-6 w-6 flex items-center justify-center rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                                            title="Delete Task"
+                                        >
+                                            <Trash2 size={11} strokeWidth={2.5} />
+                                        </button>
+                                    </div>
+
+                                    {/* Priority Badge */}
+                                    <div className={cn(
+                                        "flex items-center gap-1 px-2 py-0.5 rounded-full border shadow-sm shrink-0",
+                                        task.priority === 'High' || task.priority === 'Critical' ? "bg-rose-50 border-rose-100 text-rose-600" :
+                                        task.priority === 'Medium' ? "bg-amber-50 border-amber-100 text-amber-600" :
+                                        "bg-emerald-50 border-emerald-100 text-emerald-600"
+                                    )}>
+                                        <div className={cn("h-1.5 w-1.5 rounded-full animate-pulse", 
+                                            task.priority === 'High' || task.priority === 'Critical' ? "bg-rose-500" :
+                                            task.priority === 'Medium' ? "bg-amber-500" :
+                                            "bg-emerald-500"
+                                        )} />
+                                        <span className="text-[8px] font-black uppercase tracking-tighter">{task.priority || 'Normal'}</span>
+                                    </div>
                                 </div>
                             </div>
 
                             <h5 className="text-sm font-black text-slate-900 dark:text-white mb-2 leading-relaxed group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors uppercase tracking-tight">{task.title}</h5>
-                            <p className="text-[10px] font-bold text-slate-400/90 mb-6 line-clamp-2 leading-relaxed opacity-90 group-hover:opacity-100 italic">
+                            <p className="text-[10px] font-bold text-slate-400/90 mb-4 line-clamp-2 leading-relaxed opacity-90 group-hover:opacity-100 italic">
                                 {task.description || "System logic optimization and performance tuning required for the new module..."}
                             </p>
 
-                            <div className="flex items-center justify-between pt-4 border-t-2 border-dashed border-slate-100 dark:border-slate-800/50 group-hover:border-indigo-100 dark:group-hover:border-slate-700 transition-colors">
-                                <div className="flex items-center gap-3">
-                                    <div className="relative h-9 w-9 rounded-2xl bg-white dark:bg-slate-800 ring-4 ring-slate-50 dark:ring-slate-800/50 overflow-hidden shadow-md group-hover:scale-105 transition-transform group-hover:ring-indigo-50 dark:group-hover:ring-indigo-900/20">
+                            {/* Estimated vs Actual Hours Comparison */}
+                            {task.estimatedHours > 0 && (() => {
+                                const trackedSec = taskDurations?.[task.id] || 0;
+                                const actualNumeric = task.actualHours !== null && task.actualHours !== undefined
+                                    ? Number(task.actualHours)
+                                    : (trackedSec > 0 ? Math.round((trackedSec / 3600) * 10) / 10 : (parseFloat(task.timeSpent) || 0));
+                                const estNumeric = Number(task.estimatedHours);
+                                const diff = Math.round((actualNumeric - estNumeric) * 10) / 10;
+                                const progressPct = estNumeric > 0 ? Math.min(100, Math.round((actualNumeric / estNumeric) * 100)) : 0;
+                                const isOver = diff > 0;
+
+                                return (
+                                    <div className="mb-4 p-2.5 rounded-xl bg-slate-50/80 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 text-[10px]">
+                                        <div className="flex items-center justify-between font-bold mb-1.5">
+                                            <span className="text-slate-400">Est: <strong className="text-slate-700 dark:text-slate-200">{estNumeric}h</strong></span>
+                                            <span className="text-slate-400">Act: <strong className="text-slate-700 dark:text-slate-200">{actualNumeric}h</strong></span>
+                                            <span className={cn(
+                                                "font-black px-1.5 py-0.5 rounded text-[9px]",
+                                                isOver ? "text-rose-600 bg-rose-50 dark:bg-rose-950/40" : "text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40"
+                                            )}>
+                                                {isOver ? `+${diff}h over` : (diff === 0 ? 'On track' : `${Math.abs(diff)}h left`)}
+                                            </span>
+                                        </div>
+                                        <div className="w-full bg-slate-200/60 dark:bg-slate-700/60 rounded-full h-1.5 overflow-hidden">
+                                            <div 
+                                                className={cn(
+                                                    "h-full rounded-full transition-all duration-300",
+                                                    isOver ? "bg-rose-500" : (progressPct >= 80 ? "bg-amber-500" : "bg-indigo-500")
+                                                )}
+                                                style={{ width: `${progressPct}%` }}
+                                            />
+                                        </div>
+                                    </div>
+                                );
+                            })()}
+
+                            <div className="flex items-center justify-between pt-3 gap-2 border-t border-dashed border-slate-100 dark:border-slate-800/60 group-hover:border-indigo-100 dark:group-hover:border-slate-700 transition-colors">
+                                <div className="flex items-center gap-2 min-w-0">
+                                    <div className="relative h-8 w-8 rounded-xl bg-white dark:bg-slate-800 ring-2 ring-slate-100 dark:ring-slate-800 overflow-hidden shadow-sm shrink-0 group-hover:scale-105 transition-transform">
                                         <img src={`https://i.pravatar.cc/150?u=${task.assignee}`} alt={task.assignee} className="h-full w-full object-cover" />
                                     </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] font-black text-slate-900 dark:text-slate-100 tracking-tight">{task.assignee}</span>
+                                    <div className="flex flex-col min-w-0">
+                                        <span className="text-[10px] font-black text-slate-800 dark:text-slate-100 tracking-tight truncate max-w-[65px] sm:max-w-[75px] leading-tight">{task.assignee}</span>
                                         <div className="flex items-center gap-1 text-slate-400">
-                                            <Calendar size={10} />
-                                            <span className="text-[8px] font-bold uppercase tracking-widest">{task.dueDate}</span>
+                                            <Calendar size={9} className="shrink-0" />
+                                            <span className="text-[8px] font-bold uppercase tracking-wider truncate">{task.dueDate}</span>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="flex flex-col items-end gap-2.5">
-                                    <div className="flex items-center gap-2">
-                                        <div className="flex items-center gap-1.5 text-slate-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-all bg-slate-50 dark:bg-slate-800/80 px-2.5 py-1.5 rounded-xl border border-slate-100 dark:border-slate-700 shadow-inner">
-                                            <div className="relative">
-                                                <Clock size={12} strokeWidth={3} className={cn(timer.isRunning && timer.currentTask === task.id && "animate-spin-slow")} />
-                                                {timer.isRunning && timer.currentTask === task.id && (
-                                                    <span className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 bg-indigo-500 rounded-full animate-ping" />
-                                                )}
-                                            </div>
-                                            <span className="text-[10px] font-black tracking-widest">{task.timeSpent || '0h'}</span>
-                                        </div>
+                                <div className="flex items-center gap-1.5 shrink-0">
+                                    <div className="flex items-center gap-1 text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/80 px-2 py-1 rounded-lg border border-slate-100 dark:border-slate-700 shadow-inner shrink-0">
+                                        <Clock size={11} strokeWidth={2.5} className={cn("shrink-0", timer.isRunning && timer.currentTask === task.id && "animate-spin-slow text-indigo-500")} />
+                                        <span className="text-[10px] font-mono font-bold tracking-tight">
+                                            {timer.isRunning && timer.currentTask === task.id 
+                                                ? formatDuration(timer.seconds) 
+                                                : (taskDurations?.[task.id] ? formatFriendlyDuration(taskDurations[task.id]) : (task.timeSpent || '0h'))}
+                                        </span>
+                                    </div>
 
-                                        {role === 'EMPLOYEE' && (
-                                            <div className="flex gap-1">
-                                                {timer.isRunning && timer.currentTask === task.id ? (
-                                                    <button 
-                                                        onClick={(e) => { e.stopPropagation(); stopTask(); }}
-                                                        className="h-8 w-8 rounded-xl bg-gradient-to-br from-rose-500 to-rose-600 text-white flex items-center justify-center hover:shadow-lg hover:shadow-rose-500/20 transition-all active:scale-95"
-                                                    >
-                                                        <Square size={14} fill="currentColor" />
-                                                    </button>
-                                                ) : (
-                                                    <button 
-                                                        disabled={timer.isRunning}
-                                                        onClick={(e) => { e.stopPropagation(); startTask(task.id); }}
-                                                        className={cn(
-                                                            "h-8 w-8 rounded-xl flex items-center justify-center transition-all shadow-md active:scale-95",
-                                                            timer.isRunning 
-                                                                ? "bg-slate-100 text-slate-300 cursor-not-allowed" 
-                                                                : "bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-600/20"
-                                                        )}
-                                                    >
-                                                        <Play size={14} fill="currentColor" className="ml-0.5" />
-                                                    </button>
+                                    {role === 'EMPLOYEE' && (
+                                        timer.isRunning && timer.currentTask === task.id ? (
+                                            <button 
+                                                onClick={async (e) => { 
+                                                    e.stopPropagation(); 
+                                                    e.preventDefault(); 
+                                                    await stopTask(); 
+                                                }}
+                                                title="Stop Task"
+                                                className="h-7 w-7 rounded-lg bg-gradient-to-br from-rose-500 to-rose-600 text-white flex items-center justify-center hover:shadow-md hover:shadow-rose-500/20 transition-all active:scale-95 cursor-pointer shrink-0"
+                                            >
+                                                <Square size={11} fill="currentColor" />
+                                            </button>
+                                        ) : (
+                                            <button 
+                                                disabled={timer.isRunning}
+                                                onClick={(e) => { e.stopPropagation(); startTask(task.id); }}
+                                                title={timer.isRunning ? "Another task is currently running" : "Start Task"}
+                                                className={cn(
+                                                    "h-7 w-7 rounded-lg flex items-center justify-center transition-all shadow-sm active:scale-95 shrink-0",
+                                                    timer.isRunning 
+                                                        ? "bg-slate-100 text-slate-300 cursor-not-allowed" 
+                                                        : "bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-600/20"
                                                 )}
-                                            </div>
-                                        )}
-                                    </div>
-                                    
-                                    {/* Elevated Quick Actions */}
-                                    <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-400 translate-y-2 group-hover:translate-y-0">
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); onEdit && onEdit(task); }}
-                                            className="h-8 w-8 flex items-center justify-center rounded-xl bg-white dark:bg-slate-800 text-slate-500 border border-slate-100 dark:border-slate-700 hover:text-indigo-600 hover:border-indigo-200 hover:shadow-lg transition-all"
-                                            title="Edit Task"
-                                        >
-                                            <Edit2 size={13} strokeWidth={2.5} />
-                                        </button>
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); onDelete && onDelete(task.id); }}
-                                            className="h-8 w-8 flex items-center justify-center rounded-xl bg-white dark:bg-slate-800 text-slate-500 border border-slate-100 dark:border-slate-700 hover:text-rose-600 hover:border-rose-200 hover:shadow-lg transition-all"
-                                            title="Delete Task"
-                                        >
-                                            <Trash2 size={13} strokeWidth={2.5} />
-                                        </button>
-                                    </div>
+                                            >
+                                                <Play size={11} fill="currentColor" className="ml-0.5" />
+                                            </button>
+                                        )
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -767,9 +854,11 @@ export function TasksProjects() {
         startTask,
         stopTask,
         timer,
+        isLoading,
     } = useRealTime();
 
     const { quickFilter, dateRange, selectedEmployee, selectedTeam } = useFilterStore();
+    const taskDurations = useTaskStore(state => state.taskDurations);
 
     // Board, Logs, Projects (Time Tracking + Productivity), Performance (KPIs), Goals
     const [activeTab, setActiveTab] = useState('board');
@@ -887,12 +976,27 @@ export function TasksProjects() {
         await updateTask(id, taskData);
     };
 
-    // Filtered data — respects search, calendar date range, and employee/team filter
+    // Filtered data — respects role-based assignment, search, calendar date range, and employee/team filter
     const filteredTasks = useMemo(() => {
+        // Resolve authenticated employee identifier for role-based scoping
+        const currentEmployeeId = user?.employeeId || employees.find(e => e.email === user?.email)?.id || user?.id;
+
         // dateRange from filterStore already has the resolved start/end for the active preset
         const hasDateFilter = quickFilter !== 'today';
         return tasks.filter(t => {
             if (t.assigneeStatus === 'deactivated') return false;
+
+            // RBAC: For EMPLOYEE role, strictly show ONLY tasks assigned to this employee
+            if (role === 'EMPLOYEE') {
+                if (!currentEmployeeId) {
+                    // Safety guard: Never expose all company tasks if employee identity is missing
+                    return false;
+                }
+                const isAssignedToMe = (t.assigneeId && t.assigneeId === currentEmployeeId) ||
+                    (t.assignee && (t.assignee === user?.name || t.assignee === user?.fullName));
+                if (!isAssignedToMe) return false;
+            }
+
             // Search filter
             const matchesSearch = t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 t.project.toLowerCase().includes(searchQuery.toLowerCase());
@@ -903,18 +1007,18 @@ export function TasksProjects() {
                 if (t.dueDate < dateRange.start || t.dueDate > dateRange.end) return false;
             }
 
-            // Employee filter
-            if (selectedEmployee && t.assigneeId !== selectedEmployee) return false;
+            // Admin / Manager employee dropdown filter
+            if (role !== 'EMPLOYEE' && selectedEmployee && t.assigneeId !== selectedEmployee) return false;
 
-            // Team filter
-            if (selectedTeam) {
+            // Admin / Manager team dropdown filter
+            if (role !== 'EMPLOYEE' && selectedTeam) {
                 const emp = employees.find(e => e.id === t.assigneeId);
                 if (!emp || emp.teamId !== selectedTeam) return false;
             }
 
             return true;
         });
-    }, [tasks, searchQuery, quickFilter, dateRange, selectedEmployee, selectedTeam, employees]);
+    }, [tasks, searchQuery, quickFilter, dateRange, selectedEmployee, selectedTeam, employees, role, user]);
 
     const getTasksByStatus = (status) => filteredTasks.filter(t => t.status === status);
 
@@ -922,7 +1026,8 @@ export function TasksProjects() {
 
     // Performance derived stats
     const derivedStats = useMemo(() => {
-        const completedTasks = tasks.filter(t => t.status === 'Finalized').length;
+        const relevantTasks = role === 'EMPLOYEE' ? filteredTasks : tasks;
+        const completedTasks = relevantTasks.filter(t => t.status === 'Finalized').length;
         const totalProductivity = stats?.empMetrics?.reduce((acc, emp) => acc + (emp.productivityScore || 0), 0) || 0;
         const avgProductivity = stats?.empMetrics?.length > 0 ? (totalProductivity / stats.empMetrics.length).toFixed(1) : '0';
         const totalBillableHours = stats?.empMetrics?.reduce((acc, emp) => acc + (emp.productiveHours || 0), 0) || 0;
@@ -934,7 +1039,7 @@ export function TasksProjects() {
             totalBillableHours: totalBillableHours.toFixed(1),
             projectMilestones: String(projectMilestones).padStart(2, '0')
         };
-    }, [tasks, projects, stats]);
+    }, [tasks, filteredTasks, projects, stats, role]);
 
     // Enhanced Performance KPIs for the table
     const enhancedPerformanceKPIs = useMemo(() => {
@@ -1061,7 +1166,7 @@ export function TasksProjects() {
 
             {/* Global Context Stats */}
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-                <KPICard title="Tasks Completed" value={derivedStats.completedTasks} subValue={`Across ${tasks.length} Active Tasks`} trend={14} icon={CheckSquare} color="bg-indigo-600 shadow-indigo-200" delay="0ms" />
+                <KPICard title="Tasks Completed" value={derivedStats.completedTasks} subValue={role === 'EMPLOYEE' ? `Across ${filteredTasks.length} Assigned Tasks` : `Across ${tasks.length} Active Tasks`} trend={14} icon={CheckSquare} color="bg-indigo-600 shadow-indigo-200" delay="0ms" />
                 <KPICard title="Productivity Index" value={`${derivedStats.avgProductivity}%`} subValue="Global Average Score" trend={4.2} icon={Zap} color="bg-amber-500 shadow-amber-200" delay="100ms" />
                 <KPICard title="Billable Resources" value={`${derivedStats.totalBillableHours}h`} subValue="Logged Hours today" trend={-2} icon={Clock} color="bg-blue-600 shadow-blue-200" delay="200ms" />
                 <KPICard title="Project Milestones" value={derivedStats.projectMilestones} subValue="Active Client Projects" trend={12} icon={Target} color="bg-purple-600 shadow-purple-200" delay="300ms" />
@@ -1093,11 +1198,32 @@ export function TasksProjects() {
 
                         </div>
 
+                        {/* Loading State */}
+                        {isLoading && tasks.length === 0 && (
+                            <div className="py-12 flex flex-col items-center justify-center gap-3 text-slate-400">
+                                <Clock className="h-8 w-8 animate-spin text-primary-500" />
+                                <span className="text-xs font-bold uppercase tracking-wider">Loading tasks...</span>
+                            </div>
+                        )}
+
+                        {/* Employee Empty State Banner */}
+                        {role === 'EMPLOYEE' && !isLoading && filteredTasks.length === 0 && (
+                            <div className="bg-slate-50/80 dark:bg-slate-900/40 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl p-6 text-center animate-fade-in">
+                                <CheckSquare className="mx-auto h-8 w-8 text-slate-400 dark:text-slate-500 mb-2" strokeWidth={1.5} />
+                                <h4 className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                                    {searchQuery ? "No Matching Tasks Found" : "No Assigned Tasks"}
+                                </h4>
+                                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
+                                    {searchQuery ? "Try refining your search keyword." : "You currently have no tasks assigned to you. Once a manager assigns you a task, it will appear here on your board."}
+                                </p>
+                            </div>
+                        )}
+
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 pb-10 w-full overflow-x-auto">
-                            <KanbanColumn title="Backlog" tasks={getTasksByStatus('Backlog')} status="BACKLOG" color="bg-slate-400" updateTaskStatus={updateTaskStatus} onEdit={handleEditTask} onDelete={handleDeleteTask} startTask={startTask} stopTask={stopTask} timer={timer} role={role} />
-                            <KanbanColumn title="In Operations" tasks={getTasksByStatus('In Operations')} status="IN_OPERATIONS" color="bg-blue-500" updateTaskStatus={updateTaskStatus} onEdit={handleEditTask} onDelete={handleDeleteTask} startTask={startTask} stopTask={stopTask} timer={timer} role={role} />
-                            <KanbanColumn title="Quality Assurance" tasks={getTasksByStatus('Quality Assurance')} status="QUALITY_ASSURANCE" color="bg-amber-400" updateTaskStatus={updateTaskStatus} onEdit={handleEditTask} onDelete={handleDeleteTask} startTask={startTask} stopTask={stopTask} timer={timer} role={role} />
-                            <KanbanColumn title="Finalized" tasks={getTasksByStatus('Finalized')} status="FINALIZED" color="bg-emerald-500" updateTaskStatus={updateTaskStatus} onEdit={handleEditTask} onDelete={handleDeleteTask} startTask={startTask} stopTask={stopTask} timer={timer} role={role} />
+                            <KanbanColumn title="Backlog" tasks={getTasksByStatus('Backlog')} status="BACKLOG" color="bg-slate-400" updateTaskStatus={updateTaskStatus} onEdit={handleEditTask} onDelete={handleDeleteTask} startTask={startTask} stopTask={stopTask} timer={timer} role={role} taskDurations={taskDurations} />
+                            <KanbanColumn title="In Operations" tasks={getTasksByStatus('In Operations')} status="IN_OPERATIONS" color="bg-blue-500" updateTaskStatus={updateTaskStatus} onEdit={handleEditTask} onDelete={handleDeleteTask} startTask={startTask} stopTask={stopTask} timer={timer} role={role} taskDurations={taskDurations} />
+                            <KanbanColumn title="Quality Assurance" tasks={getTasksByStatus('Quality Assurance')} status="QUALITY_ASSURANCE" color="bg-amber-400" updateTaskStatus={updateTaskStatus} onEdit={handleEditTask} onDelete={handleDeleteTask} startTask={startTask} stopTask={stopTask} timer={timer} role={role} taskDurations={taskDurations} />
+                            <KanbanColumn title="Finalized" tasks={getTasksByStatus('Finalized')} status="FINALIZED" color="bg-emerald-500" updateTaskStatus={updateTaskStatus} onEdit={handleEditTask} onDelete={handleDeleteTask} startTask={startTask} stopTask={stopTask} timer={timer} role={role} taskDurations={taskDurations} />
                         </div>
 
                         {/* Edit Task Modal */}
