@@ -39,6 +39,7 @@ import {
 } from 'recharts';
 import { shifts, leaveSummary } from '../data/mockData';
 import { useRealTime } from '../hooks/RealTimeContext';
+import { ExportDropdown } from '../components/common/ExportDropdown';
 
 const cn = (...inputs) => twMerge(clsx(inputs));
 
@@ -260,6 +261,81 @@ export function Attendance() {
     };
     const heatmapData = generateHeatmapData();
 
+    // Export configuration according to active tab
+    const exportConfig = React.useMemo(() => {
+        if (view === 'leave') {
+            return {
+                data: filteredRequests.map(r => ({
+                    name: r.name,
+                    type: r.type,
+                    range: r.range,
+                    status: r.status,
+                })),
+                columns: [
+                    { header: 'Employee', key: 'name' },
+                    { header: 'Leave Type', key: 'type' },
+                    { header: 'Date Range', key: 'range' },
+                    { header: 'Status', key: 'status' },
+                ],
+                fileName: 'attendance-leave-report',
+                title: 'Workforce Leave Report'
+            };
+        } else if (view === 'schedule') {
+            return {
+                data: employees.map(emp => {
+                    const sched = scheduleData[emp.id] || ['Day Shift', 'Day Shift', 'Day Shift', 'Day Shift', 'Day Shift', 'OFF', 'OFF'];
+                    return {
+                        name: emp.name,
+                        role: emp.role || 'Staff',
+                        mon: sched[0] || 'OFF',
+                        tue: sched[1] || 'OFF',
+                        wed: sched[2] || 'OFF',
+                        thu: sched[3] || 'OFF',
+                        fri: sched[4] || 'OFF',
+                        sat: sched[5] || 'OFF',
+                        sun: sched[6] || 'OFF',
+                    };
+                }),
+                columns: [
+                    { header: 'Employee', key: 'name' },
+                    { header: 'Role', key: 'role' },
+                    { header: 'Mon', key: 'mon' },
+                    { header: 'Tue', key: 'tue' },
+                    { header: 'Wed', key: 'wed' },
+                    { header: 'Thu', key: 'thu' },
+                    { header: 'Fri', key: 'fri' },
+                    { header: 'Sat', key: 'sat' },
+                    { header: 'Sun', key: 'sun' },
+                ],
+                fileName: 'attendance-schedule-report',
+                title: 'Weekly Shift Schedule Report'
+            };
+        } else {
+            return {
+                data: employees.map((emp, idx) => ({
+                    name: emp.name,
+                    role: emp.role || 'Staff',
+                    department: emp.department || 'Operations',
+                    status: idx % 10 === 0 ? 'Absent' : idx % 5 === 0 ? 'Late' : 'Present',
+                    clockIn: '09:00 AM',
+                    clockOut: '06:00 PM',
+                    duration: '9h 00m'
+                })),
+                columns: [
+                    { header: 'Employee Name', key: 'name' },
+                    { header: 'Role', key: 'role' },
+                    { header: 'Department', key: 'department' },
+                    { header: 'Attendance Status', key: 'status' },
+                    { header: 'Clock In', key: 'clockIn' },
+                    { header: 'Clock Out', key: 'clockOut' },
+                    { header: 'Work Duration', key: 'duration' }
+                ],
+                fileName: 'attendance-report',
+                title: 'Daily Attendance Report'
+            };
+        }
+    }, [view, filteredRequests, employees, scheduleData]);
+
     return (
         <div className="space-y-6 pb-20">
             {/* Header */}
@@ -271,21 +347,34 @@ export function Attendance() {
                     </div>
                     <p className="text-lg text-slate-500 dark:text-slate-400 font-medium">Manage workforce presence, shifts, and time-off requests.</p>
                 </div>
-                <div className="flex gap-1 p-1.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-x-auto">
-                    {['calendar', 'schedule', 'leave', 'holidays'].map((v) => (
-                        <button
-                            key={v}
-                            onClick={() => setView(v)}
-                            className={cn(
-                                "px-4 py-2 text-sm font-bold rounded-lg transition-all capitalize whitespace-nowrap",
-                                view === v
-                                    ? "bg-slate-900 text-white shadow-md dark:bg-white dark:text-slate-900"
-                                    : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
-                            )}
-                        >
-                            {v === 'leave' ? 'Leave' : v}
-                        </button>
-                    ))}
+                <div className="flex items-center gap-3">
+                    <div className="flex gap-1 p-1.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-x-auto">
+                        {['calendar', 'schedule', 'leave', 'holidays'].map((v) => (
+                            <button
+                                key={v}
+                                onClick={() => setView(v)}
+                                className={cn(
+                                    "px-4 py-2 text-sm font-bold rounded-lg transition-all capitalize whitespace-nowrap",
+                                    view === v
+                                        ? "bg-slate-900 text-white shadow-md dark:bg-white dark:text-slate-900"
+                                        : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                                )}
+                            >
+                                {v === 'leave' ? 'Leave' : v}
+                            </button>
+                        ))}
+                    </div>
+
+                    <ExportDropdown
+                        data={exportConfig.data}
+                        columns={exportConfig.columns}
+                        fileName={exportConfig.fileName}
+                        metadata={{
+                            title: exportConfig.title,
+                            dateRange: currentMonth,
+                            filters: `View: ${view.toUpperCase()}`
+                        }}
+                    />
                 </div>
             </div>
 

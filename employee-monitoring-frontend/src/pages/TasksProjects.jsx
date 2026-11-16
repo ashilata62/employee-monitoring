@@ -34,6 +34,7 @@ import {
 import { FilterDropdown } from '../components/FilterDropdown';
 import { GlobalCalendar } from '../components/GlobalCalendar';
 import { NewProjectModal } from '../components/NewProjectModal';
+import { CycleTimeAnalyticsView } from '../components/tasks/CycleTimeAnalyticsView';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { performanceKPIs as mockKPIs, projectProductivity, workLogs as mockLogs } from '../data/mockData'; // Fallbacks if needed
@@ -1038,6 +1039,7 @@ export function TasksProjects() {
                     {[
                         { id: 'board', name: 'Board', icon: Kanban },
                         // { id: 'logs', name: 'Work Logs', icon: Clock },
+                        { id: 'cycle-time', name: 'Cycle Time', icon: Clock },
                         { id: 'projects', name: 'Projects', icon: Layout },
                         { id: 'performance', name: 'Performance', icon: Trophy },
                         { id: 'goals', name: 'Goals', icon: Target }
@@ -1461,6 +1463,11 @@ export function TasksProjects() {
                             ))}
                         </div>
                     </div>
+                )}
+
+                {/* 5. CYCLE TIME & BOTTLENECK ANALYTICS VIEW */}
+                {activeTab === 'cycle-time' && (
+                    <CycleTimeAnalyticsView employees={employees} projects={projects} />
                 )}
             </div>
 

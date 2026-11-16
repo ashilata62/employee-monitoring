@@ -4,6 +4,7 @@ import { useReportsStore } from '../../store/reportsStore';
 import { useFilterStore } from '../../store/filterStore';
 import { FilterDropdown } from '../../components/FilterDropdown';
 import { ReportsCalendar } from '../../components/ReportsCalendar';
+import { ExportDropdown } from '../../components/common/ExportDropdown';
 
 const CATEGORY_COLORS = {
     Productive: 'bg-emerald-500',
@@ -211,12 +212,20 @@ export function WorkType() {
                             )}
                         </div>
                         <FilterDropdown />
-                        <button
-                            type="button"
-                            className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-slate-400 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50 dark:bg-slate-900 dark:ring-slate-800"
-                        >
-                            <Download size={18} />
-                        </button>
+                        <ExportDropdown
+                            data={activeData}
+                            columns={[
+                                { header: activeTab === 'category' ? 'Productivity Category' : 'Productivity Label / Tag', key: 'name' },
+                                { header: 'Hours Tracked', key: 'hours', formatter: (val) => `${val}h` },
+                                { header: 'Share of Work (%)', key: 'share', formatter: (_, row) => `${totalHours > 0 ? Math.round((row.hours / totalHours) * 100) : 0}%` },
+                            ]}
+                            fileName="work-type-report"
+                            metadata={{
+                                title: `Work Distribution (${activeTab === 'category' ? 'Category' : 'Tags'})`,
+                                dateRange: activePeriod,
+                                filters: `Tab: ${activeTab.toUpperCase()}, Total: ${totalHours}h`
+                            }}
+                        />
                     </div>
                 </div>
             </div>

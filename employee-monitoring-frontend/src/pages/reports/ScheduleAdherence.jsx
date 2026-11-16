@@ -17,6 +17,7 @@ import { useReportsStore } from '../../store/reportsStore';
 import { useFilterStore } from '../../store/filterStore';
 import { FilterDropdown } from '../../components/FilterDropdown';
 import { ReportsCalendar } from '../../components/ReportsCalendar';
+import { ExportDropdown } from '../../components/common/ExportDropdown';
 
 const presets = [
     "Today", "Yesterday", "This Week", "Last 7 Days",
@@ -134,9 +135,21 @@ export function ScheduleAdherence() {
                     {/* Add Filter */}
                     <FilterDropdown />
 
-                    <button className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-600 text-white shadow-lg shadow-primary-500/20 hover:bg-primary-700 transition-all">
-                        <Download size={18} />
-                    </button>
+                    <ExportDropdown
+                        data={data}
+                        columns={[
+                            { header: 'Employee Name', key: 'employee' },
+                            { header: 'Online Status', key: 'isOnline', formatter: (val) => val ? 'Online' : 'Offline' },
+                            { header: 'Current Application', key: 'currentApp', formatter: (val) => val || 'None' },
+                            { header: 'Adherence Rating', key: 'status' },
+                            { header: 'Adherence Score (%)', key: 'adherence', formatter: (val) => `${val}%` },
+                        ]}
+                        fileName="schedule-adherence-report"
+                        metadata={{
+                            title: 'Employee Schedule Adherence Report',
+                            dateRange: selectedPreset
+                        }}
+                    />
                 </div>
             </div>
 

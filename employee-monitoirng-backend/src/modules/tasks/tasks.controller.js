@@ -107,6 +107,25 @@ class TasksController {
             return errorResponse(res, error.message);
         }
     }
+
+    async getCycleTimeAnalytics(req, res) {
+        try {
+            const organizationId = await getOrganizationId(req);
+            const { projectId, employeeId, status, startDate, endDate } = req.query;
+            const filter = {};
+            if (projectId) filter.projectId = projectId;
+            if (employeeId) filter.employeeId = employeeId;
+            if (status) filter.status = status;
+            if (startDate) filter.startDate = startDate;
+            if (endDate) filter.endDate = endDate;
+
+            const analytics = await tasksService.getCycleTimeAnalytics(organizationId, filter);
+            return successResponse(res, analytics, 'Cycle time and bottleneck analytics retrieved successfully');
+        } catch (error) {
+            console.error('Cycle time analytics error:', error);
+            return errorResponse(res, error.message);
+        }
+    }
 }
 
 module.exports = new TasksController();

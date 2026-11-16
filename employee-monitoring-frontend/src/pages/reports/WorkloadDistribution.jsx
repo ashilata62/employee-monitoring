@@ -17,6 +17,7 @@ import { useReportsStore } from '../../store/reportsStore';
 import { useFilterStore } from '../../store/filterStore';
 import { FilterDropdown } from '../../components/FilterDropdown';
 import { ReportsCalendar } from '../../components/ReportsCalendar';
+import { ExportDropdown } from '../../components/common/ExportDropdown';
 
 const presets = [
     "Today", "Yesterday", "This Week", "Last 7 Days",
@@ -160,16 +161,26 @@ export function WorkloadDistribution() {
                     {/* Add Filter */}
                     <FilterDropdown />
 
-                    {/* <button className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-slate-400 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50 dark:bg-slate-900 dark:ring-slate-800 transition-all">
-                        <Download size={18} />
-                    </button>
-
-                    <button 
-                        onClick={() => navigate('/settings/reports/workload-distribution')}
-                        className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 text-white shadow-sm ring-1 ring-slate-800 hover:scale-105 active:scale-95 transition-all dark:bg-white dark:text-slate-900"
-                    >
-                        <SettingsIcon size={18} />
-                    </button> */}
+                    <ExportDropdown
+                        data={activeData}
+                        columns={[
+                            { header: 'Department / Team', key: 'team' },
+                            { header: 'Utilized Hours', key: 'hours', formatter: (val) => `${val}h` },
+                            { header: 'Total Capacity', key: 'capacity', formatter: (val) => `${val}h` },
+                            { header: 'Utilization Rate', key: 'utilization', formatter: (_, row) => `${Math.round(((row.hours || 0) / (row.capacity || 1)) * 100)}%` },
+                            { header: 'Status', key: 'status', formatter: (_, row) => {
+                                const pct = Math.round(((row.hours || 0) / (row.capacity || 1)) * 100);
+                                return pct >= optimalFrom && pct <= optimalTo ? 'Optimal' : pct > optimalTo ? 'Overloaded' : 'Underloaded';
+                            }},
+                            { header: 'Efficiency', key: 'efficiency', formatter: (_, row) => `${Math.min(Math.round(((row.hours || 0) / (row.capacity || 1)) * 100) + 4, 100)}%` }
+                        ]}
+                        fileName="workload-distribution"
+                        metadata={{
+                            title: 'Workload Distribution Report',
+                            dateRange: selectedPreset,
+                            filters: `Optimal Range: ${optimalFrom}% - ${optimalTo}%`
+                        }}
+                    />
                 </div>
             </div>
 

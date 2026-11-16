@@ -1,0 +1,3458 @@
+-- phpMyAdmin SQL Dump
+-- version 5.2.1
+-- https://www.phpmyadmin.net/
+--
+-- Host: 127.0.0.1
+-- Generation Time: Aug 06, 2026 at 07:21 AM
+-- Server version: 10.4.32-MariaDB
+-- PHP Version: 8.1.25
+
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
+SET time_zone = "+00:00";
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+
+--
+-- Database: `employee-monitoring-afsana`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `activity_logs`
+--
+
+CREATE TABLE `activity_logs` (
+  `id` varchar(191) NOT NULL,
+  `activityType` enum('ACTIVE','IDLE','MANUAL','SYSTEM','BREAK') NOT NULL DEFAULT 'ACTIVE',
+  `productivity` enum('PRODUCTIVE','NEUTRAL','UNPRODUCTIVE') NOT NULL DEFAULT 'NEUTRAL',
+  `duration` int(11) NOT NULL DEFAULT 0,
+  `timestamp` datetime(3) NOT NULL DEFAULT current_timestamp(3),
+  `appWebsite` varchar(191) DEFAULT 'Unknown',
+  `employeeId` varchar(191) NOT NULL,
+  `taskId` varchar(191) DEFAULT NULL,
+  `organizationId` varchar(191) NOT NULL,
+  `createdAt` datetime(3) NOT NULL DEFAULT current_timestamp(3),
+  `updatedAt` datetime(3) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `activity_logs`
+--
+
+INSERT INTO `activity_logs` (`id`, `activityType`, `productivity`, `duration`, `timestamp`, `appWebsite`, `employeeId`, `taskId`, `organizationId`, `createdAt`, `updatedAt`) VALUES
+('0000e3b1-b7eb-400b-b799-24ac768db70c', 'ACTIVE', 'PRODUCTIVE', 2920, '2026-07-08 22:00:00.000', 'Zoom', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:34.164', '2026-07-25 07:26:34.164'),
+('0085e76b-5e79-472a-bb86-06d35277b4f3', 'ACTIVE', 'PRODUCTIVE', 2816, '2026-06-27 16:00:00.000', 'GitHub Desktop', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.502', '2026-07-25 07:26:30.502'),
+('00973cab-e237-404b-9c0b-d44428c0ff73', 'IDLE', 'UNPRODUCTIVE', 998, '2026-07-06 21:43:22.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:33.423', '2026-07-25 07:26:33.423'),
+('00e082d4-b5af-437a-8635-f063b2b5b9bf', 'IDLE', 'UNPRODUCTIVE', 1013, '2026-07-24 21:43:07.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:39.049', '2026-07-25 07:26:39.049'),
+('00ef1f0e-4b78-4b5b-b05d-2cf5f7d52989', 'ACTIVE', 'NEUTRAL', 3013, '2026-07-09 20:00:00.000', 'Gmail', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:34.207', '2026-07-25 07:26:34.207'),
+('0118f35c-b565-4522-8bc0-61649b843e6c', 'ACTIVE', 'PRODUCTIVE', 2530, '2026-07-03 16:00:00.000', 'Zoom', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.776', '2026-07-25 07:26:32.776'),
+('01297e6e-f6e0-4b90-9ec5-e16ef6f2deec', 'ACTIVE', 'PRODUCTIVE', 2858, '2026-07-24 18:00:00.000', 'Zoom', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:39.033', '2026-07-25 07:26:39.033'),
+('0133db99-a7cd-49b3-81ef-84223fac9d78', 'ACTIVE', 'PRODUCTIVE', 2846, '2026-07-22 20:00:00.000', 'VS Code', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.390', '2026-07-25 07:26:38.390'),
+('0140d5f1-66ae-49a1-b711-2cb3dc6abab8', 'ACTIVE', 'PRODUCTIVE', 2626, '2026-07-09 21:00:00.000', 'Figma', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:34.216', '2026-07-25 07:26:34.216'),
+('01808251-60a1-47b0-86d2-78348e5a6624', 'IDLE', 'UNPRODUCTIVE', 393, '2026-06-27 18:53:27.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.532', '2026-07-25 07:26:30.532'),
+('019a6b0c-818a-4944-911d-15e8e02c6842', 'IDLE', 'UNPRODUCTIVE', 885, '2026-06-27 21:45:15.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:30.645', '2026-07-25 07:26:30.645'),
+('01b3f324-f8c3-41b6-accd-8ad5f626c7b1', 'IDLE', 'UNPRODUCTIVE', 532, '2026-06-30 00:51:08.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:31.278', '2026-07-25 07:26:31.278'),
+('02109bcc-f560-4a98-8bf0-2d3de3399bdf', 'IDLE', 'UNPRODUCTIVE', 1079, '2026-07-15 21:42:01.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:36.318', '2026-07-25 07:26:36.318'),
+('02196a97-f0ea-4fda-be31-4f61b4a529e7', 'IDLE', 'UNPRODUCTIVE', 1015, '2026-07-06 16:43:05.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:33.356', '2026-07-25 07:26:33.356'),
+('025230e9-4d93-49e9-8177-5899c9ed8b45', 'ACTIVE', 'PRODUCTIVE', 2566, '2026-07-06 21:00:00.000', 'Google Chrome', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:33.240', '2026-07-25 07:26:33.240'),
+('033a8579-e6a3-4a3f-92e6-0c766a374510', 'IDLE', 'UNPRODUCTIVE', 431, '2026-07-03 00:52:49.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.529', '2026-07-25 07:26:32.529'),
+('033d1572-25f1-45eb-a637-f7f0bab78652', 'IDLE', 'UNPRODUCTIVE', 750, '2026-06-26 17:47:30.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:30.162', '2026-07-25 07:26:30.162'),
+('034b0c3b-87bc-47ca-bf32-6dbe5d90e3a7', 'IDLE', 'UNPRODUCTIVE', 1045, '2026-07-03 18:42:35.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:32.731', '2026-07-25 07:26:32.731'),
+('038d7042-c6a0-4268-943a-3b68dfde679b', 'BREAK', 'NEUTRAL', 3074, '2026-07-03 19:00:00.000', 'Lunch Break', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.851', '2026-07-25 07:26:32.851'),
+('03a3a684-0b3f-4aaa-84ed-a6c8998c9c49', 'ACTIVE', 'PRODUCTIVE', 2917, '2026-07-22 20:00:00.000', 'Google Chrome', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.181', '2026-07-25 07:26:38.181'),
+('03f8b705-77bf-4d31-8de2-756bbbd20922', 'ACTIVE', 'NEUTRAL', 2550, '2026-06-26 16:00:00.000', 'Microsoft Teams', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:30.322', '2026-07-25 07:26:30.322'),
+('04376292-f335-447a-a908-c5b5eda718e4', 'ACTIVE', 'PRODUCTIVE', 2697, '2026-07-09 00:00:00.000', 'Stack Overflow', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:34.173', '2026-07-25 07:26:34.173'),
+('04562514-b0f1-4ba2-9387-eda551b2c537', 'ACTIVE', 'PRODUCTIVE', 2893, '2026-07-12 21:00:00.000', 'Stack Overflow', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.050', '2026-07-25 07:26:35.050'),
+('0481cbe3-132b-43f3-a88b-9ebc163c2bf1', 'IDLE', 'UNPRODUCTIVE', 559, '2026-07-07 17:50:41.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.529', '2026-07-25 07:26:33.529'),
+('04963605-e50b-4c9b-8225-0385a18173e4', 'ACTIVE', 'PRODUCTIVE', 2783, '2026-07-22 18:00:00.000', 'Google Chrome', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.153', '2026-07-25 07:26:38.153'),
+('04b14985-1b66-4588-bc96-1c979296801c', 'ACTIVE', 'PRODUCTIVE', 2792, '2026-06-26 20:00:00.000', 'Stack Overflow', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.092', '2026-07-25 07:26:30.092'),
+('04b63641-dadd-4a53-98cb-6a9236d9b79d', 'IDLE', 'UNPRODUCTIVE', 407, '2026-07-13 17:53:13.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:35.319', '2026-07-25 07:26:35.319'),
+('04e0acb2-c0e9-45ed-a166-5915ef8daeee', 'ACTIVE', 'NEUTRAL', 3197, '2026-07-14 16:00:00.000', 'Slack', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.870', '2026-07-25 07:26:35.870'),
+('058de4bb-63e6-4dd9-acd5-a4748471a12a', 'IDLE', 'UNPRODUCTIVE', 1006, '2026-07-08 22:43:14.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.105', '2026-07-25 07:26:34.105'),
+('059170dc-dd3a-4c98-9dd6-53f4779c5a29', 'BREAK', 'NEUTRAL', 3355, '2026-07-06 19:00:00.000', 'Lunch Break', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.100', '2026-07-25 07:26:33.100'),
+('05998962-41d6-446a-865e-e45b1cde2543', 'ACTIVE', 'PRODUCTIVE', 3139, '2026-07-15 21:00:00.000', 'Stack Overflow', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.045', '2026-07-25 07:26:36.045'),
+('05bd3ba7-3f41-45d4-be7f-2177bfca67ae', 'IDLE', 'UNPRODUCTIVE', 610, '2026-07-06 17:49:50.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:33.368', '2026-07-25 07:26:33.368'),
+('05e57b92-7856-4dc7-a5e3-c302e27690e9', 'IDLE', 'UNPRODUCTIVE', 729, '2026-07-01 20:47:51.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:31.727', '2026-07-25 07:26:31.727'),
+('05ee176d-c094-40ed-87b0-4a44c8054dde', 'IDLE', 'UNPRODUCTIVE', 715, '2026-07-21 22:48:05.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:37.849', '2026-07-25 07:26:37.849'),
+('05f0d4b2-7c9d-4ecc-a79b-3e06e8b3d03a', 'IDLE', 'UNPRODUCTIVE', 729, '2026-07-06 18:47:51.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:32.969', '2026-07-25 07:26:32.969'),
+('061d3b7a-d3c7-4500-99f7-37ebb28321b4', 'ACTIVE', 'PRODUCTIVE', 2567, '2026-07-14 17:00:00.000', 'Google Chrome', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:35.554', '2026-07-25 07:26:35.554'),
+('067b6aa4-3cb4-420d-894f-03e3a7a03ac0', 'ACTIVE', 'UNPRODUCTIVE', 2902, '2026-07-18 18:00:00.000', 'Notion', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.267', '2026-07-25 07:26:37.267'),
+('06828ff4-4f40-484f-9988-de881cc3feb7', 'IDLE', 'UNPRODUCTIVE', 435, '2026-07-01 21:52:45.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.075', '2026-07-25 07:26:32.075'),
+('06a4091c-76c3-4820-a0b1-03d31da81770', 'ACTIVE', 'NEUTRAL', 2603, '2026-06-30 21:00:00.000', 'Slack', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.525', '2026-07-25 07:26:31.525'),
+('06b1fd7a-59cb-4849-b3c3-7f1172b37f92', 'IDLE', 'UNPRODUCTIVE', 1048, '2026-07-16 18:42:32.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.478', '2026-07-25 07:26:36.478'),
+('06ea63df-aad2-486a-b837-ac1e038c0c60', 'IDLE', 'UNPRODUCTIVE', 407, '2026-07-11 17:53:13.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.918', '2026-07-25 07:26:34.918'),
+('07854112-933c-41e2-bd2f-b00dd09a67dd', 'IDLE', 'UNPRODUCTIVE', 737, '2026-07-15 18:47:43.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:36.228', '2026-07-25 07:26:36.228'),
+('07870c5c-292d-4dbe-99d0-5d9584d791df', 'ACTIVE', 'PRODUCTIVE', 2712, '2026-07-03 22:00:00.000', 'Stack Overflow', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:32.633', '2026-07-25 07:26:32.633'),
+('07c8d0d5-a3df-4e41-8f4a-783c439b95ea', 'ACTIVE', 'NEUTRAL', 2960, '2026-07-01 17:00:00.000', 'Gmail', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.035', '2026-07-25 07:26:32.035'),
+('07e3b074-5008-450b-b920-34d7261e007a', 'BREAK', 'NEUTRAL', 2753, '2026-07-15 19:00:00.000', 'Lunch Break', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.032', '2026-07-25 07:26:36.032'),
+('07ec7961-1204-4e57-84e3-13ebae89499e', 'ACTIVE', 'PRODUCTIVE', 3186, '2026-07-14 00:00:00.000', 'GitHub Desktop', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:35.164', '2026-07-25 07:26:35.164'),
+('08158313-c314-42d1-9b9e-38174f3d7c0c', 'IDLE', 'UNPRODUCTIVE', 771, '2026-07-16 23:47:09.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.512', '2026-07-25 07:26:36.512'),
+('08433436-cf9a-4d13-ab14-bfa1ed13a591', 'IDLE', 'UNPRODUCTIVE', 743, '2026-07-02 22:47:37.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.519', '2026-07-25 07:26:32.519'),
+('086b31a8-7927-448f-af96-3ef4dc2b7f7d', 'ACTIVE', 'PRODUCTIVE', 3061, '2026-07-05 21:00:00.000', 'VS Code', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.926', '2026-07-25 07:26:32.926'),
+('08ae80c0-22f4-4db0-93f3-16059ae12a68', 'ACTIVE', 'PRODUCTIVE', 2781, '2026-07-20 22:00:00.000', 'VS Code', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.790', '2026-07-25 07:26:37.790'),
+('08ef1d21-df6b-4d24-a73d-39e3d436b0c5', 'IDLE', 'UNPRODUCTIVE', 1033, '2026-07-17 16:42:47.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:36.800', '2026-07-25 07:26:36.800'),
+('09175408-c80c-4c71-8e2d-687b9e68f1b9', 'ACTIVE', 'NEUTRAL', 2846, '2026-07-10 21:00:00.000', 'Slack', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:34.504', '2026-07-25 07:26:34.504'),
+('09d16b76-f9b3-491d-a938-51367a79daab', 'IDLE', 'UNPRODUCTIVE', 806, '2026-07-23 18:46:34.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.520', '2026-07-25 07:26:38.520'),
+('0a07de40-65d2-426c-8570-dc9bb8a1af27', 'ACTIVE', 'PRODUCTIVE', 3160, '2026-07-02 20:00:00.000', 'Google Chrome', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.432', '2026-07-25 07:26:32.432'),
+('0a3dddac-adf6-4385-a387-c82564600a71', 'IDLE', 'UNPRODUCTIVE', 761, '2026-07-22 00:47:19.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:38.134', '2026-07-25 07:26:38.134'),
+('0a664d36-8402-49b2-a01e-3f1f10740feb', 'IDLE', 'UNPRODUCTIVE', 633, '2026-07-16 18:49:27.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:36.747', '2026-07-25 07:26:36.747'),
+('0a8ed398-0171-491b-a847-337bfd38a433', 'ACTIVE', 'PRODUCTIVE', 3210, '2026-07-11 22:00:00.000', 'GitHub Desktop', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.003', '2026-07-25 07:26:35.003'),
+('0adea981-e411-45ec-9416-004e54ae8315', 'IDLE', 'UNPRODUCTIVE', 1058, '2026-07-14 18:42:22.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:35.564', '2026-07-25 07:26:35.564'),
+('0ae15028-4c93-469c-aaa0-0b8f4f281fc8', 'ACTIVE', 'PRODUCTIVE', 2662, '2026-07-10 21:00:00.000', 'Figma', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.688', '2026-07-25 07:26:34.688'),
+('0b210cf6-d27b-4e3e-8c15-2a2650b8861e', 'ACTIVE', 'PRODUCTIVE', 2829, '2026-07-14 23:00:00.000', 'Figma', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:35.656', '2026-07-25 07:26:35.656'),
+('0be45f4d-3607-401a-99c2-64385dadd6fd', 'ACTIVE', 'UNPRODUCTIVE', 2794, '2026-07-21 20:00:00.000', 'Notion', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:37.834', '2026-07-25 07:26:37.834'),
+('0c13a198-f3e4-4532-bb55-c2ad7d757360', 'ACTIVE', 'NEUTRAL', 3070, '2026-07-22 23:00:00.000', 'Slack', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:38.479', '2026-07-25 07:26:38.479'),
+('0c19cbb0-1898-4766-ae5f-ddbe5bfbc5dd', 'ACTIVE', 'PRODUCTIVE', 2730, '2026-07-15 21:00:00.000', 'Zoom', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:36.250', '2026-07-25 07:26:36.250'),
+('0c33cd8a-9924-49d6-a757-0b25eea44084', 'ACTIVE', 'PRODUCTIVE', 2700, '2026-07-10 16:00:00.000', 'Google Chrome', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:34.787', '2026-07-25 07:26:34.787'),
+('0c4e89af-5007-4b3d-a0e7-9640f074e59b', 'ACTIVE', 'PRODUCTIVE', 2792, '2026-07-03 16:00:00.000', 'Stack Overflow', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:32.716', '2026-07-25 07:26:32.716'),
+('0c85978c-8542-4f43-833a-ad9bd9ae9bbf', 'IDLE', 'UNPRODUCTIVE', 484, '2026-07-21 18:51:56.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:38.103', '2026-07-25 07:26:38.103'),
+('0c9ea90e-85c1-4f39-8f34-cbff987679b4', 'ACTIVE', 'NEUTRAL', 3127, '2026-07-17 20:00:00.000', 'Gmail', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:36.823', '2026-07-25 07:26:36.823'),
+('0c9f83c5-b072-40a5-83e3-052afc63d245', 'ACTIVE', 'PRODUCTIVE', 2567, '2026-07-17 16:00:00.000', 'Google Chrome', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:36.797', '2026-07-25 07:26:36.797'),
+('0cb56fc1-58bf-4c70-910c-0fe498d5e28b', 'ACTIVE', 'UNPRODUCTIVE', 3186, '2026-07-21 22:00:00.000', 'Notion', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.063', '2026-07-25 07:26:38.063'),
+('0ccb47f6-561f-4817-931d-324d71381dd1', 'ACTIVE', 'PRODUCTIVE', 3041, '2026-07-15 22:00:00.000', 'Figma', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:36.256', '2026-07-25 07:26:36.256'),
+('0cf3188e-08cb-4de8-a913-bc3b8e526a4c', 'ACTIVE', 'NEUTRAL', 2969, '2026-07-13 18:00:00.000', 'Slack', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:35.188', '2026-07-25 07:26:35.188'),
+('0d3e5d37-b488-4751-99b0-b2e59fadbd39', 'IDLE', 'UNPRODUCTIVE', 676, '2026-07-07 16:48:44.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:33.639', '2026-07-25 07:26:33.639'),
+('0d40a4d4-7ebd-4a90-a341-1c521dd47521', 'IDLE', 'UNPRODUCTIVE', 729, '2026-07-09 17:47:51.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:34.191', '2026-07-25 07:26:34.191'),
+('0d45e144-e8e6-4d0b-916d-a7ab3bbd425c', 'ACTIVE', 'PRODUCTIVE', 3021, '2026-07-21 20:00:00.000', 'Google Chrome', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:37.984', '2026-07-25 07:26:37.984'),
+('0d8fca74-9704-44a1-a994-825c27c932b6', 'IDLE', 'UNPRODUCTIVE', 1007, '2026-07-08 20:43:13.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:34.151', '2026-07-25 07:26:34.151'),
+('0db8960f-8897-4bbf-9862-bc9f26160790', 'IDLE', 'UNPRODUCTIVE', 784, '2026-07-17 23:46:56.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.236', '2026-07-25 07:26:37.236'),
+('0decc3a6-ada2-4cfc-b44f-f287b5a801a0', 'IDLE', 'UNPRODUCTIVE', 703, '2026-07-20 20:48:17.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:37.445', '2026-07-25 07:26:37.445'),
+('0e3fd6e2-219e-478a-945b-5481e5dc3d0f', 'IDLE', 'UNPRODUCTIVE', 710, '2026-07-03 17:48:10.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:32.604', '2026-07-25 07:26:32.604'),
+('0edb0eb3-1cb5-44b3-8f84-f325b8c098e2', 'IDLE', 'UNPRODUCTIVE', 373, '2026-07-23 21:53:47.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.536', '2026-07-25 07:26:38.536'),
+('0ede0044-780c-41a2-941c-8e8a254be457', 'ACTIVE', 'PRODUCTIVE', 2777, '2026-07-13 20:00:00.000', 'Figma', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:35.197', '2026-07-25 07:26:35.197'),
+('0ee84490-37ff-495c-b9a8-1e0474e91035', 'ACTIVE', 'NEUTRAL', 3003, '2026-07-02 00:00:00.000', 'Microsoft Teams', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:31.831', '2026-07-25 07:26:31.831'),
+('0f168b36-30a6-4241-a9df-438ad3e01cdf', 'ACTIVE', 'PRODUCTIVE', 2994, '2026-07-06 18:00:00.000', 'VS Code', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.088', '2026-07-25 07:26:33.088'),
+('0f1cc437-8ba6-42ca-adea-8521880373df', 'IDLE', 'UNPRODUCTIVE', 1006, '2026-07-04 00:43:14.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:32.769', '2026-07-25 07:26:32.769'),
+('0f202b1b-78f1-4c91-a009-af1b566522e0', 'IDLE', 'UNPRODUCTIVE', 771, '2026-07-14 23:47:09.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:35.661', '2026-07-25 07:26:35.661'),
+('0f2a1f7b-4dda-4bad-8545-d8a14f87fbaf', 'ACTIVE', 'PRODUCTIVE', 3061, '2026-07-09 21:00:00.000', 'VS Code', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:34.450', '2026-07-25 07:26:34.450'),
+('0f3e08d5-6f12-45db-b617-b5b548a4b642', 'IDLE', 'UNPRODUCTIVE', 754, '2026-07-10 21:47:26.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:34.507', '2026-07-25 07:26:34.507'),
+('0f5dbf87-e22a-4d2b-8131-97b9e0dc345c', 'IDLE', 'UNPRODUCTIVE', 773, '2026-07-01 21:47:07.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:31.810', '2026-07-25 07:26:31.810'),
+('0f95ae0c-ba3e-47a4-a91a-4a781ee00340', 'ACTIVE', 'PRODUCTIVE', 3193, '2026-06-27 00:00:00.000', 'VS Code', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:30.219', '2026-07-25 07:26:30.219'),
+('0fac4ce3-9240-4bb2-a145-f52f6b3552a7', 'ACTIVE', 'PRODUCTIVE', 2695, '2026-06-30 23:00:00.000', 'Zoom', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:31.349', '2026-07-25 07:26:31.349'),
+('0fb7edeb-18a4-4960-a95d-797c6ba28358', 'ACTIVE', 'NEUTRAL', 2986, '2026-07-16 20:00:00.000', 'Slack', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:36.690', '2026-07-25 07:26:36.690'),
+('0fc250f6-aae2-41db-84c5-569e56d8e328', 'IDLE', 'UNPRODUCTIVE', 384, '2026-07-13 23:53:36.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:35.356', '2026-07-25 07:26:35.356'),
+('0fc9d1e1-0534-4f32-aa05-5766d68b904a', 'IDLE', 'UNPRODUCTIVE', 903, '2026-07-13 17:44:57.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.500', '2026-07-25 07:26:35.500'),
+('0fd7390b-24e5-4402-a9ac-41bf2f4d8b86', 'IDLE', 'UNPRODUCTIVE', 780, '2026-06-30 17:47:00.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:31.571', '2026-07-25 07:26:31.571'),
+('0ffc2c28-140d-435b-b769-0701859e956e', 'ACTIVE', 'PRODUCTIVE', 3239, '2026-07-17 22:00:00.000', 'VS Code', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.903', '2026-07-25 07:26:36.903'),
+('1000303d-7aaa-4ae7-9c45-dda39e2680e8', 'ACTIVE', 'PRODUCTIVE', 2822, '2026-07-22 21:00:00.000', 'Google Chrome', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:38.462', '2026-07-25 07:26:38.462'),
+('104404eb-978f-43de-bedc-52558b371a31', 'IDLE', 'UNPRODUCTIVE', 889, '2026-07-20 16:45:11.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:37.624', '2026-07-25 07:26:37.624'),
+('1053c722-06b5-4060-8c30-d8ac3df13ef0', 'IDLE', 'UNPRODUCTIVE', 614, '2026-07-16 20:49:46.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:36.693', '2026-07-25 07:26:36.693'),
+('109933b1-45c9-4a38-9102-d08c4d42c9a4', 'ACTIVE', 'UNPRODUCTIVE', 2625, '2026-06-29 22:00:00.000', 'Notion', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:31.262', '2026-07-25 07:26:31.262'),
+('10ccd743-1689-4418-ae4e-46ddf31a3b73', 'ACTIVE', 'NEUTRAL', 3036, '2026-07-18 17:00:00.000', 'Microsoft Teams', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.261', '2026-07-25 07:26:37.261'),
+('10d53a56-5250-4099-836a-92bbc10b8d3a', 'ACTIVE', 'PRODUCTIVE', 3027, '2026-07-17 16:00:00.000', 'Stack Overflow', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.118', '2026-07-25 07:26:37.118'),
+('11175a4c-7681-45b2-b4e4-f0d973f1993d', 'IDLE', 'UNPRODUCTIVE', 876, '2026-06-26 23:45:24.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:30.398', '2026-07-25 07:26:30.398'),
+('1153bf94-2c02-4d16-9970-5bf0558cc9a9', 'ACTIVE', 'PRODUCTIVE', 2833, '2026-07-20 17:00:00.000', 'GitHub Desktop', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.754', '2026-07-25 07:26:37.754'),
+('117af494-cb78-41b5-9840-067708d86126', 'ACTIVE', 'NEUTRAL', 3222, '2026-07-13 21:00:00.000', 'Slack', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:35.207', '2026-07-25 07:26:35.207'),
+('11b1db13-bc7b-4e28-bf38-51be1f5b8144', 'ACTIVE', 'PRODUCTIVE', 2801, '2026-07-24 20:00:00.000', 'Zoom', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:38.894', '2026-07-25 07:26:38.894'),
+('1269891d-de3b-4655-87dc-a322dc414869', 'ACTIVE', 'PRODUCTIVE', 2521, '2026-07-15 21:00:00.000', 'VS Code', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:36.315', '2026-07-25 07:26:36.315'),
+('12a5eec2-5bf8-4b58-911f-509ab8b42ad3', 'ACTIVE', 'UNPRODUCTIVE', 2911, '2026-07-06 16:00:00.000', 'Notion', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:33.208', '2026-07-25 07:26:33.208'),
+('12d0a27a-5448-420a-be89-31c933a3e95f', 'ACTIVE', 'PRODUCTIVE', 2939, '2026-07-20 20:00:00.000', 'Google Chrome', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:37.510', '2026-07-25 07:26:37.510'),
+('12f82ee9-4e9b-40ed-9683-1b68ef960438', 'ACTIVE', 'PRODUCTIVE', 2777, '2026-07-08 17:00:00.000', 'Zoom', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.026', '2026-07-25 07:26:34.026'),
+('130d74c0-c9b1-4a5f-8bfb-2050f83efa11', 'ACTIVE', 'PRODUCTIVE', 3060, '2026-07-02 18:00:00.000', 'Notion', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.423', '2026-07-25 07:26:32.423'),
+('131aae0f-f669-4d0f-b2e2-e6f66f33fffd', 'ACTIVE', 'PRODUCTIVE', 2773, '2026-07-04 00:00:00.000', 'GitHub Desktop', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:32.583', '2026-07-25 07:26:32.583'),
+('13235cae-af73-4aa7-9546-b4a9a6ca2096', 'IDLE', 'UNPRODUCTIVE', 410, '2026-07-02 18:53:10.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:32.243', '2026-07-25 07:26:32.243'),
+('13416000-604e-4aae-aaee-6430e249fb0d', 'IDLE', 'UNPRODUCTIVE', 717, '2026-07-08 18:48:03.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:33.853', '2026-07-25 07:26:33.853'),
+('138b6657-d859-4b32-9d6e-6f51e05102a6', 'ACTIVE', 'PRODUCTIVE', 2874, '2026-07-11 00:00:00.000', 'VS Code', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:34.776', '2026-07-25 07:26:34.776'),
+('139ec492-487e-41ea-84ff-4336de82762e', 'IDLE', 'UNPRODUCTIVE', 777, '2026-07-13 21:47:03.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:35.138', '2026-07-25 07:26:35.138'),
+('13bd0d2d-a7f6-4988-8aba-72aee0447deb', 'IDLE', 'UNPRODUCTIVE', 823, '2026-07-23 17:46:17.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.630', '2026-07-25 07:26:38.630'),
+('13cc671d-ac26-4adb-8035-9c80c2568102', 'ACTIVE', 'NEUTRAL', 3168, '2026-07-17 00:00:00.000', 'Slack', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:36.785', '2026-07-25 07:26:36.785'),
+('1410188e-1f64-4519-bdc8-7c4169d549db', 'IDLE', 'UNPRODUCTIVE', 621, '2026-07-20 21:49:39.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:37.660', '2026-07-25 07:26:37.660'),
+('14123098-68cf-40dc-b315-a0b21b2121bf', 'ACTIVE', 'NEUTRAL', 3220, '2026-07-02 16:00:00.000', 'Microsoft Teams', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:32.230', '2026-07-25 07:26:32.230'),
+('1438555e-08e1-4814-b2b5-31ea73d35f05', 'BREAK', 'NEUTRAL', 2915, '2026-07-17 19:00:00.000', 'Lunch Break', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.884', '2026-07-25 07:26:36.884'),
+('14497438-8f34-4ea3-b0c0-6f1645bfc3db', 'IDLE', 'UNPRODUCTIVE', 998, '2026-07-07 22:43:22.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:33.814', '2026-07-25 07:26:33.814'),
+('144f4b49-8f55-4fcf-bc4e-c35122632855', 'ACTIVE', 'PRODUCTIVE', 3032, '2026-07-23 16:00:00.000', 'Stack Overflow', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.500', '2026-07-25 07:26:38.500'),
+('147baef9-e1d5-4bb8-821c-acb63eed9bcb', 'IDLE', 'UNPRODUCTIVE', 1001, '2026-07-08 17:43:19.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:33.844', '2026-07-25 07:26:33.844'),
+('14991939-e67c-425b-894b-17a79e58d12d', 'ACTIVE', 'NEUTRAL', 2817, '2026-07-17 16:00:00.000', 'Microsoft Teams', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:36.995', '2026-07-25 07:26:36.995'),
+('14bc8ce2-11e3-48d2-a934-900df662eaf1', 'IDLE', 'UNPRODUCTIVE', 683, '2026-07-22 20:48:37.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.185', '2026-07-25 07:26:38.185'),
+('14e3668f-7e01-48b7-923d-17bb804e3538', 'ACTIVE', 'PRODUCTIVE', 2684, '2026-06-29 21:00:00.000', 'Notion', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:31.252', '2026-07-25 07:26:31.252'),
+('14e9fc5d-698f-474f-97b3-1d5e9019da1a', 'ACTIVE', 'NEUTRAL', 3193, '2026-07-16 16:00:00.000', 'Slack', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:36.599', '2026-07-25 07:26:36.599'),
+('1534f61f-40fa-4304-9871-813688ccd6d3', 'ACTIVE', 'PRODUCTIVE', 2827, '2026-07-01 21:00:00.000', 'Stack Overflow', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:31.806', '2026-07-25 07:26:31.806'),
+('153ed7a8-ebdf-4ca7-8ce7-938d73f79840', 'ACTIVE', 'PRODUCTIVE', 3215, '2026-06-26 22:00:00.000', 'Google Chrome', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:30.465', '2026-07-25 07:26:30.465'),
+('1542169c-878f-46ae-a9ed-427b6c87d5c1', 'IDLE', 'UNPRODUCTIVE', 558, '2026-06-29 18:50:42.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:30.878', '2026-07-25 07:26:30.878'),
+('15470c05-ee6c-42f7-8c0e-660709f542ee', 'IDLE', 'UNPRODUCTIVE', 911, '2026-07-14 00:44:49.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.543', '2026-07-25 07:26:35.543'),
+('156d19ba-a564-4821-a8c3-771469fe2d37', 'IDLE', 'UNPRODUCTIVE', 428, '2026-07-21 20:52:52.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.050', '2026-07-25 07:26:38.050'),
+('15a50f49-e9e6-469a-be07-ff2a157d975b', 'IDLE', 'UNPRODUCTIVE', 1008, '2026-07-15 00:43:12.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:35.668', '2026-07-25 07:26:35.668'),
+('15c5c1a6-1045-4424-b968-39be1a37ade2', 'BREAK', 'NEUTRAL', 2649, '2026-06-26 19:00:00.000', 'Lunch Break', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:30.443', '2026-07-25 07:26:30.443'),
+('15cf58e1-db9e-4bfa-b882-739018721b39', 'IDLE', 'UNPRODUCTIVE', 1038, '2026-07-01 21:42:42.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.948', '2026-07-25 07:26:31.948'),
+('15d5d0cf-1733-44b1-94c5-a6c5121b9310', 'IDLE', 'UNPRODUCTIVE', 1065, '2026-07-11 18:42:15.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:34.985', '2026-07-25 07:26:34.985'),
+('160896f3-7438-4115-b20a-e409e24531bb', 'ACTIVE', 'PRODUCTIVE', 3165, '2026-07-02 21:00:00.000', 'Figma', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.442', '2026-07-25 07:26:32.442'),
+('1644a356-92c7-407a-ae13-bbcbeef67a34', 'IDLE', 'UNPRODUCTIVE', 959, '2026-07-16 23:44:01.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:36.651', '2026-07-25 07:26:36.651'),
+('165d2f8e-19f1-4f96-b348-6006f4d59bd1', 'IDLE', 'UNPRODUCTIVE', 815, '2026-07-08 00:46:25.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:33.510', '2026-07-25 07:26:33.510'),
+('16b17eb6-4647-4030-9d1e-5c563343019a', 'IDLE', 'UNPRODUCTIVE', 749, '2026-07-18 20:47:31.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.280', '2026-07-25 07:26:37.280'),
+('16b4ba5d-2eff-4a4c-b14c-bc6fbab1693a', 'IDLE', 'UNPRODUCTIVE', 629, '2026-06-30 18:49:31.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:31.645', '2026-07-25 07:26:31.645'),
+('16da8e79-aae9-4535-8054-3b85864b65ed', 'BREAK', 'NEUTRAL', 3146, '2026-07-11 19:00:00.000', 'Lunch Break', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:34.988', '2026-07-25 07:26:34.988'),
+('17bb36ca-c328-42f3-bf59-7f4dded68ace', 'IDLE', 'UNPRODUCTIVE', 992, '2026-07-21 18:43:28.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.036', '2026-07-25 07:26:38.036'),
+('17eae978-f243-45e5-84b1-2b771c3b2779', 'ACTIVE', 'UNPRODUCTIVE', 2564, '2026-07-15 22:00:00.000', 'Notion', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:36.324', '2026-07-25 07:26:36.324'),
+('17f29330-d5f7-4ae5-a72f-09dcfbd11a3d', 'ACTIVE', 'PRODUCTIVE', 3040, '2026-07-08 18:00:00.000', 'Stack Overflow', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:34.139', '2026-07-25 07:26:34.139'),
+('17ffa8de-d003-4bfd-81da-9980501ee40b', 'IDLE', 'UNPRODUCTIVE', 870, '2026-07-15 21:45:30.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:36.253', '2026-07-25 07:26:36.253'),
+('1821c8d1-6b15-45f8-87d2-ed9c04c98425', 'IDLE', 'UNPRODUCTIVE', 459, '2026-07-21 00:52:21.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:37.547', '2026-07-25 07:26:37.547'),
+('182d476b-f9d9-4385-880a-0fd96bdc2167', 'IDLE', 'UNPRODUCTIVE', 719, '2026-07-10 17:48:01.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:34.544', '2026-07-25 07:26:34.544'),
+('18c78209-9b8c-46fa-9f74-3500ad348553', 'ACTIVE', 'PRODUCTIVE', 3052, '2026-07-20 18:00:00.000', 'GitHub Desktop', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.761', '2026-07-25 07:26:37.761'),
+('18ed59eb-07d7-4706-b26c-d0f1b3c0e327', 'ACTIVE', 'UNPRODUCTIVE', 3055, '2026-07-01 23:00:00.000', 'Notion', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.152', '2026-07-25 07:26:32.152'),
+('19316e2d-aeeb-45ad-aa22-3250472d2b1a', 'IDLE', 'UNPRODUCTIVE', 934, '2026-07-23 00:44:26.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.212', '2026-07-25 07:26:38.212'),
+('19b23cc3-6bec-43a0-ba5a-2ae5a51bd9be', 'IDLE', 'UNPRODUCTIVE', 867, '2026-07-06 16:45:33.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:32.953', '2026-07-25 07:26:32.953'),
+('1a17e21e-46c1-48ad-85b1-8bb1a705eebd', 'IDLE', 'UNPRODUCTIVE', 598, '2026-07-24 00:50:02.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.555', '2026-07-25 07:26:38.555'),
+('1a19ef46-9196-4fd4-a3e6-44ff9150518e', 'ACTIVE', 'NEUTRAL', 2918, '2026-07-02 16:00:00.000', 'Slack', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:32.167', '2026-07-25 07:26:32.167'),
+('1a344628-6a14-4a88-bbe5-3b4c33606fa2', 'ACTIVE', 'NEUTRAL', 3067, '2026-07-14 16:00:00.000', 'Microsoft Teams', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:35.744', '2026-07-25 07:26:35.744'),
+('1a46176c-7c2f-45ad-a2ff-49b2f79822e9', 'ACTIVE', 'NEUTRAL', 3082, '2026-07-14 23:00:00.000', 'Gmail', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.920', '2026-07-25 07:26:35.920'),
+('1a9db3cd-c7e6-43b6-b768-411881faf577', 'IDLE', 'UNPRODUCTIVE', 450, '2026-07-10 18:52:30.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:34.489', '2026-07-25 07:26:34.489'),
+('1a9db9f7-56cd-47ec-aa2c-441e61881fbd', 'ACTIVE', 'PRODUCTIVE', 3019, '2026-06-26 18:00:00.000', 'Figma', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:30.338', '2026-07-25 07:26:30.338'),
+('1b010377-98d1-4c01-b112-1b1bb1c293ca', 'ACTIVE', 'PRODUCTIVE', 2521, '2026-07-09 18:00:00.000', 'GitHub Desktop', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:34.435', '2026-07-25 07:26:34.435'),
+('1b049e2e-493c-42d8-9274-8d4886f6e1f4', 'IDLE', 'UNPRODUCTIVE', 518, '2026-07-16 00:51:22.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:36.395', '2026-07-25 07:26:36.395'),
+('1b061b0b-b53e-4903-a48d-0cf63d845de1', 'IDLE', 'UNPRODUCTIVE', 810, '2026-07-11 16:46:30.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:34.970', '2026-07-25 07:26:34.970'),
+('1b154679-7ab7-4def-8ce0-2d93ae526902', 'IDLE', 'UNPRODUCTIVE', 505, '2026-07-16 17:51:35.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:36.677', '2026-07-25 07:26:36.677'),
+('1b2f24ee-dc7a-4397-a374-98bd745a1fc7', 'ACTIVE', 'NEUTRAL', 3193, '2026-07-10 18:00:00.000', 'Slack', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.672', '2026-07-25 07:26:34.672'),
+('1b5601d4-903c-47db-a568-3fdfb7a0cc63', 'ACTIVE', 'PRODUCTIVE', 3032, '2026-07-20 17:00:00.000', 'Stack Overflow', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:37.421', '2026-07-25 07:26:37.421'),
+('1b85b27c-0802-4a42-9eac-ca70c87a9079', 'IDLE', 'UNPRODUCTIVE', 964, '2026-07-21 21:43:56.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:37.996', '2026-07-25 07:26:37.996'),
+('1bdb73c9-84c0-41f5-a52f-a922d445ab9c', 'ACTIVE', 'NEUTRAL', 3131, '2026-07-23 16:00:00.000', 'Microsoft Teams', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.621', '2026-07-25 07:26:38.621'),
+('1c0e3df9-4921-45da-b9e1-82c429f64b43', 'BREAK', 'NEUTRAL', 2637, '2026-07-14 19:00:00.000', 'Lunch Break', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:35.762', '2026-07-25 07:26:35.762'),
+('1c1c9553-ee3b-436c-ae38-7ab068f3fa9d', 'IDLE', 'UNPRODUCTIVE', 1079, '2026-07-10 17:42:01.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.669', '2026-07-25 07:26:34.669'),
+('1c38d243-827d-4d48-b941-2b3500e221cc', 'ACTIVE', 'PRODUCTIVE', 2582, '2026-07-03 22:00:00.000', 'GitHub Desktop', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:32.756', '2026-07-25 07:26:32.756'),
+('1c83f807-193d-41a5-bda8-376d0083fa88', 'ACTIVE', 'NEUTRAL', 3186, '2026-07-02 00:00:00.000', 'Slack', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:31.755', '2026-07-25 07:26:31.755'),
+('1c9bf22a-34c5-449f-99d1-99352c7c2d4d', 'IDLE', 'UNPRODUCTIVE', 496, '2026-07-02 18:51:44.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.492', '2026-07-25 07:26:32.492'),
+('1ca5fdd1-8450-4cee-89fd-17534eda4080', 'BREAK', 'NEUTRAL', 3235, '2026-07-20 19:00:00.000', 'Lunch Break', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:37.646', '2026-07-25 07:26:37.646'),
+('1cc05f73-9ca9-4ea0-a2d6-70dbdef86963', 'ACTIVE', 'PRODUCTIVE', 2896, '2026-06-26 18:00:00.000', 'Figma', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:30.166', '2026-07-25 07:26:30.166'),
+('1d195b1f-46ef-4303-ac4d-1d479f33618a', 'ACTIVE', 'PRODUCTIVE', 2777, '2026-07-06 18:00:00.000', 'Zoom', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:33.220', '2026-07-25 07:26:33.220'),
+('1d64de73-8e62-4d63-ab86-7fb29fe670c8', 'IDLE', 'UNPRODUCTIVE', 938, '2026-07-17 18:44:22.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:37.010', '2026-07-25 07:26:37.010'),
+('1d97b4a9-4400-4772-9d73-e6f477b7e941', 'ACTIVE', 'PRODUCTIVE', 2946, '2026-06-27 21:00:00.000', 'Google Chrome', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.548', '2026-07-25 07:26:30.548'),
+('1da847b4-00b9-41ea-8357-7a492b5f4a89', 'ACTIVE', 'PRODUCTIVE', 3197, '2026-07-06 22:00:00.000', 'Google Chrome', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:33.253', '2026-07-25 07:26:33.253'),
+('1e5b27f3-5cc4-45ab-b67e-44cbf8d0c802', 'IDLE', 'UNPRODUCTIVE', 911, '2026-07-12 00:44:49.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.018', '2026-07-25 07:26:35.018'),
+('1e5f3eec-3e12-4cc5-ab3f-27415432f3bd', 'IDLE', 'UNPRODUCTIVE', 989, '2026-07-02 23:43:31.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:32.395', '2026-07-25 07:26:32.395'),
+('1e7701a7-229e-4016-8ea4-0c83e7ed17bf', 'ACTIVE', 'NEUTRAL', 2914, '2026-07-15 17:00:00.000', 'Microsoft Teams', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.017', '2026-07-25 07:26:36.017'),
+('1e8ea851-16a0-418f-9d61-c0ece4444435', 'ACTIVE', 'PRODUCTIVE', 2566, '2026-06-26 20:00:00.000', 'Google Chrome', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:30.352', '2026-07-25 07:26:30.352'),
+('1e9aa47c-6e04-4d39-ad8b-089f3ee9f0c2', 'ACTIVE', 'PRODUCTIVE', 2689, '2026-07-12 00:00:00.000', 'Stack Overflow', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.015', '2026-07-25 07:26:35.015'),
+('1e9defbe-9cab-4587-9fee-b70995a16604', 'IDLE', 'UNPRODUCTIVE', 539, '2026-07-07 21:51:01.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:33.752', '2026-07-25 07:26:33.752'),
+('1eabbb60-9063-4a8e-ba4e-f73531310c85', 'IDLE', 'UNPRODUCTIVE', 976, '2026-07-23 18:43:44.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.637', '2026-07-25 07:26:38.637'),
+('1eae9cc7-1f28-4d95-9b9a-a048a6fd15b4', 'ACTIVE', 'NEUTRAL', 3127, '2026-07-14 21:00:00.000', 'Gmail', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:35.582', '2026-07-25 07:26:35.582'),
+('1ecc1ddd-da4d-4a2a-9dbb-074ad702f8a9', 'IDLE', 'UNPRODUCTIVE', 694, '2026-07-07 23:48:26.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.562', '2026-07-25 07:26:33.562'),
+('1ed00946-de21-4a09-ae48-c423798a6639', 'ACTIVE', 'NEUTRAL', 2562, '2026-07-17 20:00:00.000', 'Gmail', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:37.016', '2026-07-25 07:26:37.016'),
+('1ef2149d-0822-4963-a4cf-05bf4461f865', 'IDLE', 'UNPRODUCTIVE', 461, '2026-07-15 21:52:19.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.048', '2026-07-25 07:26:36.048'),
+('1f59318b-90b7-4c23-887e-e295715ab6f6', 'IDLE', 'UNPRODUCTIVE', 1034, '2026-07-07 21:42:46.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:33.696', '2026-07-25 07:26:33.696'),
+('1f6074a6-dfa5-478b-8985-efb3ce746794', 'IDLE', 'UNPRODUCTIVE', 976, '2026-07-15 22:43:44.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.054', '2026-07-25 07:26:36.054'),
+('1f8827e1-9509-40ca-a0bc-1c9489b55d41', 'ACTIVE', 'PRODUCTIVE', 2566, '2026-07-07 21:00:00.000', 'Google Chrome', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:33.693', '2026-07-25 07:26:33.693'),
+('1fca3d13-ac48-49c6-be80-771fc0a4eb7a', 'IDLE', 'UNPRODUCTIVE', 976, '2026-07-17 21:43:44.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.899', '2026-07-25 07:26:36.899'),
+('2020c4cb-b9cb-4055-ac1b-a408a9647802', 'IDLE', 'UNPRODUCTIVE', 661, '2026-07-20 20:48:59.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:37.514', '2026-07-25 07:26:37.514'),
+('20266faa-db7e-49a5-90d9-7a5086c29280', 'ACTIVE', 'PRODUCTIVE', 3050, '2026-06-30 22:00:00.000', 'Stack Overflow', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:31.664', '2026-07-25 07:26:31.664'),
+('20429891-43e6-43e3-bb94-ab8e78a68ddb', 'IDLE', 'UNPRODUCTIVE', 912, '2026-07-05 16:44:48.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.897', '2026-07-25 07:26:32.897'),
+('2057b2c2-88f8-4ce2-a26d-082dfe43a6d4', 'ACTIVE', 'PRODUCTIVE', 2874, '2026-07-17 22:00:00.000', 'VS Code', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:37.098', '2026-07-25 07:26:37.098'),
+('20d7c4ff-0d43-4566-955d-e34e6bca8457', 'ACTIVE', 'NEUTRAL', 3072, '2026-07-12 16:00:00.000', 'Gmail', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.023', '2026-07-25 07:26:35.023'),
+('20f5b090-4613-42cd-ab59-5dd2c1520830', 'ACTIVE', 'PRODUCTIVE', 3169, '2026-07-08 00:00:00.000', 'Figma', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:33.823', '2026-07-25 07:26:33.823'),
+('2100196f-c74e-4e8b-8601-54575374304e', 'IDLE', 'UNPRODUCTIVE', 975, '2026-06-29 22:43:45.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:31.265', '2026-07-25 07:26:31.265'),
+('211123b5-94db-47d6-881d-1b227ac42557', 'ACTIVE', 'PRODUCTIVE', 2666, '2026-07-16 22:00:00.000', 'Notion', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:36.639', '2026-07-25 07:26:36.639'),
+('2117f617-2af9-44f2-bdd6-24f1188c9891', 'ACTIVE', 'NEUTRAL', 2571, '2026-06-29 23:00:00.000', 'Slack', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:31.202', '2026-07-25 07:26:31.202'),
+('21609d05-a05a-4f23-9e70-5b4c271bf63e', 'IDLE', 'UNPRODUCTIVE', 913, '2026-07-02 22:44:47.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:32.211', '2026-07-25 07:26:32.211'),
+('216d93a0-1fd8-42d6-a53e-de4175689388', 'ACTIVE', 'PRODUCTIVE', 3150, '2026-07-09 23:00:00.000', 'VS Code', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:34.228', '2026-07-25 07:26:34.228'),
+('21c0c3c4-dd51-499d-93f7-238d30e9fa61', 'ACTIVE', 'PRODUCTIVE', 2667, '2026-07-20 16:00:00.000', 'Google Chrome', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:37.481', '2026-07-25 07:26:37.481'),
+('226faf32-f4e8-407b-97af-c3097a881029', 'IDLE', 'UNPRODUCTIVE', 819, '2026-07-20 20:46:21.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:37.652', '2026-07-25 07:26:37.652'),
+('2285b7f9-34e4-4e3f-b888-f7d354fbdcc1', 'IDLE', 'UNPRODUCTIVE', 407, '2026-07-09 00:53:13.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.120', '2026-07-25 07:26:34.120'),
+('22dc1e0a-3bb0-4d76-a863-dd45e9c90575', 'IDLE', 'UNPRODUCTIVE', 1058, '2026-07-01 17:42:22.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.119', '2026-07-25 07:26:32.119'),
+('23176d9d-580f-4854-9695-02412522abe7', 'IDLE', 'UNPRODUCTIVE', 897, '2026-06-29 16:45:03.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.816', '2026-07-25 07:26:30.816'),
+('23c3a0ee-7561-4633-9642-1e57143d2e83', 'ACTIVE', 'PRODUCTIVE', 3069, '2026-07-06 20:00:00.000', 'Zoom', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:33.410', '2026-07-25 07:26:33.410'),
+('23c4bdfe-872d-48d7-87f0-8dfc9c91c981', 'IDLE', 'UNPRODUCTIVE', 1052, '2026-07-20 16:42:28.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:37.695', '2026-07-25 07:26:37.695'),
+('23cf27e3-ab98-4bc1-a829-a75c087b7115', 'IDLE', 'UNPRODUCTIVE', 946, '2026-07-09 23:44:14.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.411', '2026-07-25 07:26:34.411'),
+('23ebb205-6469-4e8a-bd93-8bb3886b93ce', 'ACTIVE', 'NEUTRAL', 2906, '2026-06-26 16:00:00.000', 'Slack', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.036', '2026-07-25 07:26:30.036'),
+('2403514a-f721-4920-93cd-fcfa0fe454b9', 'ACTIVE', 'NEUTRAL', 3168, '2026-07-22 16:00:00.000', 'Slack', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:38.429', '2026-07-25 07:26:38.429'),
+('240fbbd3-30a4-491d-9acd-583a38f0e31d', 'IDLE', 'UNPRODUCTIVE', 896, '2026-07-08 21:45:04.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:33.871', '2026-07-25 07:26:33.871'),
+('2451efdc-b079-41ef-b383-102936477541', 'IDLE', 'UNPRODUCTIVE', 403, '2026-07-09 22:53:17.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.404', '2026-07-25 07:26:34.404'),
+('247882a8-4891-4205-8882-278a4dc56662', 'ACTIVE', 'PRODUCTIVE', 2689, '2026-07-14 00:00:00.000', 'Stack Overflow', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.538', '2026-07-25 07:26:35.538');
+INSERT INTO `activity_logs` (`id`, `activityType`, `productivity`, `duration`, `timestamp`, `appWebsite`, `employeeId`, `taskId`, `organizationId`, `createdAt`, `updatedAt`) VALUES
+('248a071e-9107-4c28-af65-326bb55dfc94', 'IDLE', 'UNPRODUCTIVE', 789, '2026-06-27 16:46:51.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:30.595', '2026-07-25 07:26:30.595'),
+('249cf4e6-310b-47d9-86b8-83c83db878e3', 'IDLE', 'UNPRODUCTIVE', 825, '2026-07-03 16:46:15.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.836', '2026-07-25 07:26:32.836'),
+('24e54be7-0e9c-4420-80c1-bb2fab4459e5', 'ACTIVE', 'PRODUCTIVE', 3075, '2026-06-26 21:00:00.000', 'Stack Overflow', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:30.186', '2026-07-25 07:26:30.186'),
+('2519d804-e007-4bda-b880-0380be7e8828', 'IDLE', 'UNPRODUCTIVE', 367, '2026-07-21 20:53:53.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:38.112', '2026-07-25 07:26:38.112'),
+('25418e52-cdf3-492d-a03b-f94ce662fbc6', 'IDLE', 'UNPRODUCTIVE', 548, '2026-07-20 18:50:52.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.764', '2026-07-25 07:26:37.764'),
+('25553e90-659d-4f51-9285-4283cfafb6e1', 'IDLE', 'UNPRODUCTIVE', 823, '2026-07-07 18:46:17.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:33.678', '2026-07-25 07:26:33.678'),
+('2572408b-5a29-4030-b9f2-212ad81db644', 'ACTIVE', 'PRODUCTIVE', 2568, '2026-07-01 22:00:00.000', 'Zoom', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.081', '2026-07-25 07:26:32.081'),
+('2586b6bd-28f0-4182-9013-f5986a8771d1', 'ACTIVE', 'PRODUCTIVE', 3065, '2026-07-14 16:00:00.000', 'Google Chrome', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:35.549', '2026-07-25 07:26:35.549'),
+('25a4ca3c-6662-4f1f-8cbe-77083bb5fced', 'IDLE', 'UNPRODUCTIVE', 540, '2026-07-16 18:51:00.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:36.614', '2026-07-25 07:26:36.614'),
+('25b96c46-2019-4e4c-820a-bf84aa4e9ec7', 'IDLE', 'UNPRODUCTIVE', 459, '2026-07-23 00:52:21.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:38.283', '2026-07-25 07:26:38.283'),
+('25d89b9d-44ad-4845-85dc-fddfc187ee0b', 'ACTIVE', 'NEUTRAL', 2522, '2026-07-14 00:00:00.000', 'Slack', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:35.226', '2026-07-25 07:26:35.226'),
+('26037133-5204-4518-99d8-545a16922b94', 'ACTIVE', 'NEUTRAL', 2978, '2026-07-11 00:00:00.000', 'Slack', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:34.526', '2026-07-25 07:26:34.526'),
+('26157591-c474-4da1-b200-c3e30a997c41', 'ACTIVE', 'PRODUCTIVE', 2833, '2026-07-23 16:00:00.000', 'GitHub Desktop', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:38.699', '2026-07-25 07:26:38.699'),
+('2656212f-ad78-41b5-af90-d0ca53961f40', 'ACTIVE', 'PRODUCTIVE', 3041, '2026-07-17 22:00:00.000', 'Figma', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:37.031', '2026-07-25 07:26:37.031'),
+('26ba7b1a-1d4e-4902-b46a-619ef0e6bbbf', 'IDLE', 'UNPRODUCTIVE', 907, '2026-07-14 16:44:53.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:35.809', '2026-07-25 07:26:35.809'),
+('26fdc572-16e7-4b66-a76d-d573575c54a0', 'IDLE', 'UNPRODUCTIVE', 680, '2026-07-04 00:48:40.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.884', '2026-07-25 07:26:32.884'),
+('2724e3fa-09b4-4f3a-8a0b-15615ca4c9a0', 'IDLE', 'UNPRODUCTIVE', 933, '2026-07-21 00:44:27.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:37.742', '2026-07-25 07:26:37.742'),
+('2731fcf8-3422-44a1-ac4f-e6a469970cce', 'IDLE', 'UNPRODUCTIVE', 870, '2026-07-01 00:45:30.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:31.388', '2026-07-25 07:26:31.388'),
+('276d4ff6-5db2-4cb2-b028-d5b9b1fec0a1', 'ACTIVE', 'PRODUCTIVE', 3209, '2026-07-22 00:00:00.000', 'Notion', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:38.010', '2026-07-25 07:26:38.010'),
+('2788a50a-478a-4f08-9986-266b843b5af1', 'BREAK', 'NEUTRAL', 2964, '2026-07-21 19:00:00.000', 'Lunch Break', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:38.106', '2026-07-25 07:26:38.106'),
+('27b1f37f-f870-49d9-b55a-eaca55d32db4', 'ACTIVE', 'NEUTRAL', 2654, '2026-07-07 23:00:00.000', 'Gmail', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:33.707', '2026-07-25 07:26:33.707'),
+('27b54ffd-f1e0-4a2b-99b1-27dbc97a619c', 'ACTIVE', 'PRODUCTIVE', 3153, '2026-07-10 17:00:00.000', 'Zoom', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:34.794', '2026-07-25 07:26:34.794'),
+('27ba391c-ca79-42ff-9de5-4dbd348b6968', 'ACTIVE', 'PRODUCTIVE', 3203, '2026-07-02 17:00:00.000', 'Stack Overflow', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.483', '2026-07-25 07:26:32.483'),
+('27d4f937-ab2c-4d72-97e0-bdd9a6de10a2', 'IDLE', 'UNPRODUCTIVE', 484, '2026-07-15 17:51:56.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:36.295', '2026-07-25 07:26:36.295'),
+('28224800-ae17-45e4-8e8b-096921f3f67b', 'ACTIVE', 'PRODUCTIVE', 2619, '2026-07-06 20:00:00.000', 'VS Code', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:33.230', '2026-07-25 07:26:33.230'),
+('283874cf-ab08-43e4-9d0f-d91df33526b4', 'IDLE', 'UNPRODUCTIVE', 878, '2026-07-24 21:45:22.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:38.904', '2026-07-25 07:26:38.904'),
+('285ca4e8-23e5-43c8-9495-ea2a8e1ca389', 'ACTIVE', 'PRODUCTIVE', 2896, '2026-06-29 17:00:00.000', 'Figma', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:30.869', '2026-07-25 07:26:30.869'),
+('28862b62-7875-4553-afca-b004ba2dc001', 'IDLE', 'UNPRODUCTIVE', 815, '2026-07-09 00:46:25.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:33.892', '2026-07-25 07:26:33.892'),
+('288c1bda-6910-4832-8b87-96a41e024a22', 'ACTIVE', 'NEUTRAL', 3058, '2026-07-08 22:00:00.000', 'Gmail', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.944', '2026-07-25 07:26:33.944'),
+('28958bc1-c570-4ee3-a6c8-02613ee94a69', 'ACTIVE', 'PRODUCTIVE', 3124, '2026-07-02 17:00:00.000', 'Notion', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:32.235', '2026-07-25 07:26:32.235'),
+('28bdb807-c0a7-4d36-a13f-9313a08edaae', 'IDLE', 'UNPRODUCTIVE', 539, '2026-07-09 21:51:01.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:34.453', '2026-07-25 07:26:34.453'),
+('28c7a1fe-ef4b-46a8-80a4-ccd75232a9b9', 'IDLE', 'UNPRODUCTIVE', 640, '2026-07-06 16:49:20.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:33.281', '2026-07-25 07:26:33.281'),
+('28cb56df-b06e-472e-aab1-d3f7f3b05a8f', 'IDLE', 'UNPRODUCTIVE', 371, '2026-07-14 17:53:49.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:35.816', '2026-07-25 07:26:35.816'),
+('28eb34dc-bd20-4665-8d36-a8ba931ada69', 'IDLE', 'UNPRODUCTIVE', 397, '2026-07-02 17:53:23.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.486', '2026-07-25 07:26:32.486'),
+('28f351f6-64f8-41d0-8014-7c2c32adaf29', 'ACTIVE', 'NEUTRAL', 3102, '2026-06-27 18:00:00.000', 'Microsoft Teams', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:30.617', '2026-07-25 07:26:30.617'),
+('28f444ad-d201-416b-bb1d-df7b77d4be73', 'IDLE', 'UNPRODUCTIVE', 1070, '2026-07-03 16:42:10.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.779', '2026-07-25 07:26:32.779'),
+('291c47a0-2c01-479e-a82d-d10c51381441', 'ACTIVE', 'PRODUCTIVE', 3181, '2026-06-28 20:00:00.000', 'VS Code', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:30.778', '2026-07-25 07:26:30.778'),
+('2971f804-0e16-4868-a3a7-60920ad7a08c', 'IDLE', 'UNPRODUCTIVE', 750, '2026-06-29 16:47:30.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:30.866', '2026-07-25 07:26:30.866'),
+('2982d1e9-122f-4624-a3e9-06c4622cb2b6', 'IDLE', 'UNPRODUCTIVE', 1036, '2026-07-13 22:42:44.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:35.459', '2026-07-25 07:26:35.459'),
+('298491d8-ef38-48f1-809e-81bd3c837d7e', 'ACTIVE', 'PRODUCTIVE', 2823, '2026-07-13 21:00:00.000', 'Figma', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:35.135', '2026-07-25 07:26:35.135'),
+('299dcd3d-0e27-463c-a662-71eaac4ffb0d', 'IDLE', 'UNPRODUCTIVE', 938, '2026-07-11 20:44:22.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.933', '2026-07-25 07:26:34.933'),
+('299eba03-1ee7-4aab-968a-2193c90b5f2d', 'IDLE', 'UNPRODUCTIVE', 654, '2026-06-27 21:49:06.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.555', '2026-07-25 07:26:30.555'),
+('29a3ffc2-6df2-4c62-adc7-4cbf8c404137', 'ACTIVE', 'NEUTRAL', 2967, '2026-07-16 18:00:00.000', 'Slack', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:36.744', '2026-07-25 07:26:36.744'),
+('29aa5b93-374d-4067-8bf5-ba5298070855', 'IDLE', 'UNPRODUCTIVE', 1006, '2026-07-02 00:43:14.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.966', '2026-07-25 07:26:31.966'),
+('2a4ba68a-58c0-4aac-ab07-84f97fbd3a0c', 'ACTIVE', 'NEUTRAL', 2562, '2026-07-15 20:00:00.000', 'Gmail', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:36.239', '2026-07-25 07:26:36.239'),
+('2a5f7513-7cdd-491c-a94b-b9ccf8321d51', 'IDLE', 'UNPRODUCTIVE', 396, '2026-07-16 22:53:24.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:36.448', '2026-07-25 07:26:36.448'),
+('2ac48f9c-04f8-4735-98e9-1c63848848ea', 'ACTIVE', 'NEUTRAL', 2767, '2026-07-21 21:00:00.000', 'Slack', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:37.839', '2026-07-25 07:26:37.839'),
+('2acf16d6-5b63-454a-b965-2ce442d92a3a', 'ACTIVE', 'PRODUCTIVE', 2624, '2026-07-23 18:00:00.000', 'Figma', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.634', '2026-07-25 07:26:38.634'),
+('2af33fa8-1955-49d8-85e3-a6738b39f8cf', 'ACTIVE', 'PRODUCTIVE', 2781, '2026-07-21 21:00:00.000', 'VS Code', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:38.117', '2026-07-25 07:26:38.117'),
+('2b169c88-2aaf-47a5-af0b-f658ecd0b0c9', 'ACTIVE', 'PRODUCTIVE', 3060, '2026-07-03 17:00:00.000', 'Notion', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.784', '2026-07-25 07:26:32.784'),
+('2b746aed-cd96-486e-ba62-20ef513ee2ed', 'BREAK', 'NEUTRAL', 2734, '2026-07-24 19:00:00.000', 'Lunch Break', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:39.038', '2026-07-25 07:26:39.038'),
+('2bb6d7d6-0719-41ce-aa49-1da0aeb7ad50', 'IDLE', 'UNPRODUCTIVE', 1028, '2026-07-23 23:42:52.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.685', '2026-07-25 07:26:38.685'),
+('2bbccb34-947d-48ac-bffa-40a97b122afb', 'ACTIVE', 'PRODUCTIVE', 2704, '2026-07-08 21:00:00.000', 'VS Code', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:33.867', '2026-07-25 07:26:33.867'),
+('2bc3318e-061a-4495-807f-9dc46faa3192', 'IDLE', 'UNPRODUCTIVE', 891, '2026-07-23 20:45:09.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.663', '2026-07-25 07:26:38.663'),
+('2beedaaa-9f85-4b2e-86e3-e202d70f277e', 'IDLE', 'UNPRODUCTIVE', 938, '2026-07-13 20:44:22.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:35.336', '2026-07-25 07:26:35.336'),
+('2c22367a-6761-454d-b14e-b80b28f9787c', 'IDLE', 'UNPRODUCTIVE', 636, '2026-06-30 17:49:24.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:31.304', '2026-07-25 07:26:31.304'),
+('2c24f75b-4f0e-435e-9dc2-33baf4f5fc9f', 'BREAK', 'NEUTRAL', 2838, '2026-07-21 19:00:00.000', 'Lunch Break', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:37.831', '2026-07-25 07:26:37.831'),
+('2c3c6092-54ba-4c73-b29e-4cbb1db80bca', 'IDLE', 'UNPRODUCTIVE', 1079, '2026-07-10 22:42:01.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:34.760', '2026-07-25 07:26:34.760'),
+('2c438750-665e-420b-904b-de53b8ba85fe', 'ACTIVE', 'NEUTRAL', 2602, '2026-07-06 21:00:00.000', 'Slack', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:33.420', '2026-07-25 07:26:33.420'),
+('2c4dcd63-f4c2-4f05-a135-95de1bfa868b', 'ACTIVE', 'PRODUCTIVE', 3121, '2026-06-30 00:00:00.000', 'Stack Overflow', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.855', '2026-07-25 07:26:30.855'),
+('2c600797-7d8f-4916-80af-53cd9c05c49b', 'IDLE', 'UNPRODUCTIVE', 744, '2026-07-01 16:47:36.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:31.702', '2026-07-25 07:26:31.702'),
+('2cd49507-7caf-4b4e-a043-a4af86386044', 'IDLE', 'UNPRODUCTIVE', 535, '2026-07-07 00:51:05.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:33.067', '2026-07-25 07:26:33.067'),
+('2ce13285-199f-4bc1-bef7-8dd60d38dedf', 'IDLE', 'UNPRODUCTIVE', 765, '2026-07-08 17:47:15.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:34.135', '2026-07-25 07:26:34.135'),
+('2d24863a-9075-4ba1-bec0-776bc8ac59aa', 'IDLE', 'UNPRODUCTIVE', 847, '2026-07-02 20:45:53.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.501', '2026-07-25 07:26:32.501'),
+('2d449b8b-13f2-49b6-a3b0-24196da77860', 'IDLE', 'UNPRODUCTIVE', 832, '2026-07-24 00:46:08.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.694', '2026-07-25 07:26:38.694'),
+('2d5151a5-6175-4b03-8bc3-326b21597bfa', 'ACTIVE', 'PRODUCTIVE', 2897, '2026-07-20 20:00:00.000', 'Zoom', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:37.441', '2026-07-25 07:26:37.441'),
+('2daa8950-234b-4dfa-a77a-a18f7a05e3d8', 'ACTIVE', 'PRODUCTIVE', 2768, '2026-07-24 00:00:00.000', 'Figma', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.690', '2026-07-25 07:26:38.690'),
+('2e37acd0-c7ee-4e84-99d6-a56538d62692', 'IDLE', 'UNPRODUCTIVE', 1034, '2026-07-06 21:42:46.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:33.245', '2026-07-25 07:26:33.245'),
+('2e47e0b0-2d76-4ab6-b269-4921c7d4909a', 'IDLE', 'UNPRODUCTIVE', 1015, '2026-07-03 20:43:05.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:32.562', '2026-07-25 07:26:32.562'),
+('2e877943-0958-467e-b611-4af9e7d9f2bd', 'ACTIVE', 'PRODUCTIVE', 2788, '2026-06-27 17:00:00.000', 'Notion', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:30.598', '2026-07-25 07:26:30.598'),
+('2ea0039f-57eb-4fac-86a2-2679b219ca42', 'BREAK', 'NEUTRAL', 2609, '2026-07-13 19:00:00.000', 'Lunch Break', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:35.432', '2026-07-25 07:26:35.432'),
+('2ecb41ae-f83d-496b-b004-1dc4a196b0a9', 'ACTIVE', 'PRODUCTIVE', 2885, '2026-07-23 18:00:00.000', 'GitHub Desktop', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:38.715', '2026-07-25 07:26:38.715'),
+('2ed9ff24-944f-4379-8dd5-ffa3b327fa0f', 'IDLE', 'UNPRODUCTIVE', 698, '2026-07-02 17:48:22.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:32.357', '2026-07-25 07:26:32.357'),
+('2f0fe08a-4283-4e8c-be8d-7dddebb5d05e', 'ACTIVE', 'PRODUCTIVE', 2893, '2026-07-17 18:00:00.000', 'Stack Overflow', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.201', '2026-07-25 07:26:37.201'),
+('2f4ab78d-a7ae-42d4-951f-651d903b1193', 'ACTIVE', 'PRODUCTIVE', 2893, '2026-07-19 18:00:00.000', 'Stack Overflow', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.334', '2026-07-25 07:26:37.334'),
+('2f9ee0c0-8795-44c5-90fb-b17c0f27fdce', 'ACTIVE', 'UNPRODUCTIVE', 2564, '2026-07-13 22:00:00.000', 'Notion', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:35.455', '2026-07-25 07:26:35.455'),
+('2fab785d-a752-48bd-a2f4-f5aa644b246d', 'ACTIVE', 'PRODUCTIVE', 2939, '2026-07-24 18:00:00.000', 'Google Chrome', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:38.881', '2026-07-25 07:26:38.881'),
+('2fe8e53b-aeb9-425c-a3b0-05cb17da7a92', 'ACTIVE', 'PRODUCTIVE', 2708, '2026-06-29 22:00:00.000', 'Zoom', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:31.196', '2026-07-25 07:26:31.196'),
+('2ff60c3c-7b26-4a55-bbb7-304d35c8ee0c', 'ACTIVE', 'PRODUCTIVE', 2917, '2026-07-24 20:00:00.000', 'Google Chrome', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.823', '2026-07-25 07:26:38.823'),
+('30129250-6c39-41a0-8a53-b0c7ceb835e2', 'IDLE', 'UNPRODUCTIVE', 622, '2026-07-11 00:49:38.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:34.529', '2026-07-25 07:26:34.529'),
+('303d5c27-76b9-408b-b4f2-22585b1fd8a5', 'ACTIVE', 'NEUTRAL', 2924, '2026-07-06 18:00:00.000', 'Slack', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:33.381', '2026-07-25 07:26:33.381'),
+('305ee10b-9d54-4c8b-a85c-dfd6fb5d82d8', 'IDLE', 'UNPRODUCTIVE', 532, '2026-06-28 00:51:08.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:30.669', '2026-07-25 07:26:30.669'),
+('306f029b-1036-4025-9253-6efeafeba1ce', 'ACTIVE', 'NEUTRAL', 2593, '2026-07-08 20:00:00.000', 'Slack', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:34.148', '2026-07-25 07:26:34.148'),
+('30763f3a-0a04-4c22-8dfe-2b46ddfceded', 'IDLE', 'UNPRODUCTIVE', 1065, '2026-07-19 16:42:15.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.323', '2026-07-25 07:26:37.323'),
+('309481d1-7515-4cb3-ba2f-48ffd0251abe', 'IDLE', 'UNPRODUCTIVE', 405, '2026-07-10 22:53:15.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:34.517', '2026-07-25 07:26:34.517'),
+('30981f76-beb8-4927-8689-8f19e631d986', 'ACTIVE', 'PRODUCTIVE', 3160, '2026-07-20 18:00:00.000', 'Zoom', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:37.432', '2026-07-25 07:26:37.432'),
+('30ef9e39-ced7-48d3-bf3e-edea0e1b0803', 'ACTIVE', 'PRODUCTIVE', 2526, '2026-07-22 00:00:00.000', 'Stack Overflow', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:37.857', '2026-07-25 07:26:37.857'),
+('3143658b-ddbd-45f3-95fa-f6a4d1ed7930', 'ACTIVE', 'PRODUCTIVE', 2541, '2026-07-11 00:00:00.000', 'Stack Overflow', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:34.587', '2026-07-25 07:26:34.587'),
+('31492c64-804c-444b-8c28-6a1840d6aefc', 'IDLE', 'UNPRODUCTIVE', 875, '2026-06-30 20:45:25.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:31.592', '2026-07-25 07:26:31.592'),
+('314fab04-17db-4ead-b9cd-90226d5d267f', 'IDLE', 'UNPRODUCTIVE', 723, '2026-07-10 18:47:57.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:34.735', '2026-07-25 07:26:34.735'),
+('31833a2b-d198-4f00-aeaf-07f9b6ca9f97', 'IDLE', 'UNPRODUCTIVE', 774, '2026-07-17 21:47:06.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.224', '2026-07-25 07:26:37.224'),
+('31bab659-d310-4f1b-9b82-7c1324b88cc2', 'ACTIVE', 'PRODUCTIVE', 3079, '2026-07-10 20:00:00.000', 'Zoom', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:34.741', '2026-07-25 07:26:34.741'),
+('31be95f2-00c9-48c3-9ac1-9824159f4574', 'ACTIVE', 'UNPRODUCTIVE', 3078, '2026-07-24 21:00:00.000', 'Notion', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.831', '2026-07-25 07:26:38.831'),
+('326b4dd6-9e75-4e22-8bef-0b6bf085c8fe', 'IDLE', 'UNPRODUCTIVE', 557, '2026-07-10 22:50:43.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.698', '2026-07-25 07:26:34.698'),
+('32813a0d-0fed-4563-88b2-7e7895369fc9', 'IDLE', 'UNPRODUCTIVE', 403, '2026-07-06 22:53:17.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:33.256', '2026-07-25 07:26:33.256'),
+('332a3b21-675b-4682-9434-2843894fd18e', 'ACTIVE', 'PRODUCTIVE', 2666, '2026-07-23 00:00:00.000', 'Google Chrome', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.208', '2026-07-25 07:26:38.208'),
+('3353dbe0-fb05-47d2-a2b4-6bd4720b4aac', 'ACTIVE', 'PRODUCTIVE', 2697, '2026-07-13 17:00:00.000', 'Stack Overflow', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.497', '2026-07-25 07:26:35.497'),
+('33851de6-ec1b-4aac-83ef-b5f8f8b81cf8', 'IDLE', 'UNPRODUCTIVE', 704, '2026-06-29 17:48:16.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:30.871', '2026-07-25 07:26:30.871'),
+('338c3bae-c187-410f-b5fd-8bca9d5759a3', 'IDLE', 'UNPRODUCTIVE', 670, '2026-07-10 23:48:50.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:34.769', '2026-07-25 07:26:34.769'),
+('33ad33f5-9786-4720-9936-95cbc63a1441', 'ACTIVE', 'NEUTRAL', 3131, '2026-07-20 17:00:00.000', 'Microsoft Teams', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:37.698', '2026-07-25 07:26:37.698'),
+('33b40751-7399-46cd-9b5c-5e2b8b0a54aa', 'IDLE', 'UNPRODUCTIVE', 963, '2026-07-05 20:43:57.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.919', '2026-07-25 07:26:32.919'),
+('33c0c83f-6c29-4e55-9171-f689b11e3ffa', 'ACTIVE', 'PRODUCTIVE', 3102, '2026-07-16 20:00:00.000', 'Figma', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:36.623', '2026-07-25 07:26:36.623'),
+('33c4c926-2e17-4ad5-ac29-d9420bf5ba7c', 'ACTIVE', 'PRODUCTIVE', 2594, '2026-07-02 00:00:00.000', 'GitHub Desktop', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.964', '2026-07-25 07:26:31.964'),
+('33ce4ad5-7f96-4b6b-8d9b-e76fddf280d9', 'IDLE', 'UNPRODUCTIVE', 983, '2026-07-20 23:43:37.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.800', '2026-07-25 07:26:37.800'),
+('34080864-060c-47dd-af42-a12c0eecb1a9', 'ACTIVE', 'NEUTRAL', 2832, '2026-07-22 23:00:00.000', 'Microsoft Teams', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:38.271', '2026-07-25 07:26:38.271'),
+('34324153-573d-4ac4-bc65-b73b34483717', 'ACTIVE', 'PRODUCTIVE', 2905, '2026-07-07 20:00:00.000', 'Zoom', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:33.481', '2026-07-25 07:26:33.481'),
+('345dabd6-40c9-4018-8412-6dfc3bdc1d94', 'ACTIVE', 'NEUTRAL', 3167, '2026-07-11 16:00:00.000', 'Slack', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.904', '2026-07-25 07:26:34.904'),
+('346647b9-2bf7-4f36-8769-d7248892021f', 'IDLE', 'UNPRODUCTIVE', 361, '2026-07-14 22:53:59.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:35.653', '2026-07-25 07:26:35.653'),
+('3472dba0-51d6-47ca-ae73-5051fa88dd34', 'IDLE', 'UNPRODUCTIVE', 1050, '2026-07-02 23:42:30.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:32.216', '2026-07-25 07:26:32.216'),
+('349cd0c6-9137-480c-9bc9-c2f5434dbfab', 'IDLE', 'UNPRODUCTIVE', 937, '2026-07-21 17:44:23.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:38.096', '2026-07-25 07:26:38.096'),
+('34a2d62f-ed3f-43cb-9ccc-2c872e6fbb0c', 'IDLE', 'UNPRODUCTIVE', 758, '2026-06-26 23:47:22.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.129', '2026-07-25 07:26:30.129'),
+('34b7252d-3d6c-4c07-b9c0-406af43c32d0', 'ACTIVE', 'NEUTRAL', 3072, '2026-07-07 00:00:00.000', 'Gmail', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:33.439', '2026-07-25 07:26:33.439'),
+('34ddc998-8946-464f-9243-009b18a15464', 'ACTIVE', 'NEUTRAL', 2786, '2026-07-22 21:00:00.000', 'Slack', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.397', '2026-07-25 07:26:38.397'),
+('34e442d4-ad7a-48f6-af8b-d2f4904ab48d', 'BREAK', 'NEUTRAL', 2812, '2026-07-23 19:00:00.000', 'Lunch Break', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.523', '2026-07-25 07:26:38.523'),
+('355e8f2d-a862-4be5-8e78-7be5d284fb8d', 'BREAK', 'NEUTRAL', 2829, '2026-07-01 19:00:00.000', 'Lunch Break', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.933', '2026-07-25 07:26:31.933'),
+('35748bce-fdd6-4a0c-816f-54475ffce293', 'ACTIVE', 'NEUTRAL', 3137, '2026-07-08 16:00:00.000', 'Gmail', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.017', '2026-07-25 07:26:34.017'),
+('3575ee2f-af5e-43f1-b4cc-c09ab7fc0a04', 'ACTIVE', 'PRODUCTIVE', 2811, '2026-06-27 16:00:00.000', 'Google Chrome', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:30.592', '2026-07-25 07:26:30.592'),
+('357b0a1d-de46-4259-886f-fbce86d79eb2', 'IDLE', 'UNPRODUCTIVE', 431, '2026-07-06 23:52:49.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:33.436', '2026-07-25 07:26:33.436'),
+('3594bb12-de0e-406e-8bd8-a1a7915672c9', 'IDLE', 'UNPRODUCTIVE', 1018, '2026-07-03 22:43:02.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:32.760', '2026-07-25 07:26:32.760'),
+('35accdac-5512-4a39-8b4f-662dde4c79d3', 'IDLE', 'UNPRODUCTIVE', 812, '2026-06-27 17:46:28.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:30.604', '2026-07-25 07:26:30.604'),
+('35b41143-dc29-4538-a26c-07dcc99c4870', 'ACTIVE', 'NEUTRAL', 2967, '2026-07-19 17:00:00.000', 'Slack', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.328', '2026-07-25 07:26:37.328'),
+('35cbe309-4539-46f2-9f74-51d4fa4f37c8', 'ACTIVE', 'NEUTRAL', 2987, '2026-07-06 18:00:00.000', 'Gmail', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:33.291', '2026-07-25 07:26:33.291'),
+('362092f6-95e2-4fd5-8d11-3bf27711175e', 'BREAK', 'NEUTRAL', 2943, '2026-07-16 19:00:00.000', 'Lunch Break', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:36.422', '2026-07-25 07:26:36.422'),
+('36877ed1-9b48-4ed6-be99-9db165344a7a', 'IDLE', 'UNPRODUCTIVE', 667, '2026-06-26 20:48:53.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:30.450', '2026-07-25 07:26:30.450'),
+('36a05794-494b-4235-b88c-f90fa4381755', 'IDLE', 'UNPRODUCTIVE', 868, '2026-07-17 18:45:32.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.878', '2026-07-25 07:26:36.878'),
+('36e9fc28-bebd-4750-bf67-bad702810d45', 'IDLE', 'UNPRODUCTIVE', 441, '2026-07-03 18:52:39.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:32.550', '2026-07-25 07:26:32.550'),
+('36fc71b5-2bb9-4918-b067-dedb17176f1b', 'IDLE', 'UNPRODUCTIVE', 385, '2026-06-26 22:53:35.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:30.470', '2026-07-25 07:26:30.470'),
+('36ffbc9b-e3fd-4e78-96b6-42271f4d3f7f', 'IDLE', 'UNPRODUCTIVE', 528, '2026-07-08 16:51:12.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.904', '2026-07-25 07:26:33.904'),
+('371b4904-ea78-4a5c-955c-0e28b5647adc', 'ACTIVE', 'PRODUCTIVE', 3150, '2026-07-10 18:00:00.000', 'VS Code', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:34.487', '2026-07-25 07:26:34.487'),
+('374be5af-2ad0-43d7-8919-3fff3f140164', 'IDLE', 'UNPRODUCTIVE', 450, '2026-07-10 16:52:30.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:34.537', '2026-07-25 07:26:34.537'),
+('3758db44-9aee-441a-8b67-b46ad31199ff', 'ACTIVE', 'PRODUCTIVE', 3039, '2026-07-10 00:00:00.000', 'VS Code', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:34.234', '2026-07-25 07:26:34.234'),
+('37794a94-ea45-47d8-9a22-fcbed6df8cb6', 'ACTIVE', 'PRODUCTIVE', 2526, '2026-07-24 23:00:00.000', 'Stack Overflow', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.846', '2026-07-25 07:26:38.846'),
+('37b2fc1a-0aea-46ed-a362-ae7fc4689905', 'ACTIVE', 'PRODUCTIVE', 2829, '2026-07-16 23:00:00.000', 'Figma', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.508', '2026-07-25 07:26:36.508'),
+('37f265ee-bb37-414f-8202-ca4269117f8c', 'BREAK', 'NEUTRAL', 3000, '2026-07-20 19:00:00.000', 'Lunch Break', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:37.506', '2026-07-25 07:26:37.506'),
+('37fe0809-ebc1-4fd2-945d-568f464b3966', 'IDLE', 'UNPRODUCTIVE', 450, '2026-07-16 16:52:30.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:36.407', '2026-07-25 07:26:36.407'),
+('38035580-0b28-4480-a08b-cab673da3b49', 'IDLE', 'UNPRODUCTIVE', 403, '2026-07-07 22:53:17.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:33.704', '2026-07-25 07:26:33.704'),
+('380683f6-5a2e-49ac-bf83-f13d6a608606', 'IDLE', 'UNPRODUCTIVE', 530, '2026-07-02 00:51:10.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.096', '2026-07-25 07:26:32.096'),
+('382ca7ed-124a-415c-8993-3eb70e51ef53', 'IDLE', 'UNPRODUCTIVE', 1001, '2026-07-07 17:43:19.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:33.460', '2026-07-25 07:26:33.460'),
+('385c4710-9ccc-497b-8695-c80415a6f8aa', 'IDLE', 'UNPRODUCTIVE', 842, '2026-07-21 22:45:58.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:38.001', '2026-07-25 07:26:38.001'),
+('38a0206f-e9b9-4b63-99c5-d75d14d7e906', 'ACTIVE', 'NEUTRAL', 3068, '2026-06-30 00:00:00.000', 'Microsoft Teams', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:31.275', '2026-07-25 07:26:31.275'),
+('3953eda7-c680-4d14-9a40-5548f31baf23', 'IDLE', 'UNPRODUCTIVE', 779, '2026-06-30 22:47:01.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:31.345', '2026-07-25 07:26:31.345'),
+('3980933d-2268-4c59-86dc-b9d6c88313b1', 'ACTIVE', 'NEUTRAL', 3068, '2026-06-29 00:00:00.000', 'Microsoft Teams', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:30.802', '2026-07-25 07:26:30.802'),
+('39818898-bf9b-4e71-811a-adbe3d00fd38', 'IDLE', 'UNPRODUCTIVE', 522, '2026-07-18 16:51:18.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.257', '2026-07-25 07:26:37.257'),
+('398e747f-8a5d-417c-9333-4ce4834cf1b8', 'ACTIVE', 'PRODUCTIVE', 2983, '2026-07-05 22:00:00.000', 'Zoom', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.932', '2026-07-25 07:26:32.932'),
+('3995e470-0224-4343-b03d-70e1fd1763b7', 'IDLE', 'UNPRODUCTIVE', 596, '2026-07-17 16:50:04.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.866', '2026-07-25 07:26:36.866'),
+('39b5f1f6-e962-47b1-a0f5-d18b2f95ac66', 'IDLE', 'UNPRODUCTIVE', 772, '2026-07-03 20:47:08.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.857', '2026-07-25 07:26:32.857'),
+('39e9868c-9406-4e27-bde9-cd70dcdf7d9a', 'ACTIVE', 'NEUTRAL', 3037, '2026-07-21 16:00:00.000', 'Gmail', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:38.087', '2026-07-25 07:26:38.087'),
+('39f06f2f-83dc-4b28-947b-75dde8e20443', 'IDLE', 'UNPRODUCTIVE', 961, '2026-07-14 21:43:59.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:35.842', '2026-07-25 07:26:35.842'),
+('3a0bdd29-d52d-46e4-b854-9fa5d88c1ec0', 'ACTIVE', 'PRODUCTIVE', 2560, '2026-06-30 18:00:00.000', 'Zoom', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.503', '2026-07-25 07:26:31.503'),
+('3a777168-fe1d-49bd-a105-6c198526d694', 'IDLE', 'UNPRODUCTIVE', 1009, '2026-07-14 22:43:11.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:35.850', '2026-07-25 07:26:35.850'),
+('3ad42705-b4e8-4746-a7f5-fb79e28ef658', 'ACTIVE', 'PRODUCTIVE', 3233, '2026-07-21 20:00:00.000', 'Zoom', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:38.108', '2026-07-25 07:26:38.108'),
+('3adacf09-e456-44bf-a55b-1a8006eccac5', 'IDLE', 'UNPRODUCTIVE', 695, '2026-07-07 20:48:25.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:33.484', '2026-07-25 07:26:33.484'),
+('3ae2ca9d-2eca-4ab4-b1c4-8853a1bbec84', 'ACTIVE', 'PRODUCTIVE', 2783, '2026-07-06 20:00:00.000', 'Google Chrome', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:32.979', '2026-07-25 07:26:32.979'),
+('3aec2cd7-966a-4991-90b8-eed73e619a07', 'ACTIVE', 'UNPRODUCTIVE', 2911, '2026-07-03 17:00:00.000', 'Notion', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:32.722', '2026-07-25 07:26:32.722'),
+('3b0bb20d-5e83-480b-a4af-fa162847be7c', 'IDLE', 'UNPRODUCTIVE', 512, '2026-07-15 00:51:28.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:35.863', '2026-07-25 07:26:35.863'),
+('3b0e1cd2-ca7f-4b13-8a0c-536b7a9ba698', 'IDLE', 'UNPRODUCTIVE', 564, '2026-07-15 18:50:36.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:36.365', '2026-07-25 07:26:36.365'),
+('3b103967-2395-4873-929b-4f3607aaa24c', 'ACTIVE', 'PRODUCTIVE', 3070, '2026-07-02 00:00:00.000', 'Zoom', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.093', '2026-07-25 07:26:32.093'),
+('3b7ae311-e63e-4500-adf3-611dafef216c', 'ACTIVE', 'NEUTRAL', 2691, '2026-07-14 20:00:00.000', 'Microsoft Teams', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:35.765', '2026-07-25 07:26:35.765'),
+('3b849379-5c11-4840-801a-953a6a61c344', 'IDLE', 'UNPRODUCTIVE', 540, '2026-07-05 17:51:00.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.903', '2026-07-25 07:26:32.903'),
+('3b8ce1d9-8c26-44eb-8d00-b88bb505f181', 'ACTIVE', 'PRODUCTIVE', 3078, '2026-07-12 18:00:00.000', 'VS Code', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.035', '2026-07-25 07:26:35.035'),
+('3ba53510-2052-4b1d-9bbe-6be70de76f34', 'ACTIVE', 'NEUTRAL', 3070, '2026-07-24 23:00:00.000', 'Slack', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:39.056', '2026-07-25 07:26:39.056'),
+('3be242c0-6225-4765-a426-95bc1cbbad24', 'IDLE', 'UNPRODUCTIVE', 736, '2026-07-25 00:47:44.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:38.924', '2026-07-25 07:26:38.924'),
+('3bf4c63d-1943-4601-a6fa-5794a840ef30', 'IDLE', 'UNPRODUCTIVE', 1058, '2026-07-15 00:42:22.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:35.796', '2026-07-25 07:26:35.796'),
+('3c097c1e-6442-4536-af36-2f7744ab8e15', 'ACTIVE', 'PRODUCTIVE', 3043, '2026-07-11 21:00:00.000', 'VS Code', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.936', '2026-07-25 07:26:34.936'),
+('3c50c6f6-cddf-41c7-99ef-1622f9135c3b', 'IDLE', 'UNPRODUCTIVE', 369, '2026-07-01 22:53:51.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.147', '2026-07-25 07:26:32.147'),
+('3c5a55da-c1bc-4c28-a2c2-5c0dfab8b77a', 'IDLE', 'UNPRODUCTIVE', 764, '2026-07-10 21:47:16.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:34.818', '2026-07-25 07:26:34.818'),
+('3c9b9557-bf58-40af-b7fc-8004f5907211', 'ACTIVE', 'PRODUCTIVE', 2942, '2026-07-22 22:00:00.000', 'Zoom', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.403', '2026-07-25 07:26:38.403'),
+('3cbd0700-1a40-4c06-bb20-23a851b9d7ee', 'ACTIVE', 'NEUTRAL', 2886, '2026-07-09 16:00:00.000', 'Microsoft Teams', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:34.423', '2026-07-25 07:26:34.423'),
+('3d711710-a94f-4adc-bb5c-a56a809ea1a8', 'IDLE', 'UNPRODUCTIVE', 545, '2026-07-16 20:50:55.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:36.756', '2026-07-25 07:26:36.756'),
+('3d7be426-6ad9-4d1b-8ed3-4c9fb1f57038', 'ACTIVE', 'PRODUCTIVE', 3004, '2026-07-17 16:00:00.000', 'Notion', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.863', '2026-07-25 07:26:36.863'),
+('3d9ae32b-4c44-42e5-b6bb-7e2a79841c37', 'ACTIVE', 'NEUTRAL', 2889, '2026-07-01 18:00:00.000', 'Gmail', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:31.712', '2026-07-25 07:26:31.712'),
+('3dcb0b81-33f9-4701-b8f7-7e87bce91418', 'IDLE', 'UNPRODUCTIVE', 658, '2026-07-21 21:49:02.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.060', '2026-07-25 07:26:38.060'),
+('3deca732-2873-4c2a-9f25-43d68e342f8a', 'IDLE', 'UNPRODUCTIVE', 711, '2026-07-01 18:48:09.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:31.715', '2026-07-25 07:26:31.715'),
+('3df5812e-4f74-4ece-9276-d32adb4ca1b6', 'IDLE', 'UNPRODUCTIVE', 686, '2026-07-15 17:48:34.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.021', '2026-07-25 07:26:36.021'),
+('3df927ae-bc0c-4706-b1d5-ebbf5a34b4d0', 'ACTIVE', 'PRODUCTIVE', 3239, '2026-07-14 22:00:00.000', 'VS Code', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:35.650', '2026-07-25 07:26:35.650'),
+('3e0b5e3b-1f5f-4a64-a980-d0aec7d7881a', 'BREAK', 'NEUTRAL', 2943, '2026-07-14 19:00:00.000', 'Lunch Break', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:35.570', '2026-07-25 07:26:35.570'),
+('3e6e69e6-82a3-444d-8736-b99ae1781827', 'ACTIVE', 'NEUTRAL', 2572, '2026-07-23 23:00:00.000', 'Gmail', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.682', '2026-07-25 07:26:38.682'),
+('3eabe8f4-8fae-4f9f-9892-ecc78643942a', 'IDLE', 'UNPRODUCTIVE', 807, '2026-07-09 18:46:33.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:34.199', '2026-07-25 07:26:34.199'),
+('3ece7bc7-3afb-4fb9-b1ec-1f8e5cef26bc', 'IDLE', 'UNPRODUCTIVE', 707, '2026-07-17 18:48:13.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.205', '2026-07-25 07:26:37.205'),
+('3f18acd2-a0f0-42fe-88fb-b888f436b4e5', 'IDLE', 'UNPRODUCTIVE', 832, '2026-06-29 22:46:08.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.119', '2026-07-25 07:26:31.119'),
+('3f6e78f7-bc65-4c9d-ad01-ebeb681d8507', 'ACTIVE', 'PRODUCTIVE', 3141, '2026-07-21 00:00:00.000', 'Stack Overflow', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:37.543', '2026-07-25 07:26:37.543'),
+('3f8166f5-3523-42de-ad6b-4e01ca4e1a27', 'ACTIVE', 'PRODUCTIVE', 3061, '2026-07-03 21:00:00.000', 'VS Code', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.809', '2026-07-25 07:26:32.809'),
+('3fa1926b-d1c0-433a-a05b-f58401dd9c68', 'IDLE', 'UNPRODUCTIVE', 1053, '2026-07-15 23:42:27.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:36.267', '2026-07-25 07:26:36.267'),
+('3fad6555-a4ca-4b50-92f0-90e017c3e5ae', 'IDLE', 'UNPRODUCTIVE', 1049, '2026-07-23 00:42:31.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.419', '2026-07-25 07:26:38.419'),
+('3fdbe40c-2db7-44e2-bfb1-e99afb1dd2ab', 'ACTIVE', 'NEUTRAL', 3197, '2026-07-11 17:00:00.000', 'Slack', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:34.973', '2026-07-25 07:26:34.973'),
+('40001bf0-3a72-4c44-acd3-adce6242cb8d', 'IDLE', 'UNPRODUCTIVE', 963, '2026-07-06 20:43:57.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:33.307', '2026-07-25 07:26:33.307'),
+('400dd1f7-48f2-4b7c-bb2f-914d24959b0b', 'ACTIVE', 'PRODUCTIVE', 2592, '2026-07-15 00:00:00.000', 'Zoom', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:35.665', '2026-07-25 07:26:35.665'),
+('4051b9e3-57ae-46cd-8814-27c8635c53e8', 'ACTIVE', 'PRODUCTIVE', 3188, '2026-07-07 21:00:00.000', 'Figma', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.547', '2026-07-25 07:26:33.547'),
+('407b3749-3427-4ec6-92ca-2120b605feec', 'BREAK', 'NEUTRAL', 2401, '2026-07-06 19:00:00.000', 'Lunch Break', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:33.299', '2026-07-25 07:26:33.299'),
+('408f33c5-a307-4a6b-8807-c1436e143d9e', 'ACTIVE', 'PRODUCTIVE', 2697, '2026-07-16 16:00:00.000', 'Stack Overflow', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:36.731', '2026-07-25 07:26:36.731'),
+('40d9b321-63e3-4f6a-80f7-440deee46ce5', 'IDLE', 'UNPRODUCTIVE', 723, '2026-07-16 16:47:57.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:36.670', '2026-07-25 07:26:36.670'),
+('40f10776-458a-4157-bdb4-d093fb171c38', 'ACTIVE', 'PRODUCTIVE', 2867, '2026-07-21 16:00:00.000', 'Stack Overflow', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.020', '2026-07-25 07:26:38.020'),
+('41ab2795-4cfe-4988-8cb1-f490fdbc73fb', 'IDLE', 'UNPRODUCTIVE', 774, '2026-07-13 23:47:06.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.535', '2026-07-25 07:26:35.535'),
+('41abe5b4-bc12-4c59-8dd2-9a503a58bdf2', 'IDLE', 'UNPRODUCTIVE', 841, '2026-06-29 21:45:59.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:31.193', '2026-07-25 07:26:31.193'),
+('41c19931-cc24-451b-bbd7-e9e85cca335b', 'IDLE', 'UNPRODUCTIVE', 684, '2026-07-21 00:48:36.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.806', '2026-07-25 07:26:37.806'),
+('41d804b5-2682-4d3f-9b52-573ccc0261f4', 'IDLE', 'UNPRODUCTIVE', 817, '2026-07-06 20:46:23.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:32.982', '2026-07-25 07:26:32.982'),
+('424c331e-a601-4291-8ded-abc5125c9671', 'IDLE', 'UNPRODUCTIVE', 819, '2026-07-23 21:46:21.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:38.736', '2026-07-25 07:26:38.736'),
+('429a103b-f39b-48c6-94b9-c1b0aa5716bf', 'IDLE', 'UNPRODUCTIVE', 961, '2026-07-18 00:43:59.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:36.853', '2026-07-25 07:26:36.853'),
+('42aa74b3-16d0-4b77-9a27-eda78e46fb4f', 'ACTIVE', 'NEUTRAL', 3088, '2026-07-22 16:00:00.000', 'Gmail', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.363', '2026-07-25 07:26:38.363'),
+('42b3dc85-b973-46f8-9593-7fd473c9bee1', 'ACTIVE', 'PRODUCTIVE', 2823, '2026-07-14 20:00:00.000', 'Figma', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:35.573', '2026-07-25 07:26:35.573'),
+('42cf213d-c902-46a5-9b97-1dd0b1c38028', 'IDLE', 'UNPRODUCTIVE', 617, '2026-07-07 22:49:43.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:33.759', '2026-07-25 07:26:33.759'),
+('42e36914-02ab-42b5-a622-cba60d173bfa', 'BREAK', 'NEUTRAL', 3419, '2026-07-17 19:00:00.000', 'Lunch Break', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.208', '2026-07-25 07:26:37.208'),
+('431f4463-6ed7-4d5b-b784-fc91b4e6d90c', 'BREAK', 'NEUTRAL', 3008, '2026-07-20 19:00:00.000', 'Lunch Break', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.769', '2026-07-25 07:26:37.769'),
+('4334db0b-6950-4802-86dc-dd3d5b64cb3f', 'IDLE', 'UNPRODUCTIVE', 817, '2026-07-22 18:46:23.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.156', '2026-07-25 07:26:38.156'),
+('43628db5-6d38-4ffb-8e9f-d80eacd4371c', 'IDLE', 'UNPRODUCTIVE', 707, '2026-07-15 20:48:13.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:36.373', '2026-07-25 07:26:36.373'),
+('4373ee2a-8324-47e7-a95b-3c70d518ec86', 'BREAK', 'NEUTRAL', 2479, '2026-07-23 19:00:00.000', 'Lunch Break', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.644', '2026-07-25 07:26:38.644'),
+('437bbdf2-906f-4879-a243-b0bf2c04b280', 'IDLE', 'UNPRODUCTIVE', 814, '2026-07-22 21:46:26.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.400', '2026-07-25 07:26:38.400'),
+('43892627-873f-4a99-98c6-c0b3276381d2', 'ACTIVE', 'PRODUCTIVE', 3233, '2026-07-23 20:00:00.000', 'Zoom', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:38.724', '2026-07-25 07:26:38.724'),
+('43947d43-3732-414c-9313-d19e43e1d4d4', 'IDLE', 'UNPRODUCTIVE', 738, '2026-07-01 16:47:42.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.112', '2026-07-25 07:26:32.112'),
+('43a8485b-5406-4ae8-9123-2dda7c7a11a5', 'ACTIVE', 'PRODUCTIVE', 2689, '2026-07-18 22:00:00.000', 'Stack Overflow', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.291', '2026-07-25 07:26:37.291'),
+('43b2dbbb-bb36-4beb-98f0-6a61d01aace5', 'IDLE', 'UNPRODUCTIVE', 473, '2026-07-14 21:52:07.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:35.584', '2026-07-25 07:26:35.584'),
+('43e18a43-6ce5-4843-88bb-56d10c1269bb', 'IDLE', 'UNPRODUCTIVE', 773, '2026-07-03 21:47:07.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:32.627', '2026-07-25 07:26:32.627'),
+('43e67c36-d67b-4392-86f2-9af267c3eb86', 'IDLE', 'UNPRODUCTIVE', 793, '2026-07-01 23:46:47.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:31.828', '2026-07-25 07:26:31.828'),
+('44010424-82a1-4e0c-bf6d-7f1ac1ea4563', 'IDLE', 'UNPRODUCTIVE', 382, '2026-06-26 22:53:38.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:30.201', '2026-07-25 07:26:30.201'),
+('4431dc1d-03db-412c-a1bd-6b9a08ed2427', 'ACTIVE', 'PRODUCTIVE', 3207, '2026-06-27 18:00:00.000', 'Zoom', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.527', '2026-07-25 07:26:30.527');
+INSERT INTO `activity_logs` (`id`, `activityType`, `productivity`, `duration`, `timestamp`, `appWebsite`, `employeeId`, `taskId`, `organizationId`, `createdAt`, `updatedAt`) VALUES
+('4445d127-b807-4372-8731-b76f55280728', 'IDLE', 'UNPRODUCTIVE', 1038, '2026-07-17 20:42:42.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:37.018', '2026-07-25 07:26:37.018'),
+('44b26992-3d52-41b7-a3b0-9228e1c8c717', 'IDLE', 'UNPRODUCTIVE', 670, '2026-07-17 21:48:50.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:37.091', '2026-07-25 07:26:37.091'),
+('44d39f96-317e-495c-a97b-9fa7880cde81', 'ACTIVE', 'PRODUCTIVE', 3120, '2026-06-30 16:00:00.000', 'Figma', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:31.563', '2026-07-25 07:26:31.563'),
+('44d5ec49-b91a-47da-8949-7383d54a8dc6', 'ACTIVE', 'PRODUCTIVE', 2654, '2026-07-22 18:00:00.000', 'Figma', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:38.237', '2026-07-25 07:26:38.237'),
+('44fef5c0-00be-476f-9a04-fa133ad75af4', 'IDLE', 'UNPRODUCTIVE', 891, '2026-07-20 21:45:09.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:37.724', '2026-07-25 07:26:37.724'),
+('45127821-5d4e-47b3-b0c0-6c295792ae5b', 'IDLE', 'UNPRODUCTIVE', 1058, '2026-07-15 17:42:22.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:35.953', '2026-07-25 07:26:35.953'),
+('45380e04-974c-4f55-ba59-953ea0d98ef4', 'ACTIVE', 'PRODUCTIVE', 3116, '2026-07-15 17:00:00.000', 'Stack Overflow', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:36.291', '2026-07-25 07:26:36.291'),
+('453b5657-5412-4e92-a66c-e4f134693f7a', 'IDLE', 'UNPRODUCTIVE', 550, '2026-06-30 22:50:50.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:31.667', '2026-07-25 07:26:31.667'),
+('45496270-9469-4cf7-9a98-c1293a5179b1', 'ACTIVE', 'PRODUCTIVE', 3078, '2026-07-15 17:00:00.000', 'VS Code', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:36.354', '2026-07-25 07:26:36.354'),
+('45533105-ede3-4c03-a5ad-aa3a4e61b949', 'ACTIVE', 'PRODUCTIVE', 2613, '2026-07-10 16:00:00.000', 'Google Chrome', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:34.719', '2026-07-25 07:26:34.719'),
+('45ca9d15-e400-4c58-91af-30085253efd9', 'BREAK', 'NEUTRAL', 2500, '2026-07-07 19:00:00.000', 'Lunch Break', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:33.796', '2026-07-25 07:26:33.796'),
+('46363c91-f1f1-4cb2-8998-89c126523174', 'ACTIVE', 'PRODUCTIVE', 2881, '2026-07-13 16:00:00.000', 'GitHub Desktop', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:35.176', '2026-07-25 07:26:35.176'),
+('463d1abc-fbb7-4631-8c91-abccdc5ce661', 'IDLE', 'UNPRODUCTIVE', 911, '2026-07-18 22:44:49.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.297', '2026-07-25 07:26:37.297'),
+('4646776c-29e1-4132-b690-8e904af4b775', 'IDLE', 'UNPRODUCTIVE', 992, '2026-07-14 16:43:28.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:35.612', '2026-07-25 07:26:35.612'),
+('465dc2b8-9819-4526-921f-6ba741007db3', 'ACTIVE', 'NEUTRAL', 2547, '2026-07-16 16:00:00.000', 'Microsoft Teams', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.463', '2026-07-25 07:26:36.463'),
+('465f053e-5a74-4ed5-8046-c4e5b0d146dc', 'ACTIVE', 'PRODUCTIVE', 3095, '2026-07-13 18:00:00.000', 'Stack Overflow', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:35.425', '2026-07-25 07:26:35.425'),
+('46958555-9441-43a0-8634-1249400f315b', 'IDLE', 'UNPRODUCTIVE', 367, '2026-07-20 21:53:53.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.784', '2026-07-25 07:26:37.784'),
+('46b5f34c-0f74-47cb-b8cb-90d2c6dc6b73', 'ACTIVE', 'PRODUCTIVE', 2579, '2026-07-17 20:00:00.000', 'Figma', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:37.079', '2026-07-25 07:26:37.079'),
+('46c1c907-02dd-45cb-8744-0f972fe79bfa', 'ACTIVE', 'PRODUCTIVE', 3195, '2026-07-03 22:00:00.000', 'Figma', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:32.573', '2026-07-25 07:26:32.573'),
+('46da31d0-0904-48fd-b7fb-eddd8bedc049', 'BREAK', 'NEUTRAL', 2402, '2026-07-17 19:00:00.000', 'Lunch Break', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:37.077', '2026-07-25 07:26:37.077'),
+('4707faee-dc3e-4c9d-9867-7cb9d4c999e0', 'ACTIVE', 'PRODUCTIVE', 3150, '2026-07-13 17:00:00.000', 'VS Code', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:35.109', '2026-07-25 07:26:35.109'),
+('474d735b-7f7b-4f36-9789-5b7e03cfcbf5', 'ACTIVE', 'NEUTRAL', 2814, '2026-06-26 17:00:00.000', 'Gmail', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.054', '2026-07-25 07:26:30.054'),
+('478be5eb-41c0-40cf-bd0e-8d1aef33ae39', 'ACTIVE', 'PRODUCTIVE', 2905, '2026-07-08 20:00:00.000', 'Zoom', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:33.859', '2026-07-25 07:26:33.859'),
+('478e5d8d-364b-4f8d-a4f0-368589a3597c', 'ACTIVE', 'PRODUCTIVE', 3019, '2026-06-29 17:00:00.000', 'Figma', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.081', '2026-07-25 07:26:31.081'),
+('478f141b-9376-47f5-b2be-7afa076081fa', 'IDLE', 'UNPRODUCTIVE', 627, '2026-07-22 21:49:33.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:38.261', '2026-07-25 07:26:38.261'),
+('47a16c2e-e21a-4836-a2e9-8baad8ca01be', 'IDLE', 'UNPRODUCTIVE', 414, '2026-07-17 22:53:06.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:36.841', '2026-07-25 07:26:36.841'),
+('47ccbb78-53e7-4637-8ac1-00f73be6b199', 'IDLE', 'UNPRODUCTIVE', 893, '2026-07-21 16:45:07.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:37.816', '2026-07-25 07:26:37.816'),
+('47f536f5-6e3d-4adc-a248-cafb3c438f2b', 'ACTIVE', 'PRODUCTIVE', 2703, '2026-06-29 16:00:00.000', 'Google Chrome', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.813', '2026-07-25 07:26:30.813'),
+('47f5c186-b37b-414b-b0c6-3b95e34981a7', 'IDLE', 'UNPRODUCTIVE', 978, '2026-07-21 23:43:42.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:37.854', '2026-07-25 07:26:37.854'),
+('48117638-0799-492f-907c-c17f1de98475', 'IDLE', 'UNPRODUCTIVE', 617, '2026-07-03 22:49:43.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.818', '2026-07-25 07:26:32.818'),
+('4841469b-5495-47fe-b32f-6af9ee0e8c87', 'ACTIVE', 'PRODUCTIVE', 2885, '2026-07-21 22:00:00.000', 'Zoom', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:37.846', '2026-07-25 07:26:37.846'),
+('487f248b-9db6-47cd-ad52-1c3984280547', 'ACTIVE', 'NEUTRAL', 2611, '2026-06-30 18:00:00.000', 'Slack', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:31.308', '2026-07-25 07:26:31.308'),
+('4888aff1-fd62-462f-9c8e-a707bf4b27f9', 'ACTIVE', 'PRODUCTIVE', 2877, '2026-07-10 18:00:00.000', 'Zoom', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:34.732', '2026-07-25 07:26:34.732'),
+('48a850df-d2c9-459a-bbc9-04d41832bf11', 'IDLE', 'UNPRODUCTIVE', 754, '2026-07-17 18:47:26.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:36.815', '2026-07-25 07:26:36.815'),
+('48c6481a-1a23-4952-afc3-9b4fc91523ec', 'ACTIVE', 'PRODUCTIVE', 2521, '2026-07-07 00:00:00.000', 'Stack Overflow', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:33.267', '2026-07-25 07:26:33.267'),
+('490838e6-2b67-407a-a109-25af41cd0604', 'IDLE', 'UNPRODUCTIVE', 1074, '2026-07-22 23:42:06.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.205', '2026-07-25 07:26:38.205'),
+('49295231-ee3a-481b-bae8-ed1a8fcc0382', 'ACTIVE', 'PRODUCTIVE', 3159, '2026-07-09 16:00:00.000', 'VS Code', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:34.181', '2026-07-25 07:26:34.181'),
+('4946d5b4-6f95-484c-98ae-72372504dcc9', 'IDLE', 'UNPRODUCTIVE', 533, '2026-07-14 16:51:07.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:35.747', '2026-07-25 07:26:35.747'),
+('49584ef4-c7f0-46ae-a28d-d70ceb69668c', 'ACTIVE', 'PRODUCTIVE', 2551, '2026-07-22 00:00:00.000', 'Figma', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.075', '2026-07-25 07:26:38.075'),
+('496398c3-0dcd-4914-a108-832e11363f64', 'IDLE', 'UNPRODUCTIVE', 900, '2026-07-10 16:45:00.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:34.790', '2026-07-25 07:26:34.790'),
+('49a8d476-dd8b-42a2-8a92-8ecf5eec1bc1', 'ACTIVE', 'NEUTRAL', 3037, '2026-06-30 20:00:00.000', 'Microsoft Teams', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:31.322', '2026-07-25 07:26:31.322'),
+('49bbabbf-8b58-41a8-afdf-eb133e83ea9e', 'IDLE', 'UNPRODUCTIVE', 777, '2026-07-14 20:47:03.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:35.576', '2026-07-25 07:26:35.576'),
+('49cca41b-f2a0-4305-9a26-4452996ac385', 'ACTIVE', 'PRODUCTIVE', 3172, '2026-07-21 20:00:00.000', 'VS Code', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.047', '2026-07-25 07:26:38.047'),
+('4a08daa2-aa79-478f-9fb4-9e9882256949', 'ACTIVE', 'NEUTRAL', 2695, '2026-07-21 18:00:00.000', 'Gmail', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:37.824', '2026-07-25 07:26:37.824'),
+('4a2d7d79-b467-4647-a941-edd2defe0a4b', 'BREAK', 'NEUTRAL', 2493, '2026-07-14 19:00:00.000', 'Lunch Break', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:35.632', '2026-07-25 07:26:35.632'),
+('4a78f1ac-9e36-42ab-91d0-495072b04369', 'ACTIVE', 'NEUTRAL', 3193, '2026-07-09 00:00:00.000', 'Slack', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.117', '2026-07-25 07:26:34.117'),
+('4a7f7309-9272-4461-84f7-bfbcb9ae89b2', 'IDLE', 'UNPRODUCTIVE', 695, '2026-07-08 20:48:25.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:33.862', '2026-07-25 07:26:33.862'),
+('4a97fe43-5a71-46ec-a740-30e5e49bb951', 'ACTIVE', 'PRODUCTIVE', 2521, '2026-07-10 22:00:00.000', 'VS Code', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:34.756', '2026-07-25 07:26:34.756'),
+('4a9f9c88-0e87-42b7-89dc-6024645dcf8b', 'ACTIVE', 'PRODUCTIVE', 2863, '2026-07-01 16:00:00.000', 'Zoom', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.910', '2026-07-25 07:26:31.910'),
+('4adeb688-0892-4cce-85ca-c30ceef00359', 'IDLE', 'UNPRODUCTIVE', 707, '2026-07-12 21:48:13.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.053', '2026-07-25 07:26:35.053'),
+('4b0715db-5582-438f-a574-fd1636d227fa', 'ACTIVE', 'NEUTRAL', 2687, '2026-07-02 22:00:00.000', 'Microsoft Teams', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:32.207', '2026-07-25 07:26:32.207'),
+('4b19c75c-eeb2-4ec9-8be4-581ed561519b', 'ACTIVE', 'PRODUCTIVE', 2807, '2026-07-01 23:00:00.000', 'Google Chrome', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:31.825', '2026-07-25 07:26:31.825'),
+('4b1e3457-a86e-48b3-bfa1-5b9ddbdd2f8b', 'IDLE', 'UNPRODUCTIVE', 543, '2026-07-13 21:50:57.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.522', '2026-07-25 07:26:35.522'),
+('4b252e0c-660b-4c7d-97ba-c217dc0cae4a', 'ACTIVE', 'PRODUCTIVE', 2856, '2026-07-01 16:00:00.000', 'Notion', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:31.699', '2026-07-25 07:26:31.699'),
+('4b30456f-7f31-4b23-b3c7-e5e40d4d6912', 'IDLE', 'UNPRODUCTIVE', 409, '2026-06-26 18:53:11.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.081', '2026-07-25 07:26:30.081'),
+('4b423df0-dc67-4a02-8f81-012722470a66', 'ACTIVE', 'PRODUCTIVE', 3185, '2026-07-02 16:00:00.000', 'Google Chrome', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:32.347', '2026-07-25 07:26:32.347'),
+('4b7c6a1c-1b01-4984-af5c-41acb82adf04', 'ACTIVE', 'NEUTRAL', 3035, '2026-06-27 00:00:00.000', 'Microsoft Teams', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.133', '2026-07-25 07:26:30.133'),
+('4bb2d867-b1d5-4c67-a3d0-83d9337990de', 'ACTIVE', 'PRODUCTIVE', 2552, '2026-07-16 18:00:00.000', 'Google Chrome', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.475', '2026-07-25 07:26:36.475'),
+('4bee5520-e91f-4991-b24f-f85c8a0ee447', 'ACTIVE', 'PRODUCTIVE', 3062, '2026-07-02 17:00:00.000', 'Figma', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:32.173', '2026-07-25 07:26:32.173'),
+('4beeaf85-a6d7-473a-bc15-de2ecddcf83d', 'IDLE', 'UNPRODUCTIVE', 597, '2026-07-04 00:50:03.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:32.648', '2026-07-25 07:26:32.648'),
+('4c4ecbcf-5157-4b49-a364-54887a97a746', 'ACTIVE', 'NEUTRAL', 3204, '2026-07-15 21:00:00.000', 'Microsoft Teams', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:35.982', '2026-07-25 07:26:35.982'),
+('4c52286a-e72f-4a80-8b66-7246299db608', 'ACTIVE', 'UNPRODUCTIVE', 3055, '2026-07-03 23:00:00.000', 'Notion', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.875', '2026-07-25 07:26:32.875'),
+('4ceb92c8-c5df-443a-a57d-6c98116c4678', 'ACTIVE', 'PRODUCTIVE', 3190, '2026-07-09 16:00:00.000', 'Stack Overflow', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:34.244', '2026-07-25 07:26:34.244'),
+('4d126f29-2e6a-4708-9b31-13028863e895', 'ACTIVE', 'PRODUCTIVE', 2928, '2026-06-29 20:00:00.000', 'Notion', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.102', '2026-07-25 07:26:31.102'),
+('4d245088-b5e2-4067-9e57-d44f8a8890be', 'BREAK', 'NEUTRAL', 2471, '2026-07-16 19:00:00.000', 'Lunch Break', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:36.620', '2026-07-25 07:26:36.620'),
+('4d2d4b30-dbda-45b2-a6a1-3f724b8c6462', 'IDLE', 'UNPRODUCTIVE', 361, '2026-07-16 22:53:59.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.505', '2026-07-25 07:26:36.505'),
+('4d3c7588-95ee-43a1-8a64-2c120bb060fa', 'ACTIVE', 'PRODUCTIVE', 3161, '2026-06-30 17:00:00.000', 'Zoom', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.492', '2026-07-25 07:26:31.492'),
+('4d9b00eb-fc8a-4d59-afb0-6d3366e7ce31', 'ACTIVE', 'PRODUCTIVE', 2712, '2026-07-06 21:00:00.000', 'Stack Overflow', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.112', '2026-07-25 07:26:33.112'),
+('4e2b5dca-fa5a-47fa-a98d-56796cd41531', 'ACTIVE', 'NEUTRAL', 3127, '2026-07-16 21:00:00.000', 'Gmail', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:36.436', '2026-07-25 07:26:36.436'),
+('4e8fba25-e2a7-409a-bb1d-272e01002d28', 'BREAK', 'NEUTRAL', 2411, '2026-07-08 19:00:00.000', 'Lunch Break', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:34.145', '2026-07-25 07:26:34.145'),
+('4ef26806-7512-4f58-ba05-c562206df845', 'ACTIVE', 'PRODUCTIVE', 2988, '2026-07-20 17:00:00.000', 'Stack Overflow', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:37.631', '2026-07-25 07:26:37.631'),
+('4f12ca6a-9c20-459c-8dda-d39dff00f788', 'IDLE', 'UNPRODUCTIVE', 793, '2026-07-02 23:46:47.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:32.270', '2026-07-25 07:26:32.270'),
+('4f260809-e990-438e-8c6b-affea2be7554', 'ACTIVE', 'PRODUCTIVE', 2641, '2026-07-16 23:00:00.000', 'GitHub Desktop', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:36.648', '2026-07-25 07:26:36.648'),
+('4f2c0f76-aa51-4d5e-add4-48d5f144d106', 'ACTIVE', 'PRODUCTIVE', 2807, '2026-07-03 23:00:00.000', 'Google Chrome', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:32.638', '2026-07-25 07:26:32.638'),
+('4f47886a-a8e4-4ad6-a64a-acd310783c08', 'IDLE', 'UNPRODUCTIVE', 450, '2026-07-09 16:52:30.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.363', '2026-07-25 07:26:34.363'),
+('4f52ae03-3034-4258-bfaf-a6ac05b11ff8', 'IDLE', 'UNPRODUCTIVE', 1079, '2026-07-13 16:42:01.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:35.312', '2026-07-25 07:26:35.312'),
+('4ff683c9-40a3-47cb-a47f-015beaf17609', 'ACTIVE', 'PRODUCTIVE', 2667, '2026-07-22 23:00:00.000', 'VS Code', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.409', '2026-07-25 07:26:38.409'),
+('502b89e2-cb70-4047-ad67-39aa7f10458f', 'IDLE', 'UNPRODUCTIVE', 1079, '2026-07-10 00:42:01.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.417', '2026-07-25 07:26:34.417'),
+('50346d77-103b-4c94-86d3-99a71af2c741', 'IDLE', 'UNPRODUCTIVE', 933, '2026-07-21 23:44:27.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.071', '2026-07-25 07:26:38.071'),
+('503b717c-30ea-471a-93a2-665fb47a36fb', 'IDLE', 'UNPRODUCTIVE', 573, '2026-07-17 16:50:27.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.121', '2026-07-25 07:26:37.121'),
+('504acdbb-d14a-4422-8745-668f20799202', 'ACTIVE', 'NEUTRAL', 2722, '2026-07-24 21:00:00.000', 'Slack', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:38.901', '2026-07-25 07:26:38.901'),
+('5068a95c-eb6e-4282-834c-7c08adf624f9', 'ACTIVE', 'PRODUCTIVE', 2793, '2026-07-02 21:00:00.000', 'Google Chrome', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:32.198', '2026-07-25 07:26:32.198'),
+('506b066a-c3ce-4dbb-b760-1ecd9a5cc688', 'IDLE', 'UNPRODUCTIVE', 893, '2026-07-17 00:45:07.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:36.457', '2026-07-25 07:26:36.457'),
+('50dace7c-6103-4d45-967d-631ad4c1ba3d', 'BREAK', 'NEUTRAL', 2857, '2026-07-20 19:00:00.000', 'Lunch Break', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:37.438', '2026-07-25 07:26:37.438'),
+('50e22e29-bf6f-408d-b26b-da98c2dcedee', 'ACTIVE', 'PRODUCTIVE', 2828, '2026-07-07 18:00:00.000', 'Google Chrome', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:33.789', '2026-07-25 07:26:33.789'),
+('50e6b1be-93d4-4197-b3b8-a8ddaab1c62c', 'IDLE', 'UNPRODUCTIVE', 422, '2026-06-29 16:52:58.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:31.155', '2026-07-25 07:26:31.155'),
+('50edb671-db23-4e1a-bc24-a4778d6de93c', 'IDLE', 'UNPRODUCTIVE', 934, '2026-07-07 16:44:26.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.521', '2026-07-25 07:26:33.521'),
+('50f9d3f4-7b89-4a34-8edf-a261267cd43a', 'IDLE', 'UNPRODUCTIVE', 925, '2026-07-11 22:44:35.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.945', '2026-07-25 07:26:34.945'),
+('515badb5-1fc2-416c-a2bc-f2eaaecedbe1', 'ACTIVE', 'PRODUCTIVE', 2843, '2026-07-07 22:00:00.000', 'VS Code', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.553', '2026-07-25 07:26:33.553'),
+('51610da8-44d3-4a28-89e3-d14c2b98050f', 'ACTIVE', 'NEUTRAL', 3098, '2026-06-27 00:00:00.000', 'Gmail', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:30.401', '2026-07-25 07:26:30.401'),
+('520785a7-721a-4224-b19e-d3e24c55a92c', 'ACTIVE', 'NEUTRAL', 2960, '2026-07-06 16:00:00.000', 'Gmail', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:33.278', '2026-07-25 07:26:33.278'),
+('520b2c30-af0f-45e1-a4a7-45c86f8ffe48', 'ACTIVE', 'PRODUCTIVE', 3078, '2026-07-18 16:00:00.000', 'VS Code', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.253', '2026-07-25 07:26:37.253'),
+('5220d12f-9156-44e2-9077-512ae394a17e', 'IDLE', 'UNPRODUCTIVE', 396, '2026-07-14 22:53:24.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:35.594', '2026-07-25 07:26:35.594'),
+('523e2b7e-8e1b-48e0-a089-2659811699ac', 'IDLE', 'UNPRODUCTIVE', 806, '2026-07-21 20:46:34.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:37.837', '2026-07-25 07:26:37.837'),
+('5255cc26-8c19-41d7-9ebe-d2c3034fcf3f', 'ACTIVE', 'NEUTRAL', 3204, '2026-07-16 22:00:00.000', 'Microsoft Teams', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:36.446', '2026-07-25 07:26:36.446'),
+('5274fb82-96a8-46cd-bea8-76d3fd8bf766', 'IDLE', 'UNPRODUCTIVE', 1045, '2026-07-06 17:42:35.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:33.218', '2026-07-25 07:26:33.218'),
+('52fdd6cb-8135-42ff-8d6a-ee885b664d32', 'ACTIVE', 'NEUTRAL', 3041, '2026-07-07 17:00:00.000', 'Slack', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.526', '2026-07-25 07:26:33.526'),
+('530cd464-d28e-43cc-bff8-9249b8cd04a2', 'ACTIVE', 'PRODUCTIVE', 2733, '2026-06-29 22:00:00.000', 'VS Code', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.843', '2026-07-25 07:26:30.843'),
+('532b2bdf-b7fd-4bc5-9f9a-d16d443d5d66', 'ACTIVE', 'PRODUCTIVE', 2893, '2026-07-15 20:00:00.000', 'Stack Overflow', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:36.371', '2026-07-25 07:26:36.371'),
+('5332f065-9570-4b25-8c1e-64fa277df258', 'ACTIVE', 'PRODUCTIVE', 2620, '2026-07-02 22:00:00.000', 'VS Code', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:32.386', '2026-07-25 07:26:32.386'),
+('53635482-2e64-4992-9e38-0c300d0b60bb', 'IDLE', 'UNPRODUCTIVE', 586, '2026-07-06 23:50:14.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:33.050', '2026-07-25 07:26:33.050'),
+('53935876-13ff-4b84-9e29-f5d203b11380', 'ACTIVE', 'PRODUCTIVE', 2551, '2026-07-23 00:00:00.000', 'Figma', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.416', '2026-07-25 07:26:38.416'),
+('53964079-abfe-450e-a240-57919ac9c8a6', 'IDLE', 'UNPRODUCTIVE', 532, '2026-06-29 00:51:08.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:30.804', '2026-07-25 07:26:30.804'),
+('53b1615a-96cc-4dce-95f2-d81a8d071e07', 'ACTIVE', 'NEUTRAL', 3195, '2026-07-10 22:00:00.000', 'Gmail', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:34.514', '2026-07-25 07:26:34.514'),
+('53b60065-6e56-486f-9652-8dd3e7cf5d0f', 'IDLE', 'UNPRODUCTIVE', 520, '2026-07-15 18:51:20.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.029', '2026-07-25 07:26:36.029'),
+('53b6a8e7-c8a2-48d4-9756-bf41ed5851a9', 'ACTIVE', 'PRODUCTIVE', 2712, '2026-07-02 22:00:00.000', 'Stack Overflow', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:32.261', '2026-07-25 07:26:32.261'),
+('53bfa7ba-2b85-4363-be94-b89b571c5ecb', 'IDLE', 'UNPRODUCTIVE', 512, '2026-07-14 00:51:28.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:35.484', '2026-07-25 07:26:35.484'),
+('53e8c1e5-ee61-431d-b1a7-c87ffc2883c4', 'BREAK', 'NEUTRAL', 2985, '2026-07-03 19:00:00.000', 'Lunch Break', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:32.555', '2026-07-25 07:26:32.555'),
+('53f4194f-6ede-445a-88bd-c1f0b1a308fd', 'IDLE', 'UNPRODUCTIVE', 1079, '2026-07-08 23:42:01.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.113', '2026-07-25 07:26:34.113'),
+('54349c18-f2f5-4471-a808-e8a8d89bc6a8', 'ACTIVE', 'NEUTRAL', 3216, '2026-07-13 23:00:00.000', 'Gmail', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:35.352', '2026-07-25 07:26:35.352'),
+('545b54c1-6cd5-4cf4-b917-d6c3442b2d84', 'ACTIVE', 'PRODUCTIVE', 2850, '2026-06-29 16:00:00.000', 'Zoom', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:30.864', '2026-07-25 07:26:30.864'),
+('546bddc3-4f7d-4a60-8d2d-7038e6185fae', 'IDLE', 'UNPRODUCTIVE', 644, '2026-06-29 22:49:16.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:30.979', '2026-07-25 07:26:30.979'),
+('5473ea92-cbc8-4a34-b1aa-1bcaaed9cad8', 'BREAK', 'NEUTRAL', 3194, '2026-06-30 19:00:00.000', 'Lunch Break', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:31.319', '2026-07-25 07:26:31.319'),
+('54b829b9-103d-497b-abd5-60ac0ba9c2dd', 'IDLE', 'UNPRODUCTIVE', 896, '2026-07-07 21:45:04.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:33.493', '2026-07-25 07:26:33.493'),
+('54dc953d-0ae4-4e21-995d-cf9b7b76ab73', 'ACTIVE', 'NEUTRAL', 2710, '2026-07-10 16:00:00.000', 'Microsoft Teams', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:34.475', '2026-07-25 07:26:34.475'),
+('554da879-bfbd-4321-9a51-ee75f5cc2ba0', 'IDLE', 'UNPRODUCTIVE', 545, '2026-07-16 21:50:55.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.496', '2026-07-25 07:26:36.496'),
+('5559ded1-55f8-4ec7-ac3b-59b0327994f6', 'IDLE', 'UNPRODUCTIVE', 480, '2026-07-10 23:52:00.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:34.584', '2026-07-25 07:26:34.584'),
+('5565b817-eb13-431a-be3f-c5af165eb31e', 'IDLE', 'UNPRODUCTIVE', 458, '2026-06-30 00:52:22.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:31.211', '2026-07-25 07:26:31.211'),
+('556906f6-5c13-4c33-8d9e-e3376b8c1311', 'ACTIVE', 'NEUTRAL', 2535, '2026-07-19 16:00:00.000', 'Slack', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.320', '2026-07-25 07:26:37.320'),
+('55cb3bdd-569f-4193-9370-26f46e2e78d6', 'ACTIVE', 'NEUTRAL', 2654, '2026-07-06 23:00:00.000', 'Gmail', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:33.261', '2026-07-25 07:26:33.261'),
+('55f9a2c8-2370-4cfe-b471-f982472b5be1', 'ACTIVE', 'NEUTRAL', 2871, '2026-07-13 20:00:00.000', 'Gmail', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:35.128', '2026-07-25 07:26:35.128'),
+('56211461-11a2-4929-9fb8-379c435f689e', 'ACTIVE', 'NEUTRAL', 3102, '2026-06-28 18:00:00.000', 'Microsoft Teams', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:30.767', '2026-07-25 07:26:30.767'),
+('56623197-49fa-4f92-939a-89e5cf2896c7', 'IDLE', 'UNPRODUCTIVE', 946, '2026-07-07 23:44:14.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:33.711', '2026-07-25 07:26:33.711'),
+('569da42b-20dc-48c3-96f0-f50ed27ca61d', 'ACTIVE', 'PRODUCTIVE', 3197, '2026-07-01 20:00:00.000', 'Stack Overflow', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.935', '2026-07-25 07:26:31.935'),
+('56b2dcad-f540-4615-8725-8b057113c0e3', 'IDLE', 'UNPRODUCTIVE', 439, '2026-07-17 17:52:41.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:37.003', '2026-07-25 07:26:37.003'),
+('56bde484-86f3-4df6-b255-43b2ce50e797', 'ACTIVE', 'NEUTRAL', 3224, '2026-07-23 22:00:00.000', 'Microsoft Teams', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.675', '2026-07-25 07:26:38.675'),
+('56c308cb-36df-4302-91c4-16367e981ddf', 'ACTIVE', 'PRODUCTIVE', 2828, '2026-07-10 17:00:00.000', 'Stack Overflow', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:34.481', '2026-07-25 07:26:34.481'),
+('5710237c-d51d-49a5-8fc4-343729ef6c08', 'ACTIVE', 'PRODUCTIVE', 2710, '2026-07-22 18:00:00.000', 'VS Code', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.378', '2026-07-25 07:26:38.378'),
+('57121854-ba77-4a37-bd2e-85e5848682d0', 'ACTIVE', 'PRODUCTIVE', 2606, '2026-07-15 22:00:00.000', 'Notion', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:36.383', '2026-07-25 07:26:36.383'),
+('574c71f6-1ad7-4fe3-a684-6f7802e31432', 'IDLE', 'UNPRODUCTIVE', 713, '2026-06-26 21:48:07.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:30.372', '2026-07-25 07:26:30.372'),
+('575f77d5-0b94-44d9-9328-38974c71c556', 'BREAK', 'NEUTRAL', 3299, '2026-07-11 19:00:00.000', 'Lunch Break', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.928', '2026-07-25 07:26:34.928'),
+('57a2662a-ae50-43ac-b644-4728d8f0747c', 'ACTIVE', 'NEUTRAL', 3003, '2026-07-06 23:00:00.000', 'Microsoft Teams', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.124', '2026-07-25 07:26:33.124'),
+('57cdb45b-1fe6-4064-8524-98ddad5b698b', 'IDLE', 'UNPRODUCTIVE', 484, '2026-07-24 17:51:56.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:39.030', '2026-07-25 07:26:39.030'),
+('57ffc940-83c9-4ea3-b71c-cbb1cf5d19b7', 'IDLE', 'UNPRODUCTIVE', 439, '2026-06-30 17:52:41.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.496', '2026-07-25 07:26:31.496'),
+('581896d9-c3f2-4bd6-a2cc-7adc76fdf2b1', 'IDLE', 'UNPRODUCTIVE', 532, '2026-07-07 16:51:08.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:33.451', '2026-07-25 07:26:33.451'),
+('582074fd-9c83-4583-b229-16e5584c39b1', 'IDLE', 'UNPRODUCTIVE', 469, '2026-07-20 17:52:11.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:37.701', '2026-07-25 07:26:37.701'),
+('584f762e-05fe-42a4-b72e-66fb80b2599d', 'BREAK', 'NEUTRAL', 2678, '2026-07-09 19:00:00.000', 'Lunch Break', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:34.204', '2026-07-25 07:26:34.204'),
+('585ab3c0-6430-4500-988e-03507ec22f9b', 'ACTIVE', 'PRODUCTIVE', 2890, '2026-07-03 17:00:00.000', 'Figma', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:32.602', '2026-07-25 07:26:32.602'),
+('589f48e1-de13-4c76-a4ce-795126f3d25b', 'IDLE', 'UNPRODUCTIVE', 933, '2026-07-22 23:44:27.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.413', '2026-07-25 07:26:38.413'),
+('58b5383b-7049-40fd-90f3-026c2f10943b', 'ACTIVE', 'NEUTRAL', 3127, '2026-07-13 22:00:00.000', 'Gmail', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:35.149', '2026-07-25 07:26:35.149'),
+('58c42251-13a0-49b6-8ea0-fd5990f7bb10', 'IDLE', 'UNPRODUCTIVE', 450, '2026-07-07 00:52:30.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.133', '2026-07-25 07:26:33.133'),
+('59157fa1-d4f8-4ba5-aaef-c36ca10ab05e', 'IDLE', 'UNPRODUCTIVE', 378, '2026-07-14 20:53:42.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:35.638', '2026-07-25 07:26:35.638'),
+('592f083b-f968-4b28-bedf-0987beec42f4', 'IDLE', 'UNPRODUCTIVE', 1074, '2026-07-21 00:42:06.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:37.472', '2026-07-25 07:26:37.472'),
+('594e913c-c0e9-4a64-b30a-85e75b5e0668', 'IDLE', 'UNPRODUCTIVE', 1074, '2026-07-24 23:42:06.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.849', '2026-07-25 07:26:38.849'),
+('594f387e-94b8-4303-b801-eecbcd0bed85', 'ACTIVE', 'PRODUCTIVE', 3052, '2026-07-23 17:00:00.000', 'GitHub Desktop', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:38.705', '2026-07-25 07:26:38.705'),
+('596f6087-c3ab-4717-905b-c3984a4e0edc', 'IDLE', 'UNPRODUCTIVE', 610, '2026-07-01 18:49:50.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.127', '2026-07-25 07:26:32.127'),
+('59ab1102-2a15-4dc3-acf3-5e2a85e5c625', 'ACTIVE', 'PRODUCTIVE', 2619, '2026-07-07 20:00:00.000', 'VS Code', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:33.683', '2026-07-25 07:26:33.683'),
+('59ff1d68-27e7-4f54-8793-b0c043c2d7c8', 'ACTIVE', 'PRODUCTIVE', 3068, '2026-07-15 16:00:00.000', 'VS Code', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.012', '2026-07-25 07:26:36.012'),
+('5a0b79af-f90a-49de-9c6c-5b441ecc6c22', 'ACTIVE', 'UNPRODUCTIVE', 2887, '2026-06-26 21:00:00.000', 'Notion', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:30.368', '2026-07-25 07:26:30.368'),
+('5a255baf-e23f-4c16-9440-b23a8bb6e89f', 'IDLE', 'UNPRODUCTIVE', 772, '2026-07-07 18:47:08.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:33.793', '2026-07-25 07:26:33.793'),
+('5a2a398c-82f6-4cc5-8ae6-34f472b1a6ed', 'ACTIVE', 'PRODUCTIVE', 3055, '2026-07-14 21:00:00.000', 'Zoom', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:35.641', '2026-07-25 07:26:35.641'),
+('5a42b462-7517-409d-8da1-6b761ae79e17', 'ACTIVE', 'PRODUCTIVE', 2829, '2026-07-17 23:00:00.000', 'Figma', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.910', '2026-07-25 07:26:36.910'),
+('5a5b1052-2d98-4c82-adb3-9d2ef3eb19b3', 'IDLE', 'UNPRODUCTIVE', 908, '2026-07-10 23:44:52.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:34.522', '2026-07-25 07:26:34.522'),
+('5ab83e70-f815-4c4a-bc5b-69dcb645f134', 'IDLE', 'UNPRODUCTIVE', 561, '2026-07-10 00:50:39.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:34.237', '2026-07-25 07:26:34.237'),
+('5ac7c38f-6e2c-4271-bae2-225f5c75ade4', 'ACTIVE', 'NEUTRAL', 3036, '2026-07-15 18:00:00.000', 'Microsoft Teams', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:36.361', '2026-07-25 07:26:36.361'),
+('5ad3b2a9-478a-4b3d-9192-888e6d550df1', 'ACTIVE', 'NEUTRAL', 3082, '2026-07-16 23:00:00.000', 'Gmail', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:36.774', '2026-07-25 07:26:36.774'),
+('5ad451d3-f1c1-4440-818d-b0c9c3d1aee5', 'IDLE', 'UNPRODUCTIVE', 1073, '2026-07-06 22:42:07.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.121', '2026-07-25 07:26:33.121'),
+('5af60f03-be8f-495c-97b0-b1051f4dbcb6', 'ACTIVE', 'PRODUCTIVE', 3160, '2026-07-01 20:00:00.000', 'Google Chrome', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.061', '2026-07-25 07:26:32.061'),
+('5b0367c9-5c46-4e9c-9192-58142a054817', 'IDLE', 'UNPRODUCTIVE', 378, '2026-07-16 20:53:42.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.490', '2026-07-25 07:26:36.490'),
+('5b04dcc5-2767-42d5-9fa8-6c1f9aa5a593', 'ACTIVE', 'PRODUCTIVE', 2851, '2026-07-14 21:00:00.000', 'Zoom', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.904', '2026-07-25 07:26:35.904'),
+('5b119630-a5cf-490c-983b-dfeb2558bd2f', 'IDLE', 'UNPRODUCTIVE', 1008, '2026-07-18 00:43:12.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.919', '2026-07-25 07:26:36.919'),
+('5b721ace-3ff8-4ec2-8699-9c1c1a398640', 'IDLE', 'UNPRODUCTIVE', 842, '2026-06-30 21:45:58.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:31.598', '2026-07-25 07:26:31.598'),
+('5b9d56f0-e7c8-4893-bb21-2b446c07db84', 'BREAK', 'NEUTRAL', 2427, '2026-07-14 19:00:00.000', 'Lunch Break', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:35.828', '2026-07-25 07:26:35.828'),
+('5bda8323-b566-4226-9051-70333044fd2b', 'IDLE', 'UNPRODUCTIVE', 729, '2026-06-30 20:47:51.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.520', '2026-07-25 07:26:31.520'),
+('5c0985b0-1a91-4adc-9149-5d28dc31d4d1', 'ACTIVE', 'PRODUCTIVE', 2733, '2026-06-27 22:00:00.000', 'VS Code', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.560', '2026-07-25 07:26:30.560'),
+('5c102383-6612-4cf8-a660-aed0b29917f9', 'ACTIVE', 'PRODUCTIVE', 2622, '2026-07-21 23:00:00.000', 'Stack Overflow', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:37.852', '2026-07-25 07:26:37.852'),
+('5c1be55f-38db-4167-9ab4-9777bccfe834', 'ACTIVE', 'NEUTRAL', 2657, '2026-06-29 18:00:00.000', 'Gmail', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:31.231', '2026-07-25 07:26:31.231'),
+('5c3d0b6b-0404-4738-8be2-47ba5f5f18c4', 'IDLE', 'UNPRODUCTIVE', 1019, '2026-06-27 23:43:01.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.572', '2026-07-25 07:26:30.572'),
+('5c440dc6-d1da-4eb5-81b2-eab1747c6b8e', 'ACTIVE', 'PRODUCTIVE', 2864, '2026-07-25 00:00:00.000', 'Zoom', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:38.921', '2026-07-25 07:26:38.921'),
+('5cda9c39-3b73-4017-b049-1ed30ac80e8d', 'ACTIVE', 'NEUTRAL', 2715, '2026-06-28 21:00:00.000', 'Microsoft Teams', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:30.785', '2026-07-25 07:26:30.785'),
+('5ce00f9b-c41e-4185-a18b-c78ffe036ec8', 'ACTIVE', 'PRODUCTIVE', 2725, '2026-06-30 20:00:00.000', 'Zoom', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:31.588', '2026-07-25 07:26:31.588'),
+('5d3790be-23d1-4f4b-99ad-cadc4072ef98', 'IDLE', 'UNPRODUCTIVE', 1036, '2026-07-15 22:42:44.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:36.327', '2026-07-25 07:26:36.327'),
+('5d45fb19-a862-4679-9812-f02d6a011b75', 'IDLE', 'UNPRODUCTIVE', 737, '2026-07-01 16:47:43.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.913', '2026-07-25 07:26:31.913'),
+('5d6203a4-a08d-4d61-a51a-be1b96dcfb11', 'IDLE', 'UNPRODUCTIVE', 557, '2026-06-27 20:50:43.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.544', '2026-07-25 07:26:30.544'),
+('5d681d52-67bf-4d1b-96e4-01771203f3f6', 'ACTIVE', 'NEUTRAL', 2785, '2026-07-08 00:00:00.000', 'Gmail', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:33.506', '2026-07-25 07:26:33.506'),
+('5d692910-4cec-43a3-81a4-5d5fee2c997e', 'IDLE', 'UNPRODUCTIVE', 384, '2026-07-11 23:53:36.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.951', '2026-07-25 07:26:34.951'),
+('5d7a5854-9527-48fd-a1b0-43e812dac7b2', 'IDLE', 'UNPRODUCTIVE', 410, '2026-07-06 17:53:10.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.085', '2026-07-25 07:26:33.085'),
+('5e17ff9b-8bfd-4ae7-82eb-daa706034906', 'IDLE', 'UNPRODUCTIVE', 613, '2026-07-07 17:49:47.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:33.730', '2026-07-25 07:26:33.730'),
+('5e234ffd-1942-4257-b7c0-e6e2364a2f76', 'IDLE', 'UNPRODUCTIVE', 958, '2026-07-02 21:44:02.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:32.379', '2026-07-25 07:26:32.379'),
+('5e49448f-b904-48f0-8097-f61007aaca25', 'IDLE', 'UNPRODUCTIVE', 694, '2026-07-09 22:48:26.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:34.283', '2026-07-25 07:26:34.283'),
+('5e57f6b3-f854-4caa-a1f6-34461c75d0c6', 'IDLE', 'UNPRODUCTIVE', 911, '2026-07-17 22:44:49.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.230', '2026-07-25 07:26:37.230'),
+('5e6b4d9a-d74f-4cec-bf62-dbc309586ccd', 'IDLE', 'UNPRODUCTIVE', 870, '2026-07-17 21:45:30.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:37.028', '2026-07-25 07:26:37.028'),
+('5e7504ef-8e75-4b3c-a251-e7d7b4fe229c', 'ACTIVE', 'PRODUCTIVE', 3079, '2026-07-17 17:00:00.000', 'Zoom', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:37.061', '2026-07-25 07:26:37.061'),
+('5e85a399-8aaa-48f8-9136-c84389e0940c', 'IDLE', 'UNPRODUCTIVE', 440, '2026-07-01 20:52:40.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.065', '2026-07-25 07:26:32.065'),
+('5ec2158d-7cfa-4552-a20a-81189836c6fb', 'ACTIVE', 'NEUTRAL', 3016, '2026-07-01 16:00:00.000', 'Microsoft Teams', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.008', '2026-07-25 07:26:32.008'),
+('5ec4cc7d-8eba-4a61-af86-c39ae64f60dc', 'IDLE', 'UNPRODUCTIVE', 669, '2026-06-26 17:48:51.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:30.334', '2026-07-25 07:26:30.334'),
+('5ed7bc2a-7cc1-4240-818d-5d96ff6b5f2a', 'IDLE', 'UNPRODUCTIVE', 1022, '2026-06-30 16:42:58.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:31.294', '2026-07-25 07:26:31.294'),
+('5f1d1180-417b-4cd0-94f0-4fb2f56d9479', 'IDLE', 'UNPRODUCTIVE', 440, '2026-07-07 18:52:40.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:33.735', '2026-07-25 07:26:33.735'),
+('5f496071-7cc3-47c9-8e65-d0db9d86d577', 'BREAK', 'NEUTRAL', 2624, '2026-07-13 19:00:00.000', 'Lunch Break', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:35.124', '2026-07-25 07:26:35.124'),
+('5f4a4476-e1c0-42c3-a403-b78398f53700', 'IDLE', 'UNPRODUCTIVE', 961, '2026-07-22 17:43:59.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.148', '2026-07-25 07:26:38.148'),
+('5f632f79-6362-4599-a02b-e86d19dd7064', 'IDLE', 'UNPRODUCTIVE', 946, '2026-07-10 16:44:14.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.664', '2026-07-25 07:26:34.664'),
+('5f6d3d51-91e4-47aa-8b97-4d5f4c2db57f', 'BREAK', 'NEUTRAL', 2432, '2026-07-21 19:00:00.000', 'Lunch Break', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.044', '2026-07-25 07:26:38.044'),
+('5f8390a7-09db-4624-8f91-bd78dee5a8c2', 'ACTIVE', 'PRODUCTIVE', 2915, '2026-07-06 22:00:00.000', 'Zoom', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:33.428', '2026-07-25 07:26:33.428'),
+('5f8ccf92-0927-4d1f-9d4d-5ea92b7a01e1', 'ACTIVE', 'NEUTRAL', 3229, '2026-07-14 17:00:00.000', 'Gmail', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:35.812', '2026-07-25 07:26:35.812'),
+('5feb35b8-7a14-45ea-9f88-47b672f552ca', 'ACTIVE', 'PRODUCTIVE', 2881, '2026-07-10 17:00:00.000', 'GitHub Desktop', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:34.540', '2026-07-25 07:26:34.540'),
+('5ff79dd8-2c8e-434b-accf-2f8f69431ba4', 'ACTIVE', 'NEUTRAL', 3079, '2026-06-29 20:00:00.000', 'Microsoft Teams', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:30.886', '2026-07-25 07:26:30.886'),
+('60123f77-e0f9-46c4-91e6-da2f457b73a6', 'IDLE', 'UNPRODUCTIVE', 613, '2026-07-06 18:49:47.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:33.296', '2026-07-25 07:26:33.296'),
+('60967c91-976a-4683-83ee-832d984606e9', 'IDLE', 'UNPRODUCTIVE', 604, '2026-07-02 16:49:56.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.414', '2026-07-25 07:26:32.414'),
+('60a0626d-d3ee-40f5-9fdf-d2fcd6ecf85b', 'IDLE', 'UNPRODUCTIVE', 924, '2026-06-26 17:44:36.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:30.428', '2026-07-25 07:26:30.428'),
+('60c4a4a8-d36e-49b7-9f7a-e7df2c38e116', 'IDLE', 'UNPRODUCTIVE', 866, '2026-07-01 16:45:34.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:31.768', '2026-07-25 07:26:31.768'),
+('60cbe2e5-9a2f-4d8c-becf-a0fda28c19a0', 'IDLE', 'UNPRODUCTIVE', 528, '2026-07-12 16:51:12.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.027', '2026-07-25 07:26:35.027'),
+('60d9bdbe-da1e-4988-9a19-608dadceafea', 'ACTIVE', 'PRODUCTIVE', 3186, '2026-07-17 22:00:00.000', 'GitHub Desktop', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:36.838', '2026-07-25 07:26:36.838'),
+('613514e8-e7a7-4195-a4ba-577c9078142b', 'ACTIVE', 'NEUTRAL', 3224, '2026-07-11 18:00:00.000', 'Gmail', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.921', '2026-07-25 07:26:34.921'),
+('6141784b-d379-474a-90e9-2a24ecf7b958', 'IDLE', 'UNPRODUCTIVE', 793, '2026-07-03 23:46:47.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:32.642', '2026-07-25 07:26:32.642'),
+('616b16f4-532d-471f-a750-71ea9b7789d1', 'ACTIVE', 'PRODUCTIVE', 2781, '2026-07-20 20:00:00.000', 'Notion', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:37.649', '2026-07-25 07:26:37.649'),
+('618efed4-690a-445e-ac60-b605ec955dc2', 'IDLE', 'UNPRODUCTIVE', 476, '2026-07-02 17:52:04.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:32.237', '2026-07-25 07:26:32.237'),
+('61a7a944-9ba7-437a-9e9c-19a8fc30bdd5', 'IDLE', 'UNPRODUCTIVE', 689, '2026-07-06 16:48:31.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:33.212', '2026-07-25 07:26:33.212'),
+('61dc6203-c9f1-465d-92e4-b092bed8fe30', 'ACTIVE', 'NEUTRAL', 3057, '2026-07-10 22:00:00.000', 'Gmail', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:34.821', '2026-07-25 07:26:34.821'),
+('6252b6f1-3405-448b-aee6-7aa28e5173d7', 'ACTIVE', 'PRODUCTIVE', 2617, '2026-07-20 23:00:00.000', 'Stack Overflow', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.797', '2026-07-25 07:26:37.797'),
+('625cf186-c339-4556-939a-ed0aa65322be', 'IDLE', 'UNPRODUCTIVE', 1053, '2026-07-13 17:42:27.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:35.185', '2026-07-25 07:26:35.185'),
+('6261bf7b-c291-4472-a483-2a7abf858b88', 'IDLE', 'UNPRODUCTIVE', 521, '2026-07-10 20:51:19.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:34.745', '2026-07-25 07:26:34.745'),
+('62b51580-c06b-4077-93c3-afd8dfb7bdb3', 'IDLE', 'UNPRODUCTIVE', 911, '2026-07-19 22:44:49.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.368', '2026-07-25 07:26:37.368'),
+('62be6d49-8d6c-4afd-a352-d0909e3562d2', 'IDLE', 'UNPRODUCTIVE', 1073, '2026-07-07 21:42:07.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:33.809', '2026-07-25 07:26:33.809'),
+('62df3c7e-4db3-44a5-8115-e3b60e1ce054', 'ACTIVE', 'NEUTRAL', 2547, '2026-07-13 17:00:00.000', 'Microsoft Teams', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:35.182', '2026-07-25 07:26:35.182'),
+('632f4cb2-61aa-4347-a5c9-1f2eb849e1ea', 'ACTIVE', 'PRODUCTIVE', 3190, '2026-07-03 18:00:00.000', 'Stack Overflow', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:32.608', '2026-07-25 07:26:32.608');
+INSERT INTO `activity_logs` (`id`, `activityType`, `productivity`, `duration`, `timestamp`, `appWebsite`, `employeeId`, `taskId`, `organizationId`, `createdAt`, `updatedAt`) VALUES
+('6343f0fd-8eff-47d8-9cde-0a13184bc45c', 'ACTIVE', 'PRODUCTIVE', 3233, '2026-07-20 21:00:00.000', 'Zoom', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.781', '2026-07-25 07:26:37.781'),
+('6365d557-82f3-4705-84f9-62004b31ac06', 'ACTIVE', 'NEUTRAL', 3216, '2026-07-11 23:00:00.000', 'Gmail', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.948', '2026-07-25 07:26:34.948'),
+('638d2e7a-20d0-4bbc-86de-0173a61f80eb', 'IDLE', 'UNPRODUCTIVE', 528, '2026-07-07 00:51:12.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:33.443', '2026-07-25 07:26:33.443'),
+('638eec36-86ef-445a-b1e0-cf71d24a82be', 'IDLE', 'UNPRODUCTIVE', 783, '2026-07-14 17:46:57.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:35.752', '2026-07-25 07:26:35.752'),
+('63cb8ce4-d9f3-4989-a210-4562d8c47b0e', 'IDLE', 'UNPRODUCTIVE', 1008, '2026-07-22 16:43:12.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:38.223', '2026-07-25 07:26:38.223'),
+('63d539ce-ebfd-44df-8892-9aabd3c2eab2', 'IDLE', 'UNPRODUCTIVE', 890, '2026-07-10 16:45:10.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:34.478', '2026-07-25 07:26:34.478'),
+('63d5c1a7-68ab-46f2-8749-46d79b5eb1fd', 'ACTIVE', 'PRODUCTIVE', 2730, '2026-07-01 00:00:00.000', 'Zoom', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:31.368', '2026-07-25 07:26:31.368'),
+('64496038-0a57-4c7d-86c8-6882e6427c4c', 'IDLE', 'UNPRODUCTIVE', 403, '2026-07-14 16:53:17.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.873', '2026-07-25 07:26:35.873'),
+('644f723b-0d28-47d7-a0e6-04497b9507c1', 'ACTIVE', 'NEUTRAL', 2562, '2026-07-03 21:00:00.000', 'Slack', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:32.748', '2026-07-25 07:26:32.748'),
+('64955a11-f654-4c5c-a6e3-11e10f014854', 'ACTIVE', 'PRODUCTIVE', 3043, '2026-06-26 16:00:00.000', 'GitHub Desktop', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:30.148', '2026-07-25 07:26:30.148'),
+('64adfc90-c65b-4986-a126-b9514d734117', 'ACTIVE', 'PRODUCTIVE', 2659, '2026-07-22 17:00:00.000', 'VS Code', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:38.437', '2026-07-25 07:26:38.437'),
+('64d67d29-02fe-477a-bb0b-23718ec56d7d', 'ACTIVE', 'NEUTRAL', 3161, '2026-07-17 17:00:00.000', 'Slack', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:37.001', '2026-07-25 07:26:37.001'),
+('64dffe58-c430-4f3b-9f2d-4a68bfdaa6cd', 'IDLE', 'UNPRODUCTIVE', 376, '2026-07-23 22:53:44.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.679', '2026-07-25 07:26:38.679'),
+('65063cdc-2020-4a46-8990-77fb1b5d4774', 'ACTIVE', 'NEUTRAL', 3088, '2026-07-16 00:00:00.000', 'Gmail', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:36.339', '2026-07-25 07:26:36.339'),
+('650a50b2-c836-42f3-aeda-1aa315ee9510', 'IDLE', 'UNPRODUCTIVE', 403, '2026-07-11 17:53:17.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:34.976', '2026-07-25 07:26:34.976'),
+('652ae314-0c1a-48f0-85de-47191d727146', 'ACTIVE', 'PRODUCTIVE', 2833, '2026-07-18 00:00:00.000', 'GitHub Desktop', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.240', '2026-07-25 07:26:37.240'),
+('65320552-9a36-422f-b6db-e722f5a6f2bc', 'IDLE', 'UNPRODUCTIVE', 613, '2026-07-09 17:49:47.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:34.432', '2026-07-25 07:26:34.432'),
+('65d70b85-a16b-4a1a-ab2a-fc6dc2991161', 'IDLE', 'UNPRODUCTIVE', 512, '2026-07-22 16:51:28.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.366', '2026-07-25 07:26:38.366'),
+('65e4869d-06f4-4034-bf68-74a56217fb9b', 'ACTIVE', 'PRODUCTIVE', 2732, '2026-07-17 18:00:00.000', 'Figma', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.874', '2026-07-25 07:26:36.874'),
+('65ea4aac-211a-4172-9bf9-036dd2f3bb95', 'ACTIVE', 'PRODUCTIVE', 2733, '2026-07-03 17:00:00.000', 'Stack Overflow', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:32.540', '2026-07-25 07:26:32.540'),
+('65f10677-851f-4afd-95a3-29315709b348', 'ACTIVE', 'NEUTRAL', 2846, '2026-07-17 18:00:00.000', 'Slack', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:36.812', '2026-07-25 07:26:36.812'),
+('663fa962-c1a4-4d43-b248-d44ef057a81a', 'IDLE', 'UNPRODUCTIVE', 1074, '2026-07-22 00:42:06.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:37.861', '2026-07-25 07:26:37.861'),
+('6656cd70-2abc-4268-98b2-8c08a7d16ac1', 'IDLE', 'UNPRODUCTIVE', 754, '2026-07-15 18:47:26.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:35.964', '2026-07-25 07:26:35.964'),
+('667bf50c-ed0a-42e8-9a75-77597e8f982f', 'IDLE', 'UNPRODUCTIVE', 819, '2026-07-20 22:46:21.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.794', '2026-07-25 07:26:37.794'),
+('6683fdb6-6ac1-4728-b0d4-be58544755fe', 'ACTIVE', 'PRODUCTIVE', 3080, '2026-07-17 17:00:00.000', 'VS Code', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.869', '2026-07-25 07:26:36.869'),
+('668d9cd4-34b8-4495-9539-2358975c3040', 'ACTIVE', 'PRODUCTIVE', 3237, '2026-07-07 23:00:00.000', 'Zoom', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:33.817', '2026-07-25 07:26:33.817'),
+('66ad69a3-8f7a-4e32-9a5a-02d5f2ae7275', 'IDLE', 'UNPRODUCTIVE', 907, '2026-07-07 20:44:53.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:33.747', '2026-07-25 07:26:33.747'),
+('66c59cff-7d44-4646-a243-1c37ece78277', 'IDLE', 'UNPRODUCTIVE', 774, '2026-07-16 22:47:06.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:36.772', '2026-07-25 07:26:36.772'),
+('66c7c77a-a730-468c-954e-6d440fd0243c', 'IDLE', 'UNPRODUCTIVE', 680, '2026-07-08 22:48:40.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:34.166', '2026-07-25 07:26:34.166'),
+('66eefd76-fd2a-4f83-97ee-599d3529d17d', 'ACTIVE', 'PRODUCTIVE', 2592, '2026-07-17 00:00:00.000', 'Zoom', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.516', '2026-07-25 07:26:36.516'),
+('67043bfe-6fe3-4c74-8091-f7ccb61f8334', 'ACTIVE', 'PRODUCTIVE', 2891, '2026-06-26 20:00:00.000', 'Google Chrome', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:30.179', '2026-07-25 07:26:30.179'),
+('673b4f98-d7df-4de2-b965-f75848d57e94', 'IDLE', 'UNPRODUCTIVE', 369, '2026-07-03 22:53:51.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.869', '2026-07-25 07:26:32.869'),
+('675e1e2d-d48f-49a1-af5f-3c9d7de196f3', 'IDLE', 'UNPRODUCTIVE', 532, '2026-07-15 16:51:08.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.014', '2026-07-25 07:26:36.014'),
+('6794ec53-41f1-4657-8214-84cd3a768aa6', 'ACTIVE', 'PRODUCTIVE', 2527, '2026-07-06 22:00:00.000', 'Google Chrome', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.118', '2026-07-25 07:26:33.118'),
+('67f8b40c-108d-4558-9610-a435b82e500c', 'ACTIVE', 'PRODUCTIVE', 2654, '2026-07-20 18:00:00.000', 'Figma', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:37.500', '2026-07-25 07:26:37.500'),
+('6843168f-f936-4701-9723-8a8c05c1f922', 'ACTIVE', 'PRODUCTIVE', 2667, '2026-07-21 00:00:00.000', 'VS Code', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:37.739', '2026-07-25 07:26:37.739'),
+('68bc005d-18fa-4d86-ab6d-4ff6432589ee', 'IDLE', 'UNPRODUCTIVE', 405, '2026-07-03 22:53:15.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:32.577', '2026-07-25 07:26:32.577'),
+('68d137d7-8380-4ffb-8546-11ddc13fb2ac', 'ACTIVE', 'PRODUCTIVE', 3218, '2026-06-26 22:00:00.000', 'Google Chrome', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:30.196', '2026-07-25 07:26:30.196'),
+('68e32a38-0191-4129-8fb7-5702370727b0', 'IDLE', 'UNPRODUCTIVE', 1038, '2026-07-14 21:42:42.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:35.773', '2026-07-25 07:26:35.773'),
+('69058174-0093-4957-ae2a-fd29897c3eb1', 'BREAK', 'NEUTRAL', 2493, '2026-07-16 19:00:00.000', 'Lunch Break', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.484', '2026-07-25 07:26:36.484'),
+('6992fdd4-b4b1-43a6-bc9e-7d9bd7577bc9', 'ACTIVE', 'PRODUCTIVE', 2530, '2026-07-15 23:00:00.000', 'VS Code', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:36.333', '2026-07-25 07:26:36.333'),
+('69a17342-e16a-41f4-ba8e-f9caa4c08e46', 'IDLE', 'UNPRODUCTIVE', 652, '2026-06-30 16:49:08.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:31.629', '2026-07-25 07:26:31.629'),
+('69a39273-c4c7-460b-8b1a-43e6811b8bc4', 'ACTIVE', 'PRODUCTIVE', 2733, '2026-07-06 16:00:00.000', 'Stack Overflow', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:32.950', '2026-07-25 07:26:32.950'),
+('69c8aebc-8bbe-47cc-8e99-656e103fb6ee', 'IDLE', 'UNPRODUCTIVE', 1064, '2026-07-10 21:42:16.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:34.754', '2026-07-25 07:26:34.754'),
+('69cedb8d-fff5-427c-aff0-5550440f80a7', 'ACTIVE', 'NEUTRAL', 2758, '2026-07-21 22:00:00.000', 'Slack', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:37.998', '2026-07-25 07:26:37.998'),
+('69d7c29a-3858-4123-a75f-c5e6687b98d7', 'IDLE', 'UNPRODUCTIVE', 450, '2026-07-09 23:52:30.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:34.231', '2026-07-25 07:26:34.231'),
+('69e70877-e5f8-4d9f-9db3-a20fa86f2148', 'IDLE', 'UNPRODUCTIVE', 1020, '2026-07-01 21:43:00.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.141', '2026-07-25 07:26:32.141'),
+('6a444bad-ddb0-4f13-a15a-029f3b0e91d8', 'ACTIVE', 'PRODUCTIVE', 2758, '2026-06-30 21:00:00.000', 'Stack Overflow', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:31.595', '2026-07-25 07:26:31.595'),
+('6a6971ca-4c89-4ada-8bb9-9ada40f65635', 'IDLE', 'UNPRODUCTIVE', 581, '2026-06-29 17:50:19.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.085', '2026-07-25 07:26:31.085'),
+('6a7125e6-5f94-45ff-908f-da2fdc7fa587', 'ACTIVE', 'NEUTRAL', 3058, '2026-07-08 00:00:00.000', 'Gmail', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.565', '2026-07-25 07:26:33.565'),
+('6a7f09cd-0950-4913-96cc-b61a0b14dcda', 'ACTIVE', 'PRODUCTIVE', 2889, '2026-06-26 22:00:00.000', 'VS Code', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.115', '2026-07-25 07:26:30.115'),
+('6a944bc9-f27c-428e-8cec-41ed9a1edaca', 'IDLE', 'UNPRODUCTIVE', 925, '2026-07-13 22:44:35.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:35.349', '2026-07-25 07:26:35.349'),
+('6ac52e77-1514-4ede-92e7-8bc4c2c2d937', 'IDLE', 'UNPRODUCTIVE', 469, '2026-07-15 21:52:11.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:36.380', '2026-07-25 07:26:36.380'),
+('6accb9c4-f749-457c-b99c-dff80d90ad1d', 'ACTIVE', 'PRODUCTIVE', 3058, '2026-07-21 17:00:00.000', 'GitHub Desktop', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:37.819', '2026-07-25 07:26:37.819'),
+('6ae18234-7e55-435c-a7b9-71728a0b39ec', 'ACTIVE', 'PRODUCTIVE', 3197, '2026-07-03 20:00:00.000', 'Stack Overflow', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:32.737', '2026-07-25 07:26:32.737'),
+('6b7ae485-f2b3-4607-8408-977a629e4bc5', 'ACTIVE', 'PRODUCTIVE', 3043, '2026-07-10 22:00:00.000', 'VS Code', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.695', '2026-07-25 07:26:34.695'),
+('6bb5b17b-c14f-4e93-9b75-c2b3b3057298', 'IDLE', 'UNPRODUCTIVE', 1075, '2026-07-03 20:42:05.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:32.620', '2026-07-25 07:26:32.620'),
+('6bc97100-1de5-4f36-8138-06bdb5bba5c2', 'ACTIVE', 'NEUTRAL', 2832, '2026-07-20 23:00:00.000', 'Microsoft Teams', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:37.531', '2026-07-25 07:26:37.531'),
+('6bd44ffe-dec5-4538-b96a-2b661af7d152', 'ACTIVE', 'PRODUCTIVE', 3084, '2026-06-26 21:00:00.000', 'Figma', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:30.456', '2026-07-25 07:26:30.456'),
+('6bd6c1c7-0b7d-474a-9262-3c723ac13b45', 'IDLE', 'UNPRODUCTIVE', 605, '2026-07-09 17:49:55.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.369', '2026-07-25 07:26:34.369'),
+('6c0c3e80-5020-4497-87df-1921535f0632', 'IDLE', 'UNPRODUCTIVE', 888, '2026-07-02 22:45:12.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:32.264', '2026-07-25 07:26:32.264'),
+('6c4539e3-a9d6-43dc-baac-9cf7190234f4', 'IDLE', 'UNPRODUCTIVE', 617, '2026-07-05 22:49:43.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.935', '2026-07-25 07:26:32.935'),
+('6c52f232-4173-49cc-95ce-cc9185e2d0b7', 'IDLE', 'UNPRODUCTIVE', 768, '2026-07-24 22:47:12.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:38.912', '2026-07-25 07:26:38.912'),
+('6c77f6b2-3bbc-4807-b48b-6445afb0a485', 'ACTIVE', 'NEUTRAL', 2924, '2026-07-07 16:00:00.000', 'Gmail', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:33.636', '2026-07-25 07:26:33.636'),
+('6ca0b8ea-491d-40fc-9f87-979aefca0d6a', 'ACTIVE', 'PRODUCTIVE', 2827, '2026-07-03 21:00:00.000', 'Stack Overflow', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:32.623', '2026-07-25 07:26:32.623'),
+('6cb9253a-8841-4971-98e1-8e2d6284c722', 'ACTIVE', 'PRODUCTIVE', 3160, '2026-07-07 18:00:00.000', 'Google Chrome', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:33.732', '2026-07-25 07:26:33.732'),
+('6cc45de1-2d1b-452d-997c-cbdf9508f3ab', 'ACTIVE', 'PRODUCTIVE', 2983, '2026-07-06 22:00:00.000', 'Zoom', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:33.328', '2026-07-25 07:26:33.328'),
+('6cc5e040-b1a3-4aa8-8a8e-9b46c5a30631', 'ACTIVE', 'PRODUCTIVE', 2594, '2026-07-08 22:00:00.000', 'GitHub Desktop', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.102', '2026-07-25 07:26:34.102'),
+('6d02eea0-8c05-48bf-aeee-69e95dea2003', 'ACTIVE', 'PRODUCTIVE', 2996, '2026-07-02 16:00:00.000', 'VS Code', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.411', '2026-07-25 07:26:32.411'),
+('6d58dea8-ce0b-400b-a7b4-3c573d56a381', 'IDLE', 'UNPRODUCTIVE', 823, '2026-07-08 17:46:17.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.047', '2026-07-25 07:26:34.047'),
+('6d74b9ba-c7a2-41d2-965b-763c3ac57c66', 'ACTIVE', 'PRODUCTIVE', 2525, '2026-07-07 18:00:00.000', 'Figma', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.531', '2026-07-25 07:26:33.531'),
+('6d7fe07b-df7b-466d-9e17-17a26eba8dc4', 'IDLE', 'UNPRODUCTIVE', 945, '2026-07-20 20:44:15.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.778', '2026-07-25 07:26:37.778'),
+('6dabb4d8-a075-4f8d-a3f0-2ce3b2c48304', 'IDLE', 'UNPRODUCTIVE', 870, '2026-07-14 22:45:30.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:35.785', '2026-07-25 07:26:35.785'),
+('6dfbab28-ec22-4d76-8053-827d16f48ddc', 'ACTIVE', 'PRODUCTIVE', 2642, '2026-07-02 21:00:00.000', 'GitHub Desktop', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:32.376', '2026-07-25 07:26:32.376'),
+('6e22cc95-b8c4-4360-b225-d4fb9f1a648b', 'IDLE', 'UNPRODUCTIVE', 890, '2026-07-22 18:45:10.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.381', '2026-07-25 07:26:38.381'),
+('6e6e394a-25ca-47a3-b7a1-0d45bd66b571', 'IDLE', 'UNPRODUCTIVE', 711, '2026-07-08 16:48:09.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:33.835', '2026-07-25 07:26:33.835'),
+('6e74f6f3-4fe0-4238-ab4f-69720b920ddc', 'IDLE', 'UNPRODUCTIVE', 893, '2026-07-15 00:45:07.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:35.602', '2026-07-25 07:26:35.602'),
+('6e9027e1-682f-44af-9ca9-25bc9d89f273', 'ACTIVE', 'PRODUCTIVE', 2585, '2026-07-06 16:00:00.000', 'Zoom', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:33.352', '2026-07-25 07:26:33.352'),
+('6eb92391-b6a2-4468-9153-c167b3343fbb', 'ACTIVE', 'PRODUCTIVE', 3039, '2026-07-16 17:00:00.000', 'VS Code', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:36.411', '2026-07-25 07:26:36.411'),
+('6ebccfd6-dd2f-4db6-8f6f-63277b3f278b', 'ACTIVE', 'NEUTRAL', 2854, '2026-07-01 20:00:00.000', 'Microsoft Teams', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:31.796', '2026-07-25 07:26:31.796'),
+('6f6d4935-d143-4780-867a-a83de6d88225', 'ACTIVE', 'PRODUCTIVE', 2833, '2026-07-20 00:00:00.000', 'GitHub Desktop', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.397', '2026-07-25 07:26:37.397'),
+('6f6de050-0aa6-4807-86a2-e453a012ee62', 'IDLE', 'UNPRODUCTIVE', 689, '2026-07-03 17:48:31.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:32.726', '2026-07-25 07:26:32.726'),
+('6f863a91-548f-46d2-9a69-168cc67ebef2', 'IDLE', 'UNPRODUCTIVE', 521, '2026-07-14 18:51:19.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:35.821', '2026-07-25 07:26:35.821'),
+('6fefee83-bf99-4ece-ba63-3333f2e78266', 'IDLE', 'UNPRODUCTIVE', 746, '2026-07-08 17:47:34.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.910', '2026-07-25 07:26:33.910'),
+('701bf464-bafa-4bec-a9ef-bdf768329f53', 'IDLE', 'UNPRODUCTIVE', 623, '2026-07-24 17:49:37.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:38.874', '2026-07-25 07:26:38.874'),
+('705b011c-bf78-480d-912a-91d41823e1c8', 'IDLE', 'UNPRODUCTIVE', 1053, '2026-07-17 23:42:27.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:37.040', '2026-07-25 07:26:37.040'),
+('706ae1db-5260-4552-85ed-f926e81aea82', 'ACTIVE', 'PRODUCTIVE', 3080, '2026-07-15 18:00:00.000', 'VS Code', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.024', '2026-07-25 07:26:36.024'),
+('7076a7b9-47d3-46ac-b011-c644a383321f', 'IDLE', 'UNPRODUCTIVE', 987, '2026-07-10 00:43:33.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:34.469', '2026-07-25 07:26:34.469'),
+('70b61b4e-76f1-4924-9068-10f5d3c5ee45', 'ACTIVE', 'PRODUCTIVE', 2646, '2026-07-16 18:00:00.000', 'Stack Overflow', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:36.680', '2026-07-25 07:26:36.680'),
+('70c2afcc-7dba-4ff8-9676-7b22860fc290', 'ACTIVE', 'PRODUCTIVE', 3190, '2026-07-02 18:00:00.000', 'Stack Overflow', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:32.239', '2026-07-25 07:26:32.239'),
+('70e78ba0-ac7c-47b2-91a5-6415c66f4ad9', 'ACTIVE', 'PRODUCTIVE', 2521, '2026-07-08 23:00:00.000', 'Stack Overflow', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.109', '2026-07-25 07:26:34.109'),
+('710aad96-3fb0-4fca-9a5a-023b3c4bc72a', 'IDLE', 'UNPRODUCTIVE', 885, '2026-06-28 21:45:15.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:30.788', '2026-07-25 07:26:30.788'),
+('712a237c-5241-44c5-ae79-384e19d9cb89', 'IDLE', 'UNPRODUCTIVE', 729, '2026-07-13 20:47:51.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:35.131', '2026-07-25 07:26:35.131'),
+('7140c223-2543-436c-9361-dd4f7a47e09c', 'ACTIVE', 'PRODUCTIVE', 2983, '2026-07-09 22:00:00.000', 'Zoom', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:34.456', '2026-07-25 07:26:34.456'),
+('714abf81-2175-44c3-9035-34eb1c8b3b9d', 'ACTIVE', 'PRODUCTIVE', 3141, '2026-07-23 00:00:00.000', 'Stack Overflow', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:38.280', '2026-07-25 07:26:38.280'),
+('715379d2-f35d-4686-9d24-382a45af79c4', 'BREAK', 'NEUTRAL', 3513, '2026-07-09 19:00:00.000', 'Lunch Break', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:34.265', '2026-07-25 07:26:34.265'),
+('71642c83-ebc2-41e7-ae57-bc1392c93a99', 'IDLE', 'UNPRODUCTIVE', 782, '2026-07-10 20:46:58.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:34.559', '2026-07-25 07:26:34.559'),
+('7179fa9b-c50f-4a4a-9cf8-24e77a2cd9f1', 'IDLE', 'UNPRODUCTIVE', 380, '2026-07-02 16:53:40.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:32.232', '2026-07-25 07:26:32.232'),
+('71fbe1ae-a4d1-4c41-951b-5e79ce980018', 'ACTIVE', 'NEUTRAL', 3068, '2026-06-28 00:00:00.000', 'Microsoft Teams', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:30.664', '2026-07-25 07:26:30.664'),
+('72397af1-d903-4a8b-b152-459df20f2ea9', 'ACTIVE', 'PRODUCTIVE', 2666, '2026-07-14 00:00:00.000', 'Notion', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:35.367', '2026-07-25 07:26:35.367'),
+('72617e24-a85e-4db7-a82d-207233badbba', 'ACTIVE', 'PRODUCTIVE', 2956, '2026-06-29 22:00:00.000', 'Google Chrome', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:30.975', '2026-07-25 07:26:30.975'),
+('727f9bc7-5dec-4893-bf9e-0aef820d74ee', 'IDLE', 'UNPRODUCTIVE', 676, '2026-07-06 18:48:44.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:33.396', '2026-07-25 07:26:33.396'),
+('72a5d8c3-af03-403b-9098-55ccf2247433', 'IDLE', 'UNPRODUCTIVE', 564, '2026-07-18 17:50:36.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.264', '2026-07-25 07:26:37.264'),
+('72be2125-4266-470c-b3de-be75b86336d0', 'ACTIVE', 'NEUTRAL', 3131, '2026-07-12 22:00:00.000', 'Slack', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.055', '2026-07-25 07:26:35.055'),
+('72c2914c-2825-45e0-a5ab-34137e2f251b', 'IDLE', 'UNPRODUCTIVE', 1058, '2026-07-17 17:42:22.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:36.805', '2026-07-25 07:26:36.805'),
+('72f5fadc-43e4-4db2-aab0-c00261b00950', 'IDLE', 'UNPRODUCTIVE', 848, '2026-07-10 23:45:52.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.704', '2026-07-25 07:26:34.704'),
+('730ad1d4-cc91-4d8f-964c-38183afa4d77', 'BREAK', 'NEUTRAL', 3190, '2026-07-02 19:00:00.000', 'Lunch Break', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:32.245', '2026-07-25 07:26:32.245'),
+('73b4a589-b339-4643-88de-ff56c8011905', 'BREAK', 'NEUTRAL', 3149, '2026-07-10 19:00:00.000', 'Lunch Break', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:34.553', '2026-07-25 07:26:34.553'),
+('73f558f6-1699-4ba2-8d72-2bb82685cc9f', 'ACTIVE', 'PRODUCTIVE', 2775, '2026-07-03 16:00:00.000', 'VS Code', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.833', '2026-07-25 07:26:32.833'),
+('742c51e9-698f-4779-976a-454ded864745', 'IDLE', 'UNPRODUCTIVE', 1059, '2026-07-11 00:42:21.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:34.590', '2026-07-25 07:26:34.590'),
+('74364206-7a52-4cb4-8103-a4f60f82c1c0', 'IDLE', 'UNPRODUCTIVE', 568, '2026-07-23 16:50:32.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.503', '2026-07-25 07:26:38.503'),
+('7471dcd5-8435-4e8d-b86f-7f61b7aa4588', 'IDLE', 'UNPRODUCTIVE', 833, '2026-07-21 21:46:07.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:37.843', '2026-07-25 07:26:37.843'),
+('74a3b57a-14ae-4d0e-b07b-259c4f01f560', 'IDLE', 'UNPRODUCTIVE', 545, '2026-07-03 23:50:55.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.878', '2026-07-25 07:26:32.878'),
+('74e396b8-424b-43a4-afe3-f26ed7427a02', 'IDLE', 'UNPRODUCTIVE', 698, '2026-07-18 18:48:22.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.270', '2026-07-25 07:26:37.270'),
+('74fa3a39-e920-45e3-88b6-948406ef7746', 'ACTIVE', 'PRODUCTIVE', 2768, '2026-06-29 22:00:00.000', 'VS Code', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.116', '2026-07-25 07:26:31.116'),
+('74fcf14b-c4fc-4b71-a08f-b54d590f6831', 'IDLE', 'UNPRODUCTIVE', 367, '2026-07-23 20:53:53.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:38.727', '2026-07-25 07:26:38.727'),
+('75267df1-64c0-4580-b9c6-369a8176c484', 'ACTIVE', 'PRODUCTIVE', 2552, '2026-07-14 18:00:00.000', 'Google Chrome', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:35.623', '2026-07-25 07:26:35.623'),
+('752d8e59-d310-4892-8463-e63d4bc7fd87', 'ACTIVE', 'PRODUCTIVE', 2828, '2026-07-03 20:00:00.000', 'Google Chrome', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.854', '2026-07-25 07:26:32.854'),
+('7542378d-88ea-4b9b-a9e9-a3c9518ca51f', 'ACTIVE', 'PRODUCTIVE', 2857, '2026-07-02 22:00:00.000', 'Stack Overflow', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.516', '2026-07-25 07:26:32.516'),
+('75a07efa-9661-4ae8-b0ef-32cefc1dfb2b', 'ACTIVE', 'NEUTRAL', 3082, '2026-07-16 00:00:00.000', 'Gmail', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:36.392', '2026-07-25 07:26:36.392'),
+('75a5e550-9bcc-4373-8d5a-b0027c586deb', 'BREAK', 'NEUTRAL', 2574, '2026-06-30 19:00:00.000', 'Lunch Break', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:31.585', '2026-07-25 07:26:31.585'),
+('75f80fb3-b63f-451b-ba3a-146eef3ae9c3', 'BREAK', 'NEUTRAL', 3265, '2026-07-10 19:00:00.000', 'Lunch Break', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:34.493', '2026-07-25 07:26:34.493'),
+('75fa7e79-08eb-4563-a4c4-9eabc6b38b6e', 'BREAK', 'NEUTRAL', 3272, '2026-06-26 19:00:00.000', 'Lunch Break', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.087', '2026-07-25 07:26:30.087'),
+('76121a44-9f71-4da0-b44e-681877ef7b2a', 'IDLE', 'UNPRODUCTIVE', 540, '2026-07-02 18:51:00.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.427', '2026-07-25 07:26:32.427'),
+('761570d0-c346-494d-ad0f-6c49897aeadb', 'IDLE', 'UNPRODUCTIVE', 530, '2026-07-03 00:51:10.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.463', '2026-07-25 07:26:32.463'),
+('76231f58-3471-406f-af8c-c696bc7d6282', 'ACTIVE', 'PRODUCTIVE', 2833, '2026-07-19 00:00:00.000', 'GitHub Desktop', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.310', '2026-07-25 07:26:37.310'),
+('76327fc8-2f5e-4a76-a3d5-ee129ba69305', 'IDLE', 'UNPRODUCTIVE', 531, '2026-07-06 20:51:09.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:33.414', '2026-07-25 07:26:33.414'),
+('7639659b-352b-4a22-9525-953e7f71a570', 'IDLE', 'UNPRODUCTIVE', 545, '2026-07-01 23:50:55.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.154', '2026-07-25 07:26:32.154'),
+('765935d6-0bb3-45f9-906a-e08fb90096a0', 'IDLE', 'UNPRODUCTIVE', 714, '2026-07-06 17:48:06.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:33.287', '2026-07-25 07:26:33.287'),
+('76642553-b300-475f-8b5a-f7e185c2e8f3', 'IDLE', 'UNPRODUCTIVE', 912, '2026-07-02 17:44:48.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.420', '2026-07-25 07:26:32.420'),
+('76effaf3-48e0-4619-b70e-81541063b057', 'IDLE', 'UNPRODUCTIVE', 584, '2026-07-01 16:50:16.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.022', '2026-07-25 07:26:32.022'),
+('776a1f31-adb0-4f30-9c35-e09490ff734c', 'ACTIVE', 'NEUTRAL', 2715, '2026-06-27 21:00:00.000', 'Microsoft Teams', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:30.642', '2026-07-25 07:26:30.642'),
+('77867653-8fc0-4e4e-ad0f-2e1cfcb5cdb1', 'IDLE', 'UNPRODUCTIVE', 606, '2026-07-06 18:49:54.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.092', '2026-07-25 07:26:33.092'),
+('77bae0b2-9663-4d44-8f37-3d9a2886dbe0', 'ACTIVE', 'UNPRODUCTIVE', 2637, '2026-07-03 20:00:00.000', 'Notion', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.800', '2026-07-25 07:26:32.800'),
+('77c13bfd-eca2-46c0-adbf-a4e1b9b52433', 'ACTIVE', 'NEUTRAL', 2785, '2026-07-15 16:00:00.000', 'Gmail', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:35.941', '2026-07-25 07:26:35.941'),
+('77de2098-5b5d-4a7c-8ef7-e35259908fa6', 'ACTIVE', 'NEUTRAL', 2906, '2026-07-09 22:00:00.000', 'Microsoft Teams', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:34.280', '2026-07-25 07:26:34.280'),
+('78402c6b-f328-4f2e-a4b4-b74a97caa4a4', 'BREAK', 'NEUTRAL', 3447, '2026-06-30 19:00:00.000', 'Lunch Break', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.513', '2026-07-25 07:26:31.513'),
+('78560677-bffa-48ff-a26d-ca51e9cfd039', 'IDLE', 'UNPRODUCTIVE', 808, '2026-06-26 20:46:32.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.096', '2026-07-25 07:26:30.096'),
+('78bc06d8-7dd9-494d-92df-6b82c7a94c30', 'ACTIVE', 'PRODUCTIVE', 2662, '2026-07-17 18:00:00.000', 'Figma', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:37.006', '2026-07-25 07:26:37.006'),
+('79195169-378b-4a4f-8815-567f6d24e789', 'IDLE', 'UNPRODUCTIVE', 946, '2026-07-06 23:44:14.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:33.264', '2026-07-25 07:26:33.264'),
+('792c2191-9ea8-4df8-8c65-dfaec97c33c4', 'IDLE', 'UNPRODUCTIVE', 707, '2026-07-19 18:48:13.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.338', '2026-07-25 07:26:37.338'),
+('79374e02-742c-468d-a1fc-441c75bbd901', 'IDLE', 'UNPRODUCTIVE', 415, '2026-07-02 16:53:05.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:32.350', '2026-07-25 07:26:32.350'),
+('798ebd16-85ca-4c41-8906-cb7e391f3e1b', 'IDLE', 'UNPRODUCTIVE', 768, '2026-07-20 23:47:12.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:37.535', '2026-07-25 07:26:37.535'),
+('79a907c1-794f-469e-9b6d-9945e024d603', 'ACTIVE', 'PRODUCTIVE', 2895, '2026-07-21 22:00:00.000', 'GitHub Desktop', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:38.122', '2026-07-25 07:26:38.122'),
+('79adebec-bf87-448b-8878-d46858d592f2', 'ACTIVE', 'NEUTRAL', 2542, '2026-07-15 17:00:00.000', 'Microsoft Teams', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:35.950', '2026-07-25 07:26:35.950'),
+('7a33c9bd-ea61-465e-8f6c-28170a48fbc8', 'ACTIVE', 'PRODUCTIVE', 2777, '2026-07-18 00:00:00.000', 'GitHub Desktop', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:37.110', '2026-07-25 07:26:37.110'),
+('7a459604-c6c0-4672-9e6d-a8aa6f732cea', 'ACTIVE', 'NEUTRAL', 2986, '2026-07-14 20:00:00.000', 'Slack', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:35.831', '2026-07-25 07:26:35.831'),
+('7ada6a28-db03-4039-bde3-1a34d4b59f0e', 'IDLE', 'UNPRODUCTIVE', 974, '2026-07-09 21:43:46.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:34.219', '2026-07-25 07:26:34.219'),
+('7b2b3a3e-2a4f-49a9-bb2e-a6bb7504c548', 'ACTIVE', 'PRODUCTIVE', 2895, '2026-07-23 22:00:00.000', 'GitHub Desktop', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:38.739', '2026-07-25 07:26:38.739'),
+('7b36e2ac-72f8-40ac-8175-1f2515cab6ea', 'IDLE', 'UNPRODUCTIVE', 661, '2026-07-24 18:48:59.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:38.885', '2026-07-25 07:26:38.885'),
+('7b39dc15-95be-4ca3-8cbd-5ceb2e07e608', 'IDLE', 'UNPRODUCTIVE', 432, '2026-07-22 16:52:48.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:38.431', '2026-07-25 07:26:38.431'),
+('7b439e54-2b77-4d73-a033-d3b20273105d', 'ACTIVE', 'NEUTRAL', 3041, '2026-07-08 20:00:00.000', 'Slack', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.928', '2026-07-25 07:26:33.928'),
+('7b4b49eb-ba24-46fd-9738-6f5090b61ce1', 'ACTIVE', 'UNPRODUCTIVE', 2794, '2026-07-23 18:00:00.000', 'Notion', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.517', '2026-07-25 07:26:38.517'),
+('7b55ca4f-eea2-45ff-9b81-eb35da35c007', 'ACTIVE', 'PRODUCTIVE', 3060, '2026-07-16 18:00:00.000', 'GitHub Desktop', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:36.611', '2026-07-25 07:26:36.611'),
+('7b84edbe-17a4-4dd3-875f-0fc4fc8d73b4', 'IDLE', 'UNPRODUCTIVE', 473, '2026-07-17 20:52:07.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:36.827', '2026-07-25 07:26:36.827'),
+('7b85a5fd-241d-43cf-be97-08e8048ef2af', 'IDLE', 'UNPRODUCTIVE', 837, '2026-07-24 16:46:03.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:38.865', '2026-07-25 07:26:38.865'),
+('7bb6791c-b3af-40f6-995d-4ff2b37d0599', 'ACTIVE', 'NEUTRAL', 3186, '2026-07-03 00:00:00.000', 'Slack', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:32.221', '2026-07-25 07:26:32.221'),
+('7bc7309f-9afc-4b33-8a65-e5b75447f35e', 'IDLE', 'UNPRODUCTIVE', 888, '2026-07-01 22:45:12.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:31.820', '2026-07-25 07:26:31.820'),
+('7bc97a4f-b365-4973-8e75-0e579f2e8a9f', 'BREAK', 'NEUTRAL', 2770, '2026-06-29 19:00:00.000', 'Lunch Break', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.098', '2026-07-25 07:26:31.098'),
+('7c0a2755-febb-49b5-b647-ccbfb30d9219', 'BREAK', 'NEUTRAL', 3226, '2026-06-30 19:00:00.000', 'Lunch Break', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:31.647', '2026-07-25 07:26:31.647'),
+('7c345229-921c-4894-92ae-3acd35786ab0', 'ACTIVE', 'PRODUCTIVE', 2946, '2026-06-29 21:00:00.000', 'Google Chrome', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.837', '2026-07-25 07:26:30.837'),
+('7c359d73-ed38-42b5-b2a5-1330f3b6307b', 'IDLE', 'UNPRODUCTIVE', 440, '2026-07-02 20:52:40.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.435', '2026-07-25 07:26:32.435'),
+('7c7d05b9-650b-4820-a5e4-0babb1f8b21c', 'ACTIVE', 'NEUTRAL', 3043, '2026-07-15 16:00:00.000', 'Slack', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:36.285', '2026-07-25 07:26:36.285'),
+('7cd2fb44-e387-4b46-a0cb-aa3540676410', 'IDLE', 'UNPRODUCTIVE', 597, '2026-07-03 00:50:03.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:32.277', '2026-07-25 07:26:32.277'),
+('7d1d48ce-4b80-4c44-9f2b-2e342b7f524e', 'BREAK', 'NEUTRAL', 3524, '2026-07-15 19:00:00.000', 'Lunch Break', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:35.970', '2026-07-25 07:26:35.970'),
+('7d2c54b2-28de-4302-92c8-26d13fed13d2', 'ACTIVE', 'PRODUCTIVE', 3055, '2026-07-16 20:00:00.000', 'Stack Overflow', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:36.753', '2026-07-25 07:26:36.753'),
+('7d322748-f081-42d9-bfd6-a06813f14146', 'IDLE', 'UNPRODUCTIVE', 461, '2026-07-17 20:52:19.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.891', '2026-07-25 07:26:36.891'),
+('7d7cd389-ac36-4651-ad27-b4e9d93baf28', 'IDLE', 'UNPRODUCTIVE', 661, '2026-07-22 20:48:59.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:38.253', '2026-07-25 07:26:38.253'),
+('7dbd56c2-9b8c-4b28-b795-418f77e59985', 'IDLE', 'UNPRODUCTIVE', 743, '2026-06-30 21:47:37.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:31.661', '2026-07-25 07:26:31.661'),
+('7e23d8b4-3254-4ae6-bb06-59c341246aab', 'IDLE', 'UNPRODUCTIVE', 390, '2026-07-11 22:53:30.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.006', '2026-07-25 07:26:35.006'),
+('7e3304e1-e0e0-48b0-ad81-17ac07618432', 'IDLE', 'UNPRODUCTIVE', 433, '2026-07-11 16:52:47.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.909', '2026-07-25 07:26:34.909'),
+('7e3c4e83-aa60-46fe-bd1c-9a2b3781a6ba', 'ACTIVE', 'PRODUCTIVE', 2594, '2026-07-04 00:00:00.000', 'GitHub Desktop', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:32.766', '2026-07-25 07:26:32.766'),
+('7e539f37-760a-43ef-b916-5eec55615a6c', 'ACTIVE', 'NEUTRAL', 2967, '2026-07-14 18:00:00.000', 'Slack', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.886', '2026-07-25 07:26:35.886'),
+('7e77a6c4-edca-4239-9945-dc5d860de145', 'IDLE', 'UNPRODUCTIVE', 823, '2026-07-06 18:46:17.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:33.223', '2026-07-25 07:26:33.223'),
+('7e79cf97-da74-4c9a-bdef-8e7c6185501f', 'IDLE', 'UNPRODUCTIVE', 711, '2026-07-02 18:48:09.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:32.182', '2026-07-25 07:26:32.182'),
+('7eb2bf49-1875-446d-a248-cceb7fac3f6b', 'IDLE', 'UNPRODUCTIVE', 403, '2026-07-01 20:53:17.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.938', '2026-07-25 07:26:31.938'),
+('7eb8e283-68f2-4979-a1d1-fc611c7c5291', 'ACTIVE', 'NEUTRAL', 3222, '2026-07-16 20:00:00.000', 'Slack', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.487', '2026-07-25 07:26:36.487'),
+('7ebe27e7-26f6-4b4b-aa5e-60e7d1802e66', 'IDLE', 'UNPRODUCTIVE', 633, '2026-07-19 17:49:27.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.331', '2026-07-25 07:26:37.331'),
+('7f2c052f-93a7-43d7-a19e-47ee0f18bf85', 'IDLE', 'UNPRODUCTIVE', 749, '2026-07-16 21:47:31.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:36.763', '2026-07-25 07:26:36.763'),
+('7f3ada8f-dbc7-4611-a346-080a1989677d', 'ACTIVE', 'PRODUCTIVE', 2839, '2026-07-22 00:00:00.000', 'Zoom', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:38.132', '2026-07-25 07:26:38.132'),
+('7f4a93e1-eae5-4650-86b0-be5565ce0cc8', 'IDLE', 'UNPRODUCTIVE', 505, '2026-07-13 18:51:35.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:35.429', '2026-07-25 07:26:35.429'),
+('7f75ed02-5160-48b0-8b91-81480ffe6b1d', 'ACTIVE', 'PRODUCTIVE', 3105, '2026-07-07 16:00:00.000', 'Stack Overflow', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:33.721', '2026-07-25 07:26:33.721'),
+('7f7e2b4e-fee1-4591-91f8-3ad3dbc1ab9d', 'BREAK', 'NEUTRAL', 2426, '2026-07-10 19:00:00.000', 'Lunch Break', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:34.806', '2026-07-25 07:26:34.806'),
+('7f82366c-f818-47d9-978a-e7fde2d38651', 'ACTIVE', 'NEUTRAL', 2990, '2026-07-01 18:00:00.000', 'Gmail', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.125', '2026-07-25 07:26:32.125'),
+('7faeb70a-6caa-4b23-a39a-d83abcadd594', 'IDLE', 'UNPRODUCTIVE', 405, '2026-07-06 21:53:15.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:32.988', '2026-07-25 07:26:32.988'),
+('7fb3e664-5891-468e-a028-eec9bfda0e8d', 'IDLE', 'UNPRODUCTIVE', 781, '2026-07-20 22:46:59.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:37.734', '2026-07-25 07:26:37.734'),
+('7fb6b693-b283-49ea-9b31-82a987d80fb1', 'ACTIVE', 'NEUTRAL', 2904, '2026-07-11 00:00:00.000', 'Slack', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:34.831', '2026-07-25 07:26:34.831'),
+('7fc652df-3e8b-4997-a320-744957eaf0f9', 'ACTIVE', 'PRODUCTIVE', 3095, '2026-07-16 17:00:00.000', 'Stack Overflow', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:36.673', '2026-07-25 07:26:36.673'),
+('8027d7ac-12fa-4fd6-b0f9-2690e4286413', 'ACTIVE', 'NEUTRAL', 2817, '2026-07-14 17:00:00.000', 'Microsoft Teams', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:35.750', '2026-07-25 07:26:35.750'),
+('807e25a0-6a27-4b8f-92ab-727afb40dfa9', 'IDLE', 'UNPRODUCTIVE', 983, '2026-07-22 22:43:37.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:38.475', '2026-07-25 07:26:38.475'),
+('8082fce0-a512-4b2e-9815-82803fec5631', 'IDLE', 'UNPRODUCTIVE', 772, '2026-07-01 20:47:08.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.135', '2026-07-25 07:26:32.135'),
+('809bcd99-540e-45eb-ad4f-05d99da44ecb', 'IDLE', 'UNPRODUCTIVE', 997, '2026-06-30 21:43:23.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.528', '2026-07-25 07:26:31.528'),
+('80c92de0-6592-4aee-9f3b-ba8fbfaeabbf', 'IDLE', 'UNPRODUCTIVE', 557, '2026-07-11 21:50:43.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.939', '2026-07-25 07:26:34.939'),
+('80ce1b2d-0639-483a-a539-80cdf674abef', 'ACTIVE', 'NEUTRAL', 2535, '2026-07-14 17:00:00.000', 'Slack', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.880', '2026-07-25 07:26:35.880'),
+('80f82ee6-6d1c-43d9-9867-5a7c3de7962b', 'IDLE', 'UNPRODUCTIVE', 888, '2026-07-09 20:45:12.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:34.270', '2026-07-25 07:26:34.270'),
+('81042541-60bb-4f43-8797-b622d0cd53c8', 'IDLE', 'UNPRODUCTIVE', 559, '2026-07-11 00:50:41.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.714', '2026-07-25 07:26:34.714'),
+('810d37de-8096-4fe8-ba4e-a4310c3a113c', 'ACTIVE', 'UNPRODUCTIVE', 3068, '2026-07-07 16:00:00.000', 'Notion', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:33.448', '2026-07-25 07:26:33.448'),
+('8122eea8-3956-4e3f-ad58-cf0a4897d902', 'BREAK', 'NEUTRAL', 3340, '2026-06-29 19:00:00.000', 'Lunch Break', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:31.180', '2026-07-25 07:26:31.180'),
+('813990f1-89f0-4b91-9b74-57c495d89ab2', 'BREAK', 'NEUTRAL', 2764, '2026-07-07 19:00:00.000', 'Lunch Break', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:33.478', '2026-07-25 07:26:33.478'),
+('81469d16-a958-4d2e-9de9-e1cb4583f260', 'ACTIVE', 'PRODUCTIVE', 2842, '2026-06-26 23:00:00.000', 'VS Code', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.125', '2026-07-25 07:26:30.125'),
+('8146a987-1c6f-401a-b17e-cf40ab1e2d50', 'IDLE', 'UNPRODUCTIVE', 391, '2026-07-22 00:53:29.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:38.014', '2026-07-25 07:26:38.014'),
+('818b0335-12e0-4382-8982-77d5634b0932', 'ACTIVE', 'PRODUCTIVE', 3070, '2026-07-03 00:00:00.000', 'Zoom', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.460', '2026-07-25 07:26:32.460'),
+('81b7ff07-c116-42f8-8278-eee5fef9f417', 'ACTIVE', 'NEUTRAL', 2562, '2026-07-14 21:00:00.000', 'Gmail', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:35.770', '2026-07-25 07:26:35.770'),
+('81db62c1-cf16-4a46-9da5-4f7806ca5a80', 'ACTIVE', 'PRODUCTIVE', 2942, '2026-06-28 17:00:00.000', 'Google Chrome', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:30.759', '2026-07-25 07:26:30.759'),
+('8251f8ac-a6e1-4d11-8627-713096457ed6', 'ACTIVE', 'PRODUCTIVE', 3150, '2026-07-16 16:00:00.000', 'VS Code', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:36.404', '2026-07-25 07:26:36.404'),
+('828d39df-5ae4-4829-b79c-6d96fcc67949', 'IDLE', 'UNPRODUCTIVE', 867, '2026-06-27 22:45:33.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.566', '2026-07-25 07:26:30.566'),
+('82b48b18-3882-453e-952a-4b001aaf040a', 'IDLE', 'UNPRODUCTIVE', 561, '2026-07-13 18:50:39.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:35.120', '2026-07-25 07:26:35.120'),
+('82c1e7a0-035c-4974-b200-8e9d2ffbff30', 'ACTIVE', 'PRODUCTIVE', 3197, '2026-07-07 22:00:00.000', 'Google Chrome', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:33.702', '2026-07-25 07:26:33.702'),
+('83193e44-11f4-4399-9cdf-faf8e46b4b0b', 'IDLE', 'UNPRODUCTIVE', 705, '2026-07-21 22:48:15.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:38.125', '2026-07-25 07:26:38.125'),
+('831e1fda-b398-4e37-a87b-6955cf8bdf58', 'IDLE', 'UNPRODUCTIVE', 507, '2026-07-09 18:51:33.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:34.262', '2026-07-25 07:26:34.262'),
+('83529f2d-4735-4f25-9c99-2c9001f1f585', 'ACTIVE', 'PRODUCTIVE', 2804, '2026-07-03 00:00:00.000', 'Stack Overflow', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:32.398', '2026-07-25 07:26:32.398'),
+('835dc139-d787-4a51-b26a-c3e5b98fdcb1', 'IDLE', 'UNPRODUCTIVE', 480, '2026-06-30 16:52:00.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:31.566', '2026-07-25 07:26:31.566'),
+('8385866b-70f5-4c73-9c66-48d180515e9d', 'BREAK', 'NEUTRAL', 3486, '2026-07-22 19:00:00.000', 'Lunch Break', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.177', '2026-07-25 07:26:38.177'),
+('843ba177-a255-4f26-a962-68bf8befd76e', 'ACTIVE', 'PRODUCTIVE', 2681, '2026-07-24 22:00:00.000', 'GitHub Desktop', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.838', '2026-07-25 07:26:38.838'),
+('84c48a4d-ecfc-4f2e-9349-2ec5edff4198', 'ACTIVE', 'NEUTRAL', 3104, '2026-07-07 17:00:00.000', 'Slack', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:33.783', '2026-07-25 07:26:33.783');
+INSERT INTO `activity_logs` (`id`, `activityType`, `productivity`, `duration`, `timestamp`, `appWebsite`, `employeeId`, `taskId`, `organizationId`, `createdAt`, `updatedAt`) VALUES
+('84cf55da-9bdf-4252-8af8-805a12cae4f7', 'IDLE', 'UNPRODUCTIVE', 543, '2026-07-08 16:50:57.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:34.129', '2026-07-25 07:26:34.129'),
+('84e0938c-0196-4331-b6a5-8f62354189f5', 'ACTIVE', 'NEUTRAL', 2854, '2026-07-08 17:00:00.000', 'Microsoft Teams', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.906', '2026-07-25 07:26:33.906'),
+('8528fa0e-d1ce-452a-aca6-d057c0b01628', 'ACTIVE', 'PRODUCTIVE', 2666, '2026-07-07 16:00:00.000', 'Stack Overflow', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.519', '2026-07-25 07:26:33.519'),
+('853afb15-3fba-4a82-a041-3d5482cf488c', 'IDLE', 'UNPRODUCTIVE', 1079, '2026-07-09 18:42:01.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:34.437', '2026-07-25 07:26:34.437'),
+('85521a0a-e1f4-4eba-9053-ec00d6995071', 'BREAK', 'NEUTRAL', 3190, '2026-07-03 19:00:00.000', 'Lunch Break', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:32.614', '2026-07-25 07:26:32.614'),
+('857b973e-1306-404a-a459-67182b318418', 'ACTIVE', 'NEUTRAL', 3137, '2026-07-01 18:00:00.000', 'Gmail', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.923', '2026-07-25 07:26:31.923'),
+('857d10d2-f7d8-470e-9a91-061af22dd668', 'ACTIVE', 'PRODUCTIVE', 2662, '2026-07-11 20:00:00.000', 'Figma', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.931', '2026-07-25 07:26:34.931'),
+('857f6036-b57f-4ea2-a0b8-963be05f2691', 'ACTIVE', 'PRODUCTIVE', 2581, '2026-06-29 23:00:00.000', 'Zoom', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.848', '2026-07-25 07:26:30.848'),
+('85850705-d2b3-4b1c-a685-0d827d283b3e', 'ACTIVE', 'PRODUCTIVE', 3231, '2026-07-01 22:00:00.000', 'VS Code', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.144', '2026-07-25 07:26:32.144'),
+('8587e8b1-f6aa-42c6-a6e3-8988b6b5259d', 'IDLE', 'UNPRODUCTIVE', 943, '2026-06-29 18:44:17.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:31.234', '2026-07-25 07:26:31.234'),
+('860a1c96-30d3-4c9f-9f4e-2f334a4c7d43', 'IDLE', 'UNPRODUCTIVE', 514, '2026-07-01 17:51:26.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.919', '2026-07-25 07:26:31.919'),
+('8639b466-0eb5-467b-b5be-1bcc88a3c089', 'BREAK', 'NEUTRAL', 2912, '2026-07-07 19:00:00.000', 'Lunch Break', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.537', '2026-07-25 07:26:33.537'),
+('86745089-7045-40f2-a58e-947a53e4e46a', 'ACTIVE', 'PRODUCTIVE', 2704, '2026-07-07 21:00:00.000', 'VS Code', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:33.490', '2026-07-25 07:26:33.490'),
+('873ffd8e-3fa7-42b0-bb07-1ed31f34d341', 'ACTIVE', 'PRODUCTIVE', 3068, '2026-07-09 00:00:00.000', 'VS Code', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.953', '2026-07-25 07:26:33.953'),
+('87943097-09e8-40d6-96fe-7090ca0ec28a', 'ACTIVE', 'PRODUCTIVE', 2526, '2026-07-21 00:00:00.000', 'Stack Overflow', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:37.468', '2026-07-25 07:26:37.468'),
+('87a7b29a-28e5-4bc5-baca-d0329c035934', 'ACTIVE', 'PRODUCTIVE', 3045, '2026-07-13 20:00:00.000', 'Zoom', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:35.435', '2026-07-25 07:26:35.435'),
+('87abc5d9-8b42-41ed-af59-98a149e11ef7', 'ACTIVE', 'PRODUCTIVE', 2613, '2026-07-08 00:00:00.000', 'Google Chrome', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:33.765', '2026-07-25 07:26:33.765'),
+('881084e4-d9bf-45f6-a040-c7c81044b289', 'ACTIVE', 'PRODUCTIVE', 3039, '2026-07-13 18:00:00.000', 'VS Code', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:35.117', '2026-07-25 07:26:35.117'),
+('88114f55-456b-484b-8709-8053e2a825e4', 'ACTIVE', 'PRODUCTIVE', 3227, '2026-07-23 21:00:00.000', 'Stack Overflow', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.533', '2026-07-25 07:26:38.533'),
+('882ae675-b5fa-407f-a97d-281c3f9ddfdd', 'ACTIVE', 'PRODUCTIVE', 2686, '2026-07-15 20:00:00.000', 'Figma', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.034', '2026-07-25 07:26:36.034'),
+('88554d4a-f41a-44d3-9cf9-80779046192d', 'IDLE', 'UNPRODUCTIVE', 1070, '2026-07-15 23:42:10.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:36.336', '2026-07-25 07:26:36.336'),
+('886e35ee-81be-4e6d-9dca-395d2ea73e8f', 'IDLE', 'UNPRODUCTIVE', 543, '2026-07-10 22:50:57.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:34.824', '2026-07-25 07:26:34.824'),
+('889ebadb-52b5-4ba4-a27a-367ff5c06849', 'ACTIVE', 'PRODUCTIVE', 2871, '2026-07-06 18:00:00.000', 'VS Code', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:32.966', '2026-07-25 07:26:32.966'),
+('88aa1c17-2bee-4687-a35e-2fe4bc2b619d', 'ACTIVE', 'NEUTRAL', 2639, '2026-07-16 00:00:00.000', 'Slack', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:35.999', '2026-07-25 07:26:35.999'),
+('88e10405-af0c-4337-b846-616a67fac25f', 'ACTIVE', 'PRODUCTIVE', 2734, '2026-07-01 16:00:00.000', 'Zoom', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:31.765', '2026-07-25 07:26:31.765'),
+('88f36ebd-e34a-411c-a101-70492ea2f694', 'ACTIVE', 'NEUTRAL', 3204, '2026-07-14 22:00:00.000', 'Microsoft Teams', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:35.590', '2026-07-25 07:26:35.590'),
+('890807a2-a82f-4660-9a09-22058d3e9299', 'IDLE', 'UNPRODUCTIVE', 518, '2026-07-14 23:51:22.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.922', '2026-07-25 07:26:35.922'),
+('89379dcb-68c8-4c9c-ba26-4a6d25baed64', 'ACTIVE', 'PRODUCTIVE', 2826, '2026-07-16 22:00:00.000', 'Zoom', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:36.769', '2026-07-25 07:26:36.769'),
+('89830b2d-dd12-4638-82ee-6c08d2cc9487', 'ACTIVE', 'NEUTRAL', 3057, '2026-07-08 16:00:00.000', 'Microsoft Teams', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:34.126', '2026-07-25 07:26:34.126'),
+('899de9cd-df7a-4892-b272-1a3961e11600', 'IDLE', 'UNPRODUCTIVE', 903, '2026-06-30 00:44:57.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:30.989', '2026-07-25 07:26:30.989'),
+('89b7be27-8c7c-45ac-a4e7-de4b737c7290', 'ACTIVE', 'PRODUCTIVE', 3163, '2026-06-30 22:00:00.000', 'Stack Overflow', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.534', '2026-07-25 07:26:31.534'),
+('89cd9b9e-d662-49d8-a96c-8d391f344784', 'ACTIVE', 'PRODUCTIVE', 2681, '2026-07-22 22:00:00.000', 'GitHub Desktop', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.196', '2026-07-25 07:26:38.196'),
+('8a2afbcf-1383-4cde-9a5f-1fa959eb7b69', 'ACTIVE', 'NEUTRAL', 2542, '2026-07-01 17:00:00.000', 'Slack', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.116', '2026-07-25 07:26:32.116'),
+('8a6bf2b6-5a59-4f9d-810a-fc396b1e995a', 'ACTIVE', 'PRODUCTIVE', 2525, '2026-07-02 20:00:00.000', 'Figma', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:32.248', '2026-07-25 07:26:32.248'),
+('8a803f41-0789-4bfc-870c-dad6af33d30e', 'BREAK', 'NEUTRAL', 3021, '2026-07-16 19:00:00.000', 'Lunch Break', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:36.750', '2026-07-25 07:26:36.750'),
+('8ac3e3c1-8fef-4bae-b01e-07fc840d0c2f', 'IDLE', 'UNPRODUCTIVE', 584, '2026-06-30 20:50:16.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:31.653', '2026-07-25 07:26:31.653'),
+('8ac63798-cf79-4c25-8f23-b26d318e31cf', 'IDLE', 'UNPRODUCTIVE', 772, '2026-07-13 16:47:08.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:35.105', '2026-07-25 07:26:35.105'),
+('8aea1b34-5d3f-4bc3-9a9b-48e715a23d1a', 'IDLE', 'UNPRODUCTIVE', 597, '2026-07-02 00:50:03.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:31.834', '2026-07-25 07:26:31.834'),
+('8af33b1d-9a5c-4db6-9142-4afd74fe3383', 'ACTIVE', 'PRODUCTIVE', 2973, '2026-07-22 21:00:00.000', 'Google Chrome', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:38.257', '2026-07-25 07:26:38.257'),
+('8af43568-54ff-4532-9a9f-a18a98e44f8a', 'IDLE', 'UNPRODUCTIVE', 807, '2026-07-23 22:46:33.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.546', '2026-07-25 07:26:38.546'),
+('8afe50f3-6953-4af7-acc6-53d5c3a2613a', 'ACTIVE', 'NEUTRAL', 3193, '2026-07-13 17:00:00.000', 'Slack', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:35.316', '2026-07-25 07:26:35.316'),
+('8b04c532-5e2f-409d-8e5c-d91f6fca985c', 'ACTIVE', 'NEUTRAL', 2599, '2026-07-07 17:00:00.000', 'Slack', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:33.456', '2026-07-25 07:26:33.456'),
+('8b518303-d283-441a-af7c-fb9db638da89', 'IDLE', 'UNPRODUCTIVE', 761, '2026-07-24 00:47:19.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:38.759', '2026-07-25 07:26:38.759'),
+('8b620624-6075-414a-bea8-8d6f0dfded95', 'ACTIVE', 'PRODUCTIVE', 2582, '2026-07-01 22:00:00.000', 'GitHub Desktop', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.954', '2026-07-25 07:26:31.954'),
+('8b6968ac-8047-46a1-af3a-8a3bb837ca89', 'IDLE', 'UNPRODUCTIVE', 1021, '2026-07-17 20:42:59.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:37.082', '2026-07-25 07:26:37.082'),
+('8b915265-d2e3-4489-8997-3bc4e2783730', 'IDLE', 'UNPRODUCTIVE', 1048, '2026-07-14 18:42:32.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:35.627', '2026-07-25 07:26:35.627'),
+('8b9fb3ce-1303-41f8-80c0-69985c5445ec', 'IDLE', 'UNPRODUCTIVE', 764, '2026-07-13 20:47:16.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.515', '2026-07-25 07:26:35.515'),
+('8bbe9c9a-21a3-4a00-ad65-ac5285941a55', 'ACTIVE', 'PRODUCTIVE', 2620, '2026-07-09 20:00:00.000', 'VS Code', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.386', '2026-07-25 07:26:34.386'),
+('8be2a9bc-111b-4e48-b078-f8b65e57e0bb', 'IDLE', 'UNPRODUCTIVE', 617, '2026-07-09 22:49:43.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:34.459', '2026-07-25 07:26:34.459'),
+('8be6f686-dc69-4bb2-9cc8-ae43009307a2', 'IDLE', 'UNPRODUCTIVE', 568, '2026-07-20 17:50:32.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:37.425', '2026-07-25 07:26:37.425'),
+('8bfb6276-1fcd-4da2-ab02-f6b19e1f406f', 'ACTIVE', 'NEUTRAL', 2990, '2026-07-03 18:00:00.000', 'Gmail', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.845', '2026-07-25 07:26:32.845'),
+('8c1bf4e6-eecd-4a2d-a263-54dfd875f977', 'IDLE', 'UNPRODUCTIVE', 627, '2026-07-20 21:49:33.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:37.520', '2026-07-25 07:26:37.520'),
+('8c46fc1d-2ed2-4687-89f6-25d602d02f1d', 'ACTIVE', 'PRODUCTIVE', 2828, '2026-07-13 16:00:00.000', 'Stack Overflow', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:35.101', '2026-07-25 07:26:35.101'),
+('8c9ee6a0-204d-427a-9ebf-22215f045cf0', 'IDLE', 'UNPRODUCTIVE', 774, '2026-07-11 23:47:06.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.012', '2026-07-25 07:26:35.012'),
+('8ca52ea4-01fc-491c-afbd-e3fe33ea63b9', 'IDLE', 'UNPRODUCTIVE', 1070, '2026-07-14 23:42:10.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:35.856', '2026-07-25 07:26:35.856'),
+('8cc6d87b-8aa4-4f44-a1de-b843bde576b7', 'ACTIVE', 'NEUTRAL', 2522, '2026-07-16 00:00:00.000', 'Slack', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.061', '2026-07-25 07:26:36.061'),
+('8cd3e57d-b2ab-4cc1-9111-515b219e1cbd', 'ACTIVE', 'NEUTRAL', 2930, '2026-07-17 21:00:00.000', 'Gmail', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:37.088', '2026-07-25 07:26:37.088'),
+('8cfb72c3-6fa1-4f0a-9fbc-9c5b0f94e649', 'BREAK', 'NEUTRAL', 3574, '2026-07-10 19:00:00.000', 'Lunch Break', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.679', '2026-07-25 07:26:34.679'),
+('8d207344-61cd-40ae-b9ab-7023f86a30d9', 'IDLE', 'UNPRODUCTIVE', 888, '2026-07-03 22:45:12.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:32.636', '2026-07-25 07:26:32.636'),
+('8d38ca11-d45c-4cdb-bedc-070044e25ad1', 'ACTIVE', 'PRODUCTIVE', 2777, '2026-07-23 17:00:00.000', 'GitHub Desktop', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.627', '2026-07-25 07:26:38.627'),
+('8d48b228-fec3-4846-8cf8-da3304dd9587', 'ACTIVE', 'NEUTRAL', 2542, '2026-07-14 18:00:00.000', 'Microsoft Teams', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:35.561', '2026-07-25 07:26:35.561'),
+('8d552294-9219-4ccc-8c9c-2bf8d4005797', 'IDLE', 'UNPRODUCTIVE', 784, '2026-07-19 23:46:56.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.389', '2026-07-25 07:26:37.389'),
+('8d9b59da-0401-4b31-be32-6e9959370964', 'IDLE', 'UNPRODUCTIVE', 463, '2026-07-01 18:52:17.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.927', '2026-07-25 07:26:31.927'),
+('8db949ba-b25d-4fd7-991f-b7f5cb04de7e', 'ACTIVE', 'NEUTRAL', 3216, '2026-07-16 21:00:00.000', 'Gmail', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:36.632', '2026-07-25 07:26:36.632'),
+('8dbbeda3-9749-4b98-b322-3088fbaeb8a5', 'IDLE', 'UNPRODUCTIVE', 807, '2026-07-01 21:46:33.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:31.735', '2026-07-25 07:26:31.735'),
+('8dcf51b0-efcf-483c-b9eb-b452dcb876f5', 'ACTIVE', 'NEUTRAL', 2906, '2026-07-07 23:00:00.000', 'Microsoft Teams', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.559', '2026-07-25 07:26:33.559'),
+('8de3e49a-0fb7-4a0a-8b11-e55db87ad5ce', 'IDLE', 'UNPRODUCTIVE', 617, '2026-07-06 22:49:43.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:33.332', '2026-07-25 07:26:33.332'),
+('8e5611f8-434b-4b8e-a144-26680b2addc4', 'ACTIVE', 'NEUTRAL', 2578, '2026-06-30 16:00:00.000', 'Slack', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:31.288', '2026-07-25 07:26:31.288'),
+('8e6e4835-2f90-4f27-92b4-f04bde932aaf', 'ACTIVE', 'PRODUCTIVE', 2587, '2026-07-24 21:00:00.000', 'Zoom', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:39.046', '2026-07-25 07:26:39.046'),
+('8e800231-a343-4540-9f26-6abecb2e07da', 'IDLE', 'UNPRODUCTIVE', 495, '2026-07-07 16:51:45.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:33.723', '2026-07-25 07:26:33.723'),
+('8e8c3850-f559-4091-b531-01312c8cbf1c', 'ACTIVE', 'PRODUCTIVE', 2712, '2026-07-01 22:00:00.000', 'Stack Overflow', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:31.817', '2026-07-25 07:26:31.817'),
+('8eab079f-d453-4ba3-8036-c2b0e324ee33', 'ACTIVE', 'NEUTRAL', 2969, '2026-07-16 17:00:00.000', 'Slack', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.469', '2026-07-25 07:26:36.469'),
+('8eb9cdd2-0346-4ddc-8e61-cddd57172bbe', 'IDLE', 'UNPRODUCTIVE', 829, '2026-06-29 23:46:11.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.127', '2026-07-25 07:26:31.127'),
+('8ec37822-620e-42f7-a187-465d6ee5898b', 'IDLE', 'UNPRODUCTIVE', 480, '2026-06-27 17:52:00.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.521', '2026-07-25 07:26:30.521'),
+('8ee5802f-0019-4f58-94e0-f12b2e5a583b', 'BREAK', 'NEUTRAL', 3419, '2026-07-18 19:00:00.000', 'Lunch Break', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.272', '2026-07-25 07:26:37.272'),
+('8f03a494-9d61-4ccc-8dca-6c7a2cb63cbd', 'ACTIVE', 'PRODUCTIVE', 2579, '2026-06-26 16:00:00.000', 'Stack Overflow', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:30.412', '2026-07-25 07:26:30.412'),
+('8f0df5e9-5097-46b6-9ebe-74b3c0db1ad0', 'ACTIVE', 'PRODUCTIVE', 3121, '2026-06-28 00:00:00.000', 'Stack Overflow', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.580', '2026-07-25 07:26:30.580'),
+('8f367ff6-6e21-4bde-9922-0d8f9dbc9454', 'IDLE', 'UNPRODUCTIVE', 642, '2026-06-29 16:49:18.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:31.220', '2026-07-25 07:26:31.220'),
+('8f40ae2f-19c9-4e24-b7f6-a49e0ce1fe81', 'BREAK', 'NEUTRAL', 3419, '2026-07-19 19:00:00.000', 'Lunch Break', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.340', '2026-07-25 07:26:37.340'),
+('8f51283f-582e-401f-855e-10d220f8f979', 'ACTIVE', 'PRODUCTIVE', 2988, '2026-07-17 00:00:00.000', 'Stack Overflow', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:36.654', '2026-07-25 07:26:36.654'),
+('8f7a8b44-d2df-4789-961b-0efe2c6610e2', 'IDLE', 'UNPRODUCTIVE', 796, '2026-07-03 00:46:44.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:32.401', '2026-07-25 07:26:32.401'),
+('8f84871a-c2af-4d87-98c2-bd5d5785f1a8', 'ACTIVE', 'PRODUCTIVE', 2994, '2026-06-30 21:00:00.000', 'Zoom', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:31.332', '2026-07-25 07:26:31.332'),
+('8fbd3895-21f9-4cfc-86d7-45f71072f35d', 'ACTIVE', 'PRODUCTIVE', 2642, '2026-07-08 18:00:00.000', 'GitHub Desktop', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.057', '2026-07-25 07:26:34.057'),
+('8ff7be51-7eac-4d2a-929c-1b11b0ef6d09', 'ACTIVE', 'PRODUCTIVE', 2942, '2026-07-21 21:00:00.000', 'Google Chrome', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.056', '2026-07-25 07:26:38.056'),
+('9003811b-60f5-4f07-9d8e-18ffa3655f6a', 'IDLE', 'UNPRODUCTIVE', 403, '2026-07-08 21:53:17.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.099', '2026-07-25 07:26:34.099'),
+('902e39f0-1410-4298-aecc-006a52958cc2', 'ACTIVE', 'PRODUCTIVE', 2521, '2026-07-13 21:00:00.000', 'VS Code', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:35.446', '2026-07-25 07:26:35.446'),
+('906df457-0e25-4675-8c17-d71384635f9c', 'ACTIVE', 'PRODUCTIVE', 2983, '2026-07-07 22:00:00.000', 'Zoom', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:33.755', '2026-07-25 07:26:33.755'),
+('908bb03b-da62-4cc9-88d4-5b39f69f2705', 'IDLE', 'UNPRODUCTIVE', 384, '2026-06-29 21:53:36.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.113', '2026-07-25 07:26:31.113'),
+('909cbbe7-3ffb-422a-ad04-e765ffaab7a6', 'BREAK', 'NEUTRAL', 2964, '2026-07-23 19:00:00.000', 'Lunch Break', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:38.721', '2026-07-25 07:26:38.721'),
+('90ada413-3a5d-44c9-a7f6-e521082cd620', 'ACTIVE', 'PRODUCTIVE', 3055, '2026-07-16 21:00:00.000', 'Zoom', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.494', '2026-07-25 07:26:36.494'),
+('912f0292-8700-4f5d-a146-072b687150a4', 'ACTIVE', 'PRODUCTIVE', 2915, '2026-07-22 22:00:00.000', 'Figma', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:38.264', '2026-07-25 07:26:38.264'),
+('913d7c9d-d8c1-4b28-b71a-f36e066f0720', 'IDLE', 'UNPRODUCTIVE', 746, '2026-07-01 20:47:34.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:31.799', '2026-07-25 07:26:31.799'),
+('91b5212b-a219-4869-9544-bbd79ec6b6d1', 'IDLE', 'UNPRODUCTIVE', 461, '2026-07-10 22:52:19.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:34.579', '2026-07-25 07:26:34.579'),
+('91c278ef-ac0b-4752-b019-bf283349cfd3', 'ACTIVE', 'PRODUCTIVE', 3165, '2026-07-01 21:00:00.000', 'Figma', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.071', '2026-07-25 07:26:32.071'),
+('91c91cb3-3379-4b8e-8a2c-8f333b9ffb4f', 'IDLE', 'UNPRODUCTIVE', 449, '2026-07-06 22:52:31.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:32.995', '2026-07-25 07:26:32.995'),
+('91f38e67-0877-4b6c-a5ec-be5e4f841619', 'ACTIVE', 'PRODUCTIVE', 2611, '2026-07-02 23:00:00.000', 'Google Chrome', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:32.392', '2026-07-25 07:26:32.392'),
+('920c8fd6-a17a-41a5-87c9-3943e76c53dc', 'ACTIVE', 'PRODUCTIVE', 3055, '2026-07-14 20:00:00.000', 'Stack Overflow', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.897', '2026-07-25 07:26:35.897'),
+('920f7d17-ce02-463d-a288-c75df6ac43df', 'IDLE', 'UNPRODUCTIVE', 929, '2026-06-26 18:44:31.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:30.434', '2026-07-25 07:26:30.434'),
+('924ccf61-5b8d-44be-8036-a366043e4ec4', 'ACTIVE', 'NEUTRAL', 2547, '2026-07-10 18:00:00.000', 'Microsoft Teams', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:34.547', '2026-07-25 07:26:34.547'),
+('925ce22a-80da-419d-9859-88fc34caef8a', 'ACTIVE', 'PRODUCTIVE', 2956, '2026-06-26 23:00:00.000', 'Google Chrome', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:30.211', '2026-07-25 07:26:30.211'),
+('92af1929-13d0-4391-9e8a-b7efe25a3a03', 'ACTIVE', 'PRODUCTIVE', 3016, '2026-07-03 16:00:00.000', 'Stack Overflow', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:32.596', '2026-07-25 07:26:32.596'),
+('92bc3552-37e4-4d00-821c-5b29e89d4ed8', 'ACTIVE', 'PRODUCTIVE', 3172, '2026-07-10 00:00:00.000', 'Notion', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:34.289', '2026-07-25 07:26:34.289'),
+('92c99718-41e1-4c09-bd09-915e1844a646', 'IDLE', 'UNPRODUCTIVE', 440, '2026-07-23 17:52:40.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.514', '2026-07-25 07:26:38.514'),
+('92ddca39-ca08-49fc-9d38-394bc211529f', 'ACTIVE', 'PRODUCTIVE', 3207, '2026-06-29 18:00:00.000', 'Zoom', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.824', '2026-07-25 07:26:30.824'),
+('92e8b45c-58a7-46d2-849b-197203665c04', 'IDLE', 'UNPRODUCTIVE', 946, '2026-07-20 18:44:14.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:37.503', '2026-07-25 07:26:37.503'),
+('92e96be2-0f7e-4c3b-bb1f-bcacb8aad6f1', 'IDLE', 'UNPRODUCTIVE', 1021, '2026-06-26 16:42:59.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:30.416', '2026-07-25 07:26:30.416'),
+('9317cdec-e10b-4a8f-8b88-473f95674f3e', 'IDLE', 'UNPRODUCTIVE', 463, '2026-07-08 16:52:17.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.020', '2026-07-25 07:26:34.020'),
+('931f4ceb-90a1-4558-9b11-d31178b586a5', 'IDLE', 'UNPRODUCTIVE', 980, '2026-07-09 20:43:40.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.391', '2026-07-25 07:26:34.391'),
+('932eabad-32bf-45da-ba99-177d1634a50e', 'ACTIVE', 'PRODUCTIVE', 3190, '2026-07-06 17:00:00.000', 'Stack Overflow', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.082', '2026-07-25 07:26:33.082'),
+('93501044-73c8-4df7-994a-d2095b602363', 'ACTIVE', 'PRODUCTIVE', 2547, '2026-07-17 23:00:00.000', 'VS Code', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:37.037', '2026-07-25 07:26:37.037'),
+('93698574-7173-4745-92ad-6c65f5ee2a50', 'IDLE', 'UNPRODUCTIVE', 729, '2026-07-02 20:47:51.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:32.193', '2026-07-25 07:26:32.193'),
+('939261ee-0277-46d9-a633-98fa21fa9985', 'ACTIVE', 'PRODUCTIVE', 2816, '2026-07-20 16:00:00.000', 'Stack Overflow', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.749', '2026-07-25 07:26:37.749'),
+('93b0ca34-36a4-45a3-a844-e3d5166a190e', 'ACTIVE', 'PRODUCTIVE', 3060, '2026-07-05 17:00:00.000', 'Notion', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.900', '2026-07-25 07:26:32.900'),
+('93bf3fdc-90af-4418-96f6-e19f9a43755c', 'IDLE', 'UNPRODUCTIVE', 557, '2026-07-15 16:50:43.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:36.288', '2026-07-25 07:26:36.288'),
+('94034592-5d03-48a3-b6cb-9a43039d7287', 'ACTIVE', 'NEUTRAL', 2688, '2026-07-02 17:00:00.000', 'Microsoft Teams', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.417', '2026-07-25 07:26:32.417'),
+('943c389e-4cb8-4e17-a305-dc7b5f3c1c28', 'IDLE', 'UNPRODUCTIVE', 473, '2026-07-15 20:52:07.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:35.976', '2026-07-25 07:26:35.976'),
+('94547764-d558-43c0-84ec-7e4176b605e9', 'ACTIVE', 'PRODUCTIVE', 2530, '2026-07-13 23:00:00.000', 'VS Code', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:35.465', '2026-07-25 07:26:35.465'),
+('947ede32-e90e-46b6-b996-d4f21d3f85db', 'ACTIVE', 'PRODUCTIVE', 2857, '2026-06-30 21:00:00.000', 'Notion', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:31.658', '2026-07-25 07:26:31.658'),
+('9497586a-f2a8-4c2d-98a8-2e1562261543', 'ACTIVE', 'PRODUCTIVE', 2827, '2026-07-08 18:00:00.000', 'Stack Overflow', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.916', '2026-07-25 07:26:33.916'),
+('94c12a67-5376-4124-92a0-93b52a537477', 'IDLE', 'UNPRODUCTIVE', 672, '2026-06-29 20:48:48.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.105', '2026-07-25 07:26:31.105'),
+('95025fd0-729b-492c-9ba5-a4c19800292e', 'IDLE', 'UNPRODUCTIVE', 777, '2026-07-16 20:47:03.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:36.429', '2026-07-25 07:26:36.429'),
+('950bedc0-a91c-48a1-a977-4e44d9710f26', 'ACTIVE', 'NEUTRAL', 3150, '2026-07-07 00:00:00.000', 'Slack', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.130', '2026-07-25 07:26:33.130'),
+('953c6540-2200-4f0c-abd9-bd6f074502b9', 'IDLE', 'UNPRODUCTIVE', 784, '2026-07-20 16:46:56.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.751', '2026-07-25 07:26:37.751'),
+('953e25b2-e411-4161-9dcf-f1c56bb2f37e', 'IDLE', 'UNPRODUCTIVE', 386, '2026-07-15 18:53:34.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:36.303', '2026-07-25 07:26:36.303'),
+('9556369e-1ff3-413a-ae51-7f3182754b61', 'ACTIVE', 'PRODUCTIVE', 2521, '2026-07-10 00:00:00.000', 'Stack Overflow', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.414', '2026-07-25 07:26:34.414'),
+('95598351-0fbc-4908-a449-2a95e382357f', 'ACTIVE', 'NEUTRAL', 3053, '2026-07-01 17:00:00.000', 'Gmail', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:31.775', '2026-07-25 07:26:31.775'),
+('955f5063-8fce-4f1c-9163-2344b3f8b897', 'ACTIVE', 'PRODUCTIVE', 2864, '2026-06-30 23:00:00.000', 'Google Chrome', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:31.671', '2026-07-25 07:26:31.671'),
+('95754855-95c8-484f-a199-8c7e3f974960', 'ACTIVE', 'PRODUCTIVE', 2862, '2026-07-01 16:00:00.000', 'Google Chrome', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.108', '2026-07-25 07:26:32.108'),
+('95bc52e5-e325-417e-8646-a632efa647fb', 'ACTIVE', 'PRODUCTIVE', 2973, '2026-07-20 21:00:00.000', 'Google Chrome', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:37.517', '2026-07-25 07:26:37.517'),
+('95d19505-20db-41de-a9f6-60a07ba3a8c8', 'IDLE', 'UNPRODUCTIVE', 1038, '2026-07-03 21:42:42.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:32.750', '2026-07-25 07:26:32.750'),
+('960a15ca-1791-4ceb-8354-616f912602fd', 'ACTIVE', 'PRODUCTIVE', 3040, '2026-07-07 20:00:00.000', 'Stack Overflow', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:33.799', '2026-07-25 07:26:33.799'),
+('960d1e6d-4b2c-4195-8d32-9c528a4089c9', 'ACTIVE', 'PRODUCTIVE', 2826, '2026-07-13 23:00:00.000', 'Zoom', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.533', '2026-07-25 07:26:35.533'),
+('96173c65-82ae-47d8-84df-719a0d003fc9', 'BREAK', 'NEUTRAL', 2939, '2026-07-09 19:00:00.000', 'Lunch Break', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.383', '2026-07-25 07:26:34.383'),
+('963d68be-b9cd-4736-9502-2cb4fcffcb58', 'ACTIVE', 'PRODUCTIVE', 2675, '2026-07-11 22:00:00.000', 'Google Chrome', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.942', '2026-07-25 07:26:34.942'),
+('9643d7ee-5cbc-41ce-b6cd-2e93936e2563', 'ACTIVE', 'PRODUCTIVE', 2671, '2026-06-26 18:00:00.000', 'Zoom', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:30.431', '2026-07-25 07:26:30.431'),
+('96656b9e-2c95-4605-ac42-6a30785a65c7', 'ACTIVE', 'PRODUCTIVE', 2827, '2026-07-02 21:00:00.000', 'Stack Overflow', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:32.253', '2026-07-25 07:26:32.253'),
+('966810d6-f1ae-4f84-afb8-47ce9bbd9d67', 'IDLE', 'UNPRODUCTIVE', 414, '2026-07-03 00:53:06.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:32.224', '2026-07-25 07:26:32.224'),
+('967bb4ac-9c1a-484d-9cb8-ccbab83476aa', 'IDLE', 'UNPRODUCTIVE', 773, '2026-07-08 18:47:07.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.918', '2026-07-25 07:26:33.918'),
+('96a21f53-a460-46d7-a2df-4a8e3c00048f', 'IDLE', 'UNPRODUCTIVE', 407, '2026-07-16 16:53:13.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:36.602', '2026-07-25 07:26:36.602'),
+('96ad5b2a-62cc-4d5a-9375-291fbadc97dd', 'ACTIVE', 'NEUTRAL', 3161, '2026-07-14 18:00:00.000', 'Slack', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:35.755', '2026-07-25 07:26:35.755'),
+('96b585f2-aad2-406b-b73f-ada4f7b3c632', 'IDLE', 'UNPRODUCTIVE', 704, '2026-06-26 18:48:16.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:30.169', '2026-07-25 07:26:30.169'),
+('97305da0-3dcd-4c05-835b-31f91a85cc91', 'ACTIVE', 'PRODUCTIVE', 2820, '2026-06-30 17:00:00.000', 'GitHub Desktop', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:31.569', '2026-07-25 07:26:31.569'),
+('9764ca0a-ba65-4126-a430-363f67e3c918', 'IDLE', 'UNPRODUCTIVE', 369, '2026-07-02 21:53:51.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.510', '2026-07-25 07:26:32.510'),
+('9773cdee-4204-4c89-af2a-632a7b3e22ab', 'IDLE', 'UNPRODUCTIVE', 728, '2026-07-13 00:47:52.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.092', '2026-07-25 07:26:35.092'),
+('97a3cda0-8da0-432e-8774-075e6d1b11af', 'ACTIVE', 'NEUTRAL', 3222, '2026-07-14 20:00:00.000', 'Slack', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:35.635', '2026-07-25 07:26:35.635'),
+('97b0e193-a494-4e87-83f9-f07380a54163', 'IDLE', 'UNPRODUCTIVE', 441, '2026-07-06 17:52:39.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:32.960', '2026-07-25 07:26:32.960'),
+('987c8676-168d-4977-a3d7-f168af90d921', 'IDLE', 'UNPRODUCTIVE', 557, '2026-06-26 16:50:43.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:30.153', '2026-07-25 07:26:30.153'),
+('98b2fda8-36a4-4303-bb21-265b62ea9aee', 'IDLE', 'UNPRODUCTIVE', 606, '2026-06-30 21:49:54.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:31.335', '2026-07-25 07:26:31.335'),
+('996134ad-eeac-4cb2-ac57-2960b3afddff', 'IDLE', 'UNPRODUCTIVE', 522, '2026-07-15 17:51:18.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:36.357', '2026-07-25 07:26:36.357'),
+('99af854e-6f24-4b40-b828-caea1ac19a1e', 'ACTIVE', 'PRODUCTIVE', 2967, '2026-07-21 17:00:00.000', 'Google Chrome', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.027', '2026-07-25 07:26:38.027'),
+('9a10122d-4599-4fa2-b2b4-228ac4fe6f5e', 'IDLE', 'UNPRODUCTIVE', 987, '2026-07-10 16:43:33.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:34.722', '2026-07-25 07:26:34.722'),
+('9a1930cb-90bb-44d6-9800-8fb8787d94ab', 'IDLE', 'UNPRODUCTIVE', 916, '2026-06-29 21:44:44.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:31.255', '2026-07-25 07:26:31.255'),
+('9a4e03f9-bff3-4fef-9719-ff4999373847', 'BREAK', 'NEUTRAL', 3074, '2026-07-01 19:00:00.000', 'Lunch Break', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.130', '2026-07-25 07:26:32.130'),
+('9a672edb-fb2d-47a8-a989-cccfe713388b', 'ACTIVE', 'PRODUCTIVE', 3045, '2026-07-20 16:00:00.000', 'Figma', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:37.415', '2026-07-25 07:26:37.415'),
+('9abad639-946c-476c-8268-bbb33fd77059', 'IDLE', 'UNPRODUCTIVE', 913, '2026-07-01 22:44:47.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:31.744', '2026-07-25 07:26:31.744'),
+('9b0f1a8b-1716-4638-b3de-73890393fee6', 'ACTIVE', 'NEUTRAL', 2990, '2026-07-06 17:00:00.000', 'Gmail', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:33.362', '2026-07-25 07:26:33.362'),
+('9b1b3142-4b0f-4ff7-bc59-0d7b880598ad', 'IDLE', 'UNPRODUCTIVE', 633, '2026-07-21 17:49:27.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.030', '2026-07-25 07:26:38.030'),
+('9ba815c7-da37-4088-91b8-66084e85b489', 'BREAK', 'NEUTRAL', 3475, '2026-07-09 19:00:00.000', 'Lunch Break', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:34.440', '2026-07-25 07:26:34.440'),
+('9bc06857-996f-4c52-a7da-eac05334752a', 'ACTIVE', 'PRODUCTIVE', 2601, '2026-07-10 17:00:00.000', 'Figma', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:34.726', '2026-07-25 07:26:34.726'),
+('9bec24d6-7de5-48a7-9be6-91d61150b981', 'ACTIVE', 'PRODUCTIVE', 3231, '2026-07-02 21:00:00.000', 'VS Code', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.507', '2026-07-25 07:26:32.507'),
+('9bf339c6-f50a-4de0-80d6-ed63471b31fd', 'ACTIVE', 'NEUTRAL', 2608, '2026-07-21 18:00:00.000', 'Gmail', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.033', '2026-07-25 07:26:38.033'),
+('9bf70367-2703-4657-ba4b-7f1918cfed20', 'ACTIVE', 'PRODUCTIVE', 2964, '2026-06-30 17:00:00.000', 'Stack Overflow', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:31.301', '2026-07-25 07:26:31.301'),
+('9bfa1559-93b8-4a2d-8383-7b9e8bb73bd9', 'IDLE', 'UNPRODUCTIVE', 589, '2026-06-30 17:50:11.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:31.638', '2026-07-25 07:26:31.638'),
+('9c133339-40fa-488d-9e47-f1d5d298ba87', 'BREAK', 'NEUTRAL', 2401, '2026-07-03 19:00:00.000', 'Lunch Break', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.797', '2026-07-25 07:26:32.797'),
+('9c349437-7715-4b2b-8992-7fd585aac698', 'IDLE', 'UNPRODUCTIVE', 437, '2026-06-30 22:52:43.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.537', '2026-07-25 07:26:31.537'),
+('9c4f8792-c36e-4b9f-8403-7392b20a45bc', 'ACTIVE', 'PRODUCTIVE', 2869, '2026-07-12 17:00:00.000', 'Figma', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.030', '2026-07-25 07:26:35.030'),
+('9c59e6f9-ca20-4630-a833-97571ce31cc6', 'ACTIVE', 'NEUTRAL', 3104, '2026-07-02 18:00:00.000', 'Slack', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.488', '2026-07-25 07:26:32.488'),
+('9c73b991-243e-41e5-9c20-1ef14e6143e6', 'IDLE', 'UNPRODUCTIVE', 376, '2026-07-11 18:53:44.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.924', '2026-07-25 07:26:34.924'),
+('9c929344-2e33-4402-94a2-261e669f7a42', 'IDLE', 'UNPRODUCTIVE', 545, '2026-07-14 20:50:55.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.901', '2026-07-25 07:26:35.901'),
+('9cca870f-19b9-4c1b-a81b-a595cf619f5b', 'ACTIVE', 'PRODUCTIVE', 2818, '2026-07-10 20:00:00.000', 'Stack Overflow', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:34.556', '2026-07-25 07:26:34.556'),
+('9ccd5aef-39ef-4d4f-afb1-48fd3399a223', 'ACTIVE', 'PRODUCTIVE', 2862, '2026-07-23 20:00:00.000', 'Stack Overflow', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.527', '2026-07-25 07:26:38.527'),
+('9cd5e5e4-1d0b-4315-8756-fb76ee7a6835', 'ACTIVE', 'NEUTRAL', 2709, '2026-07-23 20:00:00.000', 'Slack', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.660', '2026-07-25 07:26:38.660'),
+('9cd9e5ef-f8cb-4059-826f-de739f0e524f', 'IDLE', 'UNPRODUCTIVE', 648, '2026-07-01 00:49:12.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:31.688', '2026-07-25 07:26:31.688'),
+('9d08b252-8025-484d-abc3-492faa0e032c', 'ACTIVE', 'PRODUCTIVE', 2917, '2026-07-12 23:00:00.000', 'Notion', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.062', '2026-07-25 07:26:35.062'),
+('9d1dbf26-731f-400e-871f-136ee657900b', 'IDLE', 'UNPRODUCTIVE', 545, '2026-07-14 21:50:55.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:35.645', '2026-07-25 07:26:35.645'),
+('9d28bef0-f596-443e-bea2-64801f58e636', 'IDLE', 'UNPRODUCTIVE', 812, '2026-07-23 00:46:28.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:38.490', '2026-07-25 07:26:38.490'),
+('9d343cff-d39e-49b6-89b4-fd2d0b79f85e', 'ACTIVE', 'PRODUCTIVE', 2591, '2026-07-16 22:00:00.000', 'Zoom', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:36.710', '2026-07-25 07:26:36.710'),
+('9d59bff4-24cc-4637-a798-afc7f72a05d3', 'IDLE', 'UNPRODUCTIVE', 714, '2026-07-09 16:48:06.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:34.426', '2026-07-25 07:26:34.426'),
+('9d8292a9-04ec-4467-a998-0787c40b480c', 'ACTIVE', 'PRODUCTIVE', 3169, '2026-07-06 23:00:00.000', 'Figma', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:33.433', '2026-07-25 07:26:33.433'),
+('9d8a6a49-04db-4d0b-aa09-b005da7c211b', 'IDLE', 'UNPRODUCTIVE', 632, '2026-06-26 22:49:28.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:30.382', '2026-07-25 07:26:30.382'),
+('9d987fd0-c57d-4fa3-992a-bd34605bbc1c', 'IDLE', 'UNPRODUCTIVE', 542, '2026-07-08 00:50:58.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.568', '2026-07-25 07:26:33.568'),
+('9db0b89b-d74a-4c96-a4ac-3f92061a550c', 'ACTIVE', 'NEUTRAL', 2987, '2026-07-05 18:00:00.000', 'Gmail', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.907', '2026-07-25 07:26:32.907'),
+('9dc86d8e-7327-465c-a328-71dd402f5c43', 'BREAK', 'NEUTRAL', 2829, '2026-07-03 19:00:00.000', 'Lunch Break', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:32.734', '2026-07-25 07:26:32.734'),
+('9de4360a-4232-40d3-ae7a-f4753034fea5', 'ACTIVE', 'NEUTRAL', 2639, '2026-07-18 00:00:00.000', 'Slack', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:36.850', '2026-07-25 07:26:36.850'),
+('9de658a9-de29-4d2a-8c7b-3fc599182431', 'IDLE', 'UNPRODUCTIVE', 817, '2026-07-24 18:46:23.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.817', '2026-07-25 07:26:38.817'),
+('9dfc7e19-18fe-4d4c-b437-af853bc901ac', 'ACTIVE', 'PRODUCTIVE', 2655, '2026-07-22 18:00:00.000', 'Zoom', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:38.446', '2026-07-25 07:26:38.446'),
+('9e26e7fc-1d43-445e-943c-8385e7dcbad5', 'IDLE', 'UNPRODUCTIVE', 974, '2026-07-07 22:43:46.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:33.499', '2026-07-25 07:26:33.499'),
+('9e3259da-c9d7-46e2-b0fe-c4f726d1ea34', 'IDLE', 'UNPRODUCTIVE', 393, '2026-06-29 18:53:27.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.827', '2026-07-25 07:26:30.827'),
+('9e3d12fe-04f9-402b-aa25-1a41dcad43b5', 'IDLE', 'UNPRODUCTIVE', 376, '2026-07-13 18:53:44.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:35.326', '2026-07-25 07:26:35.326'),
+('9e64c8a4-6d84-4367-ad49-296152ac2edf', 'ACTIVE', 'NEUTRAL', 3161, '2026-07-10 20:00:00.000', 'Slack', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.683', '2026-07-25 07:26:34.683'),
+('9e6e35e7-53c3-44ad-9151-0e76515217ec', 'BREAK', 'NEUTRAL', 2854, '2026-07-06 19:00:00.000', 'Lunch Break', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:32.975', '2026-07-25 07:26:32.975'),
+('9e75c01b-66d0-44ec-af14-25ad1e4e37b7', 'BREAK', 'NEUTRAL', 2923, '2026-06-26 19:00:00.000', 'Lunch Break', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:30.348', '2026-07-25 07:26:30.348'),
+('9ea1c40d-2138-4703-b2e7-478f82765199', 'IDLE', 'UNPRODUCTIVE', 473, '2026-07-16 21:52:07.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:36.439', '2026-07-25 07:26:36.439'),
+('9eb5018e-06bb-49e8-8cca-295869f6de87', 'BREAK', 'NEUTRAL', 3358, '2026-07-10 19:00:00.000', 'Lunch Break', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:34.738', '2026-07-25 07:26:34.738'),
+('9ece01d4-d7ee-4efe-82a5-f4fc1dab7fff', 'IDLE', 'UNPRODUCTIVE', 963, '2026-07-03 20:43:57.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.803', '2026-07-25 07:26:32.803'),
+('9edbaf8b-4809-407d-aa1a-1c56f1b7fa1f', 'ACTIVE', 'PRODUCTIVE', 2783, '2026-07-24 18:00:00.000', 'Google Chrome', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.813', '2026-07-25 07:26:38.813'),
+('9ee2276f-868c-49ac-99cb-c61aec6b8b86', 'IDLE', 'UNPRODUCTIVE', 760, '2026-07-10 20:47:20.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:34.812', '2026-07-25 07:26:34.812'),
+('9f253b04-7d34-49f2-a323-2b3723e7ce9a', 'IDLE', 'UNPRODUCTIVE', 532, '2026-07-09 00:51:08.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.955', '2026-07-25 07:26:33.955'),
+('9f350fc7-6e8b-4f86-98a7-03fd80ccdf1b', 'IDLE', 'UNPRODUCTIVE', 410, '2026-07-03 18:53:10.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:32.611', '2026-07-25 07:26:32.611'),
+('9f53adb1-1dd5-41c1-b139-ee5ca32c87b8', 'IDLE', 'UNPRODUCTIVE', 992, '2026-07-18 00:43:28.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:37.049', '2026-07-25 07:26:37.049'),
+('9f768c04-8924-4790-bbdb-502e47cb46c9', 'ACTIVE', 'NEUTRAL', 2969, '2026-07-14 17:00:00.000', 'Slack', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:35.618', '2026-07-25 07:26:35.618'),
+('9fa9236b-13ea-4ec0-b7fe-cd27ace599d9', 'IDLE', 'UNPRODUCTIVE', 633, '2026-07-12 20:49:27.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.047', '2026-07-25 07:26:35.047'),
+('9fbaeba7-29ea-46d7-8696-5e314b13d924', 'ACTIVE', 'PRODUCTIVE', 2851, '2026-07-19 20:00:00.000', 'Zoom', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.344', '2026-07-25 07:26:37.344'),
+('9fc5d7ac-97cb-49d0-b33f-b4ec5b453052', 'ACTIVE', 'PRODUCTIVE', 2530, '2026-07-16 23:00:00.000', 'VS Code', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:36.715', '2026-07-25 07:26:36.715'),
+('a01fa300-a78e-408a-9ba9-f1232895f631', 'IDLE', 'UNPRODUCTIVE', 773, '2026-07-02 21:47:07.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:32.255', '2026-07-25 07:26:32.255'),
+('a023dd6e-98a9-40c2-be89-4f1604e6cb44', 'ACTIVE', 'PRODUCTIVE', 2816, '2026-07-17 23:00:00.000', 'Stack Overflow', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.233', '2026-07-25 07:26:37.233'),
+('a040fb7e-e795-4201-a834-ba19a4fd00e8', 'IDLE', 'UNPRODUCTIVE', 903, '2026-07-10 18:44:57.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:34.803', '2026-07-25 07:26:34.803'),
+('a041a122-25b0-4ffc-9c0d-a073423e5d93', 'IDLE', 'UNPRODUCTIVE', 1029, '2026-06-27 00:42:51.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:30.494', '2026-07-25 07:26:30.494'),
+('a05449da-98a1-428d-a71a-904e601936d8', 'ACTIVE', 'NEUTRAL', 3003, '2026-07-04 00:00:00.000', 'Microsoft Teams', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:32.645', '2026-07-25 07:26:32.645'),
+('a0595bf2-d6ae-4649-a89d-5255338e391f', 'IDLE', 'UNPRODUCTIVE', 995, '2026-07-06 20:43:25.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.107', '2026-07-25 07:26:33.107'),
+('a060e367-9d35-4a4a-ae3d-d9c161d101da', 'IDLE', 'UNPRODUCTIVE', 1079, '2026-07-07 00:42:01.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:33.270', '2026-07-25 07:26:33.270'),
+('a09c2d16-e8df-4000-94d5-68a79c181beb', 'IDLE', 'UNPRODUCTIVE', 447, '2026-07-13 16:52:33.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.494', '2026-07-25 07:26:35.494'),
+('a0a2b7b5-bc1d-45d9-9758-3fd014ff1752', 'IDLE', 'UNPRODUCTIVE', 754, '2026-07-22 20:47:26.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.394', '2026-07-25 07:26:38.394'),
+('a0c116e7-5da9-4a6d-80ed-72b6013088f3', 'ACTIVE', 'PRODUCTIVE', 2711, '2026-07-20 16:00:00.000', 'VS Code', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:37.621', '2026-07-25 07:26:37.621'),
+('a0e52e48-8fc8-4339-b469-87c7651f4ddd', 'ACTIVE', 'PRODUCTIVE', 2781, '2026-07-23 21:00:00.000', 'VS Code', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:38.733', '2026-07-25 07:26:38.733');
+INSERT INTO `activity_logs` (`id`, `activityType`, `productivity`, `duration`, `timestamp`, `appWebsite`, `employeeId`, `taskId`, `organizationId`, `createdAt`, `updatedAt`) VALUES
+('a0fbca2e-27bf-4c3b-8f54-3d88b288597d', 'IDLE', 'UNPRODUCTIVE', 765, '2026-07-03 16:47:15.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:32.537', '2026-07-25 07:26:32.537'),
+('a126833d-ca4d-4e60-91da-f09e520459b9', 'IDLE', 'UNPRODUCTIVE', 521, '2026-07-17 17:51:19.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:37.064', '2026-07-25 07:26:37.064'),
+('a1633596-ea85-472d-9815-2352290c9863', 'ACTIVE', 'PRODUCTIVE', 2826, '2026-07-18 21:00:00.000', 'Zoom', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.286', '2026-07-25 07:26:37.286'),
+('a1a72825-b4b9-4c7b-ad98-eccc48f3e0b2', 'BREAK', 'NEUTRAL', 3272, '2026-07-17 19:00:00.000', 'Lunch Break', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:37.013', '2026-07-25 07:26:37.013'),
+('a1af29d2-6968-4218-a7ca-134cdeb4c5ab', 'IDLE', 'UNPRODUCTIVE', 815, '2026-07-15 16:46:25.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:35.944', '2026-07-25 07:26:35.944'),
+('a1dca954-aec5-48bf-ac21-69319c7d926b', 'ACTIVE', 'NEUTRAL', 3131, '2026-07-15 21:00:00.000', 'Slack', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:36.377', '2026-07-25 07:26:36.377'),
+('a1dcbb13-693c-4a69-b682-3824dc1ebaed', 'IDLE', 'UNPRODUCTIVE', 827, '2026-07-04 00:46:13.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:32.586', '2026-07-25 07:26:32.586'),
+('a2084807-a6af-4c7c-8f02-208228de9ac2', 'IDLE', 'UNPRODUCTIVE', 469, '2026-07-23 16:52:11.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.624', '2026-07-25 07:26:38.624'),
+('a225987e-a07b-4300-8dde-b2761c659bef', 'ACTIVE', 'UNPRODUCTIVE', 2663, '2026-07-24 16:00:00.000', 'Notion', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:39.017', '2026-07-25 07:26:39.017'),
+('a2378f9a-3c2a-40e4-8bb9-633e9346ebcf', 'IDLE', 'UNPRODUCTIVE', 384, '2026-07-16 21:53:36.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:36.636', '2026-07-25 07:26:36.636'),
+('a2506bbc-6673-4b19-9243-d0a7ecad6dad', 'ACTIVE', 'PRODUCTIVE', 2883, '2026-07-07 18:00:00.000', 'Google Chrome', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:33.471', '2026-07-25 07:26:33.471'),
+('a25ebc0f-f87a-44c4-929a-f2ff4ca05804', 'ACTIVE', 'PRODUCTIVE', 3231, '2026-07-03 22:00:00.000', 'VS Code', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.866', '2026-07-25 07:26:32.866'),
+('a2990d46-ab0a-4163-8c31-23e95f7f9879', 'ACTIVE', 'PRODUCTIVE', 3239, '2026-07-16 22:00:00.000', 'VS Code', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.502', '2026-07-25 07:26:36.502'),
+('a29e770d-6280-41c3-a59d-5d5561fc8dfa', 'IDLE', 'UNPRODUCTIVE', 696, '2026-07-11 00:48:24.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:34.834', '2026-07-25 07:26:34.834'),
+('a2ac8b33-d230-4343-8873-803ddbdc96ae', 'IDLE', 'UNPRODUCTIVE', 823, '2026-07-18 00:46:17.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:37.113', '2026-07-25 07:26:37.113'),
+('a2bacefd-23de-4d4b-a021-e4f70cef94aa', 'IDLE', 'UNPRODUCTIVE', 999, '2026-07-10 17:43:21.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:34.729', '2026-07-25 07:26:34.729'),
+('a313d08f-3152-4412-949e-2ca796310624', 'IDLE', 'UNPRODUCTIVE', 685, '2026-07-20 22:48:35.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:37.528', '2026-07-25 07:26:37.528'),
+('a3865d87-02d7-4720-a8c2-f34455c03fc2', 'ACTIVE', 'PRODUCTIVE', 2871, '2026-06-30 20:00:00.000', 'Notion', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.517', '2026-07-25 07:26:31.517'),
+('a3a38b32-23b3-41d7-a593-35df84b735b9', 'ACTIVE', 'PRODUCTIVE', 3195, '2026-07-06 21:00:00.000', 'Figma', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:32.985', '2026-07-25 07:26:32.985'),
+('a3ec115e-d9b2-41d3-90a8-0b6dd1e69d4b', 'IDLE', 'UNPRODUCTIVE', 1075, '2026-07-02 20:42:05.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:32.250', '2026-07-25 07:26:32.250'),
+('a42e7e8e-11f5-4a9e-95d5-2bd7f81dbaf8', 'ACTIVE', 'PRODUCTIVE', 2671, '2026-06-29 17:00:00.000', 'Zoom', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:31.161', '2026-07-25 07:26:31.161'),
+('a473d829-fa9f-4c1e-8b68-879d3eb58708', 'ACTIVE', 'PRODUCTIVE', 3169, '2026-07-03 00:00:00.000', 'Figma', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.526', '2026-07-25 07:26:32.526'),
+('a47f513a-2c32-4499-8ffc-46b3e4bdb8a4', 'ACTIVE', 'NEUTRAL', 3216, '2026-06-29 21:00:00.000', 'Slack', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.109', '2026-07-25 07:26:31.109'),
+('a4d9fe92-5965-4e55-8df1-c87a2322e72e', 'ACTIVE', 'PRODUCTIVE', 2819, '2026-07-20 22:00:00.000', 'Zoom', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:37.731', '2026-07-25 07:26:37.731'),
+('a4e6935e-4a79-445b-9493-23c09942d357', 'IDLE', 'UNPRODUCTIVE', 371, '2026-07-17 16:53:49.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:37.058', '2026-07-25 07:26:37.058'),
+('a531ec9d-cf42-43eb-ba92-43c7d1e08723', 'ACTIVE', 'PRODUCTIVE', 2871, '2026-07-01 20:00:00.000', 'VS Code', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:31.723', '2026-07-25 07:26:31.723'),
+('a5384a53-1ec6-49e2-9839-781546bf38e8', 'ACTIVE', 'NEUTRAL', 2683, '2026-07-21 18:00:00.000', 'Microsoft Teams', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:37.974', '2026-07-25 07:26:37.974'),
+('a565acd0-e5b5-4c68-aa26-4dc932d9307f', 'BREAK', 'NEUTRAL', 2721, '2026-07-08 19:00:00.000', 'Lunch Break', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.925', '2026-07-25 07:26:33.925'),
+('a5e81105-68c1-49fc-92e3-67f85165df80', 'IDLE', 'UNPRODUCTIVE', 781, '2026-07-23 21:46:59.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.672', '2026-07-25 07:26:38.672'),
+('a63f7de2-6013-427a-ad31-7fe0d5f65aee', 'IDLE', 'UNPRODUCTIVE', 440, '2026-07-20 18:52:40.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:37.435', '2026-07-25 07:26:37.435'),
+('a65e509c-6f31-4a1b-9f54-815e99c19cfd', 'ACTIVE', 'PRODUCTIVE', 3061, '2026-07-06 21:00:00.000', 'VS Code', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:33.318', '2026-07-25 07:26:33.318'),
+('a66dc745-b4ea-4db8-9de3-3ab6594341f5', 'IDLE', 'UNPRODUCTIVE', 644, '2026-06-26 23:49:16.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:30.216', '2026-07-25 07:26:30.216'),
+('a69a28ec-503d-42d1-a45c-365d06056d6c', 'IDLE', 'UNPRODUCTIVE', 507, '2026-07-07 20:51:33.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.544', '2026-07-25 07:26:33.544'),
+('a6a8ddd8-ff52-4c2d-b437-e57dad3df4fa', 'ACTIVE', 'PRODUCTIVE', 2871, '2026-07-02 20:00:00.000', 'VS Code', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:32.190', '2026-07-25 07:26:32.190'),
+('a6bc1751-7ec2-4b60-bcb9-350aa471f307', 'ACTIVE', 'NEUTRAL', 2654, '2026-07-16 18:00:00.000', 'Slack', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:36.417', '2026-07-25 07:26:36.417'),
+('a6d12044-644d-4c27-9b98-c31dd274698f', 'ACTIVE', 'PRODUCTIVE', 3226, '2026-06-29 20:00:00.000', 'GitHub Desktop', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:31.243', '2026-07-25 07:26:31.243'),
+('a6dde47c-b6cb-4fdd-b13b-a5fe1075db1e', 'ACTIVE', 'PRODUCTIVE', 2826, '2026-07-11 23:00:00.000', 'Zoom', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.009', '2026-07-25 07:26:35.009'),
+('a6de6301-602b-45c4-a04c-c3bd7de9518b', 'ACTIVE', 'NEUTRAL', 2967, '2026-07-12 20:00:00.000', 'Slack', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.044', '2026-07-25 07:26:35.044'),
+('a6ebdb58-841a-4ec5-b861-9768c641275b', 'IDLE', 'UNPRODUCTIVE', 397, '2026-07-07 16:53:23.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:33.780', '2026-07-25 07:26:33.780'),
+('a74db60a-9257-4251-8c3e-24e056e14c5b', 'IDLE', 'UNPRODUCTIVE', 1058, '2026-07-10 20:42:22.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:34.498', '2026-07-25 07:26:34.498'),
+('a74efefe-0277-4204-8b21-122c7c05a1b3', 'IDLE', 'UNPRODUCTIVE', 867, '2026-06-29 22:45:33.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.845', '2026-07-25 07:26:30.845'),
+('a76509c5-1798-49ae-b129-a96bf5d1e489', 'ACTIVE', 'UNPRODUCTIVE', 2931, '2026-06-29 16:00:00.000', 'Notion', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.072', '2026-07-25 07:26:31.072'),
+('a77df8a3-ea07-433f-8477-cdefd91bfd53', 'ACTIVE', 'PRODUCTIVE', 2626, '2026-07-07 22:00:00.000', 'Figma', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:33.496', '2026-07-25 07:26:33.496'),
+('a7a91f6b-aab8-4220-a594-06589c71f4fe', 'ACTIVE', 'PRODUCTIVE', 3150, '2026-07-02 18:00:00.000', 'VS Code', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:32.360', '2026-07-25 07:26:32.360'),
+('a7c6dfc3-92b1-4864-9968-b02955c05de9', 'BREAK', 'NEUTRAL', 3155, '2026-07-24 19:00:00.000', 'Lunch Break', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:38.890', '2026-07-25 07:26:38.890'),
+('a7ed272e-05a0-4cef-9ec5-7c3098d0c502', 'BREAK', 'NEUTRAL', 2838, '2026-06-29 19:00:00.000', 'Lunch Break', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.829', '2026-07-25 07:26:30.829'),
+('a84d1b32-3c51-4874-8eea-566541e314e9', 'IDLE', 'UNPRODUCTIVE', 458, '2026-06-30 18:52:22.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:31.581', '2026-07-25 07:26:31.581'),
+('a8c71ed5-0780-47bb-9ef5-1b22fc162dac', 'IDLE', 'UNPRODUCTIVE', 512, '2026-07-16 00:51:28.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:36.343', '2026-07-25 07:26:36.343'),
+('a8dc93c3-b514-4586-ab46-bfe5c9c16cd7', 'IDLE', 'UNPRODUCTIVE', 1065, '2026-07-16 17:42:15.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:36.740', '2026-07-25 07:26:36.740'),
+('a8ed263b-5900-4cfa-84ca-28f068f704a2', 'ACTIVE', 'PRODUCTIVE', 3065, '2026-07-07 00:00:00.000', 'Google Chrome', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:33.064', '2026-07-25 07:26:33.064'),
+('a900abdf-c645-451a-97ce-ae80d667aceb', 'IDLE', 'UNPRODUCTIVE', 1034, '2026-06-26 20:42:46.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:30.359', '2026-07-25 07:26:30.359'),
+('a91e19ba-8f28-4867-86fc-523a4d7e5c9b', 'ACTIVE', 'NEUTRAL', 2624, '2026-07-15 22:00:00.000', 'Gmail', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.051', '2026-07-25 07:26:36.051'),
+('a97584d6-bd4f-4277-ae48-1ae316f3d0c2', 'IDLE', 'UNPRODUCTIVE', 1018, '2026-07-09 21:43:02.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.397', '2026-07-25 07:26:34.397'),
+('a9771071-ac31-4a95-96e6-7162d419b2bb', 'IDLE', 'UNPRODUCTIVE', 863, '2026-07-02 16:45:37.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.477', '2026-07-25 07:26:32.477'),
+('a979fed9-b717-4c9b-b227-d0feb63f93aa', 'IDLE', 'UNPRODUCTIVE', 685, '2026-07-08 21:48:35.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:34.161', '2026-07-25 07:26:34.161'),
+('a98cd65b-edc6-430e-b83b-3bf16ad1564e', 'IDLE', 'UNPRODUCTIVE', 749, '2026-07-17 23:47:31.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:36.848', '2026-07-25 07:26:36.848'),
+('a9989387-8123-431b-a8cb-1051755e2e1f', 'ACTIVE', 'NEUTRAL', 2891, '2026-07-24 20:00:00.000', 'Slack', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:39.040', '2026-07-25 07:26:39.040'),
+('a999256a-d28c-47c6-81cc-b1c05b4584a3', 'IDLE', 'UNPRODUCTIVE', 613, '2026-07-05 18:49:47.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.911', '2026-07-25 07:26:32.911'),
+('a99a5fd7-fc4a-481c-aa51-493d57d7e50d', 'IDLE', 'UNPRODUCTIVE', 783, '2026-07-17 16:46:57.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:36.998', '2026-07-25 07:26:36.998'),
+('a9a447f4-d0d0-4094-b701-2c2e7721114c', 'IDLE', 'UNPRODUCTIVE', 772, '2026-07-10 17:47:08.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:34.484', '2026-07-25 07:26:34.484'),
+('a9bb0c92-47f9-451a-bf1b-d032990daff2', 'BREAK', 'NEUTRAL', 3486, '2026-07-24 19:00:00.000', 'Lunch Break', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.820', '2026-07-25 07:26:38.820'),
+('a9dc82af-fdc2-4fa8-864f-8ad96ba97bb5', 'ACTIVE', 'PRODUCTIVE', 2592, '2026-07-18 00:00:00.000', 'Zoom', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.916', '2026-07-25 07:26:36.916'),
+('aa20d942-0b61-4169-9d0e-38bb80ed0f72', 'BREAK', 'NEUTRAL', 2427, '2026-07-16 19:00:00.000', 'Lunch Break', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:36.686', '2026-07-25 07:26:36.686'),
+('aaeabe7d-0036-4b20-bdfb-b9f9a6bcec29', 'ACTIVE', 'PRODUCTIVE', 2585, '2026-07-03 17:00:00.000', 'Zoom', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.839', '2026-07-25 07:26:32.839'),
+('ab13650e-aebd-4b55-b026-058347540090', 'IDLE', 'UNPRODUCTIVE', 412, '2026-07-07 21:53:08.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.550', '2026-07-25 07:26:33.550'),
+('abbe1128-238f-4263-bd90-5ebd7ab9c3a3', 'IDLE', 'UNPRODUCTIVE', 428, '2026-07-10 00:52:52.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:34.293', '2026-07-25 07:26:34.293'),
+('abe04016-3fd9-4f87-9d3e-23326e42d35b', 'IDLE', 'UNPRODUCTIVE', 1008, '2026-07-17 00:43:12.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.519', '2026-07-25 07:26:36.519'),
+('abe601da-eeef-4c3f-9b9c-4bb238f2fa2f', 'ACTIVE', 'PRODUCTIVE', 2877, '2026-07-13 17:00:00.000', 'Zoom', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:35.418', '2026-07-25 07:26:35.418'),
+('abf3654b-5e53-40e1-b354-c81b9f97cd22', 'IDLE', 'UNPRODUCTIVE', 498, '2026-07-16 20:51:42.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:36.627', '2026-07-25 07:26:36.627'),
+('abfab207-9581-4020-b7f2-270cfd55a3c6', 'ACTIVE', 'NEUTRAL', 2707, '2026-07-17 00:00:00.000', 'Slack', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:36.454', '2026-07-25 07:26:36.454'),
+('abff3837-36a4-49d5-a916-d1821e7ad735', 'IDLE', 'UNPRODUCTIVE', 363, '2026-07-07 23:53:57.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:33.820', '2026-07-25 07:26:33.820'),
+('ac1ed153-44b6-49f3-80b4-040e0097d298', 'IDLE', 'UNPRODUCTIVE', 975, '2026-06-27 22:43:45.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:30.653', '2026-07-25 07:26:30.653'),
+('ac355f2b-e9ab-4ccd-94a1-362ac5c0990c', 'ACTIVE', 'NEUTRAL', 2688, '2026-06-29 20:00:00.000', 'Gmail', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:31.183', '2026-07-25 07:26:31.183'),
+('ac40d027-ee81-499b-92b4-a60abc6a0b1c', 'IDLE', 'UNPRODUCTIVE', 954, '2026-07-16 18:44:06.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:36.683', '2026-07-25 07:26:36.683'),
+('ac507485-7c13-40e9-b237-5bb8c0935f52', 'BREAK', 'NEUTRAL', 2401, '2026-07-05 19:00:00.000', 'Lunch Break', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.914', '2026-07-25 07:26:32.914'),
+('ac595562-e004-401a-9e19-b9103e69971e', 'ACTIVE', 'NEUTRAL', 2571, '2026-06-27 00:00:00.000', 'Slack', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:30.489', '2026-07-25 07:26:30.489'),
+('ac5b74c5-bfa1-48ad-a4da-7cef3fbf08fe', 'IDLE', 'UNPRODUCTIVE', 903, '2026-07-16 16:44:57.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:36.734', '2026-07-25 07:26:36.734'),
+('ac735c7e-f2d8-4e15-b53a-596675113b19', 'IDLE', 'UNPRODUCTIVE', 498, '2026-06-28 18:51:42.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:30.769', '2026-07-25 07:26:30.769'),
+('ac9901b6-8464-4c96-959d-256d9617eb6d', 'BREAK', 'NEUTRAL', 2454, '2026-07-13 19:00:00.000', 'Lunch Break', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:35.195', '2026-07-25 07:26:35.195'),
+('acbde834-b920-4eec-bd73-63ff63c9f4e7', 'ACTIVE', 'NEUTRAL', 2763, '2026-07-24 16:00:00.000', 'Slack', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:38.862', '2026-07-25 07:26:38.862'),
+('acc7dcc8-16bd-49a6-a055-fb2a34e75bfa', 'IDLE', 'UNPRODUCTIVE', 631, '2026-07-13 18:49:29.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:35.191', '2026-07-25 07:26:35.191'),
+('accffec8-f255-47ff-84b2-8959a5af2541', 'IDLE', 'UNPRODUCTIVE', 987, '2026-07-06 00:43:33.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.944', '2026-07-25 07:26:32.944'),
+('ad1564be-32b9-47c6-be4f-c8a88087dfa7', 'ACTIVE', 'NEUTRAL', 2535, '2026-07-11 18:00:00.000', 'Slack', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:34.982', '2026-07-25 07:26:34.982'),
+('ad381300-d03e-4c2b-918d-2820f0ca6805', 'IDLE', 'UNPRODUCTIVE', 705, '2026-07-23 22:48:15.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:38.742', '2026-07-25 07:26:38.742'),
+('ad6ec9ca-09dd-4dfa-9b41-004f22087d3b', 'ACTIVE', 'PRODUCTIVE', 2948, '2026-06-30 16:00:00.000', 'Stack Overflow', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:31.627', '2026-07-25 07:26:31.627'),
+('ad8b6542-ec22-44f9-ae5d-96e20f793a94', 'IDLE', 'UNPRODUCTIVE', 496, '2026-07-07 17:51:44.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:33.786', '2026-07-25 07:26:33.786'),
+('ada828ff-b8a8-4f2a-b9c9-cfcbebb74c88', 'IDLE', 'UNPRODUCTIVE', 719, '2026-07-13 16:48:01.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:35.179', '2026-07-25 07:26:35.179'),
+('addc9c58-2d99-451d-ba5f-d1aeaef9005d', 'ACTIVE', 'PRODUCTIVE', 2933, '2026-06-26 20:00:00.000', 'VS Code', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:30.446', '2026-07-25 07:26:30.446'),
+('adfebaec-1c3f-476e-b3a0-e1b218158daf', 'BREAK', 'NEUTRAL', 2643, '2026-06-29 19:00:00.000', 'Lunch Break', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:31.239', '2026-07-25 07:26:31.239'),
+('ae04d4da-194a-4e36-a6fb-53602408cb7f', 'ACTIVE', 'PRODUCTIVE', 3120, '2026-06-29 17:00:00.000', 'VS Code', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.818', '2026-07-25 07:26:30.818'),
+('ae16848c-acbc-4032-a745-80156773677e', 'IDLE', 'UNPRODUCTIVE', 738, '2026-07-23 20:47:42.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.530', '2026-07-25 07:26:38.530'),
+('ae1d97d3-42ff-498b-8b61-dfc8b3d7bb81', 'IDLE', 'UNPRODUCTIVE', 374, '2026-06-29 20:53:46.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:31.246', '2026-07-25 07:26:31.246'),
+('ae4f2da8-80ba-47c4-8925-cb85592b25c3', 'IDLE', 'UNPRODUCTIVE', 560, '2026-07-08 18:50:40.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:34.142', '2026-07-25 07:26:34.142'),
+('ae870f7c-2183-4cda-b38d-9fb7a5d1394a', 'IDLE', 'UNPRODUCTIVE', 518, '2026-07-16 23:51:22.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:36.779', '2026-07-25 07:26:36.779'),
+('aea3a716-10ed-4180-a91c-7f2f2cdc2ff2', 'ACTIVE', 'PRODUCTIVE', 2819, '2026-07-23 21:00:00.000', 'Zoom', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.669', '2026-07-25 07:26:38.669'),
+('aebf237e-ed0f-402b-ad09-11b0f6b8b6d0', 'ACTIVE', 'PRODUCTIVE', 2622, '2026-07-20 23:00:00.000', 'Stack Overflow', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:37.460', '2026-07-25 07:26:37.460'),
+('aec4b23d-a7dd-4314-921f-4c6faf44fc6e', 'IDLE', 'UNPRODUCTIVE', 1038, '2026-07-15 20:42:42.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:36.243', '2026-07-25 07:26:36.243'),
+('aedf252c-af71-4e32-9023-1782663ffacc', 'ACTIVE', 'NEUTRAL', 3057, '2026-07-13 21:00:00.000', 'Gmail', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.519', '2026-07-25 07:26:35.519'),
+('af538fde-d7b2-4bde-a6f5-588e607a08a0', 'ACTIVE', 'PRODUCTIVE', 2834, '2026-06-29 18:00:00.000', 'VS Code', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.088', '2026-07-25 07:26:31.088'),
+('af7a7318-9f09-4f97-95de-540ec0008bd4', 'IDLE', 'UNPRODUCTIVE', 723, '2026-07-13 17:47:57.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:35.421', '2026-07-25 07:26:35.421'),
+('af9c043c-092d-4ffd-8e27-13d2571aac9f', 'ACTIVE', 'NEUTRAL', 2846, '2026-07-15 18:00:00.000', 'Slack', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:35.961', '2026-07-25 07:26:35.961'),
+('afa5adfd-cfd1-4fb0-9181-92c46f23df71', 'BREAK', 'NEUTRAL', 2573, '2026-07-20 19:00:00.000', 'Lunch Break', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:37.711', '2026-07-25 07:26:37.711'),
+('afb76b66-2673-466f-a43e-b6bd8a8ac53f', 'IDLE', 'UNPRODUCTIVE', 559, '2026-07-08 20:50:41.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.931', '2026-07-25 07:26:33.931'),
+('afbf0048-ffb9-44cf-9586-73b2f65f258e', 'ACTIVE', 'NEUTRAL', 2780, '2026-06-26 21:00:00.000', 'Slack', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.100', '2026-07-25 07:26:30.100'),
+('affc553b-77d2-437e-8d16-349a8a6bd763', 'ACTIVE', 'PRODUCTIVE', 3142, '2026-06-30 00:00:00.000', 'Google Chrome', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:31.208', '2026-07-25 07:26:31.208'),
+('affdf6c5-985c-4f7a-b9d3-efffcd13f924', 'IDLE', 'UNPRODUCTIVE', 555, '2026-07-20 16:50:45.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:37.418', '2026-07-25 07:26:37.418'),
+('b00deff0-e8c2-46f9-a251-5ec0057918d2', 'IDLE', 'UNPRODUCTIVE', 403, '2026-07-03 20:53:17.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:32.740', '2026-07-25 07:26:32.740'),
+('b0563adb-3d94-4f23-a533-2221853aa06b', 'IDLE', 'UNPRODUCTIVE', 983, '2026-07-24 22:43:37.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:39.053', '2026-07-25 07:26:39.053'),
+('b08ff3a6-7923-4a9b-9f71-332effff9cb2', 'ACTIVE', 'PRODUCTIVE', 2617, '2026-07-22 22:00:00.000', 'Stack Overflow', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:38.472', '2026-07-25 07:26:38.472'),
+('b09f4ec7-eb50-456a-9177-bdcfa4612020', 'ACTIVE', 'NEUTRAL', 2536, '2026-07-10 21:00:00.000', 'Microsoft Teams', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:34.751', '2026-07-25 07:26:34.751'),
+('b0b7a3e7-0476-45a6-ade1-ebd561c1063b', 'ACTIVE', 'PRODUCTIVE', 3161, '2026-06-30 00:00:00.000', 'Zoom', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.139', '2026-07-25 07:26:31.139'),
+('b0ffe206-2f34-4418-a38b-335479c6c081', 'ACTIVE', 'NEUTRAL', 3224, '2026-07-16 17:00:00.000', 'Gmail', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:36.605', '2026-07-25 07:26:36.605'),
+('b1233edd-063b-46bc-bc3e-f30242130366', 'IDLE', 'UNPRODUCTIVE', 867, '2026-07-03 17:45:33.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:32.544', '2026-07-25 07:26:32.544'),
+('b133bbea-8839-422f-8001-b11e2c52efc3', 'ACTIVE', 'NEUTRAL', 2707, '2026-07-21 16:00:00.000', 'Slack', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:37.813', '2026-07-25 07:26:37.813'),
+('b13e4917-e980-44ba-ad94-7c9dae32ea6a', 'IDLE', 'UNPRODUCTIVE', 709, '2026-06-26 20:48:11.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:30.183', '2026-07-25 07:26:30.183'),
+('b1486a97-051e-4946-bd3a-c8de866a181f', 'IDLE', 'UNPRODUCTIVE', 799, '2026-07-24 20:46:41.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:38.897', '2026-07-25 07:26:38.897'),
+('b172e783-26fc-4aca-95d0-15a14469055e', 'IDLE', 'UNPRODUCTIVE', 905, '2026-07-21 18:44:55.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:37.828', '2026-07-25 07:26:37.828'),
+('b233f256-567b-4667-8f3e-1b3800218eeb', 'IDLE', 'UNPRODUCTIVE', 767, '2026-07-19 00:47:13.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.314', '2026-07-25 07:26:37.314'),
+('b25ebb5e-5167-4c1e-8adc-5a56c403d9b6', 'IDLE', 'UNPRODUCTIVE', 933, '2026-07-20 16:44:27.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:37.484', '2026-07-25 07:26:37.484'),
+('b2c5de15-ee56-4b42-a40a-01fa69d236e8', 'ACTIVE', 'PRODUCTIVE', 3116, '2026-07-24 17:00:00.000', 'Notion', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:39.027', '2026-07-25 07:26:39.027'),
+('b2df060c-c42e-46ab-af28-026b5c6f8f68', 'IDLE', 'UNPRODUCTIVE', 842, '2026-06-29 17:45:58.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:31.228', '2026-07-25 07:26:31.228'),
+('b2e1cc0b-7fe3-455b-9318-f2360cfcef4e', 'ACTIVE', 'PRODUCTIVE', 2793, '2026-07-01 21:00:00.000', 'Google Chrome', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:31.732', '2026-07-25 07:26:31.732'),
+('b350efc8-e9eb-44fc-af1c-ef8995e066f4', 'ACTIVE', 'PRODUCTIVE', 3238, '2026-07-22 20:00:00.000', 'Figma', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:38.455', '2026-07-25 07:26:38.455'),
+('b353bd6f-8d84-4a86-9a1f-d7ca0ab25bc0', 'IDLE', 'UNPRODUCTIVE', 658, '2026-07-22 22:49:02.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.405', '2026-07-25 07:26:38.405'),
+('b36b2d1d-54a8-464c-9c73-55ec2e790151', 'ACTIVE', 'NEUTRAL', 2536, '2026-07-15 20:00:00.000', 'Microsoft Teams', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:36.309', '2026-07-25 07:26:36.309'),
+('b3f01505-a9f9-4667-af0a-4190f8c09295', 'ACTIVE', 'NEUTRAL', 2889, '2026-07-08 16:00:00.000', 'Gmail', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:33.832', '2026-07-25 07:26:33.832'),
+('b3f86186-7dc7-4ad0-b19d-c311c25ec9c7', 'ACTIVE', 'NEUTRAL', 2886, '2026-07-06 17:00:00.000', 'Microsoft Teams', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:33.284', '2026-07-25 07:26:33.284'),
+('b3fcec08-0e63-4bc6-8689-409368477773', 'ACTIVE', 'PRODUCTIVE', 3214, '2026-07-15 18:00:00.000', 'GitHub Desktop', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:36.299', '2026-07-25 07:26:36.299'),
+('b3ffadbc-4c4c-4cd9-adce-ef33a9d50790', 'ACTIVE', 'PRODUCTIVE', 2521, '2026-07-13 16:00:00.000', 'Stack Overflow', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:35.308', '2026-07-25 07:26:35.308'),
+('b40f390b-d501-4245-b5b5-386f2f9ce6ab', 'IDLE', 'UNPRODUCTIVE', 917, '2026-07-21 18:44:43.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:37.978', '2026-07-25 07:26:37.978'),
+('b44c88b5-89ed-4f69-8ff9-4cd935c2133c', 'ACTIVE', 'NEUTRAL', 3204, '2026-07-17 21:00:00.000', 'Microsoft Teams', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:36.832', '2026-07-25 07:26:36.832'),
+('b4c592ae-3cdf-46e7-b3b2-cd2fd39d36f7', 'IDLE', 'UNPRODUCTIVE', 658, '2026-06-28 17:49:02.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:30.762', '2026-07-25 07:26:30.762'),
+('b4f5b117-452a-42c0-a5e5-f77069374a7d', 'IDLE', 'UNPRODUCTIVE', 731, '2026-07-15 16:47:49.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:36.351', '2026-07-25 07:26:36.351'),
+('b55168d0-89a2-42a1-b219-74e95cc3019b', 'ACTIVE', 'NEUTRAL', 3186, '2026-07-09 22:00:00.000', 'Slack', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:34.222', '2026-07-25 07:26:34.222'),
+('b565d0fb-8793-47fd-acd1-650ed3e81a75', 'ACTIVE', 'PRODUCTIVE', 2676, '2026-06-26 17:00:00.000', 'Stack Overflow', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:30.422', '2026-07-25 07:26:30.422'),
+('b5c39df4-7d22-4167-b356-8baa28d730ea', 'BREAK', 'NEUTRAL', 2531, '2026-07-01 19:00:00.000', 'Lunch Break', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:31.721', '2026-07-25 07:26:31.721'),
+('b647cf26-8769-4818-a0e1-85cb30c3160e', 'ACTIVE', 'NEUTRAL', 2889, '2026-07-02 18:00:00.000', 'Gmail', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:32.179', '2026-07-25 07:26:32.179'),
+('b65c7217-b5ba-4819-99d4-a242a7edf4fb', 'BREAK', 'NEUTRAL', 3588, '2026-07-22 19:00:00.000', 'Lunch Break', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:38.452', '2026-07-25 07:26:38.452'),
+('b65fd923-4e2f-4e9f-bc61-a1958446761c', 'ACTIVE', 'PRODUCTIVE', 3153, '2026-07-13 16:00:00.000', 'Zoom', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.490', '2026-07-25 07:26:35.490'),
+('b6805c0b-0a43-4aac-ac2f-3f9a32d581f0', 'IDLE', 'UNPRODUCTIVE', 432, '2026-07-15 00:52:48.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.932', '2026-07-25 07:26:35.932'),
+('b7310023-153d-460a-a1bb-cbedbf9ac872', 'ACTIVE', 'PRODUCTIVE', 2636, '2026-07-21 21:00:00.000', 'Stack Overflow', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:37.991', '2026-07-25 07:26:37.991'),
+('b742532b-84e8-45ef-82f8-dcff3475ce41', 'IDLE', 'UNPRODUCTIVE', 480, '2026-06-29 17:52:00.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.821', '2026-07-25 07:26:30.821'),
+('b74b280d-d9f5-40b0-876e-f6aa1c3a4b2f', 'IDLE', 'UNPRODUCTIVE', 981, '2026-07-07 20:43:39.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:33.686', '2026-07-25 07:26:33.686'),
+('b7677c7a-e363-4c5f-8cb2-dfe29b3a787f', 'IDLE', 'UNPRODUCTIVE', 606, '2026-07-09 17:49:54.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:34.252', '2026-07-25 07:26:34.252'),
+('b768419a-73aa-4e55-8698-5f8833010298', 'ACTIVE', 'PRODUCTIVE', 2902, '2026-07-02 17:00:00.000', 'Notion', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:32.354', '2026-07-25 07:26:32.354'),
+('b784fa20-0734-4ec3-92b5-cd365f071182', 'IDLE', 'UNPRODUCTIVE', 817, '2026-07-03 21:46:23.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:32.570', '2026-07-25 07:26:32.570'),
+('b796f245-9e1f-4d88-ad79-51166e7f03b3', 'ACTIVE', 'PRODUCTIVE', 2807, '2026-07-02 23:00:00.000', 'Google Chrome', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:32.267', '2026-07-25 07:26:32.267'),
+('b7d20d3e-b4fb-4181-9f65-6e8715138d98', 'IDLE', 'UNPRODUCTIVE', 992, '2026-07-16 00:43:28.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:36.278', '2026-07-25 07:26:36.278'),
+('b7ed3a0b-5069-4804-b06b-a8807f5a2da0', 'IDLE', 'UNPRODUCTIVE', 631, '2026-07-16 17:49:29.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.472', '2026-07-25 07:26:36.472'),
+('b819e46a-620c-43d2-9180-6fa5e8ddced6', 'IDLE', 'UNPRODUCTIVE', 981, '2026-07-06 20:43:39.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:33.234', '2026-07-25 07:26:33.234'),
+('b82374bf-e4bb-47be-b8cf-e2f4225c9282', 'ACTIVE', 'PRODUCTIVE', 2863, '2026-07-15 18:00:00.000', 'Stack Overflow', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:36.224', '2026-07-25 07:26:36.224'),
+('b835da7d-db2f-4e26-8146-d365288a57d7', 'IDLE', 'UNPRODUCTIVE', 946, '2026-07-22 18:44:14.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:38.240', '2026-07-25 07:26:38.240'),
+('b85982a4-09e1-43bf-91dd-e880bcd48836', 'ACTIVE', 'PRODUCTIVE', 2712, '2026-07-09 20:00:00.000', 'Stack Overflow', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:34.267', '2026-07-25 07:26:34.267'),
+('b873ecb6-af9d-4577-aa8c-c721f62feec5', 'IDLE', 'UNPRODUCTIVE', 610, '2026-07-03 18:49:50.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.848', '2026-07-25 07:26:32.848'),
+('b8974928-0c6b-45e2-b3bd-82861d004145', 'IDLE', 'UNPRODUCTIVE', 612, '2026-07-17 00:49:48.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:36.657', '2026-07-25 07:26:36.657'),
+('b8b4990e-0693-49d9-8eec-bbe00fc115e5', 'ACTIVE', 'PRODUCTIVE', 2693, '2026-07-14 16:00:00.000', 'Stack Overflow', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:35.805', '2026-07-25 07:26:35.805'),
+('b8e1d0a2-8f44-450b-939f-c6abaa33ed1f', 'IDLE', 'UNPRODUCTIVE', 539, '2026-07-06 21:51:01.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:33.322', '2026-07-25 07:26:33.322'),
+('b8f4028a-c32a-4514-ad18-45aa025a65d7', 'IDLE', 'UNPRODUCTIVE', 931, '2026-06-29 18:44:29.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:31.173', '2026-07-25 07:26:31.173'),
+('b915bcb6-f935-48f8-abd6-338c6a7d4b38', 'ACTIVE', 'PRODUCTIVE', 2521, '2026-07-08 00:00:00.000', 'Stack Overflow', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:33.713', '2026-07-25 07:26:33.713'),
+('b918fa3d-c0ce-475a-8df3-d87ae0ae0954', 'BREAK', 'NEUTRAL', 3272, '2026-07-15 19:00:00.000', 'Lunch Break', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:36.236', '2026-07-25 07:26:36.236'),
+('b9b7c88d-41c3-49e3-aef7-aa073aad8e84', 'ACTIVE', 'NEUTRAL', 2767, '2026-07-20 21:00:00.000', 'Slack', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:37.448', '2026-07-25 07:26:37.448'),
+('b9f0016e-6b78-4e90-b315-efa0b26ca99a', 'IDLE', 'UNPRODUCTIVE', 1032, '2026-07-02 22:42:48.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.454', '2026-07-25 07:26:32.454'),
+('ba793e08-a1ae-4141-9138-3fa44b9f40b5', 'IDLE', 'UNPRODUCTIVE', 914, '2026-07-10 21:44:46.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:34.568', '2026-07-25 07:26:34.568'),
+('baba4d2e-12b0-4513-9577-0a884f66887d', 'ACTIVE', 'NEUTRAL', 2602, '2026-07-07 22:00:00.000', 'Slack', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:33.812', '2026-07-25 07:26:33.812'),
+('bae38eb9-fe20-4bda-a358-c7760b545acd', 'ACTIVE', 'PRODUCTIVE', 2968, '2026-06-26 22:00:00.000', 'Google Chrome', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:30.377', '2026-07-25 07:26:30.377'),
+('bafb2515-5a50-4437-afde-9a41a0ac6f5e', 'IDLE', 'UNPRODUCTIVE', 768, '2026-07-22 23:47:12.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:38.274', '2026-07-25 07:26:38.274'),
+('bb117fdd-dec0-4e68-a6d8-412d96c6fff5', 'IDLE', 'UNPRODUCTIVE', 1018, '2026-07-01 22:43:02.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.958', '2026-07-25 07:26:31.958'),
+('bb7f73e7-094e-4421-8e0f-455961a35e67', 'IDLE', 'UNPRODUCTIVE', 547, '2026-07-01 17:50:53.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:31.779', '2026-07-25 07:26:31.779'),
+('bb8ca9ce-d9a7-45a2-a5c5-d04ab89ed840', 'ACTIVE', 'PRODUCTIVE', 2835, '2026-07-08 17:00:00.000', 'Notion', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:34.132', '2026-07-25 07:26:34.132'),
+('bba0e410-7b44-49ad-b418-cad62fdcf018', 'IDLE', 'UNPRODUCTIVE', 978, '2026-07-20 23:43:42.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:37.463', '2026-07-25 07:26:37.463'),
+('bbb931d5-76f9-4f98-a559-01a65f1eb7c1', 'ACTIVE', 'NEUTRAL', 3193, '2026-07-11 17:00:00.000', 'Slack', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.915', '2026-07-25 07:26:34.915'),
+('bbb962c4-7430-4080-946e-fa2ae90dd6cd', 'IDLE', 'UNPRODUCTIVE', 520, '2026-07-17 17:51:20.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.872', '2026-07-25 07:26:36.872'),
+('bbc292c7-497b-43ce-9875-1731a9c65791', 'IDLE', 'UNPRODUCTIVE', 909, '2026-07-14 20:44:51.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:35.767', '2026-07-25 07:26:35.767'),
+('bbcf8c8b-9d38-4eda-90bd-83fe11e808c6', 'ACTIVE', 'PRODUCTIVE', 2613, '2026-07-07 00:00:00.000', 'Google Chrome', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:33.341', '2026-07-25 07:26:33.341'),
+('bbe8c014-e42b-41ea-b784-4d8f4b655900', 'ACTIVE', 'PRODUCTIVE', 3014, '2026-07-06 23:00:00.000', 'Zoom', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:33.002', '2026-07-25 07:26:33.002'),
+('bbf14287-8eb1-4cd6-aa01-0ef100545b74', 'BREAK', 'NEUTRAL', 3261, '2026-07-12 19:00:00.000', 'Lunch Break', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.041', '2026-07-25 07:26:35.041'),
+('bc29000c-6e5f-4a1f-ba72-3e5e96a4bc20', 'ACTIVE', 'PRODUCTIVE', 3197, '2026-07-08 21:00:00.000', 'Google Chrome', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.095', '2026-07-25 07:26:34.095'),
+('bc2f7a95-7a23-4029-be06-850627c8bf69', 'IDLE', 'UNPRODUCTIVE', 717, '2026-07-07 18:48:03.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:33.475', '2026-07-25 07:26:33.475'),
+('bc31f984-bb04-4ae4-b77b-0005436f05c4', 'ACTIVE', 'PRODUCTIVE', 2585, '2026-07-03 20:00:00.000', 'Google Chrome', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:32.559', '2026-07-25 07:26:32.559'),
+('bc691b55-cb87-4142-88e3-b09b83755c31', 'IDLE', 'UNPRODUCTIVE', 543, '2026-07-11 21:50:57.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.000', '2026-07-25 07:26:35.000'),
+('bca2cb83-10b3-4d9c-810f-261becfeb8cc', 'IDLE', 'UNPRODUCTIVE', 1079, '2026-07-13 21:42:01.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:35.449', '2026-07-25 07:26:35.449'),
+('bca4eed4-6c79-4156-8e1f-ab39a0c268c3', 'IDLE', 'UNPRODUCTIVE', 669, '2026-06-29 16:48:51.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.077', '2026-07-25 07:26:31.077'),
+('bccb0309-8ea3-40dd-9ecd-1ee4ba887c53', 'IDLE', 'UNPRODUCTIVE', 563, '2026-06-30 20:50:37.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:31.326', '2026-07-25 07:26:31.326'),
+('bcfb3701-09fa-4621-9150-2446349d45af', 'ACTIVE', 'PRODUCTIVE', 2952, '2026-07-01 00:00:00.000', 'GitHub Desktop', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:31.684', '2026-07-25 07:26:31.684'),
+('bd0a8423-2e91-4216-bcf2-3d4ec2d98cac', 'BREAK', 'NEUTRAL', 3192, '2026-07-02 19:00:00.000', 'Lunch Break', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:32.366', '2026-07-25 07:26:32.366'),
+('bd157e90-3891-4885-be5d-9134ff29fdfe', 'IDLE', 'UNPRODUCTIVE', 525, '2026-06-26 21:51:15.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:30.191', '2026-07-25 07:26:30.191'),
+('bd1d13ad-f26c-4bb5-b97d-f52fc5f47587', 'IDLE', 'UNPRODUCTIVE', 974, '2026-07-08 22:43:46.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:33.881', '2026-07-25 07:26:33.881'),
+('bd3a936d-9ef2-4d5f-9736-9bf9877f98a9', 'ACTIVE', 'PRODUCTIVE', 2851, '2026-07-15 23:00:00.000', 'Stack Overflow', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:35.993', '2026-07-25 07:26:35.993'),
+('bd5f21d9-5ee6-4e8b-aec4-5cb38771f817', 'IDLE', 'UNPRODUCTIVE', 1015, '2026-07-03 17:43:05.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.842', '2026-07-25 07:26:32.842'),
+('bd759511-52ab-4d25-bd8d-6ff314947b1e', 'IDLE', 'UNPRODUCTIVE', 1053, '2026-07-16 16:42:27.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.466', '2026-07-25 07:26:36.466'),
+('bd86f711-d8cb-4c3d-a114-2b79ef6d7382', 'IDLE', 'UNPRODUCTIVE', 1065, '2026-07-13 18:42:15.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.506', '2026-07-25 07:26:35.506'),
+('be1ed74a-40f6-4277-b310-7d045738426f', 'IDLE', 'UNPRODUCTIVE', 812, '2026-07-25 00:46:28.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:39.065', '2026-07-25 07:26:39.065'),
+('be27d638-9d6c-4d87-bf5a-9866aec6d1cd', 'BREAK', 'NEUTRAL', 3299, '2026-07-13 19:00:00.000', 'Lunch Break', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:35.329', '2026-07-25 07:26:35.329'),
+('be5edcdf-7578-464e-a2b2-cd1142409448', 'ACTIVE', 'PRODUCTIVE', 2788, '2026-07-23 00:00:00.000', 'Figma', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:38.487', '2026-07-25 07:26:38.487'),
+('bf0b0ae6-9118-48b4-87a6-3fdb192fc5d3', 'IDLE', 'UNPRODUCTIVE', 819, '2026-07-21 21:46:21.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:38.119', '2026-07-25 07:26:38.119'),
+('bf432715-a30b-4ade-a406-b363413dc864', 'IDLE', 'UNPRODUCTIVE', 852, '2026-06-29 21:45:48.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:30.959', '2026-07-25 07:26:30.959'),
+('bf60ce82-9e2a-47b8-8cfc-2feb04e4aba0', 'IDLE', 'UNPRODUCTIVE', 736, '2026-06-30 23:47:44.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:31.676', '2026-07-25 07:26:31.676'),
+('bf670489-187f-404c-aa3d-63a0be88e7db', 'IDLE', 'UNPRODUCTIVE', 1073, '2026-07-09 21:42:07.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:34.277', '2026-07-25 07:26:34.277'),
+('bf6ceeac-f279-4532-8d4c-54e877981a37', 'ACTIVE', 'NEUTRAL', 2687, '2026-07-01 22:00:00.000', 'Microsoft Teams', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:31.742', '2026-07-25 07:26:31.742'),
+('bfa807e6-dc8a-41b8-a4c6-2e672628bc39', 'IDLE', 'UNPRODUCTIVE', 498, '2026-06-27 18:51:42.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:30.620', '2026-07-25 07:26:30.620'),
+('bfaa1b88-84d4-431b-b5f4-dbb494e04ae9', 'ACTIVE', 'PRODUCTIVE', 2877, '2026-07-16 16:00:00.000', 'Zoom', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:36.667', '2026-07-25 07:26:36.667'),
+('bfea58ac-8f23-4fca-a4a3-cff6cefb5018', 'ACTIVE', 'PRODUCTIVE', 2965, '2026-07-15 16:00:00.000', 'Zoom', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:36.208', '2026-07-25 07:26:36.208'),
+('c0082f47-2275-4d71-8006-cb00c604755d', 'IDLE', 'UNPRODUCTIVE', 1067, '2026-07-21 16:42:13.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:37.960', '2026-07-25 07:26:37.960'),
+('c041042b-baf5-4613-ba50-544a08152ee3', 'IDLE', 'UNPRODUCTIVE', 538, '2026-07-02 17:51:02.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:32.177', '2026-07-25 07:26:32.177'),
+('c04b7b20-9729-4d30-8036-cd7a939acde7', 'BREAK', 'NEUTRAL', 3178, '2026-07-02 19:00:00.000', 'Lunch Break', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.429', '2026-07-25 07:26:32.429'),
+('c0505d11-2147-4e3a-85b0-ae55bde8d2ce', 'ACTIVE', 'PRODUCTIVE', 3041, '2026-07-11 00:00:00.000', 'Figma', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.711', '2026-07-25 07:26:34.711'),
+('c076387c-efc0-49f8-9184-fea7cc279be3', 'ACTIVE', 'PRODUCTIVE', 3120, '2026-07-10 23:00:00.000', 'Stack Overflow', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:34.581', '2026-07-25 07:26:34.581'),
+('c0bfb32c-5b66-4e37-852d-6d5aab04e0fd', 'IDLE', 'UNPRODUCTIVE', 683, '2026-07-12 23:48:37.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.085', '2026-07-25 07:26:35.085'),
+('c0f5ec9b-ef52-4857-8586-6188a3450189', 'BREAK', 'NEUTRAL', 2567, '2026-07-08 19:00:00.000', 'Lunch Break', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.076', '2026-07-25 07:26:34.076'),
+('c10e3a76-8797-4db7-8f04-26dece0334b4', 'IDLE', 'UNPRODUCTIVE', 749, '2026-07-14 21:47:31.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.908', '2026-07-25 07:26:35.908'),
+('c12076b5-bed9-45b3-a4be-0cb7f5a7ecd1', 'IDLE', 'UNPRODUCTIVE', 912, '2026-06-29 20:44:48.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:31.186', '2026-07-25 07:26:31.186'),
+('c15f5255-082b-4508-9514-a395739133b7', 'ACTIVE', 'PRODUCTIVE', 3210, '2026-07-13 22:00:00.000', 'GitHub Desktop', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.526', '2026-07-25 07:26:35.526'),
+('c1a27fcc-73a0-45d7-ac4d-27cd5e7b2f47', 'ACTIVE', 'PRODUCTIVE', 2840, '2026-07-10 20:00:00.000', 'Stack Overflow', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:34.809', '2026-07-25 07:26:34.809'),
+('c1a52ca7-1cc9-4bb6-a6b1-54676c1c760e', 'ACTIVE', 'PRODUCTIVE', 2920, '2026-07-04 00:00:00.000', 'Zoom', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.881', '2026-07-25 07:26:32.881'),
+('c1e46f90-6ab5-4376-be62-1813acb590df', 'IDLE', 'UNPRODUCTIVE', 643, '2026-07-15 17:49:17.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:36.220', '2026-07-25 07:26:36.220');
+INSERT INTO `activity_logs` (`id`, `activityType`, `productivity`, `duration`, `timestamp`, `appWebsite`, `employeeId`, `taskId`, `organizationId`, `createdAt`, `updatedAt`) VALUES
+('c1fbb374-0e49-44f7-8121-81c887814830', 'ACTIVE', 'PRODUCTIVE', 2748, '2026-06-29 21:00:00.000', 'GitHub Desktop', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:30.947', '2026-07-25 07:26:30.947'),
+('c222f9c4-1032-408c-a575-d9ce7b9e43ea', 'ACTIVE', 'PRODUCTIVE', 2968, '2026-07-20 18:00:00.000', 'Google Chrome', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:37.640', '2026-07-25 07:26:37.640'),
+('c225d55e-f600-4099-9583-9e9645688786', 'ACTIVE', 'PRODUCTIVE', 3159, '2026-07-03 18:00:00.000', 'VS Code', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:32.547', '2026-07-25 07:26:32.547'),
+('c236c5a8-3057-4a8d-8a40-ac2bbbc7b1bf', 'IDLE', 'UNPRODUCTIVE', 934, '2026-07-25 00:44:26.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.855', '2026-07-25 07:26:38.855'),
+('c2579bd6-f993-4339-8f56-e5f7d75a6bc5', 'IDLE', 'UNPRODUCTIVE', 726, '2026-07-17 22:47:54.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:37.101', '2026-07-25 07:26:37.101'),
+('c295da6a-f597-4f16-adfb-332a87d647f6', 'IDLE', 'UNPRODUCTIVE', 521, '2026-07-09 18:51:19.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.376', '2026-07-25 07:26:34.376'),
+('c2a9e28a-dd95-41d5-9693-632c253de435', 'IDLE', 'UNPRODUCTIVE', 905, '2026-07-24 17:44:55.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.808', '2026-07-25 07:26:38.808'),
+('c2e78059-fd46-4507-8d51-aaf1a5c5fe64', 'ACTIVE', 'PRODUCTIVE', 2792, '2026-07-22 17:00:00.000', 'Google Chrome', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.369', '2026-07-25 07:26:38.369'),
+('c2edcdeb-8821-4461-8328-8745831e76b6', 'IDLE', 'UNPRODUCTIVE', 632, '2026-07-20 18:49:28.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:37.644', '2026-07-25 07:26:37.644'),
+('c2fef42b-7d67-4d56-bd59-4021a3a5fdb8', 'ACTIVE', 'NEUTRAL', 2987, '2026-07-09 17:00:00.000', 'Gmail', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:34.429', '2026-07-25 07:26:34.429'),
+('c3049261-405e-43c3-b1d8-839aa5f5a62c', 'ACTIVE', 'PRODUCTIVE', 2920, '2026-07-02 00:00:00.000', 'Zoom', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.157', '2026-07-25 07:26:32.157'),
+('c30714aa-1ffa-49a8-b0f8-40c959632925', 'IDLE', 'UNPRODUCTIVE', 929, '2026-06-29 17:44:31.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:31.164', '2026-07-25 07:26:31.164'),
+('c34529ce-693e-4d54-9c42-06e2313d7aca', 'IDLE', 'UNPRODUCTIVE', 479, '2026-06-28 00:52:01.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.585', '2026-07-25 07:26:30.585'),
+('c38097f2-2d9b-4405-9813-35b9eae4a6b1', 'IDLE', 'UNPRODUCTIVE', 807, '2026-07-02 21:46:33.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:32.201', '2026-07-25 07:26:32.201'),
+('c38d67ab-611e-446b-b306-a4ed6b1494be', 'ACTIVE', 'PRODUCTIVE', 2686, '2026-07-10 21:00:00.000', 'Figma', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:34.565', '2026-07-25 07:26:34.565'),
+('c397b9b0-1083-4489-a9f1-9424235fdfae', 'IDLE', 'UNPRODUCTIVE', 555, '2026-07-13 20:50:45.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:35.438', '2026-07-25 07:26:35.438'),
+('c3a16364-fc42-4d9e-b59a-f19e64d72b6b', 'ACTIVE', 'PRODUCTIVE', 3043, '2026-07-13 21:00:00.000', 'VS Code', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:35.339', '2026-07-25 07:26:35.339'),
+('c3b0ec2e-106f-475d-b99d-984dcf1f1ca5', 'ACTIVE', 'PRODUCTIVE', 2666, '2026-07-01 18:00:00.000', 'Stack Overflow', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:31.783', '2026-07-25 07:26:31.783'),
+('c3b2d0ab-d60a-49cb-95c0-ba65b30fde81', 'IDLE', 'UNPRODUCTIVE', 439, '2026-07-14 18:52:41.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:35.758', '2026-07-25 07:26:35.758'),
+('c412f7e5-34d6-4184-93c3-571d914b6f69', 'IDLE', 'UNPRODUCTIVE', 726, '2026-07-11 00:47:54.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:34.779', '2026-07-25 07:26:34.779'),
+('c425ba70-1c64-4cb7-9ba5-d588e88cb39f', 'ACTIVE', 'PRODUCTIVE', 2710, '2026-07-20 20:00:00.000', 'VS Code', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:37.714', '2026-07-25 07:26:37.714'),
+('c4919c91-ae72-428d-bc3a-df8357682ff3', 'ACTIVE', 'PRODUCTIVE', 2885, '2026-07-20 22:00:00.000', 'Zoom', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:37.453', '2026-07-25 07:26:37.453'),
+('c4ac903c-b27b-41d5-bd12-7075ead30fc0', 'IDLE', 'UNPRODUCTIVE', 431, '2026-07-08 00:52:49.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:33.827', '2026-07-25 07:26:33.827'),
+('c4b6b3df-0fdb-42d5-abd0-c4b3f2a29235', 'ACTIVE', 'NEUTRAL', 2750, '2026-06-28 16:00:00.000', 'Microsoft Teams', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:30.753', '2026-07-25 07:26:30.753'),
+('c4bbede9-3a09-41c8-a624-c8722cb812f6', 'ACTIVE', 'PRODUCTIVE', 2730, '2026-07-14 22:00:00.000', 'Zoom', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:35.781', '2026-07-25 07:26:35.781'),
+('c4ccdf26-b07d-4af4-9607-c28f93be0441', 'IDLE', 'UNPRODUCTIVE', 742, '2026-07-20 17:47:38.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:37.494', '2026-07-25 07:26:37.494'),
+('c504dba0-a1f2-4498-a1f6-792418b759dc', 'ACTIVE', 'NEUTRAL', 2832, '2026-07-24 22:00:00.000', 'Microsoft Teams', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:38.908', '2026-07-25 07:26:38.908'),
+('c528f964-e2e2-49e4-8fa3-d1fed5d7c7db', 'ACTIVE', 'NEUTRAL', 2535, '2026-07-16 17:00:00.000', 'Slack', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:36.737', '2026-07-25 07:26:36.737'),
+('c52bb5e6-1303-404d-a24f-bea47c018813', 'IDLE', 'UNPRODUCTIVE', 542, '2026-07-08 22:50:58.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.947', '2026-07-25 07:26:33.947'),
+('c58c50a1-35c7-42bc-b24c-bba90f0a94a1', 'IDLE', 'UNPRODUCTIVE', 757, '2026-07-07 22:47:23.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.556', '2026-07-25 07:26:33.556'),
+('c5a865ce-6008-45fe-9b48-d5206d20637f', 'IDLE', 'UNPRODUCTIVE', 407, '2026-07-10 18:53:13.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.676', '2026-07-25 07:26:34.676'),
+('c5aa0454-9a54-4298-8d36-27a91439000a', 'IDLE', 'UNPRODUCTIVE', 1078, '2026-07-14 00:42:02.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:35.229', '2026-07-25 07:26:35.229'),
+('c5f92843-143c-4eb6-b492-df2afe3533ed', 'ACTIVE', 'PRODUCTIVE', 3181, '2026-06-27 20:00:00.000', 'VS Code', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:30.630', '2026-07-25 07:26:30.630'),
+('c6833297-da87-4903-85ec-e7a2e0488a00', 'IDLE', 'UNPRODUCTIVE', 767, '2026-07-18 00:47:13.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.244', '2026-07-25 07:26:37.244'),
+('c7277785-dfed-42de-9672-72fbf39c074c', 'IDLE', 'UNPRODUCTIVE', 512, '2026-07-17 00:51:28.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:36.724', '2026-07-25 07:26:36.724'),
+('c77aa4f2-e1d7-4c92-8113-96a0eeec86dd', 'ACTIVE', 'PRODUCTIVE', 2915, '2026-07-20 22:00:00.000', 'Figma', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:37.523', '2026-07-25 07:26:37.523'),
+('c7afe15b-a17a-4b36-9757-d90c1b7454ed', 'ACTIVE', 'NEUTRAL', 2654, '2026-07-10 16:00:00.000', 'Gmail', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.661', '2026-07-25 07:26:34.661'),
+('c7e1b815-136c-43d9-bc15-c09036b49aaf', 'ACTIVE', 'PRODUCTIVE', 2550, '2026-07-01 23:00:00.000', 'Google Chrome', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:31.747', '2026-07-25 07:26:31.747'),
+('c7f605c5-9510-4d89-8ed2-636ed286d4cb', 'ACTIVE', 'PRODUCTIVE', 2580, '2026-07-01 21:00:00.000', 'Stack Overflow', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.137', '2026-07-25 07:26:32.137'),
+('c80a309f-9d11-445f-b3b2-5a2b700d59fb', 'IDLE', 'UNPRODUCTIVE', 542, '2026-07-24 16:50:58.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.801', '2026-07-25 07:26:38.801'),
+('c822ac27-be37-47b6-ab91-55d719defbb9', 'IDLE', 'UNPRODUCTIVE', 710, '2026-07-06 16:48:10.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.079', '2026-07-25 07:26:33.079'),
+('c8589044-85ff-45da-b77f-45cbcbd533db', 'ACTIVE', 'NEUTRAL', 3002, '2026-07-24 00:00:00.000', 'Slack', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.552', '2026-07-25 07:26:38.552'),
+('c8796499-0db4-4bab-b901-cde0b9f786c2', 'ACTIVE', 'PRODUCTIVE', 2662, '2026-07-13 20:00:00.000', 'Figma', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:35.332', '2026-07-25 07:26:35.332'),
+('c87c7d00-363e-45ce-9c4b-7b00818e72d9', 'ACTIVE', 'PRODUCTIVE', 3159, '2026-07-06 17:00:00.000', 'VS Code', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:32.956', '2026-07-25 07:26:32.956'),
+('c8a271b0-9682-496c-b3d3-cd320d3e19b6', 'IDLE', 'UNPRODUCTIVE', 778, '2026-07-22 21:47:02.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:38.466', '2026-07-25 07:26:38.466'),
+('c8a7aa3d-37fb-4319-91b7-c1972c2dfdeb', 'IDLE', 'UNPRODUCTIVE', 808, '2026-07-22 17:46:32.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.372', '2026-07-25 07:26:38.372'),
+('c8b2bcff-e995-41dd-aacc-2cc146136d17', 'IDLE', 'UNPRODUCTIVE', 542, '2026-07-21 17:50:58.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:37.822', '2026-07-25 07:26:37.822'),
+('c8d87fe6-838a-4064-b255-b66c2d8b2bb6', 'ACTIVE', 'NEUTRAL', 2746, '2026-07-22 17:00:00.000', 'Gmail', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:38.230', '2026-07-25 07:26:38.230'),
+('c8f3c239-361e-4db2-bfcb-6545a47e0f13', 'ACTIVE', 'PRODUCTIVE', 2826, '2026-07-19 21:00:00.000', 'Zoom', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.353', '2026-07-25 07:26:37.353'),
+('c9090c56-752d-4ddf-9472-c016c2adf1bb', 'ACTIVE', 'PRODUCTIVE', 2828, '2026-07-01 20:00:00.000', 'Google Chrome', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.133', '2026-07-25 07:26:32.133'),
+('c915d361-8ea2-4b22-af90-78786ebfc479', 'IDLE', 'UNPRODUCTIVE', 774, '2026-07-19 21:47:06.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.357', '2026-07-25 07:26:37.357'),
+('c9184c71-3cdc-4db2-b810-fee8e364da07', 'ACTIVE', 'PRODUCTIVE', 3062, '2026-07-01 17:00:00.000', 'Figma', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:31.705', '2026-07-25 07:26:31.705'),
+('c91cfa4e-1481-473d-9803-cb31c7313057', 'IDLE', 'UNPRODUCTIVE', 749, '2026-07-22 16:47:31.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.142', '2026-07-25 07:26:38.142'),
+('c922771e-6382-46b0-8563-9df66c1167d5', 'ACTIVE', 'NEUTRAL', 2709, '2026-07-20 21:00:00.000', 'Slack', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:37.722', '2026-07-25 07:26:37.722'),
+('c968db93-f818-4a91-a75b-270df991fe3e', 'IDLE', 'UNPRODUCTIVE', 362, '2026-07-22 20:53:58.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:38.458', '2026-07-25 07:26:38.458'),
+('c981945c-992e-4ccf-9e59-2844f3d5dd0a', 'ACTIVE', 'PRODUCTIVE', 2692, '2026-07-10 23:00:00.000', 'GitHub Desktop', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:34.519', '2026-07-25 07:26:34.519'),
+('c9858ece-89e6-4dd5-9f17-d6a830e41091', 'ACTIVE', 'UNPRODUCTIVE', 2637, '2026-07-06 20:00:00.000', 'Notion', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:33.303', '2026-07-25 07:26:33.303'),
+('ca081a4b-10b8-44d8-9618-97821d5cd29f', 'ACTIVE', 'PRODUCTIVE', 2771, '2026-06-30 16:00:00.000', 'Figma', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.479', '2026-07-25 07:26:31.479'),
+('ca38da6b-7113-419f-913b-2e88a5fdcecd', 'IDLE', 'UNPRODUCTIVE', 731, '2026-07-12 17:47:49.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.032', '2026-07-25 07:26:35.032'),
+('ca7664b9-e1c4-4efd-88c0-b216bf6cbb35', 'BREAK', 'NEUTRAL', 3178, '2026-07-01 19:00:00.000', 'Lunch Break', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.056', '2026-07-25 07:26:32.056'),
+('ca773740-3a1f-4042-9834-151058d8b955', 'IDLE', 'UNPRODUCTIVE', 633, '2026-07-14 18:49:27.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.889', '2026-07-25 07:26:35.889'),
+('ca86a993-de72-4fae-99fa-493e6569ff94', 'IDLE', 'UNPRODUCTIVE', 535, '2026-07-14 16:51:05.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:35.552', '2026-07-25 07:26:35.552'),
+('caabb572-7da7-488e-aa4f-bbd8f55b146f', 'ACTIVE', 'PRODUCTIVE', 2605, '2026-07-06 20:00:00.000', 'Zoom', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.103', '2026-07-25 07:26:33.103'),
+('caad4fcc-aff6-4906-9d5c-aeddb0ba5b9e', 'ACTIVE', 'PRODUCTIVE', 2971, '2026-06-30 18:00:00.000', 'VS Code', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:31.642', '2026-07-25 07:26:31.642'),
+('cabbad50-f46b-4ea0-95dd-50d2a4225e7a', 'ACTIVE', 'UNPRODUCTIVE', 2625, '2026-06-27 22:00:00.000', 'Notion', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:30.648', '2026-07-25 07:26:30.648'),
+('cacff648-d305-4477-bea5-a185951f358b', 'BREAK', 'NEUTRAL', 3146, '2026-07-13 19:00:00.000', 'Lunch Break', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.510', '2026-07-25 07:26:35.510'),
+('cb14c8c6-7c9d-4383-8245-39c983c5e845', 'ACTIVE', 'PRODUCTIVE', 2533, '2026-07-21 16:00:00.000', 'GitHub Desktop', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:37.957', '2026-07-25 07:26:37.957'),
+('cbad7cd8-0fc8-47f8-a462-975c50a804f8', 'ACTIVE', 'PRODUCTIVE', 3086, '2026-07-01 17:00:00.000', 'Notion', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.916', '2026-07-25 07:26:31.916'),
+('cbb16d3a-e760-4ce1-8570-350acb0bd022', 'IDLE', 'UNPRODUCTIVE', 560, '2026-07-07 20:50:40.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:33.802', '2026-07-25 07:26:33.802'),
+('cbf91e39-3adb-408e-9c63-3b5f9399e791', 'IDLE', 'UNPRODUCTIVE', 961, '2026-07-16 21:43:59.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:36.703', '2026-07-25 07:26:36.703'),
+('cc65d72f-32b4-422d-a582-31f383679baf', 'ACTIVE', 'PRODUCTIVE', 2851, '2026-07-22 16:00:00.000', 'Stack Overflow', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.139', '2026-07-25 07:26:38.139'),
+('cc6a55cf-8692-456e-975a-b33ab1e74851', 'IDLE', 'UNPRODUCTIVE', 587, '2026-07-09 20:50:13.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:34.211', '2026-07-25 07:26:34.211'),
+('cc7af4bf-30f9-4ced-975b-06f13664ad6d', 'ACTIVE', 'PRODUCTIVE', 2667, '2026-07-21 23:00:00.000', 'VS Code', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.068', '2026-07-25 07:26:38.068'),
+('ccce27e6-7812-4a2f-b19d-17b950d89161', 'ACTIVE', 'NEUTRAL', 2555, '2026-07-03 18:00:00.000', 'Slack', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:32.729', '2026-07-25 07:26:32.729'),
+('cd0819e1-d4b7-48ce-99d6-0946259747af', 'IDLE', 'UNPRODUCTIVE', 903, '2026-07-09 00:44:57.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:34.176', '2026-07-25 07:26:34.176'),
+('cd323132-9742-40f7-9398-70e8a60e2bd0', 'IDLE', 'UNPRODUCTIVE', 450, '2026-07-13 17:52:30.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:35.113', '2026-07-25 07:26:35.113'),
+('cd35c840-3895-4e41-8a8b-3fa1f440ee72', 'IDLE', 'UNPRODUCTIVE', 439, '2026-06-30 00:52:41.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.143', '2026-07-25 07:26:31.143'),
+('cd3cbd38-a2f2-4076-9c9f-85fdaf25057d', 'IDLE', 'UNPRODUCTIVE', 742, '2026-07-24 18:47:38.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:39.035', '2026-07-25 07:26:39.035'),
+('cd4ae84c-37b5-43f5-9349-615008b2bdc9', 'ACTIVE', 'PRODUCTIVE', 2977, '2026-07-24 17:00:00.000', 'GitHub Desktop', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:38.871', '2026-07-25 07:26:38.871'),
+('cd629365-8b5e-472b-b21e-c33f7b6280a5', 'IDLE', 'UNPRODUCTIVE', 361, '2026-07-17 22:53:59.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.906', '2026-07-25 07:26:36.906'),
+('cd6d4081-58d5-4682-ba8a-08eed5419604', 'ACTIVE', 'PRODUCTIVE', 3079, '2026-07-09 18:00:00.000', 'GitHub Desktop', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.372', '2026-07-25 07:26:34.372'),
+('cdeacdfb-bc80-4c2b-9ee9-b171f72e9f21', 'IDLE', 'UNPRODUCTIVE', 749, '2026-07-19 20:47:31.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.347', '2026-07-25 07:26:37.347'),
+('ce0ef40c-99a4-468b-af91-70de40be7945', 'ACTIVE', 'PRODUCTIVE', 2730, '2026-07-17 21:00:00.000', 'Zoom', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:37.024', '2026-07-25 07:26:37.024'),
+('ce14e6dd-d2b3-4ed0-a462-67b3fdaf41c0', 'ACTIVE', 'PRODUCTIVE', 3186, '2026-07-15 22:00:00.000', 'GitHub Desktop', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:35.987', '2026-07-25 07:26:35.987'),
+('cedee211-c409-434d-bead-14bb5435fea4', 'IDLE', 'UNPRODUCTIVE', 714, '2026-07-01 18:48:06.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.048', '2026-07-25 07:26:32.048'),
+('cee25b85-c8f2-46ee-9243-b5fa8a16154e', 'IDLE', 'UNPRODUCTIVE', 1049, '2026-07-22 00:42:31.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.079', '2026-07-25 07:26:38.079'),
+('cef1bb25-f883-4891-8062-495d1e72efa0', 'ACTIVE', 'PRODUCTIVE', 2987, '2026-07-07 17:00:00.000', 'Zoom', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:33.727', '2026-07-25 07:26:33.727'),
+('cef5551f-4f03-4973-9fdc-1a20e6c10a05', 'ACTIVE', 'NEUTRAL', 2542, '2026-07-17 17:00:00.000', 'Microsoft Teams', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:36.802', '2026-07-25 07:26:36.802'),
+('cf2b92bd-c711-4a0d-bed5-d6cdec83c368', 'ACTIVE', 'NEUTRAL', 2535, '2026-07-13 18:00:00.000', 'Slack', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.503', '2026-07-25 07:26:35.503'),
+('cf32583c-6b6a-4fa0-843c-cdd5dc200118', 'IDLE', 'UNPRODUCTIVE', 937, '2026-07-24 16:44:23.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:39.020', '2026-07-25 07:26:39.020'),
+('cf3577b8-c8b9-45e1-95d0-ca3cebe0c2c0', 'IDLE', 'UNPRODUCTIVE', 854, '2026-07-22 17:45:46.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:38.233', '2026-07-25 07:26:38.233'),
+('cf358af5-e0e3-4e8d-8eec-4e343dffaecc', 'IDLE', 'UNPRODUCTIVE', 654, '2026-06-29 21:49:06.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.839', '2026-07-25 07:26:30.839'),
+('cf384767-4ea2-4b89-897e-2c70ca8a4ecc', 'ACTIVE', 'PRODUCTIVE', 2568, '2026-07-02 22:00:00.000', 'Zoom', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.451', '2026-07-25 07:26:32.451'),
+('cf53d9c9-ef22-4880-b704-06682d678faf', 'ACTIVE', 'PRODUCTIVE', 3079, '2026-07-14 18:00:00.000', 'Zoom', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:35.819', '2026-07-25 07:26:35.819'),
+('cf55413c-3b11-47e0-8d10-21fe68c54d3e', 'ACTIVE', 'PRODUCTIVE', 2788, '2026-07-25 00:00:00.000', 'Figma', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:39.062', '2026-07-25 07:26:39.062'),
+('cf60a087-f0eb-4532-a531-d8f864ade0bf', 'IDLE', 'UNPRODUCTIVE', 808, '2026-07-03 16:46:32.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:32.719', '2026-07-25 07:26:32.719'),
+('cf7b9a0b-c78d-4593-8d57-0598bae8a499', 'ACTIVE', 'PRODUCTIVE', 2592, '2026-07-22 16:00:00.000', 'Zoom', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:38.219', '2026-07-25 07:26:38.219'),
+('cf9e8d09-2f44-4b8e-a48c-10cfaee6eece', 'ACTIVE', 'NEUTRAL', 2555, '2026-07-07 17:00:00.000', 'Slack', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:33.663', '2026-07-25 07:26:33.663'),
+('cfb04ed9-dddb-4c3c-9cdc-b2bd379cb278', 'ACTIVE', 'PRODUCTIVE', 2869, '2026-07-15 16:00:00.000', 'Figma', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:36.349', '2026-07-25 07:26:36.349'),
+('cfe0d2d5-22c0-4848-9b91-61f4aaf8f433', 'ACTIVE', 'NEUTRAL', 3191, '2026-06-26 18:00:00.000', 'Microsoft Teams', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.075', '2026-07-25 07:26:30.075'),
+('cfe1b264-5330-45c2-9d7d-c57177a87133', 'IDLE', 'UNPRODUCTIVE', 1019, '2026-06-29 23:43:01.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.850', '2026-07-25 07:26:30.850'),
+('d013bc4e-810c-4c07-8805-933c767339a7', 'ACTIVE', 'PRODUCTIVE', 2697, '2026-06-30 00:00:00.000', 'Zoom', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:30.986', '2026-07-25 07:26:30.986'),
+('d01767ee-5d47-4914-adf7-82c05c5670e3', 'ACTIVE', 'PRODUCTIVE', 3093, '2026-07-07 20:00:00.000', 'GitHub Desktop', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.540', '2026-07-25 07:26:33.540'),
+('d0198d92-4fe2-4b56-a36a-6e069a9b4f69', 'IDLE', 'UNPRODUCTIVE', 414, '2026-07-09 22:53:06.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:34.225', '2026-07-25 07:26:34.225'),
+('d0a3d785-ec7b-4af8-af89-450b9d2a1629', 'ACTIVE', 'NEUTRAL', 2548, '2026-07-20 16:00:00.000', 'Slack', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:37.691', '2026-07-25 07:26:37.691'),
+('d0a59099-b8bf-4645-8f25-518738582181', 'IDLE', 'UNPRODUCTIVE', 565, '2026-06-27 00:50:35.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.137', '2026-07-25 07:26:30.137'),
+('d0e8a85a-ee81-4d63-9f60-7a81cc09b46f', 'ACTIVE', 'PRODUCTIVE', 2655, '2026-07-20 20:00:00.000', 'Zoom', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.772', '2026-07-25 07:26:37.772'),
+('d0f2caf1-6aca-4b5c-bffa-ec2905ff7f29', 'BREAK', 'NEUTRAL', 3271, '2026-06-26 19:00:00.000', 'Lunch Break', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:30.174', '2026-07-25 07:26:30.174'),
+('d115a680-ab19-4f22-a526-f8d8bcd582fd', 'BREAK', 'NEUTRAL', 3493, '2026-07-15 19:00:00.000', 'Lunch Break', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:36.306', '2026-07-25 07:26:36.306'),
+('d11c72b1-93c8-4618-8075-f849d265b304', 'IDLE', 'UNPRODUCTIVE', 410, '2026-07-09 16:53:10.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:34.247', '2026-07-25 07:26:34.247'),
+('d1f688f4-ac36-4d33-bfdc-d5009307a9e5', 'ACTIVE', 'PRODUCTIVE', 3151, '2026-07-06 22:00:00.000', 'Figma', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:32.992', '2026-07-25 07:26:32.992'),
+('d20f164d-bd38-4541-a689-ccf826b42c68', 'IDLE', 'UNPRODUCTIVE', 522, '2026-07-22 21:51:18.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.191', '2026-07-25 07:26:38.191'),
+('d23fbea7-35dc-46e6-9116-f04e1cb87d35', 'ACTIVE', 'PRODUCTIVE', 2790, '2026-07-11 16:00:00.000', 'Stack Overflow', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:34.967', '2026-07-25 07:26:34.967'),
+('d2656922-69cb-447c-84d5-d5961d6c9aa0', 'IDLE', 'UNPRODUCTIVE', 1075, '2026-07-07 18:42:05.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.534', '2026-07-25 07:26:33.534'),
+('d2722093-7b98-4a63-9d12-e1f987ffb84b', 'ACTIVE', 'PRODUCTIVE', 3011, '2026-06-30 17:00:00.000', 'Notion', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:31.635', '2026-07-25 07:26:31.635'),
+('d288a4da-c825-4fd2-9b6a-4b5c8499012f', 'IDLE', 'UNPRODUCTIVE', 1029, '2026-06-29 23:42:51.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:31.205', '2026-07-25 07:26:31.205'),
+('d2950404-8e62-4744-a21b-49894adcd79f', 'ACTIVE', 'NEUTRAL', 2639, '2026-07-22 17:00:00.000', 'Slack', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.145', '2026-07-25 07:26:38.145'),
+('d2986bad-71b9-42fd-baea-15ff8ca5b1d2', 'ACTIVE', 'PRODUCTIVE', 3116, '2026-07-21 18:00:00.000', 'Notion', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:38.101', '2026-07-25 07:26:38.101'),
+('d2c082ab-5a6c-438c-a65e-e288b0981536', 'ACTIVE', 'NEUTRAL', 2785, '2026-07-09 00:00:00.000', 'Gmail', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:33.888', '2026-07-25 07:26:33.888'),
+('d323d4f1-fdd2-4136-a5cb-f6432f745c5c', 'IDLE', 'UNPRODUCTIVE', 548, '2026-07-23 17:50:52.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:38.708', '2026-07-25 07:26:38.708'),
+('d359c136-bd95-4890-b29d-bfcaea5954f4', 'IDLE', 'UNPRODUCTIVE', 733, '2026-07-21 16:47:47.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.023', '2026-07-25 07:26:38.023'),
+('d35a6931-7783-4cbc-b096-45b9795e12d1', 'IDLE', 'UNPRODUCTIVE', 522, '2026-07-12 18:51:18.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.038', '2026-07-25 07:26:35.038'),
+('d35ca320-d9de-48d1-9817-4466dd32b6d1', 'IDLE', 'UNPRODUCTIVE', 685, '2026-07-22 22:48:35.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:38.267', '2026-07-25 07:26:38.267'),
+('d36b301b-297f-4f04-8a09-78bf11672699', 'ACTIVE', 'PRODUCTIVE', 3055, '2026-07-13 22:00:00.000', 'Zoom', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:35.214', '2026-07-25 07:26:35.214'),
+('d36c3748-bb4a-49ec-be46-46595b59fc03', 'IDLE', 'UNPRODUCTIVE', 823, '2026-07-13 20:46:17.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:35.200', '2026-07-25 07:26:35.200'),
+('d3998ea4-98b4-4f90-99c4-967f830b71e1', 'ACTIVE', 'PRODUCTIVE', 2872, '2026-07-13 00:00:00.000', 'Figma', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.088', '2026-07-25 07:26:35.088'),
+('d3e02e3f-7176-4d5d-b19b-6a6c7587259b', 'IDLE', 'UNPRODUCTIVE', 914, '2026-07-15 20:44:46.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.037', '2026-07-25 07:26:36.037'),
+('d411701e-d2f5-4c01-b0f6-9899e2b049bc', 'ACTIVE', 'PRODUCTIVE', 2979, '2026-07-20 21:00:00.000', 'Google Chrome', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:37.655', '2026-07-25 07:26:37.655'),
+('d436f4c5-a69d-4301-a77f-78a7b667b78b', 'ACTIVE', 'PRODUCTIVE', 2697, '2026-07-10 18:00:00.000', 'Stack Overflow', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:34.800', '2026-07-25 07:26:34.800'),
+('d46b8682-4266-45ed-9135-ea161208d08c', 'ACTIVE', 'NEUTRAL', 3057, '2026-07-11 21:00:00.000', 'Gmail', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:34.997', '2026-07-25 07:26:34.997'),
+('d50021a1-e1e7-4393-9731-02a0186c70b3', 'ACTIVE', 'NEUTRAL', 3127, '2026-07-15 20:00:00.000', 'Gmail', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:35.972', '2026-07-25 07:26:35.972'),
+('d51ae69a-ac19-43cc-a207-34f4e507498e', 'ACTIVE', 'NEUTRAL', 3168, '2026-07-15 00:00:00.000', 'Slack', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.929', '2026-07-25 07:26:35.929'),
+('d51d8802-b730-4673-a7c5-0cb49176fdfd', 'ACTIVE', 'PRODUCTIVE', 2542, '2026-07-15 00:00:00.000', 'VS Code', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:35.793', '2026-07-25 07:26:35.793'),
+('d528d273-00a4-4eba-9dee-090b8b560b56', 'ACTIVE', 'PRODUCTIVE', 2689, '2026-07-19 22:00:00.000', 'Stack Overflow', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.362', '2026-07-25 07:26:37.362'),
+('d548776b-f97d-4090-84bf-a01207453d44', 'IDLE', 'UNPRODUCTIVE', 975, '2026-06-28 22:43:45.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:30.794', '2026-07-25 07:26:30.794'),
+('d54d9bb3-56dc-4d13-8643-1ed76383e718', 'IDLE', 'UNPRODUCTIVE', 1020, '2026-07-03 21:43:00.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.863', '2026-07-25 07:26:32.863'),
+('d559deb5-4b18-4697-83f3-b150ea255ec8', 'ACTIVE', 'PRODUCTIVE', 3178, '2026-06-29 16:00:00.000', 'VS Code', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:31.152', '2026-07-25 07:26:31.152'),
+('d5a94cc5-cd81-4dc5-b5a8-48e107d9e704', 'IDLE', 'UNPRODUCTIVE', 414, '2026-07-21 22:53:06.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.066', '2026-07-25 07:26:38.066'),
+('d5abe812-8808-4ef3-a9fc-2d68a8937897', 'ACTIVE', 'PRODUCTIVE', 2752, '2026-07-10 23:00:00.000', 'Stack Overflow', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.701', '2026-07-25 07:26:34.701'),
+('d5bc835b-9cfe-48c0-8755-1662d3d0dffc', 'ACTIVE', 'PRODUCTIVE', 2871, '2026-07-09 17:00:00.000', 'VS Code', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:34.188', '2026-07-25 07:26:34.188'),
+('d5bdda6d-79a8-46ae-b4ab-3c7423a6f52f', 'ACTIVE', 'NEUTRAL', 2753, '2026-07-02 20:00:00.000', 'Slack', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.498', '2026-07-25 07:26:32.498'),
+('d5e8ced4-ae8d-4390-90e5-a8d1b5fac511', 'IDLE', 'UNPRODUCTIVE', 414, '2026-07-14 00:53:06.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:35.168', '2026-07-25 07:26:35.168'),
+('d60de5dd-0188-4b01-bc60-81ee2a5ff89f', 'ACTIVE', 'PRODUCTIVE', 2851, '2026-07-18 20:00:00.000', 'Zoom', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.277', '2026-07-25 07:26:37.277'),
+('d6256fd6-afd6-413e-ad37-33a9c9e8aa5e', 'IDLE', 'UNPRODUCTIVE', 1045, '2026-07-07 17:42:35.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:33.668', '2026-07-25 07:26:33.668'),
+('d64ef0c5-f351-4bd1-8e24-d7696c387fe8', 'BREAK', 'NEUTRAL', 3475, '2026-07-07 19:00:00.000', 'Lunch Break', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:33.740', '2026-07-25 07:26:33.740'),
+('d695e9a3-c66c-46b4-8a86-3bb5b3b27289', 'ACTIVE', 'PRODUCTIVE', 2858, '2026-07-20 17:00:00.000', 'Google Chrome', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:37.489', '2026-07-25 07:26:37.489'),
+('d71cafe6-4b19-4c89-a76a-a2019e312949', 'BREAK', 'NEUTRAL', 2543, '2026-06-27 19:00:00.000', 'Lunch Break', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:30.627', '2026-07-25 07:26:30.627'),
+('d752f949-dd30-44fd-b80f-b2d520e05356', 'IDLE', 'UNPRODUCTIVE', 946, '2026-07-16 18:44:14.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:36.419', '2026-07-25 07:26:36.419'),
+('d77bcaf4-f20d-4f41-b2c7-0fb2c3f401e4', 'IDLE', 'UNPRODUCTIVE', 631, '2026-07-14 17:49:29.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:35.620', '2026-07-25 07:26:35.620'),
+('d7a3cfe3-834c-4501-bf47-ee588c1bf605', 'IDLE', 'UNPRODUCTIVE', 1032, '2026-07-01 00:42:48.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.556', '2026-07-25 07:26:31.556'),
+('d7b36dd8-3911-4257-b6f6-8f6f8b9106da', 'IDLE', 'UNPRODUCTIVE', 958, '2026-07-08 18:44:02.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.063', '2026-07-25 07:26:34.063'),
+('d7b43100-a482-47b1-a216-5d66498eea08', 'ACTIVE', 'PRODUCTIVE', 2890, '2026-07-06 16:00:00.000', 'Figma', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.075', '2026-07-25 07:26:33.075'),
+('d7ba6d25-4a77-4748-83a0-d6c670ff726a', 'ACTIVE', 'PRODUCTIVE', 3072, '2026-07-08 16:00:00.000', 'Zoom', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.901', '2026-07-25 07:26:33.901'),
+('d7c4f9e6-1c25-4496-aec4-2b97c07cd525', 'IDLE', 'UNPRODUCTIVE', 527, '2026-07-21 17:51:13.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:37.971', '2026-07-25 07:26:37.971'),
+('d8473311-856f-44b9-9588-c95805ecf786', 'IDLE', 'UNPRODUCTIVE', 987, '2026-07-07 00:43:33.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:33.344', '2026-07-25 07:26:33.344'),
+('d84e54b0-7e00-4104-b898-2f4f04e8b1f8', 'ACTIVE', 'PRODUCTIVE', 2758, '2026-06-29 17:00:00.000', 'Figma', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:31.223', '2026-07-25 07:26:31.223'),
+('d8537ca2-a377-4eb8-ad37-fcd8b89252d6', 'IDLE', 'UNPRODUCTIVE', 584, '2026-07-03 16:50:16.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:32.599', '2026-07-25 07:26:32.599'),
+('d85d5f0e-7ea1-422b-9a6c-162a86d55105', 'ACTIVE', 'NEUTRAL', 2536, '2026-07-17 18:00:00.000', 'Microsoft Teams', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:37.070', '2026-07-25 07:26:37.070'),
+('d87bcaa6-5e96-4518-bff2-159fef6d307e', 'IDLE', 'UNPRODUCTIVE', 999, '2026-07-13 16:43:21.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:35.414', '2026-07-25 07:26:35.414'),
+('d8dfdfef-ddef-4f40-8803-f51a8a19c79c', 'ACTIVE', 'UNPRODUCTIVE', 2625, '2026-06-28 22:00:00.000', 'Notion', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:30.791', '2026-07-25 07:26:30.791'),
+('d8f39c9b-4607-4c6d-be4d-e1186b11ce81', 'ACTIVE', 'PRODUCTIVE', 2793, '2026-07-23 22:00:00.000', 'VS Code', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.542', '2026-07-25 07:26:38.542'),
+('d9147f42-7eac-4134-bfe4-3982af919465', 'IDLE', 'UNPRODUCTIVE', 767, '2026-07-20 17:47:13.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.757', '2026-07-25 07:26:37.757'),
+('d918cde8-6d8d-4399-bf50-4a9db8810ac7', 'IDLE', 'UNPRODUCTIVE', 579, '2026-07-21 20:50:21.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:37.988', '2026-07-25 07:26:37.988'),
+('d92535e2-abec-4f5a-b5b1-e1a977e4f628', 'ACTIVE', 'NEUTRAL', 2695, '2026-07-24 17:00:00.000', 'Gmail', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.804', '2026-07-25 07:26:38.804'),
+('d9d104cb-e64c-4509-b91d-e170d9fd5dee', 'IDLE', 'UNPRODUCTIVE', 730, '2026-07-21 00:47:50.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:37.685', '2026-07-25 07:26:37.685'),
+('da02b328-7814-4def-bfd5-ffe0fb2d10fc', 'ACTIVE', 'PRODUCTIVE', 2983, '2026-07-03 22:00:00.000', 'Zoom', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.815', '2026-07-25 07:26:32.815'),
+('da138db0-fb71-4e4e-bbdc-e438b691ccf1', 'ACTIVE', 'PRODUCTIVE', 3042, '2026-06-29 18:00:00.000', 'Notion', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:30.875', '2026-07-25 07:26:30.875'),
+('da4f030f-fa1c-4520-9953-96d223452618', 'IDLE', 'UNPRODUCTIVE', 557, '2026-07-13 21:50:43.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:35.343', '2026-07-25 07:26:35.343'),
+('da60a1ab-86c8-46f8-beab-9c07f8e05ace', 'IDLE', 'UNPRODUCTIVE', 715, '2026-07-20 22:48:05.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:37.456', '2026-07-25 07:26:37.456'),
+('dae1e81d-f2fb-4918-b920-c331ea2b6c1c', 'ACTIVE', 'PRODUCTIVE', 2957, '2026-07-15 17:00:00.000', 'Zoom', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:36.216', '2026-07-25 07:26:36.216'),
+('db2c1fe8-151f-4972-ac69-543aa204c296', 'ACTIVE', 'PRODUCTIVE', 2915, '2026-07-08 21:00:00.000', 'Zoom', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:34.157', '2026-07-25 07:26:34.157'),
+('db2c663d-48af-4abb-88b3-2287357f2581', 'IDLE', 'UNPRODUCTIVE', 414, '2026-07-15 22:53:06.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:35.990', '2026-07-25 07:26:35.990'),
+('dbf48465-570e-4055-b941-d54f18156aba', 'ACTIVE', 'PRODUCTIVE', 2613, '2026-07-06 00:00:00.000', 'Google Chrome', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.942', '2026-07-25 07:26:32.942'),
+('dc1928ae-1d12-4608-8ee9-5b588f32e134', 'IDLE', 'UNPRODUCTIVE', 550, '2026-07-01 00:50:50.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:31.620', '2026-07-25 07:26:31.620'),
+('dc1e8dab-3c1b-4df8-a9f4-2441affba5d4', 'BREAK', 'NEUTRAL', 3267, '2026-07-06 19:00:00.000', 'Lunch Break', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:33.405', '2026-07-25 07:26:33.405'),
+('dc7f9804-a553-4e4e-8c58-7f5b602f5f8f', 'ACTIVE', 'PRODUCTIVE', 2994, '2026-07-09 17:00:00.000', 'VS Code', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:34.249', '2026-07-25 07:26:34.249'),
+('dcbf03f3-f62a-4ba2-af2c-c905e53ae12a', 'ACTIVE', 'PRODUCTIVE', 3073, '2026-07-21 17:00:00.000', 'VS Code', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:37.967', '2026-07-25 07:26:37.967'),
+('dcee7a83-97ce-4f82-b49c-1856a69630ae', 'IDLE', 'UNPRODUCTIVE', 530, '2026-07-24 23:51:10.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:39.058', '2026-07-25 07:26:39.058'),
+('dcf10ec4-420e-49e7-81c4-89d5f52ac463', 'IDLE', 'UNPRODUCTIVE', 941, '2026-07-22 17:44:19.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:38.440', '2026-07-25 07:26:38.440'),
+('dd13964c-7378-4019-8454-2d45e198e8d5', 'IDLE', 'UNPRODUCTIVE', 396, '2026-07-17 21:53:24.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:36.835', '2026-07-25 07:26:36.835'),
+('dd1cb5b0-764a-43ec-ae34-8fa4407da649', 'ACTIVE', 'PRODUCTIVE', 2525, '2026-07-03 20:00:00.000', 'Figma', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:32.617', '2026-07-25 07:26:32.617'),
+('dd25dd36-db20-4f52-9333-3de7de48e218', 'ACTIVE', 'PRODUCTIVE', 3058, '2026-07-24 16:00:00.000', 'GitHub Desktop', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.786', '2026-07-25 07:26:38.786'),
+('dd310f00-89c8-4e2c-87dc-0c7a2ebfaf71', 'ACTIVE', 'NEUTRAL', 3003, '2026-07-03 00:00:00.000', 'Microsoft Teams', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:32.273', '2026-07-25 07:26:32.273'),
+('dd4de357-ba2e-4a5c-a8e3-523113712aef', 'IDLE', 'UNPRODUCTIVE', 419, '2026-06-27 20:53:01.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:30.634', '2026-07-25 07:26:30.634'),
+('dd77a7c6-e299-4620-b825-fdcf6098fdd9', 'IDLE', 'UNPRODUCTIVE', 540, '2026-07-03 17:51:00.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.787', '2026-07-25 07:26:32.787'),
+('dd781076-bd29-4700-ab0e-c8665aa9d642', 'ACTIVE', 'PRODUCTIVE', 2870, '2026-07-21 00:00:00.000', 'Stack Overflow', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:37.681', '2026-07-25 07:26:37.681'),
+('dda46dae-4c23-45bc-bf31-0812af2ed57e', 'ACTIVE', 'NEUTRAL', 2688, '2026-07-05 16:00:00.000', 'Microsoft Teams', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.894', '2026-07-25 07:26:32.894'),
+('ddcb64f1-c230-44ed-a6bf-af3e3f054eb3', 'ACTIVE', 'NEUTRAL', 3222, '2026-06-30 23:00:00.000', 'Gmail', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.544', '2026-07-25 07:26:31.544'),
+('ddda793a-992c-497e-813d-23dee8819d33', 'ACTIVE', 'PRODUCTIVE', 2693, '2026-07-09 20:00:00.000', 'VS Code', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:34.444', '2026-07-25 07:26:34.444'),
+('de018635-0298-4706-9b9f-5d5515790a0a', 'IDLE', 'UNPRODUCTIVE', 1070, '2026-07-13 23:42:10.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:35.472', '2026-07-25 07:26:35.472'),
+('de26c45d-2a1a-424c-b64e-feeff503162c', 'IDLE', 'UNPRODUCTIVE', 522, '2026-07-24 21:51:18.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.834', '2026-07-25 07:26:38.834'),
+('de5c67de-beb3-4ac4-aa8c-de2f71119b39', 'ACTIVE', 'PRODUCTIVE', 2939, '2026-07-22 20:00:00.000', 'Google Chrome', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:38.249', '2026-07-25 07:26:38.249'),
+('de7af4f2-43bb-4c8d-ab36-43d90c838a81', 'ACTIVE', 'PRODUCTIVE', 2527, '2026-07-09 21:00:00.000', 'Google Chrome', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:34.273', '2026-07-25 07:26:34.273'),
+('de8f1554-94b7-4d4b-a01e-bcd0b5abccd7', 'BREAK', 'NEUTRAL', 3524, '2026-07-17 19:00:00.000', 'Lunch Break', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:36.820', '2026-07-25 07:26:36.820'),
+('deae5fcf-e330-4dae-9233-45a5a35c89ed', 'IDLE', 'UNPRODUCTIVE', 934, '2026-07-14 00:44:26.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:35.377', '2026-07-25 07:26:35.377'),
+('df112774-5aa8-4e36-b86c-f91d1f095c71', 'ACTIVE', 'NEUTRAL', 3224, '2026-07-13 18:00:00.000', 'Gmail', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:35.323', '2026-07-25 07:26:35.323'),
+('df3b395b-9d46-40fc-b19a-5d914e22816c', 'ACTIVE', 'UNPRODUCTIVE', 2931, '2026-06-26 17:00:00.000', 'Notion', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:30.331', '2026-07-25 07:26:30.331'),
+('df468161-258b-4b6a-82f0-9e4ffe59103b', 'BREAK', 'NEUTRAL', 2764, '2026-07-08 19:00:00.000', 'Lunch Break', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:33.855', '2026-07-25 07:26:33.855'),
+('dfa18a0a-0f62-438d-8d44-97236e888227', 'IDLE', 'UNPRODUCTIVE', 829, '2026-06-30 16:46:11.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.483', '2026-07-25 07:26:31.483'),
+('dff8a50d-a63f-4320-9402-ecfc2e163d28', 'IDLE', 'UNPRODUCTIVE', 892, '2026-06-29 22:45:08.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:31.199', '2026-07-25 07:26:31.199'),
+('e08c1c46-b8ea-470e-baf3-f7f8873edff3', 'ACTIVE', 'PRODUCTIVE', 3197, '2026-07-09 22:00:00.000', 'Google Chrome', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.401', '2026-07-25 07:26:34.401'),
+('e0912eb6-b3bd-4fae-9451-1ac9dedfc61f', 'ACTIVE', 'PRODUCTIVE', 2916, '2026-07-21 00:00:00.000', 'Stack Overflow', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.803', '2026-07-25 07:26:37.803'),
+('e0eb4797-5aef-4220-b099-c40e1bb7a2a0', 'IDLE', 'UNPRODUCTIVE', 435, '2026-07-02 21:52:45.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.445', '2026-07-25 07:26:32.445'),
+('e0f40677-cbba-41b3-afe2-8eb415b9521e', 'ACTIVE', 'PRODUCTIVE', 2995, '2026-07-09 17:00:00.000', 'Google Chrome', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.366', '2026-07-25 07:26:34.366'),
+('e10f4ed0-67f4-4dee-881f-567892416c5b', 'IDLE', 'UNPRODUCTIVE', 516, '2026-06-26 21:51:24.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:30.462', '2026-07-25 07:26:30.462'),
+('e117865d-a6d6-4d48-bdca-fcc0f8a03a1b', 'ACTIVE', 'NEUTRAL', 3088, '2026-07-15 00:00:00.000', 'Gmail', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:35.860', '2026-07-25 07:26:35.860'),
+('e178f87d-33be-49ca-952a-66d4fb641aa3', 'ACTIVE', 'PRODUCTIVE', 2568, '2026-07-01 00:00:00.000', 'VS Code', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.553', '2026-07-25 07:26:31.553'),
+('e198be0e-c964-4563-bba7-ad5602325b06', 'ACTIVE', 'PRODUCTIVE', 3061, '2026-07-07 21:00:00.000', 'VS Code', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:33.750', '2026-07-25 07:26:33.750'),
+('e1c8b986-361a-4b11-b989-31ee8fd30335', 'IDLE', 'UNPRODUCTIVE', 1033, '2026-07-14 17:42:47.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:35.557', '2026-07-25 07:26:35.557'),
+('e1e2d8b0-68a5-4657-848a-718f7f0732fb', 'IDLE', 'UNPRODUCTIVE', 749, '2026-07-15 23:47:31.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:35.996', '2026-07-25 07:26:35.996'),
+('e1eadcd9-fffd-4397-973c-7510ceef44d1', 'IDLE', 'UNPRODUCTIVE', 376, '2026-07-16 17:53:44.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:36.608', '2026-07-25 07:26:36.608'),
+('e2295bc9-16c0-4562-be41-051cfe4e5a72', 'IDLE', 'UNPRODUCTIVE', 1009, '2026-07-16 22:43:11.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:36.713', '2026-07-25 07:26:36.713'),
+('e240aea9-7990-4b47-81d4-e5f6f65865e0', 'ACTIVE', 'PRODUCTIVE', 2777, '2026-07-02 20:00:00.000', 'Zoom', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:32.370', '2026-07-25 07:26:32.370'),
+('e2464624-20d5-4bd4-9fea-523afebc8359', 'ACTIVE', 'PRODUCTIVE', 2521, '2026-07-10 17:00:00.000', 'Stack Overflow', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.666', '2026-07-25 07:26:34.666'),
+('e25a16da-a1c5-4da2-ae26-09b379012d70', 'IDLE', 'UNPRODUCTIVE', 766, '2026-06-29 18:47:14.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.093', '2026-07-25 07:26:31.093'),
+('e26ae67b-70ba-4c23-b6f4-40135a365fcf', 'ACTIVE', 'NEUTRAL', 2654, '2026-07-09 23:00:00.000', 'Gmail', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.407', '2026-07-25 07:26:34.407');
+INSERT INTO `activity_logs` (`id`, `activityType`, `productivity`, `duration`, `timestamp`, `appWebsite`, `employeeId`, `taskId`, `organizationId`, `createdAt`, `updatedAt`) VALUES
+('e28f9a87-25c1-40a6-8d61-478d0aecbf6d', 'IDLE', 'UNPRODUCTIVE', 823, '2026-07-20 18:46:17.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:37.706', '2026-07-25 07:26:37.706'),
+('e2a9f38b-45fa-4ebc-aab9-f1d83d3b43eb', 'IDLE', 'UNPRODUCTIVE', 694, '2026-06-26 16:48:26.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.044', '2026-07-25 07:26:30.044'),
+('e2bc30e6-615c-47fe-b69d-8b03df88bbca', 'ACTIVE', 'PRODUCTIVE', 2821, '2026-06-30 22:00:00.000', 'Stack Overflow', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:31.341', '2026-07-25 07:26:31.341'),
+('e32fd06a-7bdd-47bc-a328-cbe78ffc0516', 'IDLE', 'UNPRODUCTIVE', 994, '2026-07-15 22:43:26.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:36.386', '2026-07-25 07:26:36.386'),
+('e33316bc-3d8d-4c33-9de7-dd3f2d293f9f', 'IDLE', 'UNPRODUCTIVE', 390, '2026-07-13 22:53:30.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.529', '2026-07-25 07:26:35.529'),
+('e3791676-35e6-4073-a4d6-8112014de4b1', 'IDLE', 'UNPRODUCTIVE', 1034, '2026-07-08 20:42:46.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.086', '2026-07-25 07:26:34.086'),
+('e390f32c-8bb2-4041-b26c-3d33c8c9d758', 'ACTIVE', 'PRODUCTIVE', 2537, '2026-07-20 22:00:00.000', 'Figma', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:37.664', '2026-07-25 07:26:37.664'),
+('e3b1c1a4-378f-46bc-a5d0-1b05244d20b3', 'IDLE', 'UNPRODUCTIVE', 784, '2026-06-27 16:46:56.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.506', '2026-07-25 07:26:30.506'),
+('e3b6c0dd-782a-4824-9815-09ee155f986b', 'IDLE', 'UNPRODUCTIVE', 561, '2026-07-16 17:50:39.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:36.414', '2026-07-25 07:26:36.414'),
+('e3f6d422-2bd3-40f1-b9e4-cd221566f45c', 'IDLE', 'UNPRODUCTIVE', 786, '2026-06-26 17:46:54.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.061', '2026-07-25 07:26:30.061'),
+('e3ff736d-10e6-4256-ad7c-b87e7420569a', 'IDLE', 'UNPRODUCTIVE', 680, '2026-07-02 00:48:40.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.160', '2026-07-25 07:26:32.160'),
+('e4223997-d0bc-4597-8502-e493680920a8', 'IDLE', 'UNPRODUCTIVE', 764, '2026-07-11 20:47:16.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:34.994', '2026-07-25 07:26:34.994'),
+('e4372cae-3a8d-4b55-8984-05ea3f383a3e', 'IDLE', 'UNPRODUCTIVE', 1078, '2026-07-16 00:42:02.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.064', '2026-07-25 07:26:36.064'),
+('e446ec7d-09c0-482a-b0d1-fd2a8630a6a1', 'ACTIVE', 'NEUTRAL', 2886, '2026-07-01 18:00:00.000', 'Microsoft Teams', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.044', '2026-07-25 07:26:32.044'),
+('e4a23f66-e0a8-4a46-ad3c-444c24561959', 'IDLE', 'UNPRODUCTIVE', 989, '2026-06-30 18:43:31.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:31.311', '2026-07-25 07:26:31.311'),
+('e4a9fc0f-6d5d-44d4-a3d7-41be850fd121', 'IDLE', 'UNPRODUCTIVE', 1064, '2026-07-15 20:42:16.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:36.312', '2026-07-25 07:26:36.312'),
+('e4cf6bf2-bf20-488b-bd5f-3181cb70edde', 'IDLE', 'UNPRODUCTIVE', 545, '2026-07-13 22:50:55.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:35.216', '2026-07-25 07:26:35.216'),
+('e4e0d722-9cb5-4ed8-9282-6d8afd5e602f', 'IDLE', 'UNPRODUCTIVE', 934, '2026-07-12 00:44:26.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.957', '2026-07-25 07:26:34.957'),
+('e4e5d327-e67f-405a-bc4b-1f07d2eb3897', 'IDLE', 'UNPRODUCTIVE', 530, '2026-07-22 23:51:10.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:38.483', '2026-07-25 07:26:38.483'),
+('e4ed37f5-cfee-4deb-bd14-8d49c9cbf7e8', 'IDLE', 'UNPRODUCTIVE', 469, '2026-07-12 22:52:11.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.059', '2026-07-25 07:26:35.059'),
+('e58e84ba-8a08-4a51-ae7a-018b53131e7d', 'IDLE', 'UNPRODUCTIVE', 890, '2026-07-20 20:45:10.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:37.716', '2026-07-25 07:26:37.716'),
+('e6110a2a-1d04-4f7b-870e-f2fcf9d0986f', 'IDLE', 'UNPRODUCTIVE', 987, '2026-07-08 00:43:33.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:33.768', '2026-07-25 07:26:33.768'),
+('e66361c7-fce4-4569-9030-75322533529a', 'IDLE', 'UNPRODUCTIVE', 432, '2026-07-17 00:52:48.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:36.787', '2026-07-25 07:26:36.787'),
+('e685125c-85ba-404e-bc1b-de78acad348e', 'ACTIVE', 'NEUTRAL', 3150, '2026-07-10 16:00:00.000', 'Slack', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:34.534', '2026-07-25 07:26:34.534'),
+('e696d2ff-d729-458d-8ce1-34cc90b3727d', 'IDLE', 'UNPRODUCTIVE', 774, '2026-07-14 22:47:06.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.917', '2026-07-25 07:26:35.917'),
+('e6c69ac4-c81e-449f-ac91-b9df666e56c7', 'ACTIVE', 'NEUTRAL', 3229, '2026-07-17 16:00:00.000', 'Gmail', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:37.055', '2026-07-25 07:26:37.055'),
+('e6d3c197-d1e7-44aa-85bb-a672d7dee9a5', 'IDLE', 'UNPRODUCTIVE', 711, '2026-06-26 22:48:09.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.119', '2026-07-25 07:26:30.119'),
+('e6d75742-b656-4b03-8449-f6f90f77fcb5', 'ACTIVE', 'PRODUCTIVE', 2581, '2026-06-27 23:00:00.000', 'Zoom', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.568', '2026-07-25 07:26:30.568'),
+('e7aea348-c2bd-4911-811c-b17ac8721032', 'IDLE', 'UNPRODUCTIVE', 694, '2026-07-08 21:48:26.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.941', '2026-07-25 07:26:33.941'),
+('e7b66fa1-3942-46bf-8c85-38f91c222ae9', 'IDLE', 'UNPRODUCTIVE', 1079, '2026-07-08 00:42:01.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:33.716', '2026-07-25 07:26:33.716'),
+('e7bb027c-fd1f-4f62-a426-017f735744be', 'IDLE', 'UNPRODUCTIVE', 1053, '2026-07-10 18:42:27.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:34.550', '2026-07-25 07:26:34.550'),
+('e8387bd5-08ad-432d-8899-255619024b43', 'ACTIVE', 'PRODUCTIVE', 2836, '2026-07-13 20:00:00.000', 'Notion', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.512', '2026-07-25 07:26:35.512'),
+('e849b95f-962a-4ff9-8f6d-3d9c7bc9c491', 'IDLE', 'UNPRODUCTIVE', 419, '2026-06-28 20:53:01.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:30.780', '2026-07-25 07:26:30.780'),
+('e885a7f9-3a3d-44a0-9281-ecb4cee35f5b', 'ACTIVE', 'NEUTRAL', 2599, '2026-07-08 17:00:00.000', 'Slack', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:33.840', '2026-07-25 07:26:33.840'),
+('e89bd720-0b6d-4e6b-9e67-fcfbb5f64b83', 'ACTIVE', 'UNPRODUCTIVE', 2637, '2026-07-05 20:00:00.000', 'Notion', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.916', '2026-07-25 07:26:32.916'),
+('e8cec132-cabb-4df6-b8c6-255944d1ffb9', 'IDLE', 'UNPRODUCTIVE', 439, '2026-07-10 20:52:41.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.686', '2026-07-25 07:26:34.686'),
+('e8dae309-9bd7-4e40-93b4-47015276b6c9', 'IDLE', 'UNPRODUCTIVE', 414, '2026-07-02 00:53:06.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:31.759', '2026-07-25 07:26:31.759'),
+('e8e93815-f288-4c72-ba4b-cb9b0f925707', 'BREAK', 'NEUTRAL', 2604, '2026-07-07 19:00:00.000', 'Lunch Break', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:33.680', '2026-07-25 07:26:33.680'),
+('e91f8ceb-bdb9-4611-9d6b-6eadf886fd96', 'IDLE', 'UNPRODUCTIVE', 378, '2026-06-30 23:53:42.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.547', '2026-07-25 07:26:31.547'),
+('e93230ae-b58b-461a-b294-023fe5cd0fa4', 'ACTIVE', 'PRODUCTIVE', 2582, '2026-07-09 21:00:00.000', 'GitHub Desktop', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.395', '2026-07-25 07:26:34.395'),
+('e9452598-5a0e-4662-bfab-9f67065c038a', 'ACTIVE', 'PRODUCTIVE', 2617, '2026-07-24 22:00:00.000', 'Stack Overflow', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:39.051', '2026-07-25 07:26:39.051'),
+('e955a4db-8378-4613-91a4-ba4c6a40bc54', 'ACTIVE', 'NEUTRAL', 3088, '2026-07-17 00:00:00.000', 'Gmail', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:36.721', '2026-07-25 07:26:36.721'),
+('e955e06a-d4fa-4278-a758-41506a595156', 'ACTIVE', 'NEUTRAL', 2639, '2026-07-16 21:00:00.000', 'Slack', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:36.700', '2026-07-25 07:26:36.700'),
+('e9ff0382-0ef7-49fa-835f-d1a7ce9a6f28', 'ACTIVE', 'PRODUCTIVE', 3050, '2026-07-01 00:00:00.000', 'Stack Overflow', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:31.617', '2026-07-25 07:26:31.617'),
+('ea11fc10-18c2-4b91-90bc-c2db80b6a575', 'IDLE', 'UNPRODUCTIVE', 771, '2026-07-17 23:47:09.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.913', '2026-07-25 07:26:36.913'),
+('ea684d73-cdd1-44a3-b330-c6df2f7384f1', 'ACTIVE', 'PRODUCTIVE', 2608, '2026-07-16 00:00:00.000', 'Stack Overflow', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:36.273', '2026-07-25 07:26:36.273'),
+('eabbf188-dbfb-4987-9b7b-5e641190b7d5', 'ACTIVE', 'PRODUCTIVE', 2666, '2026-07-25 00:00:00.000', 'Google Chrome', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.852', '2026-07-25 07:26:38.852'),
+('eace44ce-543a-4f6f-a87e-db855c5650d0', 'ACTIVE', 'PRODUCTIVE', 2608, '2026-07-18 00:00:00.000', 'Stack Overflow', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:37.046', '2026-07-25 07:26:37.046'),
+('ead299e7-ef75-4f0b-a290-238624dbb467', 'ACTIVE', 'PRODUCTIVE', 2836, '2026-07-11 20:00:00.000', 'Notion', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:34.991', '2026-07-25 07:26:34.991'),
+('eb30dbe8-a9bb-4065-97bd-a516bbf99220', 'IDLE', 'UNPRODUCTIVE', 919, '2026-07-22 22:44:41.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.199', '2026-07-25 07:26:38.199'),
+('eb330a9f-bf12-4cea-af27-b73ebd1f7db6', 'IDLE', 'UNPRODUCTIVE', 396, '2026-07-15 21:53:24.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:35.984', '2026-07-25 07:26:35.984'),
+('eb6eacf4-3b15-4fd9-99d7-643638ab4642', 'ACTIVE', 'NEUTRAL', 2967, '2026-07-17 17:00:00.000', 'Slack', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.184', '2026-07-25 07:26:37.184'),
+('eb7659eb-b67d-4398-b8cd-d2c237d647a1', 'ACTIVE', 'PRODUCTIVE', 2522, '2026-06-30 22:00:00.000', 'VS Code', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:31.604', '2026-07-25 07:26:31.604'),
+('ebe5d852-6978-413c-9953-b25dcf94e95e', 'IDLE', 'UNPRODUCTIVE', 888, '2026-07-06 21:45:12.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.115', '2026-07-25 07:26:33.115'),
+('ec065ab1-3d40-4980-95ef-47efa559123c', 'IDLE', 'UNPRODUCTIVE', 502, '2026-06-27 00:51:38.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:30.404', '2026-07-25 07:26:30.404'),
+('ec083071-b378-412e-9c20-76420929f79b', 'IDLE', 'UNPRODUCTIVE', 934, '2026-07-01 18:44:26.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:31.787', '2026-07-25 07:26:31.787'),
+('ecf73b1c-2a97-4580-87a2-b745de5a6ac5', 'ACTIVE', 'PRODUCTIVE', 2666, '2026-07-12 00:00:00.000', 'Notion', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.954', '2026-07-25 07:26:34.954'),
+('ed1f565b-071b-4825-83f0-310275b360b7', 'BREAK', 'NEUTRAL', 2838, '2026-06-27 19:00:00.000', 'Lunch Break', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.535', '2026-07-25 07:26:30.535'),
+('ed258951-fb4d-46f7-92c7-fa68a31fe585', 'IDLE', 'UNPRODUCTIVE', 767, '2026-07-20 00:47:13.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.405', '2026-07-25 07:26:37.405'),
+('ed2a5085-9d1e-46ec-8350-14f0766d57bb', 'ACTIVE', 'NEUTRAL', 3088, '2026-07-14 00:00:00.000', 'Gmail', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:35.480', '2026-07-25 07:26:35.480'),
+('ed2a5987-2a4e-46ab-9da9-d84fc40ea24e', 'ACTIVE', 'PRODUCTIVE', 2724, '2026-06-26 23:00:00.000', 'GitHub Desktop', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:30.394', '2026-07-25 07:26:30.394'),
+('ed8f62f4-b5ed-4e2e-8060-dc20f01ee637', 'ACTIVE', 'PRODUCTIVE', 2530, '2026-07-14 23:00:00.000', 'VS Code', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:35.853', '2026-07-25 07:26:35.853'),
+('ed90755f-faa4-489c-af05-062821c940ed', 'ACTIVE', 'NEUTRAL', 2707, '2026-07-15 00:00:00.000', 'Slack', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:35.600', '2026-07-25 07:26:35.600'),
+('edb75fb2-cf71-4ca1-aeff-a46433c73b92', 'IDLE', 'UNPRODUCTIVE', 633, '2026-07-17 17:49:27.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.198', '2026-07-25 07:26:37.198'),
+('ee129d96-230d-4d66-ac7e-c8829da1d87d', 'BREAK', 'NEUTRAL', 2716, '2026-07-22 19:00:00.000', 'Lunch Break', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:38.387', '2026-07-25 07:26:38.387'),
+('ee2d6bd5-ce7f-49c0-9593-0170984d3b0b', 'ACTIVE', 'PRODUCTIVE', 3142, '2026-06-30 18:00:00.000', 'Google Chrome', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:31.578', '2026-07-25 07:26:31.578'),
+('eea0b963-8baf-46d6-b1ad-2653facf6203', 'IDLE', 'UNPRODUCTIVE', 539, '2026-07-05 21:51:01.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.929', '2026-07-25 07:26:32.929'),
+('eeab6e70-db6a-43d4-aaca-57ab4559ea08', 'ACTIVE', 'NEUTRAL', 2835, '2026-07-03 16:00:00.000', 'Microsoft Teams', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:32.534', '2026-07-25 07:26:32.534'),
+('eec23cee-f18d-46a4-9648-df58118c7b97', 'ACTIVE', 'PRODUCTIVE', 2883, '2026-07-08 18:00:00.000', 'Google Chrome', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:33.850', '2026-07-25 07:26:33.850'),
+('eec34b65-2403-4a20-9234-780bb18fb5f8', 'ACTIVE', 'UNPRODUCTIVE', 3078, '2026-07-22 21:00:00.000', 'Notion', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.188', '2026-07-25 07:26:38.188'),
+('eefa4f10-6851-4bb9-9052-241b7ac8cdc1', 'ACTIVE', 'PRODUCTIVE', 2823, '2026-07-16 20:00:00.000', 'Figma', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:36.426', '2026-07-25 07:26:36.426'),
+('ef099f48-fe9a-48c3-b80c-eb2b9b3fd802', 'ACTIVE', 'PRODUCTIVE', 2783, '2026-07-03 21:00:00.000', 'Google Chrome', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:32.568', '2026-07-25 07:26:32.568'),
+('ef189c83-a093-436f-900f-3c5ac1cb8793', 'ACTIVE', 'PRODUCTIVE', 2777, '2026-07-07 18:00:00.000', 'Zoom', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:33.673', '2026-07-25 07:26:33.673'),
+('ef35232d-401b-4735-8b98-6c3c6f51fdfe', 'IDLE', 'UNPRODUCTIVE', 581, '2026-06-26 18:50:19.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:30.344', '2026-07-25 07:26:30.344'),
+('ef4d6b69-29b0-463b-9cf2-9a06b1cc1119', 'IDLE', 'UNPRODUCTIVE', 1063, '2026-07-20 22:42:17.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:37.667', '2026-07-25 07:26:37.667'),
+('ef6beac6-ca35-42f4-a46f-abd98450819c', 'IDLE', 'UNPRODUCTIVE', 820, '2026-06-26 21:46:20.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.105', '2026-07-25 07:26:30.105'),
+('efa4e963-be73-4b63-ac47-a4e7d48c61be', 'IDLE', 'UNPRODUCTIVE', 1040, '2026-06-30 18:42:40.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.506', '2026-07-25 07:26:31.506'),
+('efaaf281-0e31-42a5-bae3-fda81e690a68', 'BREAK', 'NEUTRAL', 3037, '2026-07-15 19:00:00.000', 'Lunch Break', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:36.367', '2026-07-25 07:26:36.367'),
+('f0355d89-b973-41f2-87f3-3a18e397e9b8', 'ACTIVE', 'PRODUCTIVE', 2689, '2026-07-17 22:00:00.000', 'Stack Overflow', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.227', '2026-07-25 07:26:37.227'),
+('f05b4067-f1b1-4c53-984b-c01e71095c85', 'ACTIVE', 'PRODUCTIVE', 2566, '2026-07-08 20:00:00.000', 'Google Chrome', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.082', '2026-07-25 07:26:34.082'),
+('f0a9cfa5-ce5c-4137-b8a2-52985a4ddcf2', 'IDLE', 'UNPRODUCTIVE', 749, '2026-07-17 20:47:31.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.215', '2026-07-25 07:26:37.215'),
+('f0d01a3b-4e31-401d-af59-f3eeb29d4e7c', 'ACTIVE', 'NEUTRAL', 2542, '2026-07-10 20:00:00.000', 'Microsoft Teams', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:34.495', '2026-07-25 07:26:34.495'),
+('f0d190c7-1fd1-4b6a-ac62-197f595f8e68', 'ACTIVE', 'PRODUCTIVE', 2839, '2026-07-24 00:00:00.000', 'Zoom', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:38.751', '2026-07-25 07:26:38.751'),
+('f0f589ce-3f59-49dd-8ad6-3d3c6635322d', 'ACTIVE', 'PRODUCTIVE', 2816, '2026-07-18 23:00:00.000', 'Stack Overflow', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.302', '2026-07-25 07:26:37.302'),
+('f179d834-98b0-4d07-990a-0f6d41d16722', 'ACTIVE', 'PRODUCTIVE', 2771, '2026-06-29 23:00:00.000', 'Figma', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.123', '2026-07-25 07:26:31.123'),
+('f1808c58-20fb-45fa-ae4f-2807c7dde159', 'IDLE', 'UNPRODUCTIVE', 907, '2026-07-09 20:44:53.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:34.447', '2026-07-25 07:26:34.447'),
+('f1b25270-3421-410f-970a-14e7a44a7e66', 'ACTIVE', 'PRODUCTIVE', 3043, '2026-06-27 20:00:00.000', 'Google Chrome', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.539', '2026-07-25 07:26:30.539'),
+('f1ef385f-b36c-4839-851d-a78a6b370fe8', 'IDLE', 'UNPRODUCTIVE', 774, '2026-07-18 21:47:06.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.288', '2026-07-25 07:26:37.288'),
+('f1f396a3-5351-4a27-988b-58515673beb6', 'ACTIVE', 'NEUTRAL', 2639, '2026-07-14 21:00:00.000', 'Slack', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:35.839', '2026-07-25 07:26:35.839'),
+('f2373294-f87d-4b48-8b08-132557f7cfe4', 'IDLE', 'UNPRODUCTIVE', 715, '2026-07-23 18:48:05.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:38.718', '2026-07-25 07:26:38.718'),
+('f2525501-d070-4977-b2c7-b484c29a4001', 'BREAK', 'NEUTRAL', 2543, '2026-06-28 19:00:00.000', 'Lunch Break', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:30.775', '2026-07-25 07:26:30.775'),
+('f25540d2-6d9b-47b5-bb52-cb35cb7d47ec', 'IDLE', 'UNPRODUCTIVE', 521, '2026-06-29 20:51:19.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:30.904', '2026-07-25 07:26:30.904'),
+('f27d725f-abca-4fac-b27a-67983221fe8b', 'IDLE', 'UNPRODUCTIVE', 833, '2026-07-20 21:46:07.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:37.450', '2026-07-25 07:26:37.450'),
+('f29dd065-ec73-4873-82bb-5b56c71aaa24', 'IDLE', 'UNPRODUCTIVE', 685, '2026-07-06 22:48:35.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:33.430', '2026-07-25 07:26:33.430'),
+('f2cde44d-b5a5-46a9-8b6b-d87f5ee99e8a', 'ACTIVE', 'PRODUCTIVE', 2777, '2026-07-20 18:00:00.000', 'GitHub Desktop', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:37.703', '2026-07-25 07:26:37.703'),
+('f2ee9124-d43c-44ca-bf19-e691bcd89767', 'IDLE', 'UNPRODUCTIVE', 683, '2026-07-24 20:48:37.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.827', '2026-07-25 07:26:38.827'),
+('f3088639-5738-4318-ac54-ceb131b1da60', 'BREAK', 'NEUTRAL', 3325, '2026-06-29 19:00:00.000', 'Lunch Break', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:30.882', '2026-07-25 07:26:30.882'),
+('f319b642-62b4-49de-9160-0fef007ffd7f', 'IDLE', 'UNPRODUCTIVE', 614, '2026-07-14 20:49:46.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:35.833', '2026-07-25 07:26:35.833'),
+('f338aa6f-c96a-47a8-934c-3b06974d02b8', 'IDLE', 'UNPRODUCTIVE', 905, '2026-06-30 23:44:55.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:31.354', '2026-07-25 07:26:31.354'),
+('f3da6f7b-8f10-44d1-bbfb-d20fc5a8d143', 'IDLE', 'UNPRODUCTIVE', 709, '2026-07-24 20:48:11.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:39.044', '2026-07-25 07:26:39.044'),
+('f3dc9d60-b41a-440e-8c0e-3f4d10070cc2', 'IDLE', 'UNPRODUCTIVE', 823, '2026-07-02 20:46:17.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:32.372', '2026-07-25 07:26:32.372'),
+('f3fc43bb-621f-4648-98cd-ba600453874f', 'ACTIVE', 'PRODUCTIVE', 2850, '2026-06-26 17:00:00.000', 'Zoom', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:30.158', '2026-07-25 07:26:30.158'),
+('f3ff469d-5917-49ac-82a3-7635176451fc', 'IDLE', 'UNPRODUCTIVE', 850, '2026-06-28 16:45:50.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:30.756', '2026-07-25 07:26:30.756'),
+('f416ee9c-e0b0-4ab9-ac95-e2af653ca763', 'IDLE', 'UNPRODUCTIVE', 557, '2026-06-29 20:50:43.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.834', '2026-07-25 07:26:30.834'),
+('f47cc8a8-e87f-456a-a469-ee80a5f4422d', 'ACTIVE', 'PRODUCTIVE', 2601, '2026-07-13 16:00:00.000', 'Figma', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:35.408', '2026-07-25 07:26:35.408'),
+('f485e940-38df-4634-b669-ba31de3ca4b7', 'IDLE', 'UNPRODUCTIVE', 473, '2026-07-13 22:52:07.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:35.153', '2026-07-25 07:26:35.153'),
+('f4862119-a8bb-439c-ab65-4192dc9d025d', 'IDLE', 'UNPRODUCTIVE', 479, '2026-06-30 00:52:01.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.859', '2026-07-25 07:26:30.859'),
+('f4cc5d5a-007d-4b71-ab07-e2d3089a8baa', 'ACTIVE', 'PRODUCTIVE', 3016, '2026-06-30 20:00:00.000', 'Stack Overflow', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:31.650', '2026-07-25 07:26:31.650'),
+('f4cfb99d-e8cb-4db0-b815-c05680f5db2b', 'IDLE', 'UNPRODUCTIVE', 682, '2026-07-02 16:48:38.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:32.170', '2026-07-25 07:26:32.170'),
+('f50b31fe-bcf0-4ee7-b9a9-d87f2e127dae', 'IDLE', 'UNPRODUCTIVE', 378, '2026-07-13 21:53:42.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:35.211', '2026-07-25 07:26:35.211'),
+('f5269327-c6d1-4fe9-aa69-7df8191375fc', 'BREAK', 'NEUTRAL', 3269, '2026-07-01 19:00:00.000', 'Lunch Break', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:31.792', '2026-07-25 07:26:31.792'),
+('f529d5f6-6248-41bf-8f47-a90d3cc4b22c', 'ACTIVE', 'PRODUCTIVE', 2958, '2026-06-29 16:00:00.000', 'Google Chrome', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:31.217', '2026-07-25 07:26:31.217'),
+('f595e341-dc95-4738-8128-315b59838d5b', 'IDLE', 'UNPRODUCTIVE', 559, '2026-07-15 22:50:41.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:36.260', '2026-07-25 07:26:36.260'),
+('f597f7b4-678d-493a-9872-6e221b55a4ca', 'ACTIVE', 'PRODUCTIVE', 2550, '2026-07-02 23:00:00.000', 'Google Chrome', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:32.214', '2026-07-25 07:26:32.214'),
+('f5b42858-1f9a-437f-9311-25b343290a07', 'ACTIVE', 'NEUTRAL', 2624, '2026-07-17 21:00:00.000', 'Gmail', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.896', '2026-07-25 07:26:36.896'),
+('f5d947fc-1165-47f8-b5f2-97e19afd0b0e', 'IDLE', 'UNPRODUCTIVE', 1032, '2026-07-01 22:42:48.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.084', '2026-07-25 07:26:32.084'),
+('f6005064-d834-47e6-ac04-d9b427487607', 'IDLE', 'UNPRODUCTIVE', 597, '2026-07-06 23:50:03.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.128', '2026-07-25 07:26:33.128'),
+('f64e01ef-e15e-4c97-8050-2feaa312a38d', 'ACTIVE', 'NEUTRAL', 2562, '2026-07-01 21:00:00.000', 'Slack', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:31.945', '2026-07-25 07:26:31.945'),
+('f66520fe-b7f6-46f6-9135-6935b7e2ab36', 'BREAK', 'NEUTRAL', 3255, '2026-07-21 19:00:00.000', 'Lunch Break', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:37.981', '2026-07-25 07:26:37.981'),
+('f684b565-652c-4fc5-8306-ae47b832154f', 'IDLE', 'UNPRODUCTIVE', 1050, '2026-07-01 23:42:30.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:31.749', '2026-07-25 07:26:31.749'),
+('f6d88f84-2e78-415b-a73c-3d19478419ed', 'ACTIVE', 'PRODUCTIVE', 2591, '2026-07-14 22:00:00.000', 'Zoom', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:35.848', '2026-07-25 07:26:35.848'),
+('f7128d2c-8963-44c8-8476-0bad16d297ea', 'ACTIVE', 'PRODUCTIVE', 2547, '2026-07-15 23:00:00.000', 'VS Code', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:36.263', '2026-07-25 07:26:36.263'),
+('f739f7aa-4d3f-42d3-a341-1367b86c6f2d', 'IDLE', 'UNPRODUCTIVE', 635, '2026-07-15 16:49:25.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:36.212', '2026-07-25 07:26:36.212'),
+('f78438ee-2e95-4918-b0cd-41db4dd98d2a', 'ACTIVE', 'PRODUCTIVE', 2826, '2026-07-14 22:00:00.000', 'Zoom', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.914', '2026-07-25 07:26:35.914'),
+('f7f41cc7-cb16-4186-95d9-da9b6799af08', 'IDLE', 'UNPRODUCTIVE', 450, '2026-07-02 18:52:30.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:32.363', '2026-07-25 07:26:32.363'),
+('f81d459e-0256-4963-8cc8-e23f98aa037a', 'ACTIVE', 'NEUTRAL', 2555, '2026-07-06 17:00:00.000', 'Slack', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:33.215', '2026-07-25 07:26:33.215'),
+('f848c4e9-aecb-482d-8a59-ba8b7675daba', 'IDLE', 'UNPRODUCTIVE', 612, '2026-07-20 17:49:48.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:37.634', '2026-07-25 07:26:37.634'),
+('f8557a82-2100-4619-accd-5e7bd09fcb34', 'IDLE', 'UNPRODUCTIVE', 784, '2026-07-18 23:46:56.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.306', '2026-07-25 07:26:37.306'),
+('f880991b-a3ff-45a2-bd4c-e879f35c4331', 'BREAK', 'NEUTRAL', 2604, '2026-07-06 19:00:00.000', 'Lunch Break', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:33.227', '2026-07-25 07:26:33.227'),
+('f89e9bb2-d2be-49e8-a2ef-d7094983665f', 'IDLE', 'UNPRODUCTIVE', 447, '2026-07-10 17:52:33.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:34.797', '2026-07-25 07:26:34.797'),
+('f8bf9ee2-124c-4c7f-a8e8-25431e385aee', 'IDLE', 'UNPRODUCTIVE', 961, '2026-07-16 00:43:59.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:36.002', '2026-07-25 07:26:36.002'),
+('f8db7e79-c865-4644-8187-4ad2bdf70005', 'ACTIVE', 'PRODUCTIVE', 2613, '2026-07-04 00:00:00.000', 'Google Chrome', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.823', '2026-07-25 07:26:32.823'),
+('f8e3a1c8-271d-4b73-baaa-af4a675d1a0b', 'ACTIVE', 'UNPRODUCTIVE', 2663, '2026-07-21 17:00:00.000', 'Notion', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:38.093', '2026-07-25 07:26:38.093'),
+('f9161211-8cdb-491f-91a7-17d898eb1843', 'ACTIVE', 'PRODUCTIVE', 2580, '2026-07-03 21:00:00.000', 'Stack Overflow', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.860', '2026-07-25 07:26:32.860'),
+('f95bbc6d-2664-453b-8b90-17a6710605b0', 'BREAK', 'NEUTRAL', 2913, '2026-07-02 19:00:00.000', 'Lunch Break', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.495', '2026-07-25 07:26:32.495'),
+('f986ccb3-f79e-4cc3-ba51-9a444c44602d', 'ACTIVE', 'PRODUCTIVE', 2669, '2026-06-29 18:00:00.000', 'Notion', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:31.170', '2026-07-25 07:26:31.170'),
+('f99d4345-e7d8-4b45-ad97-0e9c4375a2d1', 'IDLE', 'UNPRODUCTIVE', 1050, '2026-06-26 16:42:30.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:30.328', '2026-07-25 07:26:30.328'),
+('f9cba2a3-4fcd-4e39-913b-b6ffad6b65b2', 'BREAK', 'NEUTRAL', 3021, '2026-07-14 19:00:00.000', 'Lunch Break', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.894', '2026-07-25 07:26:35.894'),
+('f9f678fc-8920-4b2b-b095-0821c9c94452', 'IDLE', 'UNPRODUCTIVE', 441, '2026-07-09 16:52:39.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:34.183', '2026-07-25 07:26:34.183'),
+('fa04decf-a397-4aea-8dde-b10406524358', 'ACTIVE', 'PRODUCTIVE', 2675, '2026-07-13 22:00:00.000', 'Google Chrome', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:35.346', '2026-07-25 07:26:35.346'),
+('fa1c8e78-c365-44d0-b4f7-363200d61795', 'ACTIVE', 'NEUTRAL', 2930, '2026-07-10 23:00:00.000', 'Gmail', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:34.766', '2026-07-25 07:26:34.766'),
+('fa3ba047-36d7-471a-b1c2-a1a4ebe98fdc', 'ACTIVE', 'PRODUCTIVE', 2613, '2026-07-10 00:00:00.000', 'Google Chrome', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:34.466', '2026-07-25 07:26:34.466'),
+('fa4ea613-1824-46a0-b828-acaadad8a441', 'ACTIVE', 'PRODUCTIVE', 2526, '2026-07-22 23:00:00.000', 'Stack Overflow', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.202', '2026-07-25 07:26:38.202'),
+('fa622943-8d38-433e-b9cc-83032666cba3', 'IDLE', 'UNPRODUCTIVE', 1078, '2026-06-30 22:42:02.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:31.608', '2026-07-25 07:26:31.608'),
+('fa9c17c0-7506-47b2-9d10-294e55d43323', 'IDLE', 'UNPRODUCTIVE', 1070, '2026-07-16 23:42:10.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:36.718', '2026-07-25 07:26:36.718'),
+('fa9c7c9a-4abd-4a02-9516-bcb5c8bd47c1', 'IDLE', 'UNPRODUCTIVE', 563, '2026-07-21 16:50:37.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:38.090', '2026-07-25 07:26:38.090'),
+('faa74ea3-198c-475a-9a23-a2fcb2bee614', 'ACTIVE', 'PRODUCTIVE', 3120, '2026-06-27 17:00:00.000', 'VS Code', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.518', '2026-07-25 07:26:30.518'),
+('fabee3bd-1a96-4cc0-9df6-c883f7cda64c', 'ACTIVE', 'PRODUCTIVE', 2851, '2026-07-16 21:00:00.000', 'Zoom', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:36.760', '2026-07-25 07:26:36.760'),
+('fb26afba-cc42-4aa5-af3e-7d4413cf6ee4', 'ACTIVE', 'PRODUCTIVE', 3160, '2026-07-23 17:00:00.000', 'Zoom', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.510', '2026-07-25 07:26:38.510'),
+('fb3fd7dc-179f-4dc4-9f15-3b04e4636c6a', 'IDLE', 'UNPRODUCTIVE', 767, '2026-07-23 16:47:13.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:38.702', '2026-07-25 07:26:38.702'),
+('fb48cb4c-1c5a-4c63-b8fc-e605c3de01c6', 'IDLE', 'UNPRODUCTIVE', 919, '2026-07-24 22:44:41.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:38.842', '2026-07-25 07:26:38.842'),
+('fb4ecb34-75b4-4d04-b9ac-8be1a42d5703', 'ACTIVE', 'PRODUCTIVE', 2693, '2026-07-07 20:00:00.000', 'VS Code', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:33.745', '2026-07-25 07:26:33.745'),
+('fb75b1ff-33d9-447a-9473-474c990c2432', 'ACTIVE', 'PRODUCTIVE', 2527, '2026-07-07 21:00:00.000', 'GitHub Desktop', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:33.805', '2026-07-25 07:26:33.805'),
+('fb876154-9640-433d-b815-b1b719f3bd57', 'ACTIVE', 'PRODUCTIVE', 2608, '2026-07-14 16:00:00.000', 'Stack Overflow', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:35.609', '2026-07-25 07:26:35.609'),
+('fb87c410-51f3-4862-89ee-bbcacbfdccbc', 'IDLE', 'UNPRODUCTIVE', 640, '2026-07-01 17:49:20.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.039', '2026-07-25 07:26:32.039'),
+('fb94594a-270e-41d5-bb20-4440a726face', 'ACTIVE', 'PRODUCTIVE', 2851, '2026-07-17 23:00:00.000', 'Stack Overflow', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:36.845', '2026-07-25 07:26:36.845'),
+('fbb1d3d7-ed9d-443a-824c-44947e9a4f4e', 'IDLE', 'UNPRODUCTIVE', 538, '2026-07-01 17:51:02.000', 'Away from Computer', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:31.709', '2026-07-25 07:26:31.709'),
+('fbc5e874-f031-4df5-b579-0abff3fd6b32', 'ACTIVE', 'NEUTRAL', 2906, '2026-07-08 21:00:00.000', 'Microsoft Teams', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:33.937', '2026-07-25 07:26:33.937'),
+('fc500590-6799-4e3b-8769-68fe500442cc', 'ACTIVE', 'PRODUCTIVE', 2793, '2026-07-09 18:00:00.000', 'Google Chrome', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:34.197', '2026-07-25 07:26:34.197'),
+('fca9fc97-f2eb-4fea-b37f-39df158c66e3', 'IDLE', 'UNPRODUCTIVE', 407, '2026-06-27 00:53:13.000', 'Away from Computer', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:30.222', '2026-07-25 07:26:30.222'),
+('fcac633c-fbfc-4294-8ebd-5d7754701f37', 'ACTIVE', 'PRODUCTIVE', 3139, '2026-07-10 22:00:00.000', 'Stack Overflow', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:34.573', '2026-07-25 07:26:34.573'),
+('fcc31f75-eb42-4d5f-b5a9-043e79587610', 'ACTIVE', 'PRODUCTIVE', 2836, '2026-07-10 21:00:00.000', 'Notion', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:34.815', '2026-07-25 07:26:34.815'),
+('fd32dc46-9400-4cf4-930a-72a3fa2ee458', 'ACTIVE', 'PRODUCTIVE', 2626, '2026-07-08 22:00:00.000', 'Figma', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:33.876', '2026-07-25 07:26:33.876'),
+('fd4b7ac1-3121-4be5-9664-3a757799586d', 'BREAK', 'NEUTRAL', 2531, '2026-07-02 19:00:00.000', 'Lunch Break', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:32.187', '2026-07-25 07:26:32.187'),
+('fd5bf910-e5d6-4979-bad6-2927da2bbf07', 'IDLE', 'UNPRODUCTIVE', 1065, '2026-07-14 17:42:15.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:35.883', '2026-07-25 07:26:35.883'),
+('fd6c287e-99fd-4c13-b011-5cb9dadebb32', 'BREAK', 'NEUTRAL', 3000, '2026-07-22 19:00:00.000', 'Lunch Break', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:38.244', '2026-07-25 07:26:38.244'),
+('fd79a939-9e84-43f2-8a60-da1a13f738a6', 'ACTIVE', 'PRODUCTIVE', 3150, '2026-07-09 16:00:00.000', 'VS Code', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.361', '2026-07-25 07:26:34.361'),
+('fd7f243f-31ff-4494-ae31-d07209396bbc', 'ACTIVE', 'PRODUCTIVE', 2759, '2026-06-29 21:00:00.000', 'VS Code', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:31.189', '2026-07-25 07:26:31.189'),
+('fda8c686-4c8f-4a19-9b96-ea3662345f71', 'ACTIVE', 'PRODUCTIVE', 2816, '2026-07-19 23:00:00.000', 'Stack Overflow', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.373', '2026-07-25 07:26:37.373'),
+('fdd0bb9f-298f-4fb5-b668-749e3c1a1b88', 'ACTIVE', 'PRODUCTIVE', 3203, '2026-07-07 16:00:00.000', 'Stack Overflow', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:33.777', '2026-07-25 07:26:33.777'),
+('fdd65cac-5e21-4de2-b176-21e73e482c3c', 'IDLE', 'UNPRODUCTIVE', 1064, '2026-07-17 18:42:16.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:37.073', '2026-07-25 07:26:37.073'),
+('fdd87282-b75f-47cb-ac62-302b036fe88a', 'ACTIVE', 'PRODUCTIVE', 3139, '2026-07-17 20:00:00.000', 'Stack Overflow', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:36.888', '2026-07-25 07:26:36.888'),
+('fddc7f6d-c6dd-4649-9818-80e34903897e', 'ACTIVE', 'PRODUCTIVE', 2826, '2026-07-17 21:00:00.000', 'Zoom', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.221', '2026-07-25 07:26:37.221'),
+('fdfe0ec8-dbb5-42c0-9a0f-38dfb6b3a445', 'ACTIVE', 'PRODUCTIVE', 3093, '2026-07-09 18:00:00.000', 'GitHub Desktop', '48285691-ec0c-4c20-bbae-7007670ca096', NULL, 'default-org-id', '2026-07-25 07:26:34.258', '2026-07-25 07:26:34.258'),
+('fe30bbc9-883d-4924-8ea4-2fbde8d4b8ac', 'IDLE', 'UNPRODUCTIVE', 980, '2026-07-02 22:43:40.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:32.389', '2026-07-25 07:26:32.389'),
+('fe358855-db61-4250-bf26-3c9a13606c90', 'IDLE', 'UNPRODUCTIVE', 539, '2026-07-03 21:51:01.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.812', '2026-07-25 07:26:32.812'),
+('fe50bcde-372d-4f77-b707-6fc92b5d4aa3', 'ACTIVE', 'PRODUCTIVE', 2737, '2026-07-02 16:00:00.000', 'Google Chrome', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:32.473', '2026-07-25 07:26:32.473'),
+('fe6beb33-bd68-40e9-8665-d1a44edb2194', 'ACTIVE', 'NEUTRAL', 2987, '2026-07-03 18:00:00.000', 'Gmail', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.790', '2026-07-25 07:26:32.790'),
+('fe722e25-ee39-428f-95dc-a94767a0c2d0', 'IDLE', 'UNPRODUCTIVE', 945, '2026-07-22 18:44:15.000', 'Away from Computer', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:38.449', '2026-07-25 07:26:38.449'),
+('fe7eb1c5-60e0-4fc8-a514-27a5d5806ba7', 'IDLE', 'UNPRODUCTIVE', 987, '2026-07-04 00:43:33.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.827', '2026-07-25 07:26:32.827'),
+('fee61091-3231-4038-bde0-2f1a9a0fc0b3', 'ACTIVE', 'PRODUCTIVE', 2851, '2026-07-17 20:00:00.000', 'Zoom', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', NULL, 'default-org-id', '2026-07-25 07:26:37.212', '2026-07-25 07:26:37.212'),
+('ff36ef90-c49d-4453-b0c2-5f0f1f0d47b6', 'ACTIVE', 'PRODUCTIVE', 3043, '2026-06-29 20:00:00.000', 'Google Chrome', '163aad68-68d7-4a05-b820-86f9e86710f4', NULL, 'default-org-id', '2026-07-25 07:26:30.832', '2026-07-25 07:26:30.832'),
+('ff550324-b6be-46ca-bc3e-0e8555961715', 'IDLE', 'UNPRODUCTIVE', 559, '2026-07-17 22:50:41.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:37.034', '2026-07-25 07:26:37.034'),
+('ff9fd57e-fe24-45a0-8ff9-543f2f6be78d', 'IDLE', 'UNPRODUCTIVE', 934, '2026-07-16 22:44:26.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:36.642', '2026-07-25 07:26:36.642'),
+('ffba8dae-dc91-400e-bb68-adbc980a558b', 'IDLE', 'UNPRODUCTIVE', 938, '2026-07-10 21:44:22.000', 'Away from Computer', 'b93a4d90-2454-4694-8edd-dcbb7e408098', NULL, 'default-org-id', '2026-07-25 07:26:34.693', '2026-07-25 07:26:34.693'),
+('ffe2bd1f-522b-4404-a0d4-a744ad86dfd6', 'IDLE', 'UNPRODUCTIVE', 613, '2026-07-03 18:49:47.000', 'Away from Computer', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', NULL, 'default-org-id', '2026-07-25 07:26:32.794', '2026-07-25 07:26:32.794');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `advanced_tracking_settings`
+--
+
+CREATE TABLE `advanced_tracking_settings` (
+  `id` varchar(191) NOT NULL,
+  `shiftThreshold` int(11) NOT NULL DEFAULT 4,
+  `strictTime` tinyint(1) NOT NULL DEFAULT 0,
+  `inactivityPopups` tinyint(1) NOT NULL DEFAULT 1,
+  `identificationMode` varchar(191) NOT NULL DEFAULT 'hwid',
+  `showEngagement` tinyint(1) NOT NULL DEFAULT 0,
+  `useActiveDirectory` tinyint(1) NOT NULL DEFAULT 1,
+  `adEmail` tinyint(1) NOT NULL DEFAULT 1,
+  `adTeam` tinyint(1) NOT NULL DEFAULT 1,
+  `adTrackingSettings` tinyint(1) NOT NULL DEFAULT 0,
+  `organizationId` varchar(191) NOT NULL,
+  `createdAt` datetime(3) NOT NULL DEFAULT current_timestamp(3),
+  `updatedAt` datetime(3) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `agents`
+--
+
+CREATE TABLE `agents` (
+  `id` varchar(191) NOT NULL,
+  `employeeId` varchar(191) NOT NULL,
+  `deviceId` varchar(191) NOT NULL,
+  `status` varchar(191) NOT NULL DEFAULT 'inactive',
+  `systemInfo` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`systemInfo`)),
+  `lastSeen` datetime(3) NOT NULL DEFAULT current_timestamp(3),
+  `createdAt` datetime(3) NOT NULL DEFAULT current_timestamp(3),
+  `updatedAt` datetime(3) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `agents`
+--
+
+INSERT INTO `agents` (`id`, `employeeId`, `deviceId`, `status`, `systemInfo`, `lastSeen`, `createdAt`, `updatedAt`) VALUES
+('ba602fc5-a1f9-4213-8648-64be6beaecef', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', 'DEVICE123', 'active', '{\"platform\":\"win32\",\"release\":\"10.0\",\"arch\":\"x64\"}', '2026-05-22 14:09:34.402', '2026-05-22 14:09:34.404', '2026-05-22 14:09:34.404');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `alert_rules`
+--
+
+CREATE TABLE `alert_rules` (
+  `id` varchar(191) NOT NULL,
+  `name` varchar(191) NOT NULL,
+  `type` varchar(191) NOT NULL,
+  `trigger` varchar(191) NOT NULL,
+  `scope` varchar(191) NOT NULL DEFAULT 'All Employees',
+  `organizationId` varchar(191) NOT NULL,
+  `createdAt` datetime(3) NOT NULL DEFAULT current_timestamp(3),
+  `updatedAt` datetime(3) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `alert_settings`
+--
+
+CREATE TABLE `alert_settings` (
+  `id` varchar(191) NOT NULL,
+  `organizationId` varchar(191) NOT NULL,
+  `earliestClockIn` int(11) NOT NULL DEFAULT 15,
+  `latestClockOut` int(11) NOT NULL DEFAULT 30,
+  `tolerance` int(11) NOT NULL DEFAULT 10,
+  `absentInApp` tinyint(1) NOT NULL DEFAULT 1,
+  `absentEmail` tinyint(1) NOT NULL DEFAULT 0,
+  `headcountEnabled` tinyint(1) NOT NULL DEFAULT 1,
+  `headcountLateThreshold` int(11) NOT NULL DEFAULT 15,
+  `headcountSendAfter` varchar(191) NOT NULL DEFAULT 'scheduled_time',
+  `headcountInApp` tinyint(1) NOT NULL DEFAULT 1,
+  `headcountEmail` tinyint(1) NOT NULL DEFAULT 0,
+  `productivityLabeling` varchar(191) NOT NULL DEFAULT 'daily',
+  `manualTimeEntries` varchar(191) NOT NULL DEFAULT 'daily',
+  `createdAt` datetime(3) NOT NULL DEFAULT current_timestamp(3),
+  `updatedAt` datetime(3) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `app_usage_logs`
+--
+
+CREATE TABLE `app_usage_logs` (
+  `id` varchar(191) NOT NULL,
+  `appName` varchar(191) NOT NULL,
+  `domain` varchar(191) NOT NULL DEFAULT '',
+  `category` varchar(191) NOT NULL DEFAULT 'Uncategorized',
+  `productivity` enum('PRODUCTIVE','NEUTRAL','UNPRODUCTIVE') NOT NULL DEFAULT 'NEUTRAL',
+  `duration` int(11) NOT NULL DEFAULT 0,
+  `timestamp` datetime(3) NOT NULL DEFAULT current_timestamp(3),
+  `employeeId` varchar(191) NOT NULL,
+  `organizationId` varchar(191) NOT NULL,
+  `createdAt` datetime(3) NOT NULL DEFAULT current_timestamp(3)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `attendance`
+--
+
+CREATE TABLE `attendance` (
+  `id` varchar(191) NOT NULL,
+  `date` date NOT NULL,
+  `clockIn` datetime(3) NOT NULL,
+  `clockOut` datetime(3) DEFAULT NULL,
+  `status` varchar(191) NOT NULL DEFAULT 'PRESENT',
+  `late` tinyint(1) NOT NULL DEFAULT 0,
+  `duration` int(11) NOT NULL DEFAULT 0,
+  `employeeId` varchar(191) NOT NULL,
+  `organizationId` varchar(191) NOT NULL,
+  `createdAt` datetime(3) NOT NULL DEFAULT current_timestamp(3),
+  `updatedAt` datetime(3) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `attendance`
+--
+
+INSERT INTO `attendance` (`id`, `date`, `clockIn`, `clockOut`, `status`, `late`, `duration`, `employeeId`, `organizationId`, `createdAt`, `updatedAt`) VALUES
+('029ba14b-fed9-45b3-82cc-0d52e0c7e2bf', '2026-07-06', '2026-07-06 16:08:26.000', '2026-07-07 00:50:45.000', 'PRESENT', 0, 31339, '163aad68-68d7-4a05-b820-86f9e86710f4', 'default-org-id', '2026-07-25 07:26:32.947', '2026-07-25 07:26:32.947'),
+('02c8f9a6-7ae9-49e5-b385-3350185ae418', '2026-07-18', '2026-07-18 16:14:29.000', '2026-07-19 00:37:42.000', 'PRESENT', 1, 30193, 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', 'default-org-id', '2026-07-25 07:26:37.248', '2026-07-25 07:26:37.248'),
+('02ffb0a8-26b9-4984-ab5e-8d12a4d1b43e', '2026-06-27', '2026-06-27 16:13:21.000', '2026-06-28 00:56:41.000', 'PRESENT', 1, 31400, 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', 'default-org-id', '2026-07-25 07:26:30.587', '2026-07-25 07:26:30.587'),
+('0360176e-4458-4d85-a49b-09a12f85fcca', '2026-07-01', '2026-07-01 16:14:55.000', '2026-07-02 00:41:12.000', 'PRESENT', 1, 30377, 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', 'default-org-id', '2026-07-25 07:26:32.103', '2026-07-25 07:26:32.103'),
+('059fbbb7-4622-4c50-88ea-3c21abed1457', '2026-07-09', '2026-07-09 16:03:36.000', '2026-07-10 00:54:45.000', 'PRESENT', 0, 31869, 'c4553f00-3292-4798-8fc6-74737b0c7fa1', 'default-org-id', '2026-07-25 07:26:34.420', '2026-07-25 07:26:34.420'),
+('07e45257-a9f0-4d63-8615-380c7a3bf2ce', '2026-06-26', '2026-06-26 16:12:08.000', '2026-06-27 00:48:23.000', 'PRESENT', 1, 30975, '163aad68-68d7-4a05-b820-86f9e86710f4', 'default-org-id', '2026-07-25 07:07:34.785', '2026-07-25 07:07:34.785'),
+('090be29f-4836-4a52-b89f-c9f95d8e0abf', '2026-07-15', '2026-07-15 16:13:27.000', '2026-07-16 00:30:45.000', 'PRESENT', 1, 29838, 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', '2026-07-25 07:26:36.204', '2026-07-25 07:26:36.204'),
+('0e5aaec0-8afd-4f32-a8f1-1a5c4f641337', '2026-07-15', '2026-07-15 16:05:21.000', '2026-07-16 00:33:14.000', 'PRESENT', 0, 30473, 'c4553f00-3292-4798-8fc6-74737b0c7fa1', 'default-org-id', '2026-07-25 07:26:36.281', '2026-07-25 07:26:36.281'),
+('0f6ce26a-fb35-41dc-9677-b41b7a80e9b4', '2026-07-06', '2026-07-06 16:09:00.000', '2026-07-07 00:58:13.000', 'PRESENT', 0, 31753, 'c4553f00-3292-4798-8fc6-74737b0c7fa1', 'default-org-id', '2026-07-25 07:26:33.273', '2026-07-25 07:26:33.273'),
+('11e6b170-0a96-4c85-ac59-44ce976616f5', '2026-06-29', '2026-06-29 16:01:43.000', '2026-06-30 00:35:26.000', 'PRESENT', 0, 30823, '48285691-ec0c-4c20-bbae-7007670ca096', 'default-org-id', '2026-07-25 07:26:30.861', '2026-07-25 07:26:30.861'),
+('13b40a3b-deb8-4200-b515-ed6137f67f0b', '2026-07-21', '2026-07-21 16:00:02.000', '2026-07-22 00:30:15.000', 'PRESENT', 0, 30613, 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', '2026-07-25 07:26:37.953', '2026-07-25 07:26:37.953'),
+('16622f46-a78a-451a-8482-4ed9e5f1d72c', '2026-07-01', '2026-07-01 16:07:33.000', '2026-07-02 00:54:11.000', 'PRESENT', 0, 31598, '163aad68-68d7-4a05-b820-86f9e86710f4', 'default-org-id', '2026-07-25 07:26:31.696', '2026-07-25 07:26:31.696'),
+('181cedbd-7dfc-4a46-998f-cf3b3bd3a1bd', '2026-06-30', '2026-06-30 16:05:02.000', '2026-07-01 00:59:04.000', 'PRESENT', 0, 32042, 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', '2026-07-25 07:26:31.476', '2026-07-25 07:26:31.476'),
+('19cb009c-8d10-4e6a-8c76-6a2e3380c7cc', '2026-07-22', '2026-07-22 16:00:25.000', '2026-07-23 00:36:23.000', 'PRESENT', 0, 30958, '48285691-ec0c-4c20-bbae-7007670ca096', 'default-org-id', '2026-07-25 07:26:38.216', '2026-07-25 07:26:38.216'),
+('2048f308-326f-458a-ad3f-526919daf526', '2026-07-15', '2026-07-15 16:06:54.000', '2026-07-16 00:45:07.000', 'PRESENT', 0, 31093, '48285691-ec0c-4c20-bbae-7007670ca096', 'default-org-id', '2026-07-25 07:26:36.009', '2026-07-25 07:26:36.009'),
+('22e685ae-0f7f-4eb4-86bb-07a905f0784b', '2026-07-10', '2026-07-10 16:08:40.000', '2026-07-11 00:49:44.000', 'PRESENT', 0, 31264, '48285691-ec0c-4c20-bbae-7007670ca096', 'default-org-id', '2026-07-25 07:26:34.532', '2026-07-25 07:26:34.532'),
+('235069b8-e3b8-471b-a82c-e9e0ddf08cf4', '2026-07-03', '2026-07-03 16:08:55.000', '2026-07-04 00:50:39.000', 'PRESENT', 0, 31304, 'c4553f00-3292-4798-8fc6-74737b0c7fa1', 'default-org-id', '2026-07-25 07:26:32.772', '2026-07-25 07:26:32.772'),
+('298b37c4-0f3c-4e00-ab19-4da19ac1a68d', '2026-07-23', '2026-07-23 16:00:02.000', '2026-07-24 00:44:47.000', 'PRESENT', 0, 31485, 'c4553f00-3292-4798-8fc6-74737b0c7fa1', 'default-org-id', '2026-07-25 07:26:38.618', '2026-07-25 07:26:38.618'),
+('2a76a41f-b499-4ad9-aa15-0857331eec53', '2026-06-29', '2026-06-29 16:01:04.000', '2026-06-30 00:52:06.000', 'PRESENT', 0, 31862, 'c4553f00-3292-4798-8fc6-74737b0c7fa1', 'default-org-id', '2026-07-25 07:26:31.149', '2026-07-25 07:26:31.149'),
+('2ad18fe7-b717-4e7b-9c2e-b9e1e9b9cd7f', '2026-07-14', '2026-07-14 16:13:25.000', '2026-07-15 00:57:30.000', 'PRESENT', 1, 31445, '48285691-ec0c-4c20-bbae-7007670ca096', 'default-org-id', '2026-07-25 07:26:35.605', '2026-07-25 07:26:35.605'),
+('31056d7b-5582-4bfe-9139-b9643f0ee397', '2026-07-13', '2026-07-13 16:01:11.000', '2026-07-14 00:56:27.000', 'PRESENT', 0, 32116, 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', '2026-07-25 07:26:35.304', '2026-07-25 07:26:35.304'),
+('3776cfbe-68a7-466c-b831-ed72871ffff1', '2026-06-29', '2026-06-29 16:11:02.000', '2026-06-30 00:50:38.000', 'PRESENT', 1, 31176, 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', '2026-07-25 07:26:31.068', '2026-07-25 07:26:31.068'),
+('39eb925f-3230-4594-953b-9656a8a2bdec', '2026-07-07', '2026-07-07 16:05:01.000', '2026-07-08 00:43:05.000', 'PRESENT', 0, 31084, 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', 'default-org-id', '2026-07-25 07:26:33.771', '2026-07-25 07:26:33.771'),
+('3a04cf95-ddd5-4525-8533-a5a42b24ca67', '2026-06-26', '2026-06-26 16:06:06.000', '2026-06-27 00:45:45.000', 'PRESENT', 0, 31179, 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', '2026-07-25 07:07:35.071', '2026-07-25 07:07:35.071'),
+('3af7e533-26e7-48b3-8043-24a4f86c4970', '2026-07-14', '2026-07-14 16:03:41.000', '2026-07-15 00:57:25.000', 'PRESENT', 0, 32024, '163aad68-68d7-4a05-b820-86f9e86710f4', 'default-org-id', '2026-07-25 07:26:35.546', '2026-07-25 07:26:35.546'),
+('3b185791-6766-4313-a4d8-23bf6d3adb48', '2026-07-20', '2026-07-20 16:00:45.000', '2026-07-21 00:30:25.000', 'PRESENT', 0, 30580, '48285691-ec0c-4c20-bbae-7007670ca096', 'default-org-id', '2026-07-25 07:26:37.477', '2026-07-25 07:26:37.477'),
+('3be6b969-d0bb-4133-8be5-db7d241c86b3', '2026-07-24', '2026-07-24 16:03:23.000', '2026-07-25 00:33:58.000', 'PRESENT', 0, 30635, '48285691-ec0c-4c20-bbae-7007670ca096', 'default-org-id', '2026-07-25 07:26:38.858', '2026-07-25 07:26:38.858'),
+('3cb47af8-8354-4775-a562-e21f1b9a9f20', '2026-07-16', '2026-07-16 16:05:06.000', '2026-07-17 00:37:43.000', 'PRESENT', 0, 30757, 'c4553f00-3292-4798-8fc6-74737b0c7fa1', 'default-org-id', '2026-07-25 07:26:36.664', '2026-07-25 07:26:36.664'),
+('3cc3608d-bae6-4647-b5eb-9b321c692776', '2026-07-13', '2026-07-13 16:02:15.000', '2026-07-14 00:50:55.000', 'PRESENT', 0, 31720, '163aad68-68d7-4a05-b820-86f9e86710f4', 'default-org-id', '2026-07-25 07:26:35.096', '2026-07-25 07:26:35.096'),
+('3d9d2d76-9a42-45fd-b91e-68b8e8b3c933', '2026-06-30', '2026-06-30 16:12:57.000', '2026-07-01 00:39:01.000', 'PRESENT', 1, 30364, 'c4553f00-3292-4798-8fc6-74737b0c7fa1', 'default-org-id', '2026-07-25 07:26:31.560', '2026-07-25 07:26:31.560'),
+('3ff7b2b5-ce09-4e62-99a6-b1c04cbe0c36', '2026-07-12', '2026-07-12 16:08:54.000', '2026-07-13 00:37:22.000', 'PRESENT', 0, 30508, 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', 'default-org-id', '2026-07-25 07:26:35.021', '2026-07-25 07:26:35.021'),
+('4176e4bb-fbba-4edb-8c84-99d7a7fed875', '2026-06-26', '2026-06-26 16:09:38.000', '2026-06-27 00:59:07.000', 'PRESENT', 0, 31769, 'c4553f00-3292-4798-8fc6-74737b0c7fa1', 'default-org-id', '2026-07-25 07:07:35.150', '2026-07-25 07:07:35.150'),
+('42aad063-063e-4aa6-9710-eb08759f69e8', '2026-07-13', '2026-07-13 16:13:07.000', '2026-07-14 00:41:21.000', 'PRESENT', 1, 30494, 'c4553f00-3292-4798-8fc6-74737b0c7fa1', 'default-org-id', '2026-07-25 07:26:35.403', '2026-07-25 07:26:35.403'),
+('44c6dd2f-0793-4c5f-b8d5-78f67f673063', '2026-07-23', '2026-07-23 16:02:43.000', '2026-07-24 00:37:27.000', 'PRESENT', 0, 30884, '163aad68-68d7-4a05-b820-86f9e86710f4', 'default-org-id', '2026-07-25 07:26:38.497', '2026-07-25 07:26:38.497'),
+('47d11253-fe72-4a52-a851-d35356642edb', '2026-07-09', '2026-07-09 16:12:30.000', '2026-07-10 00:36:46.000', 'PRESENT', 1, 30256, '48285691-ec0c-4c20-bbae-7007670ca096', 'default-org-id', '2026-07-25 07:26:34.240', '2026-07-25 07:26:34.240'),
+('4a69aa34-ef83-46f2-b0de-b79c4867f3b6', '2026-07-20', '2026-07-20 16:14:22.000', '2026-07-21 00:44:00.000', 'PRESENT', 1, 30578, 'c4553f00-3292-4798-8fc6-74737b0c7fa1', 'default-org-id', '2026-07-25 07:26:37.687', '2026-07-25 07:26:37.687'),
+('4e8a32b9-e61c-4898-a784-58066ab14a56', '2026-07-22', '2026-07-22 16:12:17.000', '2026-07-23 00:42:43.000', 'PRESENT', 1, 30626, 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', 'default-org-id', '2026-07-25 07:26:38.425', '2026-07-25 07:26:38.425'),
+('51cc7d05-ffb1-48c6-ba2a-88aefef71bfd', '2026-07-05', '2026-07-05 16:10:39.000', '2026-07-06 00:30:56.000', 'PRESENT', 0, 30017, 'c4553f00-3292-4798-8fc6-74737b0c7fa1', 'default-org-id', '2026-07-25 07:26:32.890', '2026-07-25 07:26:32.890'),
+('563b97de-2dd4-4d13-913e-0229c2bd8daf', '2026-06-26', '2026-06-26 16:06:06.000', '2026-06-27 00:45:45.000', 'PRESENT', 0, 31179, 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', '2026-07-25 07:26:30.319', '2026-07-25 07:26:30.319'),
+('581c3a39-7160-4859-b1fd-779521cfccb4', '2026-06-26', '2026-06-26 16:10:38.000', '2026-06-27 00:36:04.000', 'PRESENT', 0, 30326, '48285691-ec0c-4c20-bbae-7007670ca096', 'default-org-id', '2026-07-25 07:07:34.899', '2026-07-25 07:07:34.899'),
+('594c2e2e-ee0d-4b36-8052-7985bbcb6550', '2026-07-24', '2026-07-24 16:10:15.000', '2026-07-25 00:43:42.000', 'PRESENT', 0, 30807, '163aad68-68d7-4a05-b820-86f9e86710f4', 'default-org-id', '2026-07-25 07:26:38.774', '2026-07-25 07:26:38.774'),
+('5c9ae9d0-793c-4853-81aa-f4580cd6b416', '2026-07-02', '2026-07-02 16:13:23.000', '2026-07-03 00:36:28.000', 'PRESENT', 1, 30185, 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', 'default-org-id', '2026-07-25 07:26:32.470', '2026-07-25 07:26:32.470'),
+('5d59bc81-14de-4e30-8aed-229287352a1b', '2026-06-29', '2026-06-29 16:13:41.000', '2026-06-30 00:42:19.000', 'PRESENT', 1, 30518, 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', 'default-org-id', '2026-07-25 07:26:31.214', '2026-07-25 07:26:31.214'),
+('5e7ab2f5-3a53-4a1e-8a16-031e3f954a4e', '2026-06-26', '2026-06-26 16:09:38.000', '2026-06-27 00:59:07.000', 'PRESENT', 0, 31769, 'c4553f00-3292-4798-8fc6-74737b0c7fa1', 'default-org-id', '2026-07-25 07:26:30.409', '2026-07-25 07:26:30.409'),
+('62710372-2b09-4006-aedf-a7fc49e5dd8c', '2026-07-07', '2026-07-07 16:10:44.000', '2026-07-08 00:55:30.000', 'PRESENT', 0, 31486, '48285691-ec0c-4c20-bbae-7007670ca096', 'default-org-id', '2026-07-25 07:26:33.515', '2026-07-25 07:26:33.515'),
+('68196451-b7b7-4542-86a3-9b772ab14c38', '2026-07-06', '2026-07-06 16:04:21.000', '2026-07-07 00:30:26.000', 'PRESENT', 0, 30365, 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', 'default-org-id', '2026-07-25 07:26:33.348', '2026-07-25 07:26:33.348'),
+('6a0de40b-7ee8-48b9-82ea-c96f0ff02b15', '2026-07-17', '2026-07-17 16:01:14.000', '2026-07-18 00:51:29.000', 'PRESENT', 0, 31815, 'c4553f00-3292-4798-8fc6-74737b0c7fa1', 'default-org-id', '2026-07-25 07:26:37.052', '2026-07-25 07:26:37.052'),
+('6a58f3b3-5e21-4ab3-8321-60a9e85822aa', '2026-07-13', '2026-07-13 16:13:15.000', '2026-07-14 00:41:46.000', 'PRESENT', 1, 30511, 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', 'default-org-id', '2026-07-25 07:26:35.487', '2026-07-25 07:26:35.487'),
+('711a253d-7123-4d69-81e8-839d03e15261', '2026-06-30', '2026-06-30 16:08:30.000', '2026-07-01 00:32:59.000', 'PRESENT', 0, 30269, '163aad68-68d7-4a05-b820-86f9e86710f4', 'default-org-id', '2026-07-25 07:26:31.284', '2026-07-25 07:26:31.284'),
+('77077ad1-4149-47e2-8679-cba8cfddf0f4', '2026-07-14', '2026-07-14 16:03:22.000', '2026-07-15 00:53:52.000', 'PRESENT', 0, 31830, 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', 'default-org-id', '2026-07-25 07:26:35.866', '2026-07-25 07:26:35.866'),
+('7a28091c-a38c-4b71-9e68-49969c08e561', '2026-07-16', '2026-07-16 16:11:52.000', '2026-07-17 00:58:29.000', 'PRESENT', 1, 31597, 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', 'default-org-id', '2026-07-25 07:26:36.728', '2026-07-25 07:26:36.728'),
+('7a8106e2-338e-4976-8762-a49979db23f8', '2026-06-27', '2026-06-27 16:02:36.000', '2026-06-28 00:41:32.000', 'PRESENT', 0, 31136, '163aad68-68d7-4a05-b820-86f9e86710f4', 'default-org-id', '2026-07-25 07:26:30.498', '2026-07-25 07:26:30.498'),
+('814ea19c-005d-406c-948a-b3373d291576', '2026-07-01', '2026-07-01 16:02:03.000', '2026-07-02 00:36:25.000', 'PRESENT', 0, 30862, 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', '2026-07-25 07:26:31.906', '2026-07-25 07:26:31.906'),
+('8150f40a-6b43-46c7-bfaa-d4848df596f1', '2026-06-30', '2026-06-30 16:04:36.000', '2026-07-01 00:43:08.000', 'PRESENT', 0, 31112, 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', 'default-org-id', '2026-07-25 07:26:31.623', '2026-07-25 07:26:31.623'),
+('87990ecc-183f-472d-b451-d2f26b0edaf1', '2026-07-14', '2026-07-14 16:01:22.000', '2026-07-15 00:40:06.000', 'PRESENT', 0, 31124, 'c4553f00-3292-4798-8fc6-74737b0c7fa1', 'default-org-id', '2026-07-25 07:26:35.802', '2026-07-25 07:26:35.802'),
+('87d02f8a-c7d6-48fb-92f2-da71ca50698b', '2026-07-23', '2026-07-23 16:04:24.000', '2026-07-24 00:51:53.000', 'PRESENT', 0, 31649, 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', 'default-org-id', '2026-07-25 07:26:38.697', '2026-07-25 07:26:38.697'),
+('8db4d973-5714-4a10-9f7b-1f6b625b1801', '2026-06-26', '2026-06-26 16:10:38.000', '2026-06-27 00:36:04.000', 'PRESENT', 0, 30326, '48285691-ec0c-4c20-bbae-7007670ca096', 'default-org-id', '2026-07-25 07:26:30.142', '2026-07-25 07:26:30.142'),
+('90218a66-d560-4db9-bc1e-5a2818a2d028', '2026-07-02', '2026-07-02 16:11:05.000', '2026-07-03 00:42:17.000', 'PRESENT', 1, 30672, '48285691-ec0c-4c20-bbae-7007670ca096', 'default-org-id', '2026-07-25 07:26:32.227', '2026-07-25 07:26:32.227'),
+('91bca28a-10d0-4d22-a2fe-a95035c326b1', '2026-07-13', '2026-07-13 16:11:52.000', '2026-07-14 00:42:54.000', 'PRESENT', 1, 30662, '48285691-ec0c-4c20-bbae-7007670ca096', 'default-org-id', '2026-07-25 07:26:35.171', '2026-07-25 07:26:35.171'),
+('97558804-a0f2-4abc-a630-9accb15ff427', '2026-07-08', '2026-07-08 16:11:50.000', '2026-07-09 00:45:12.000', 'PRESENT', 1, 30802, '48285691-ec0c-4c20-bbae-7007670ca096', 'default-org-id', '2026-07-25 07:26:33.898', '2026-07-25 07:26:33.898'),
+('97649dae-4553-4892-9705-c80d2d5132b6', '2026-07-01', '2026-07-01 16:05:47.000', '2026-07-02 00:32:25.000', 'PRESENT', 0, 30398, '48285691-ec0c-4c20-bbae-7007670ca096', 'default-org-id', '2026-07-25 07:26:31.762', '2026-07-25 07:26:31.762'),
+('99d050ee-a2f1-486b-9a7d-f999b903784c', '2026-07-07', '2026-07-07 16:00:56.000', '2026-07-08 00:36:36.000', 'PRESENT', 0, 30940, 'c4553f00-3292-4798-8fc6-74737b0c7fa1', 'default-org-id', '2026-07-25 07:26:33.718', '2026-07-25 07:26:33.718'),
+('9bec6d15-a0de-4ea2-bbb6-03d046968c25', '2026-07-22', '2026-07-22 16:13:10.000', '2026-07-23 00:51:15.000', 'PRESENT', 1, 31085, '163aad68-68d7-4a05-b820-86f9e86710f4', 'default-org-id', '2026-07-25 07:26:38.137', '2026-07-25 07:26:38.137'),
+('9fafb6cc-e71e-46f9-b7ed-f861387c220b', '2026-07-10', '2026-07-10 16:03:02.000', '2026-07-11 00:40:08.000', 'PRESENT', 0, 31026, '163aad68-68d7-4a05-b820-86f9e86710f4', 'default-org-id', '2026-07-25 07:26:34.471', '2026-07-25 07:26:34.471'),
+('9fd3d2ae-5da3-42e6-ae3b-29561a8bbe8d', '2026-07-21', '2026-07-21 16:05:29.000', '2026-07-22 00:30:02.000', 'PRESENT', 0, 30273, 'c4553f00-3292-4798-8fc6-74737b0c7fa1', 'default-org-id', '2026-07-25 07:26:38.017', '2026-07-25 07:26:38.017'),
+('a0473c19-92be-4d0d-8c24-5ec1a82d5095', '2026-07-17', '2026-07-17 16:07:07.000', '2026-07-18 00:52:02.000', 'PRESENT', 0, 31495, '48285691-ec0c-4c20-bbae-7007670ca096', 'default-org-id', '2026-07-25 07:26:36.860', '2026-07-25 07:26:36.860'),
+('a23cc4d5-2b5c-4c3a-a205-d69e46a609c5', '2026-07-15', '2026-07-15 16:05:46.000', '2026-07-16 00:56:56.000', 'PRESENT', 0, 31870, 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', 'default-org-id', '2026-07-25 07:26:36.346', '2026-07-25 07:26:36.346'),
+('a31e6da3-ae51-4ae8-b5ea-bfd1fb51b234', '2026-07-16', '2026-07-16 16:06:00.000', '2026-07-17 00:52:37.000', 'PRESENT', 0, 31597, 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', '2026-07-25 07:26:36.596', '2026-07-25 07:26:36.596'),
+('a9d49c84-84f9-41f1-b2a3-8f6ab03c63f8', '2026-07-21', '2026-07-21 16:06:55.000', '2026-07-22 00:35:43.000', 'PRESENT', 0, 30528, '163aad68-68d7-4a05-b820-86f9e86710f4', 'default-org-id', '2026-07-25 07:26:37.810', '2026-07-25 07:26:37.810'),
+('a9ea9dc4-f648-48f0-afee-a611b7fc1eea', '2026-06-29', '2026-06-29 16:05:32.000', '2026-06-30 00:42:08.000', 'PRESENT', 0, 30996, '163aad68-68d7-4a05-b820-86f9e86710f4', 'default-org-id', '2026-07-25 07:26:30.811', '2026-07-25 07:26:30.811'),
+('ab78ddd7-8f9b-47ee-9f4c-de80ca3f9253', '2026-07-02', '2026-07-02 16:02:33.000', '2026-07-03 00:57:41.000', 'PRESENT', 0, 32108, 'c4553f00-3292-4798-8fc6-74737b0c7fa1', 'default-org-id', '2026-07-25 07:26:32.408', '2026-07-25 07:26:32.408'),
+('abcc496b-7677-4083-abda-e6fa73669848', '2026-07-22', '2026-07-22 16:07:00.000', '2026-07-23 00:31:28.000', 'PRESENT', 0, 30268, 'c4553f00-3292-4798-8fc6-74737b0c7fa1', 'default-org-id', '2026-07-25 07:26:38.360', '2026-07-25 07:26:38.360'),
+('ac017070-3c03-44b6-a800-6526891ba507', '2026-07-15', '2026-07-15 16:10:55.000', '2026-07-16 00:42:45.000', 'PRESENT', 0, 30710, '163aad68-68d7-4a05-b820-86f9e86710f4', 'default-org-id', '2026-07-25 07:26:35.938', '2026-07-25 07:26:35.938'),
+('b2b2c604-0bb8-44d2-bc97-02548bd6ef0f', '2026-07-17', '2026-07-17 16:00:45.000', '2026-07-18 00:48:56.000', 'PRESENT', 0, 31691, 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', '2026-07-25 07:26:36.991', '2026-07-25 07:26:36.991'),
+('b674fa76-eecb-4db9-aabe-fa10a75f11a4', '2026-07-16', '2026-07-16 16:13:25.000', '2026-07-17 00:52:22.000', 'PRESENT', 1, 31137, '163aad68-68d7-4a05-b820-86f9e86710f4', 'default-org-id', '2026-07-25 07:26:36.401', '2026-07-25 07:26:36.401'),
+('bc668f03-40c6-47d2-b745-2a1bb1b48a45', '2026-07-17', '2026-07-17 16:13:56.000', '2026-07-18 00:44:14.000', 'PRESENT', 1, 30618, 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', 'default-org-id', '2026-07-25 07:26:37.116', '2026-07-25 07:26:37.116'),
+('c17fbe50-0275-431f-952d-a006972cf39e', '2026-07-03', '2026-07-03 16:05:12.000', '2026-07-04 00:44:18.000', 'PRESENT', 0, 31146, 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', 'default-org-id', '2026-07-25 07:26:32.830', '2026-07-25 07:26:32.830'),
+('c383a3ad-b116-4854-9526-adb49a847819', '2026-07-06', '2026-07-06 16:13:22.000', '2026-07-07 00:53:31.000', 'PRESENT', 1, 31209, 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', '2026-07-25 07:26:33.204', '2026-07-25 07:26:33.204'),
+('c4d0d988-6647-497a-bda5-0f3710d719d0', '2026-07-14', '2026-07-14 16:02:53.000', '2026-07-15 00:43:00.000', 'PRESENT', 0, 31207, 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', '2026-07-25 07:26:35.740', '2026-07-25 07:26:35.740'),
+('c9542e9f-98f5-478b-97db-ab1f7f548380', '2026-07-06', '2026-07-06 16:14:41.000', '2026-07-07 00:52:50.000', 'PRESENT', 1, 31089, '48285691-ec0c-4c20-bbae-7007670ca096', 'default-org-id', '2026-07-25 07:26:33.070', '2026-07-25 07:26:33.070'),
+('cc89edff-a505-48bb-9e99-b24bdb3e8b10', '2026-07-11', '2026-07-11 16:05:42.000', '2026-07-12 00:33:11.000', 'PRESENT', 0, 30449, 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', '2026-07-25 07:26:34.901', '2026-07-25 07:26:34.901'),
+('ccd00f2f-d114-49c8-9d73-3f51a74d6049', '2026-07-03', '2026-07-03 16:01:25.000', '2026-07-04 00:38:58.000', 'PRESENT', 0, 31053, '48285691-ec0c-4c20-bbae-7007670ca096', 'default-org-id', '2026-07-25 07:26:32.593', '2026-07-25 07:26:32.593'),
+('d1adcfb1-3751-4eaf-b431-034d545c6e42', '2026-07-07', '2026-07-07 16:06:40.000', '2026-07-08 00:52:17.000', 'PRESENT', 0, 31537, '163aad68-68d7-4a05-b820-86f9e86710f4', 'default-org-id', '2026-07-25 07:26:33.446', '2026-07-25 07:26:33.446'),
+('d3a931eb-42ac-4ae9-b7d8-93c834700379', '2026-07-20', '2026-07-20 16:09:26.000', '2026-07-21 00:57:10.000', 'PRESENT', 0, 31664, '163aad68-68d7-4a05-b820-86f9e86710f4', 'default-org-id', '2026-07-25 07:26:37.410', '2026-07-25 07:26:37.410'),
+('d83b2398-b101-4f30-ad3d-d0f95172f7f7', '2026-07-08', '2026-07-08 16:10:45.000', '2026-07-09 00:38:45.000', 'PRESENT', 0, 30480, '163aad68-68d7-4a05-b820-86f9e86710f4', 'default-org-id', '2026-07-25 07:26:33.830', '2026-07-25 07:26:33.830'),
+('de5e143c-9721-4950-83e9-77bf29805247', '2026-07-19', '2026-07-19 16:07:14.000', '2026-07-20 00:51:46.000', 'PRESENT', 0, 31472, 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', 'default-org-id', '2026-07-25 07:26:37.317', '2026-07-25 07:26:37.317'),
+('df8665af-37a9-4f6c-bdd8-903d4b8427dd', '2026-07-03', '2026-07-03 16:03:25.000', '2026-07-04 00:44:55.000', 'PRESENT', 0, 31290, 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', '2026-07-25 07:26:32.713', '2026-07-25 07:26:32.713'),
+('e35345fe-462c-4892-a031-feaeaf2a9c7f', '2026-07-21', '2026-07-21 16:11:48.000', '2026-07-22 00:38:24.000', 'PRESENT', 1, 30396, 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', 'default-org-id', '2026-07-25 07:26:38.084', '2026-07-25 07:26:38.084'),
+('e56aae86-f3a4-47a1-9e98-af963b28445a', '2026-07-20', '2026-07-20 16:03:46.000', '2026-07-21 00:54:17.000', 'PRESENT', 0, 31831, 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', 'default-org-id', '2026-07-25 07:26:37.746', '2026-07-25 07:26:37.746'),
+('e5a63d68-f0c6-434d-a34e-0a425c42bfc8', '2026-07-09', '2026-07-09 16:11:17.000', '2026-07-10 00:52:30.000', 'PRESENT', 1, 31273, '163aad68-68d7-4a05-b820-86f9e86710f4', 'default-org-id', '2026-07-25 07:26:34.179', '2026-07-25 07:26:34.179'),
+('e7678374-c88d-4a19-a2c3-783b991c82e5', '2026-07-08', '2026-07-08 16:11:31.000', '2026-07-09 00:46:33.000', 'PRESENT', 1, 30902, 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', '2026-07-25 07:26:34.015', '2026-07-25 07:26:34.015'),
+('e82458c3-2997-4957-90ed-3f9228bd6cbd', '2026-07-10', '2026-07-10 16:14:23.000', '2026-07-11 00:51:06.000', 'PRESENT', 1, 31003, 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', '2026-07-25 07:26:34.657', '2026-07-25 07:26:34.657'),
+('e8d98cea-7894-45fb-8bb2-d072e21c84e3', '2026-07-16', '2026-07-16 16:13:30.000', '2026-07-17 00:33:45.000', 'PRESENT', 1, 30015, '48285691-ec0c-4c20-bbae-7007670ca096', 'default-org-id', '2026-07-25 07:26:36.460', '2026-07-25 07:26:36.460'),
+('e9a12683-9900-4617-b4d7-9efd21568dcf', '2026-07-07', '2026-07-07 16:05:47.000', '2026-07-08 00:45:32.000', 'PRESENT', 0, 31185, 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', '2026-07-25 07:26:33.634', '2026-07-25 07:26:33.634'),
+('eeb04c37-330e-4d5b-9e57-228c28de38aa', '2026-07-01', '2026-07-01 16:07:10.000', '2026-07-02 00:46:55.000', 'PRESENT', 0, 31185, 'c4553f00-3292-4798-8fc6-74737b0c7fa1', 'default-org-id', '2026-07-25 07:26:31.969', '2026-07-25 07:26:31.969'),
+('f16b5ba7-4961-4ef0-bc12-e474f93deec7', '2026-06-26', '2026-06-26 16:12:08.000', '2026-06-27 00:48:23.000', 'PRESENT', 1, 30975, '163aad68-68d7-4a05-b820-86f9e86710f4', 'default-org-id', '2026-07-25 07:26:30.026', '2026-07-25 07:26:30.026'),
+('f179d020-423f-45fb-9bfd-e84db1303a80', '2026-07-10', '2026-07-10 16:08:37.000', '2026-07-11 00:52:54.000', 'PRESENT', 0, 31457, 'c4553f00-3292-4798-8fc6-74737b0c7fa1', 'default-org-id', '2026-07-25 07:26:34.717', '2026-07-25 07:26:34.717'),
+('f57b8636-0e36-498d-97b6-e09923d31df6', '2026-07-02', '2026-07-02 16:08:48.000', '2026-07-03 00:35:28.000', 'PRESENT', 0, 30400, '163aad68-68d7-4a05-b820-86f9e86710f4', 'default-org-id', '2026-07-25 07:26:32.165', '2026-07-25 07:26:32.165'),
+('f5cf6641-6d66-400c-acfa-40fb6d27caf2', '2026-07-10', '2026-07-10 16:14:54.000', '2026-07-11 00:46:54.000', 'PRESENT', 1, 30720, 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', 'default-org-id', '2026-07-25 07:26:34.784', '2026-07-25 07:26:34.784'),
+('f8bfa199-9357-4eef-bd01-0a0a2d9ad7db', '2026-07-02', '2026-07-02 16:00:12.000', '2026-07-03 00:42:28.000', 'PRESENT', 0, 31336, 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', '2026-07-25 07:26:32.344', '2026-07-25 07:26:32.344'),
+('f986f329-7d79-418c-8c3c-8733f2f2562c', '2026-07-20', '2026-07-20 16:07:01.000', '2026-07-21 00:31:00.000', 'PRESENT', 0, 30239, 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', '2026-07-25 07:26:37.619', '2026-07-25 07:26:37.619'),
+('fa9ae0e6-5350-40e2-a577-5fc17a1dac34', '2026-07-08', '2026-07-08 16:00:26.000', '2026-07-09 00:32:56.000', 'PRESENT', 0, 30750, 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', 'default-org-id', '2026-07-25 07:26:34.122', '2026-07-25 07:26:34.122'),
+('fabd0cde-138c-434b-ad5b-24e336f290ee', '2026-07-17', '2026-07-17 16:06:45.000', '2026-07-18 00:41:52.000', 'PRESENT', 0, 30907, '163aad68-68d7-4a05-b820-86f9e86710f4', 'default-org-id', '2026-07-25 07:26:36.794', '2026-07-25 07:26:36.794'),
+('fbabb013-201b-4ae2-974b-918a2345bc7f', '2026-07-09', '2026-07-09 16:07:32.000', '2026-07-10 00:46:51.000', 'PRESENT', 0, 31159, 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', '2026-07-25 07:26:34.357', '2026-07-25 07:26:34.357'),
+('fc6174b2-6455-4ffb-a9a7-4b319910894b', '2026-07-03', '2026-07-03 16:12:11.000', '2026-07-04 00:44:33.000', 'PRESENT', 1, 30742, '163aad68-68d7-4a05-b820-86f9e86710f4', 'default-org-id', '2026-07-25 07:26:32.531', '2026-07-25 07:26:32.531'),
+('fe705bcc-9cb3-42f7-9a28-bf14152c1d1d', '2026-07-24', '2026-07-24 16:06:43.000', '2026-07-25 00:56:26.000', 'PRESENT', 0, 31783, 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', 'default-org-id', '2026-07-25 07:26:39.011', '2026-07-25 07:26:39.011'),
+('ff0be296-bd9c-4aa2-86b7-dcb6f9be9466', '2026-07-11', '2026-07-11 16:13:33.000', '2026-07-12 00:57:15.000', 'PRESENT', 1, 31422, 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', 'default-org-id', '2026-07-25 07:26:34.964', '2026-07-25 07:26:34.964'),
+('fffa2be2-44fd-4a09-8a99-f45103c0057b', '2026-06-28', '2026-06-28 16:05:52.000', '2026-06-29 00:50:24.000', 'PRESENT', 0, 31472, 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', 'default-org-id', '2026-07-25 07:26:30.750', '2026-07-25 07:26:30.750');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `audit_logs`
+--
+
+CREATE TABLE `audit_logs` (
+  `id` varchar(191) NOT NULL,
+  `organizationId` varchar(191) NOT NULL,
+  `userId` varchar(191) NOT NULL,
+  `action` varchar(191) NOT NULL,
+  `status` varchar(191) NOT NULL,
+  `ipAddress` varchar(191) DEFAULT NULL,
+  `metadata` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`metadata`)),
+  `createdAt` datetime(3) NOT NULL DEFAULT current_timestamp(3)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `audit_logs`
+--
+
+INSERT INTO `audit_logs` (`id`, `organizationId`, `userId`, `action`, `status`, `ipAddress`, `metadata`, `createdAt`) VALUES
+('0758980f-2b63-4dbd-ba73-78def7b92a56', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-05-23 11:11:22.584'),
+('08cbdd04-15a3-454e-9c66-6d8cb030ef2f', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-07-25 06:42:22.253'),
+('0aa06515-5b72-45d1-9470-0f8f4aedce01', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-07-24 10:45:18.136'),
+('0ae702e0-d4f3-442f-af25-890ca8eaef24', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-05-23 10:41:48.717'),
+('0bdf7008-3222-4238-aadd-78cf6003d669', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-04-04 13:37:51.929'),
+('0c7ea4e8-4cca-43cc-9e29-5d2d513ee4b7', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-04-06 10:18:34.363'),
+('105730c8-5e51-4311-9e6a-460bfbf1f261', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-06-02 05:23:01.600'),
+('133b1899-6d35-4a26-ade6-c32ca373bead', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-06-01 11:05:43.764'),
+('135a6bb8-f224-46a7-a74b-af33dbf1c16a', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-06-02 06:51:41.953'),
+('174dd297-ff8a-4305-a7ca-d071f3a4205f', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-05-27 06:05:09.811'),
+('1caf46b6-3a56-4da5-9dd8-fc15641394ff', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-07-24 09:17:29.190'),
+('1d88c4f4-d6c7-48b2-9ed6-40491a489a38', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-06-01 11:04:24.377'),
+('1f62adc6-1553-4efd-8655-e91d9051117b', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-07-25 07:10:52.748'),
+('22ca9763-6929-497d-8db4-839100d28597', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-04-06 12:47:02.355'),
+('28c4ce9e-7082-4558-83fa-3bc096c79922', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-07-25 01:20:51.453'),
+('299f5b23-968a-451e-b2fb-a42153fff833', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-05-26 12:09:54.946'),
+('2a9f959b-bd12-4997-b5e2-6427ec7deb81', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-06-01 11:20:15.545'),
+('32fa7c08-8b78-4140-b956-8b70ec039ad0', 'default-org-id', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'User Login', 'Success', NULL, '{}', '2026-05-23 11:11:52.647'),
+('3305a8e3-8c57-4621-95ca-3b5e8f567f85', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-07-24 12:39:07.648'),
+('36507d15-36bc-4719-bc28-7334637d6f78', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-07-07 08:44:01.062'),
+('3bbafce7-bccd-49ef-97cf-0a36f6a65d6d', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-07-25 07:10:53.170'),
+('3da80cb4-20e3-4e25-a643-bb31cfe933dc', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-06-02 07:32:12.734'),
+('3eb1aea4-e88f-464c-a7b1-dbec2e634019', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-07-25 03:49:17.607'),
+('40dc7742-a41f-421f-a6d5-89e3084b37d7', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-05-26 12:46:36.626'),
+('4615a85c-8d47-4601-b864-7be1d2791993', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-04-06 10:36:28.045'),
+('484eb006-733e-46d6-a58b-8f4047d9a533', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'Updated Monitoring Policy', 'Success', '::1', '{\"id\":\"0fbd645f-7878-4dc2-97f0-da24737a3c69\",\"organizationId\":\"default-org-id\",\"gdprEnabled\":true,\"activityMonitoring\":false,\"locationTracking\":true,\"showUrlsInActivityLogs\":false,\"blurLevel\":2,\"saveOriginalScreenshots\":false,\"collectPHI\":null,\"twoFactorEnabled\":false,\"encryptionEnabled\":false,\"consentPercentage\":0,\"retentionPeriod\":30,\"createdAt\":\"2026-04-06T10:16:00.697Z\",\"updatedAt\":\"2026-04-06T10:16:00.697Z\"}', '2026-05-23 07:16:07.731'),
+('4a43f1dc-8eae-4497-9060-731b61dcd57e', 'default-org-id', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'User Login', 'Success', NULL, '{}', '2026-07-25 07:31:09.792'),
+('4e74d212-1b87-4687-a489-9d962ed96091', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-07-25 01:09:26.827'),
+('509bd4d1-5616-4b82-a2b9-a10ddafd2e2b', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-07-23 12:42:35.009'),
+('50c184ac-9b89-4d86-b09e-b450137de03c', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-05-26 13:47:46.850'),
+('533e30ff-43a2-42a9-b578-b5dc7b912b91', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-06-02 07:16:45.940'),
+('535632bd-5ec1-4b0e-885e-f940ef47781a', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-07-24 11:28:19.792'),
+('547e12c4-6b0a-4e5a-a5ef-d00b5f6eb4fe', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-05-27 05:53:58.881'),
+('54e8ebfd-001b-4323-b118-f83f7dc8b5ae', 'default-org-id', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'User Login', 'Success', NULL, '{}', '2026-04-06 10:40:04.639'),
+('559c7308-fd84-474d-815e-4c2d3e122610', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-07-23 14:08:34.262'),
+('5d28956b-2879-45cb-8549-ab4c7f5457e2', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-04-06 10:45:41.726'),
+('5de438b5-599a-4e09-86e9-253de916b592', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-05-23 09:47:59.435'),
+('5e53173a-3a00-47a1-b638-e2de630b7bdb', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-07-24 11:04:49.579'),
+('611698a8-35a0-4fdd-a557-871f1c8922d4', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-06-01 10:19:54.308'),
+('630f7884-38db-4296-bea3-b2424fe8cea5', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-04-06 10:38:32.489'),
+('69c56db7-fa6a-48e6-a672-7585c144aa9e', 'default-org-id', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'User Login', 'Success', NULL, '{}', '2026-04-06 12:46:46.239'),
+('6a082ba7-a9d2-485c-b7f5-0371a461e0d1', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-07-07 07:33:46.880'),
+('6f7bd481-1f5c-4f0d-932b-2a62821c45ef', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-05-23 12:05:32.508'),
+('70d00bd2-69b0-47ca-aee2-195f9f347727', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-07-25 01:17:53.954'),
+('734b76df-a5a5-42e8-be67-9e7e148a0568', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-04-06 11:10:05.928'),
+('743ca406-c91c-4aa7-a08a-fe75a66121e6', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-06-01 11:30:47.364'),
+('752a6afb-09f6-4bb3-b8d9-285ab3fcac26', 'default-org-id', '163aad68-68d7-4a05-b820-86f9e86710f4', 'User Login', 'Success', NULL, '{}', '2026-04-04 13:39:51.898'),
+('7a31aa83-dfd4-4d21-bab8-4bdeb5dff702', 'default-org-id', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'User Login', 'Success', NULL, '{}', '2026-07-24 14:28:27.125'),
+('7acb4f65-4efc-41ac-9cba-d8d1e0728d54', 'default-org-id', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'User Login', 'Success', NULL, '{}', '2026-04-06 10:45:21.905'),
+('7c28b194-f6b8-4116-be01-b43cbfd25d22', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-06-01 10:28:45.247'),
+('7d41a169-6c24-4ca9-b70e-94963632ddaa', 'default-org-id', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'User Login', 'Success', NULL, '{}', '2026-05-23 12:04:43.842'),
+('81574864-35e2-4244-b5e7-6f52212f4387', 'default-org-id', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'User Login', 'Success', NULL, '{}', '2026-04-04 13:39:59.952'),
+('83f045a3-0ae2-4750-92db-7ea1a7b2e6b1', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-05-27 06:17:26.376'),
+('852ccf58-16d3-443b-8a27-dc8c99644329', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-05-23 11:47:06.892'),
+('8651be71-03f6-4651-afcf-4f5fcdb06c60', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'Updated Monitoring Policy', 'Success', '::1', '{\"id\":\"0fbd645f-7878-4dc2-97f0-da24737a3c69\",\"organizationId\":\"default-org-id\",\"gdprEnabled\":true,\"activityMonitoring\":false,\"locationTracking\":true,\"showUrlsInActivityLogs\":false,\"blurLevel\":2,\"saveOriginalScreenshots\":false,\"collectPHI\":null,\"twoFactorEnabled\":false,\"encryptionEnabled\":false,\"consentPercentage\":0,\"retentionPeriod\":30,\"createdAt\":\"2026-04-06T10:16:00.697Z\",\"updatedAt\":\"2026-04-06T10:16:00.697Z\"}', '2026-05-23 07:16:09.732'),
+('877d1962-96eb-4539-bf02-042eafacf084', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-07-24 11:14:33.926'),
+('8a48a022-22ac-4367-a9cb-5f5dbca72e2a', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-07-25 06:57:41.224'),
+('8ee5d41f-9590-480c-bada-ae993d1f20ee', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-07-24 10:39:41.431'),
+('92f50f9b-06e6-4834-8e8f-88bc4b2e0e4b', 'default-org-id', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'User Login', 'Success', NULL, '{}', '2026-07-24 10:36:54.399'),
+('937befb3-b947-4272-a85a-6b5e7fac9a6c', 'default-org-id', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'User Login', 'Success', NULL, '{}', '2026-04-06 10:38:07.719'),
+('943fd634-37ad-426a-be08-5fb303b162ed', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-04-06 11:08:47.770'),
+('969cfafe-cf2e-4d57-94fd-85e7828cbfa5', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-07-24 13:39:00.818'),
+('973c9f53-cdaa-4d44-9edc-26b36461c20c', 'default-org-id', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'User Login', 'Success', NULL, '{}', '2026-04-06 12:39:19.599'),
+('98481173-60a0-4116-8288-d64f79aa9e41', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'Updated Monitoring Policy', 'Success', '::1', '{\"id\":\"0fbd645f-7878-4dc2-97f0-da24737a3c69\",\"organizationId\":\"default-org-id\",\"gdprEnabled\":true,\"activityMonitoring\":true,\"locationTracking\":true,\"showUrlsInActivityLogs\":false,\"blurLevel\":2,\"saveOriginalScreenshots\":false,\"collectPHI\":null,\"twoFactorEnabled\":false,\"encryptionEnabled\":false,\"consentPercentage\":0,\"retentionPeriod\":30,\"createdAt\":\"2026-04-06T10:16:00.697Z\",\"updatedAt\":\"2026-05-23T07:16:09.719Z\"}', '2026-05-23 07:16:40.821'),
+('9c1f51f5-71f7-4d7d-ba0b-a1478439cc00', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-05-27 06:17:17.933'),
+('9d3a3e5e-f7c6-494c-9044-2b96561f1cfb', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-05-27 06:11:56.931'),
+('a5dc07fb-0256-4ab6-92db-932ddb054c88', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-07-25 07:38:10.794'),
+('a98c5744-2380-4d7b-8d3b-7fd9a6c84569', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-04-06 12:39:51.960'),
+('addbcefd-ff8d-46f1-84be-6f78ac9490ba', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-06-02 06:09:58.354'),
+('afceb5b8-cac3-4f9e-b6a1-ce0c151325b3', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-05-26 12:54:24.633'),
+('b04ea9c7-a6ab-4d61-8d7f-9d56b8fcf7d1', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-07-24 13:45:30.825'),
+('b12f706b-1370-405f-af9e-c34797862bcc', 'default-org-id', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'User Login', 'Success', NULL, '{}', '2026-04-06 12:40:49.271'),
+('b39ce1a8-7c9d-440d-aa73-4573b0cf0547', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-07-23 14:13:48.696'),
+('b73c1632-6c60-4416-849a-2a2a3df40e31', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'Updated Monitoring Policy', 'Success', '::1', '{\"id\":\"0fbd645f-7878-4dc2-97f0-da24737a3c69\",\"organizationId\":\"default-org-id\",\"gdprEnabled\":true,\"activityMonitoring\":true,\"locationTracking\":true,\"showUrlsInActivityLogs\":false,\"blurLevel\":2,\"saveOriginalScreenshots\":false,\"collectPHI\":null,\"twoFactorEnabled\":false,\"encryptionEnabled\":false,\"consentPercentage\":0,\"retentionPeriod\":30,\"createdAt\":\"2026-04-06T10:16:00.697Z\",\"updatedAt\":\"2026-04-06T10:16:00.697Z\"}', '2026-05-23 07:16:08.909'),
+('b7e142ec-08e4-455c-8328-6cf8291a7b31', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-05-27 06:07:51.334'),
+('b7fbeb7b-97d4-4cad-9460-902263bbfa90', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-07-24 12:49:42.022'),
+('b9899d58-c149-40e6-9460-860e54f3b9b5', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-07-07 07:32:51.450'),
+('b9ccb184-faa3-4554-80b3-bb7afe97f509', 'default-org-id', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'User Login', 'Success', NULL, '{}', '2026-04-06 12:39:08.032'),
+('bb00178b-b2c3-419f-9f22-fad2382de0e3', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-05-23 12:28:48.320'),
+('bda9d30b-a62f-4421-b551-91a263675d58', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-07-24 11:19:05.175'),
+('be00040b-a6f1-4206-b407-d7594811c540', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-07-25 07:58:46.002'),
+('c0871f3b-087a-46c1-9084-dba26d0fd5c2', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-07-24 13:21:43.322'),
+('c11247f2-c518-4a82-b57b-38758730561c', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-07-25 01:31:43.347'),
+('ca8463b0-5238-47c4-a348-6c9b5e8a0291', 'default-org-id', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'User Login', 'Success', NULL, '{}', '2026-05-23 11:45:26.760'),
+('cb60a3ab-25cb-4364-977b-f9716fc71b58', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-04-06 10:40:08.078'),
+('d146136c-ebb3-4020-80e8-f0a304a8dca4', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-07-24 10:42:32.367'),
+('d35a21d6-b19b-4752-8d38-d7ceb7c7141d', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-05-23 11:12:41.883'),
+('d6cbb97f-5656-4ee6-ba73-f1041ba86d87', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-05-23 07:10:08.761'),
+('dc08bf73-4a6c-4878-8deb-5c36b6cb4718', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-07-24 14:47:49.920'),
+('dc3fde89-411b-4826-9bf7-a5470011f80d', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-07-07 06:47:11.449'),
+('de4ada9a-cc5c-4a04-a39d-fc5ff415f989', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-07-24 10:37:20.370'),
+('e6a7dc76-170f-4eb1-a860-56bb753d7816', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-07-25 03:48:35.773'),
+('e7229363-795c-47b5-91b4-5f8c4bb4d395', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-06-01 10:32:40.703'),
+('e91fddbc-fb1a-452e-8f76-337b3e3a549a', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-07-24 14:26:24.318'),
+('ed578a79-04a7-4357-b285-fcefdfb2eb43', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-07-23 14:13:22.882'),
+('f11f2dde-832d-4dde-971f-4453f652b5a8', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-07-24 09:19:42.122'),
+('f1b1c5fd-31e7-46d8-86f3-3ff2134d39bf', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-07-25 08:16:29.139'),
+('f4390f41-96c6-46e8-a29e-5ccd6d6775f9', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-07-23 14:07:33.699'),
+('fd9147d0-eef9-4713-b26a-40512c40f666', 'default-org-id', '48285691-ec0c-4c20-bbae-7007670ca096', 'User Login', 'Success', NULL, '{}', '2026-05-23 13:19:42.797');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `compliance_settings`
+--
+
+CREATE TABLE `compliance_settings` (
+  `id` varchar(191) NOT NULL,
+  `organizationId` varchar(191) NOT NULL,
+  `gdprEnabled` tinyint(1) NOT NULL DEFAULT 1,
+  `activityMonitoring` tinyint(1) NOT NULL DEFAULT 1,
+  `locationTracking` tinyint(1) NOT NULL DEFAULT 1,
+  `showUrlsInActivityLogs` tinyint(1) NOT NULL DEFAULT 0,
+  `blurLevel` int(11) NOT NULL DEFAULT 2,
+  `saveOriginalScreenshots` tinyint(1) NOT NULL DEFAULT 0,
+  `collectPHI` tinyint(1) DEFAULT NULL,
+  `twoFactorEnabled` tinyint(1) NOT NULL DEFAULT 0,
+  `encryptionEnabled` tinyint(1) NOT NULL DEFAULT 0,
+  `consentPercentage` double NOT NULL DEFAULT 0,
+  `retentionPeriod` int(11) NOT NULL DEFAULT 30,
+  `createdAt` datetime(3) NOT NULL DEFAULT current_timestamp(3),
+  `updatedAt` datetime(3) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `compliance_settings`
+--
+
+INSERT INTO `compliance_settings` (`id`, `organizationId`, `gdprEnabled`, `activityMonitoring`, `locationTracking`, `showUrlsInActivityLogs`, `blurLevel`, `saveOriginalScreenshots`, `collectPHI`, `twoFactorEnabled`, `encryptionEnabled`, `consentPercentage`, `retentionPeriod`, `createdAt`, `updatedAt`) VALUES
+('0fbd645f-7878-4dc2-97f0-da24737a3c69', 'default-org-id', 1, 1, 1, 0, 2, 0, NULL, 0, 0, 0, 30, '2026-04-06 10:16:00.697', '2026-05-23 07:16:40.811'),
+('a2d47968-5e84-42c4-91e7-60faab878705', 'b27957c7-9430-450b-ab74-9f86dbdaec02', 1, 1, 1, 0, 2, 0, NULL, 0, 0, 0, 30, '2026-05-27 07:46:45.926', '2026-05-27 07:46:45.926');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `email_reports`
+--
+
+CREATE TABLE `email_reports` (
+  `id` varchar(191) NOT NULL,
+  `title` varchar(191) NOT NULL,
+  `frequency` varchar(191) NOT NULL,
+  `recipients` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`recipients`)),
+  `sendToSelf` tinyint(1) NOT NULL DEFAULT 1,
+  `content` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`content`)),
+  `isActive` tinyint(1) NOT NULL DEFAULT 1,
+  `organizationId` varchar(191) NOT NULL,
+  `createdAt` datetime(3) NOT NULL DEFAULT current_timestamp(3),
+  `updatedAt` datetime(3) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `employees`
+--
+
+CREATE TABLE `employees` (
+  `id` varchar(191) NOT NULL,
+  `fullName` varchar(191) NOT NULL,
+  `email` varchar(191) NOT NULL,
+  `role` enum('ADMIN','MANAGER','EMPLOYEE') NOT NULL DEFAULT 'EMPLOYEE',
+  `location` varchar(191) DEFAULT 'Remote',
+  `latitude` double DEFAULT NULL,
+  `longitude` double DEFAULT NULL,
+  `computerType` enum('COMPANY','PERSONAL') NOT NULL DEFAULT 'COMPANY',
+  `status` enum('INVITED','ACTIVE','OFFLINE','IDLE','BREAK','DEACTIVATED','MERGED') NOT NULL DEFAULT 'ACTIVE',
+  `hourlyRate` double NOT NULL DEFAULT 0,
+  `avatar` text DEFAULT NULL,
+  `teamId` varchar(191) DEFAULT NULL,
+  `organizationId` varchar(191) NOT NULL,
+  `trackingSettingId` varchar(191) DEFAULT NULL,
+  `createdAt` datetime(3) NOT NULL DEFAULT current_timestamp(3),
+  `updatedAt` datetime(3) NOT NULL,
+  `workMode` varchar(191) DEFAULT 'Remote',
+  `payRateType` varchar(191) NOT NULL DEFAULT 'DAILY'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `employees`
+--
+
+INSERT INTO `employees` (`id`, `fullName`, `email`, `role`, `location`, `latitude`, `longitude`, `computerType`, `status`, `hourlyRate`, `avatar`, `teamId`, `organizationId`, `trackingSettingId`, `createdAt`, `updatedAt`, `workMode`, `payRateType`) VALUES
+('163aad68-68d7-4a05-b820-86f9e86710f4', 'Mike Manager', 'manager@example.com', 'MANAGER', 'Remote', NULL, NULL, 'COMPANY', 'OFFLINE', 0, NULL, NULL, 'default-org-id', NULL, '2026-04-04 13:37:21.578', '2026-04-04 13:39:58.364', 'Remote', 'DAILY'),
+('48285691-ec0c-4c20-bbae-7007670ca096', 'Jane Admin', 'admin@example.com', 'ADMIN', 'Remote', NULL, NULL, 'COMPANY', 'OFFLINE', 0, NULL, NULL, 'default-org-id', NULL, '2026-04-04 13:37:21.559', '2026-07-26 23:55:03.030', 'Remote', 'DAILY'),
+('b93a4d90-2454-4694-8edd-dcbb7e408098', 'Alex Employee', 'employee@example.com', 'EMPLOYEE', 'Remote', NULL, NULL, 'COMPANY', 'OFFLINE', 0, NULL, 'default-team-id', 'default-org-id', NULL, '2026-04-04 13:37:21.592', '2026-07-25 07:31:17.663', 'Remote', 'DAILY'),
+('c4553f00-3292-4798-8fc6-74737b0c7fa1', 'admin demo', 'admin@gmail.com', 'ADMIN', 'Remote', NULL, NULL, 'COMPANY', 'OFFLINE', 0, NULL, NULL, 'b27957c7-9430-450b-ab74-9f86dbdaec02', NULL, '2026-05-27 07:46:31.929', '2026-05-27 07:46:50.242', 'Remote', 'DAILY'),
+('dec4a6b8-c082-4ce2-b525-3b7a545317ee', 'Test', 'test@example.com', 'EMPLOYEE', '— (Remote) (Remote)', NULL, NULL, 'COMPANY', 'ACTIVE', 10000, NULL, 'e27d6e38-63d7-478a-b9f5-3eeb09c4e8a6', 'default-org-id', NULL, '2026-05-22 14:09:34.260', '2026-07-23 13:08:10.166', 'Remote', 'MONTHLY');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `goals`
+--
+
+CREATE TABLE `goals` (
+  `id` varchar(191) NOT NULL,
+  `title` varchar(191) NOT NULL,
+  `sub` varchar(191) NOT NULL,
+  `targetDate` varchar(191) NOT NULL,
+  `progress` int(11) NOT NULL DEFAULT 0,
+  `status` varchar(191) NOT NULL DEFAULT 'ACTIVE',
+  `color` varchar(191) DEFAULT 'text-indigo-600 bg-indigo-50',
+  `organizationId` varchar(191) NOT NULL,
+  `createdAt` datetime(3) NOT NULL DEFAULT current_timestamp(3),
+  `updatedAt` datetime(3) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `goals`
+--
+
+INSERT INTO `goals` (`id`, `title`, `sub`, `targetDate`, `progress`, `status`, `color`, `organizationId`, `createdAt`, `updatedAt`) VALUES
+('5357d17d-1556-431f-ad0f-0213e3bc9070', 'hkjhj', 'finace', 'end of 4', 0, 'ACTIVE', 'text-indigo-600 bg-indigo-50', 'default-org-id', '2026-05-23 07:56:54.508', '2026-05-23 07:56:54.508');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `goal_activities`
+--
+
+CREATE TABLE `goal_activities` (
+  `id` varchar(191) NOT NULL,
+  `goalId` varchar(191) NOT NULL,
+  `title` varchar(191) NOT NULL,
+  `status` varchar(191) NOT NULL,
+  `type` varchar(191) NOT NULL,
+  `activityDate` datetime(3) NOT NULL DEFAULT current_timestamp(3),
+  `createdAt` datetime(3) NOT NULL DEFAULT current_timestamp(3)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `goal_stakeholders`
+--
+
+CREATE TABLE `goal_stakeholders` (
+  `id` varchar(191) NOT NULL,
+  `goalId` varchar(191) NOT NULL,
+  `employeeId` varchar(191) NOT NULL,
+  `createdAt` datetime(3) NOT NULL DEFAULT current_timestamp(3)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `integrations`
+--
+
+CREATE TABLE `integrations` (
+  `id` varchar(191) NOT NULL,
+  `integrationId` varchar(191) NOT NULL,
+  `connected` tinyint(1) NOT NULL DEFAULT 0,
+  `config` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`config`)),
+  `organizationId` varchar(191) NOT NULL,
+  `createdAt` datetime(3) NOT NULL DEFAULT current_timestamp(3),
+  `updatedAt` datetime(3) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `invitation_tokens`
+--
+
+CREATE TABLE `invitation_tokens` (
+  `id` varchar(191) NOT NULL,
+  `email` varchar(191) NOT NULL,
+  `token` varchar(191) NOT NULL,
+  `organizationId` varchar(191) NOT NULL,
+  `role` varchar(191) NOT NULL,
+  `expiresAt` datetime(3) NOT NULL,
+  `createdAt` datetime(3) NOT NULL DEFAULT current_timestamp(3)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `invitation_tokens`
+--
+
+INSERT INTO `invitation_tokens` (`id`, `email`, `token`, `organizationId`, `role`, `expiresAt`, `createdAt`) VALUES
+('210b3f6e-6697-4f0f-af05-4e331a0c50da', 'ak@gmail.com', 'bef49c207e2255f6b85394d9409e8ce8446c40952d1fd14e9a269c9eb4a90361', 'default-org-id', 'EMPLOYEE', '2026-05-30 13:01:32.628', '2026-05-23 13:01:32.629'),
+('e067b48c-735a-4ba1-8862-8e8eba6a38e6', 'm@gmail.com', 'f17de158a521b89a14c5d725b1338a6bc8d4b3035be25153767a87bf04e45a7b', 'default-org-id', 'EMPLOYEE', '2026-05-30 13:02:42.191', '2026-05-23 13:02:42.191'),
+('eea175fa-fbd1-47f9-99a3-12d900d3de56', 'satya@gmail.com', '21099167d7c209593349c17bd8768bd1f9f96351ef6c1d3869beb85f3924f199', 'default-org-id', 'EMPLOYEE', '2026-05-30 13:00:44.714', '2026-05-23 13:00:44.718');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `invoices`
+--
+
+CREATE TABLE `invoices` (
+  `id` varchar(191) NOT NULL,
+  `invoiceNumber` varchar(191) NOT NULL,
+  `clientName` varchar(191) NOT NULL,
+  `clientEmail` varchar(191) DEFAULT NULL,
+  `amount` double NOT NULL,
+  `currency` varchar(191) NOT NULL DEFAULT 'USD',
+  `issueDate` datetime(3) NOT NULL DEFAULT current_timestamp(3),
+  `dueDate` datetime(3) NOT NULL,
+  `status` enum('DRAFT','SENT','PENDING','PAID','OVERDUE','CANCELLED') NOT NULL DEFAULT 'DRAFT',
+  `notes` text DEFAULT NULL,
+  `organizationId` varchar(191) NOT NULL,
+  `createdAt` datetime(3) NOT NULL DEFAULT current_timestamp(3),
+  `updatedAt` datetime(3) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `live_activities`
+--
+
+CREATE TABLE `live_activities` (
+  `id` varchar(191) NOT NULL,
+  `employeeId` varchar(191) NOT NULL,
+  `organizationId` varchar(191) NOT NULL,
+  `activeApp` varchar(191) NOT NULL,
+  `activeWindow` varchar(191) NOT NULL,
+  `keystrokes` int(11) NOT NULL,
+  `mouseClicks` int(11) NOT NULL,
+  `idleTime` int(11) NOT NULL,
+  `createdAt` datetime(3) NOT NULL DEFAULT current_timestamp(3)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `locations`
+--
+
+CREATE TABLE `locations` (
+  `id` varchar(191) NOT NULL,
+  `organizationId` varchar(191) NOT NULL,
+  `name` varchar(191) NOT NULL,
+  `type` varchar(191) NOT NULL DEFAULT 'Office',
+  `address` varchar(191) DEFAULT NULL,
+  `latitude` double DEFAULT NULL,
+  `longitude` double DEFAULT NULL,
+  `threshold` int(11) NOT NULL DEFAULT 4,
+  `createdAt` datetime(3) NOT NULL DEFAULT current_timestamp(3)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `location_logs`
+--
+
+CREATE TABLE `location_logs` (
+  `id` varchar(191) NOT NULL,
+  `employeeId` varchar(191) NOT NULL,
+  `organizationId` varchar(191) NOT NULL,
+  `latitude` double NOT NULL,
+  `longitude` double NOT NULL,
+  `accuracy` double DEFAULT NULL,
+  `source` varchar(191) NOT NULL DEFAULT 'GPS',
+  `createdAt` datetime(3) NOT NULL DEFAULT current_timestamp(3)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `location_logs`
+--
+
+INSERT INTO `location_logs` (`id`, `employeeId`, `organizationId`, `latitude`, `longitude`, `accuracy`, `source`, `createdAt`) VALUES
+('009a49e0-6121-4869-92ac-b2e6da3d3f60', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', 22.6988, 75.8611, 2000, 'Browser', '2026-04-06 12:42:28.518'),
+('00c28cb4-4b54-46c5-8b60-d3b3a13a0ec7', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', 22.6988, 75.8611, 2000, 'Browser', '2026-04-06 12:43:17.878'),
+('06e13aa3-93aa-4480-98bd-75a1413088a3', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', 22.6988, 75.8611, 2000, 'Browser', '2026-04-06 12:40:49.672'),
+('0e781cba-2e92-43cc-8598-5c0f2d23b901', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', 22.6988, 75.8611, 50000, 'Browser', '2026-05-23 11:11:53.205'),
+('11bbe516-8c8f-4b33-95bc-a6e1e2360faa', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', 22.6988, 75.8611, 50000, 'Browser', '2026-05-23 12:04:44.703'),
+('19bdb7d6-a803-42e3-99dd-1003fd5fb1ff', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', 22.6988, 75.8611, 2000, 'Browser', '2026-04-06 12:39:08.511'),
+('1b2409d9-cdec-45cc-a23b-294066a5b737', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', 22.6988, 75.8611, 2000, 'Browser', '2026-04-06 10:38:08.116'),
+('21426ef3-4775-4dae-857d-8451e02db302', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', 22.6988, 75.8611, 2000, 'Browser', '2026-04-06 12:47:17.698'),
+('28df11aa-7191-4954-9bb2-0cedac508d76', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', 22.6988, 75.8611, 2000, 'Browser', '2026-04-06 12:39:45.799'),
+('2b3c878c-9331-4cd3-9270-abdf743965fc', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', 22.6988, 75.8611, 2000, 'Browser', '2026-04-06 10:45:22.347'),
+('32cfa9ef-ccc2-49cd-8814-6b819b6fa340', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', 22.6988, 75.8611, 2000, 'Browser', '2026-04-06 12:39:33.413'),
+('47b6626e-87bb-4fcd-8395-aa4fbefe707c', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', 22.701, 75.8659, 5000, 'Browser', '2026-04-04 13:40:00.491'),
+('47c4c745-5e0b-46e1-bdb9-f00783841a35', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', 22.6988, 75.8611, 2000, 'Browser', '2026-04-06 12:48:20.334'),
+('49635832-58fc-4013-aee9-1564fa807ea8', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', 22.6988, 75.8611, 50000, 'Browser', '2026-05-23 12:04:44.703'),
+('4dbb96b8-f633-4945-a269-e016f00a10eb', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', 22.6988, 75.8611, 2000, 'Browser', '2026-04-06 12:46:17.569'),
+('4f8bf97a-a390-49cb-a4ac-db3387db8942', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', 22.6988, 75.8611, 2000, 'Browser', '2026-04-06 12:39:08.512'),
+('516d9b40-87e9-4887-867f-a4f143a93599', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', 22.6988, 75.8611, 2000, 'Browser', '2026-04-06 12:43:17.880'),
+('581eec5b-bba4-4b79-8b98-ee06295b3e13', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', 22.6988, 75.8611, 2000, 'Browser', '2026-04-06 12:39:33.411'),
+('59090ca1-781b-4c20-8b57-ca814b7e04b2', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', 22.6988, 75.8611, 2000, 'Browser', '2026-04-06 10:45:22.346'),
+('5a49c8b0-00d2-403f-b5d4-952c696ffa2d', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', 22.701, 75.8659, 5000, 'Browser', '2026-04-04 13:40:00.490'),
+('612434a0-332e-4e0d-9b5a-ffe0f42125cd', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', 22.6988, 75.8611, 2000, 'Browser', '2026-04-06 12:46:46.924'),
+('61e062cc-d082-4ae0-abef-1ce40adc0eb2', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', 22.6988, 75.8611, 2000, 'Browser', '2026-04-06 12:45:18.291'),
+('71d1cae7-07dc-4027-abbf-96ada7229637', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', 22.6988, 75.8611, 2000, 'Browser', '2026-04-06 12:44:18.942'),
+('792311db-5ce6-4e2d-89b0-ad76e1d0ecd6', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', 22.6988, 75.8611, 2000, 'Browser', '2026-04-06 10:40:05.064'),
+('7a600559-7799-46fb-8f62-d37bc8ef88f2', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', 22.6988, 75.8611, 2000, 'Browser', '2026-04-06 12:40:49.673'),
+('84dbc486-d863-49b1-a4f8-5c8d73c279fa', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', 22.6988, 75.8611, 2000, 'Browser', '2026-04-06 12:46:46.927'),
+('95236e7b-01c1-419b-9f98-069d62790295', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', 22.6988, 75.8611, 2000, 'Browser', '2026-04-06 12:39:19.976'),
+('96ee1a18-78c1-40d5-b059-16228f62f10a', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', 22.6988, 75.8611, 2000, 'Browser', '2026-04-06 12:41:28.038'),
+('a02ae57e-bb4c-42b1-98b4-c57429e7f1b2', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', 22.6988, 75.8611, 50000, 'Browser', '2026-05-23 11:45:27.647'),
+('a6a51766-adf8-475c-9932-fab1a3c0480e', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', 22.6988, 75.8611, 50000, 'Browser', '2026-05-23 11:11:53.206'),
+('ad9f8258-ce7b-4246-b625-dd58a9151ebf', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', 22.6988, 75.8611, 2000, 'Browser', '2026-04-06 12:39:45.800'),
+('cd8989bb-a10e-4ed1-aa54-a84e313c156f', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', 22.6988, 75.8611, 2000, 'Browser', '2026-04-06 10:38:08.116'),
+('da7697ce-21ff-4772-ac50-05b17b34cc65', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', 22.6988, 75.8611, 2000, 'Browser', '2026-04-06 10:40:05.063'),
+('e087d071-7c79-46c6-b379-509a66693f24', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', 22.6988, 75.8611, 2000, 'Browser', '2026-04-06 12:39:19.975'),
+('e611ea82-b612-4564-b1b1-bce3a494f60b', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', 22.6988, 75.8611, 50000, 'Browser', '2026-05-23 11:45:27.645'),
+('fe3afe8c-84bf-4609-b9f0-b2bec7cb163e', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', 22.6988, 75.8611, 2000, 'Browser', '2026-04-06 12:41:28.069');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `manual_time_entries`
+--
+
+CREATE TABLE `manual_time_entries` (
+  `id` varchar(191) NOT NULL,
+  `startTime` datetime(3) NOT NULL,
+  `endTime` datetime(3) NOT NULL,
+  `timezone` varchar(191) DEFAULT NULL,
+  `type` varchar(191) NOT NULL,
+  `duration` int(11) NOT NULL,
+  `note` text DEFAULT NULL,
+  `employeeId` varchar(191) NOT NULL,
+  `organizationId` varchar(191) NOT NULL,
+  `createdAt` datetime(3) NOT NULL DEFAULT current_timestamp(3),
+  `updatedAt` datetime(3) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `manual_time_entries`
+--
+
+INSERT INTO `manual_time_entries` (`id`, `startTime`, `endTime`, `timezone`, `type`, `duration`, `note`, `employeeId`, `organizationId`, `createdAt`, `updatedAt`) VALUES
+('021801fb-e36b-4718-b9f6-c47793f0c540', '2026-07-07 23:00:00.000', '2026-07-07 23:52:55.000', NULL, 'Work', 3175, 'Client consultation and strategy review', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', 'default-org-id', '2026-07-25 07:26:33.762', '2026-07-25 07:26:33.762'),
+('02c27f84-34f8-4667-be39-25633a2de805', '2026-07-20 23:00:00.000', '2026-07-20 23:58:41.000', NULL, 'Work', 3521, 'Client consultation and strategy review', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', '2026-07-25 07:26:37.677', '2026-07-25 07:26:37.677'),
+('06845009-3756-47fa-acd2-52175f973969', '2026-06-28 23:00:00.000', '2026-06-28 23:45:03.000', NULL, 'Work', 2703, 'Sprint planning alignment meeting', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', 'default-org-id', '2026-07-25 07:26:30.799', '2026-07-25 07:26:30.799'),
+('06c88276-db18-449d-869e-0787e90be5bb', '2026-07-14 23:00:00.000', '2026-07-14 23:35:05.000', NULL, 'Work', 2105, 'Client consultation and strategy review', '163aad68-68d7-4a05-b820-86f9e86710f4', 'default-org-id', '2026-07-25 07:26:35.597', '2026-07-25 07:26:35.597'),
+('0fe8bbdd-26e2-4eb9-85af-c805dfc5f7f7', '2026-07-02 23:00:00.000', '2026-07-02 23:57:00.000', NULL, 'Work', 3420, 'Client consultation and strategy review', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', 'default-org-id', '2026-07-25 07:26:32.522', '2026-07-25 07:26:32.522'),
+('1cd73b7c-54ab-4c7f-a5aa-953791b52bf1', '2026-07-15 23:00:00.000', '2026-07-15 23:44:41.000', NULL, 'Work', 2681, 'Sprint planning alignment meeting', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', 'default-org-id', '2026-07-25 07:26:36.389', '2026-07-25 07:26:36.389'),
+('1de35900-8881-47d9-aa95-fd4843e9208d', '2026-07-17 23:00:00.000', '2026-07-17 23:48:38.000', NULL, 'Work', 2918, 'Sprint planning alignment meeting', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', 'default-org-id', '2026-07-25 07:26:37.106', '2026-07-25 07:26:37.106'),
+('1e61e04a-11ed-455e-a7cf-f9838bbd5e99', '2026-07-03 23:00:00.000', '2026-07-03 23:41:49.000', NULL, 'Work', 2509, 'Client consultation and strategy review', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', '2026-07-25 07:26:32.763', '2026-07-25 07:26:32.763'),
+('2735d03f-fde3-44ba-afe9-0b544149a380', '2026-07-14 23:00:00.000', '2026-07-14 23:36:04.000', NULL, 'Work', 2164, 'Client consultation and strategy review', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', '2026-07-25 07:26:35.789', '2026-07-25 07:26:35.789'),
+('2c86b813-dd9a-4f1b-b37b-f05ab0fe2a68', '2026-07-09 23:00:00.000', '2026-07-09 23:52:55.000', NULL, 'Work', 3175, 'Client consultation and strategy review', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', 'default-org-id', '2026-07-25 07:26:34.462', '2026-07-25 07:26:34.462'),
+('31d087b9-ebb6-4712-b25e-ee3eb0544ffa', '2026-07-08 23:00:00.000', '2026-07-08 23:42:50.000', NULL, 'Work', 2570, 'Client consultation and strategy review', '163aad68-68d7-4a05-b820-86f9e86710f4', 'default-org-id', '2026-07-25 07:26:33.884', '2026-07-25 07:26:33.884'),
+('35b4c3bc-c38c-40a8-a872-7ae2f606c458', '2026-07-09 23:00:00.000', '2026-07-09 23:56:16.000', NULL, 'Work', 3376, 'Sprint planning alignment meeting', '48285691-ec0c-4c20-bbae-7007670ca096', 'default-org-id', '2026-07-25 07:26:34.286', '2026-07-25 07:26:34.286'),
+('3e76825e-da87-4a94-b1dd-d54f31507fdf', '2026-07-06 23:00:00.000', '2026-07-06 23:52:55.000', NULL, 'Work', 3175, 'Client consultation and strategy review', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', 'default-org-id', '2026-07-25 07:26:33.335', '2026-07-25 07:26:33.335'),
+('50e905b0-e281-401f-8092-7303f81c23bc', '2026-06-30 23:00:00.000', '2026-06-30 23:55:15.000', NULL, 'Work', 3315, 'Client consultation and strategy review', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', 'default-org-id', '2026-07-25 07:26:31.614', '2026-07-25 07:26:31.614'),
+('6109e52f-8ee2-4573-b674-ab563b5834dd', '2026-07-16 23:00:00.000', '2026-07-16 23:35:05.000', NULL, 'Work', 2105, 'Client consultation and strategy review', '163aad68-68d7-4a05-b820-86f9e86710f4', 'default-org-id', '2026-07-25 07:26:36.451', '2026-07-25 07:26:36.451'),
+('6d2a1dec-194b-4171-81e2-6aa53de51124', '2026-07-02 23:00:00.000', '2026-07-02 23:46:09.000', NULL, 'Work', 2769, 'Client consultation and strategy review', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', 'default-org-id', '2026-07-25 07:26:32.457', '2026-07-25 07:26:32.457'),
+('6e1d904b-a38f-4ce5-8deb-fde41e05f21d', '2026-07-13 23:00:00.000', '2026-07-13 23:30:52.000', NULL, 'Work', 1852, 'Client consultation and strategy review', '48285691-ec0c-4c20-bbae-7007670ca096', 'default-org-id', '2026-07-25 07:26:35.222', '2026-07-25 07:26:35.222'),
+('7da70a2e-3aa9-4e64-adaa-773d4bd4669a', '2026-07-24 23:00:00.000', '2026-07-24 23:52:45.000', NULL, 'Work', 3165, 'Client consultation and strategy review', '48285691-ec0c-4c20-bbae-7007670ca096', 'default-org-id', '2026-07-25 07:26:38.918', '2026-07-25 07:26:38.918'),
+('883f9fbb-87e2-4cfb-ad64-23fac7cae5e3', '2026-07-08 23:00:00.000', '2026-07-08 23:58:12.000', NULL, 'Work', 3492, 'Sprint planning alignment meeting', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', 'default-org-id', '2026-07-25 07:26:34.171', '2026-07-25 07:26:34.171'),
+('9644bf5c-bea9-40a5-be63-8f2e588436cf', '2026-07-23 23:00:00.000', '2026-07-23 23:36:05.000', NULL, 'Work', 2165, 'Sprint planning alignment meeting', '163aad68-68d7-4a05-b820-86f9e86710f4', 'default-org-id', '2026-07-25 07:26:38.549', '2026-07-25 07:26:38.549'),
+('98f9c28d-be6d-4b44-8bc5-b24315d02245', '2026-07-01 23:00:00.000', '2026-07-01 23:41:49.000', NULL, 'Work', 2509, 'Client consultation and strategy review', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', '2026-07-25 07:26:31.961', '2026-07-25 07:26:31.961'),
+('9d32a824-13d1-4421-ac0f-3b026c681a68', '2026-06-27 23:00:00.000', '2026-06-27 23:45:03.000', NULL, 'Work', 2703, 'Sprint planning alignment meeting', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', 'default-org-id', '2026-07-25 07:26:30.661', '2026-07-25 07:26:30.661'),
+('a7a1434c-d4dd-41b0-b621-8d9fc260e71a', '2026-07-21 23:00:00.000', '2026-07-21 23:46:29.000', NULL, 'Work', 2789, 'Client consultation and strategy review', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', 'default-org-id', '2026-07-25 07:26:38.129', '2026-07-25 07:26:38.129'),
+('ac0e7b48-3d43-43d8-9f1a-5d7987fde8c7', '2026-07-15 23:00:00.000', '2026-07-15 23:30:52.000', NULL, 'Work', 1852, 'Client consultation and strategy review', '48285691-ec0c-4c20-bbae-7007670ca096', 'default-org-id', '2026-07-25 07:26:36.057', '2026-07-25 07:26:36.057'),
+('af098805-09af-4c71-89af-7afcbcc406dc', '2026-06-29 23:00:00.000', '2026-06-29 23:30:03.000', NULL, 'Work', 1803, 'Sprint planning alignment meeting', '48285691-ec0c-4c20-bbae-7007670ca096', 'default-org-id', '2026-07-25 07:26:30.982', '2026-07-25 07:26:30.982'),
+('b2c780e4-8050-4811-bc5f-5a4eb279b3bb', '2026-07-01 23:00:00.000', '2026-07-01 23:46:09.000', NULL, 'Work', 2769, 'Client consultation and strategy review', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', 'default-org-id', '2026-07-25 07:26:32.088', '2026-07-25 07:26:32.088'),
+('be736c24-03f9-4bb0-b5f5-199ee7ac8d14', '2026-07-07 23:00:00.000', '2026-07-07 23:42:50.000', NULL, 'Work', 2570, 'Client consultation and strategy review', '163aad68-68d7-4a05-b820-86f9e86710f4', 'default-org-id', '2026-07-25 07:26:33.503', '2026-07-25 07:26:33.503'),
+('c1f98a04-a07f-423c-b2d2-ec8f9d680588', '2026-06-29 23:00:00.000', '2026-06-29 23:45:03.000', NULL, 'Work', 2703, 'Sprint planning alignment meeting', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', 'default-org-id', '2026-07-25 07:26:31.271', '2026-07-25 07:26:31.271'),
+('ce004e44-20ac-44a7-8f4b-7114026c2960', '2026-07-03 23:00:00.000', '2026-07-03 23:37:41.000', NULL, 'Work', 2261, 'Sprint planning alignment meeting', '163aad68-68d7-4a05-b820-86f9e86710f4', 'default-org-id', '2026-07-25 07:26:32.580', '2026-07-25 07:26:32.580'),
+('d10f56ab-7640-438c-8348-70982c14e509', '2026-07-10 23:00:00.000', '2026-07-10 23:33:36.000', NULL, 'Work', 2016, 'Client consultation and strategy review', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', 'default-org-id', '2026-07-25 07:26:34.828', '2026-07-25 07:26:34.828'),
+('d35295f9-db25-4786-884f-21c1a0f62561', '2026-07-05 23:00:00.000', '2026-07-05 23:52:55.000', NULL, 'Work', 3175, 'Client consultation and strategy review', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', 'default-org-id', '2026-07-25 07:26:32.938', '2026-07-25 07:26:32.938'),
+('dc4c637c-bf79-4c64-8351-b233ae8f8173', '2026-07-08 23:00:00.000', '2026-07-08 23:45:03.000', NULL, 'Work', 2703, 'Sprint planning alignment meeting', '48285691-ec0c-4c20-bbae-7007670ca096', 'default-org-id', '2026-07-25 07:26:33.950', '2026-07-25 07:26:33.950'),
+('e1769b7a-3df6-4d77-a818-9cc6129e903f', '2026-06-26 23:00:00.000', '2026-06-26 23:42:30.000', NULL, 'Work', 2550, 'Sprint planning alignment meeting', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', 'default-org-id', '2026-07-25 07:26:30.481', '2026-07-25 07:26:30.481'),
+('e2281b84-cb19-4943-98ec-9e61607f0a53', '2026-07-03 23:00:00.000', '2026-07-03 23:52:55.000', NULL, 'Work', 3175, 'Client consultation and strategy review', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', 'default-org-id', '2026-07-25 07:26:32.820', '2026-07-25 07:26:32.820'),
+('edf251b1-e1cc-473e-97bb-4c5f2489ad86', '2026-07-23 23:00:00.000', '2026-07-23 23:46:29.000', NULL, 'Work', 2789, 'Client consultation and strategy review', 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', 'default-org-id', '2026-07-25 07:26:38.747', '2026-07-25 07:26:38.747'),
+('f0f83a26-dc52-4f6d-a103-b24f433aa50e', '2026-07-20 23:00:00.000', '2026-07-20 23:50:46.000', NULL, 'Work', 3046, 'Client consultation and strategy review', 'c4553f00-3292-4798-8fc6-74737b0c7fa1', 'default-org-id', '2026-07-25 07:26:37.736', '2026-07-25 07:26:37.736'),
+('f0fa04da-859a-4dd5-be48-201e9410427f', '2026-07-13 23:00:00.000', '2026-07-13 23:49:06.000', NULL, 'Work', 2946, 'Sprint planning alignment meeting', '163aad68-68d7-4a05-b820-86f9e86710f4', 'default-org-id', '2026-07-25 07:26:35.160', '2026-07-25 07:26:35.160'),
+('fe1b42f2-cd8f-47fe-b132-af97eb4a9886', '2026-07-21 23:00:00.000', '2026-07-21 23:37:26.000', NULL, 'Work', 2246, 'Client consultation and strategy review', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', '2026-07-25 07:26:38.007', '2026-07-25 07:26:38.007');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `organizations`
+--
+
+CREATE TABLE `organizations` (
+  `id` varchar(191) NOT NULL,
+  `legalName` varchar(191) NOT NULL,
+  `workspaceId` varchar(191) NOT NULL,
+  `industry` varchar(191) DEFAULT NULL,
+  `organizationSize` varchar(191) DEFAULT NULL,
+  `timeZone` varchar(191) NOT NULL DEFAULT 'UTC',
+  `workStartTime` varchar(191) NOT NULL DEFAULT '09:00',
+  `workEndTime` varchar(191) NOT NULL DEFAULT '18:00',
+  `workDays` varchar(191) NOT NULL DEFAULT 'Monday,Tuesday,Wednesday,Thursday,Friday',
+  `createdAt` datetime(3) NOT NULL DEFAULT current_timestamp(3),
+  `updatedAt` datetime(3) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `organizations`
+--
+
+INSERT INTO `organizations` (`id`, `legalName`, `workspaceId`, `industry`, `organizationSize`, `timeZone`, `workStartTime`, `workEndTime`, `workDays`, `createdAt`, `updatedAt`) VALUES
+('b27957c7-9430-450b-ab74-9f86dbdaec02', 'admin', '9e4218a3-9e70-44e8-a6f9-479ba55b50d9', NULL, NULL, 'UTC+5:30 (IST)', '09:00', '18:00', 'Monday,Tuesday,Wednesday,Thursday,Friday', '2026-05-27 07:46:31.929', '2026-05-27 07:46:31.929'),
+('default-org-id', 'Insightful Corp', '222a8b91-1405-4fb2-8ed9-7dc985280cb9', 'Technology', '11-50 employees', 'UTC+5:30 (IST)', '09:00', '18:00', 'Monday,Tuesday,Wednesday,Thursday,Friday', '2026-04-04 13:37:21.438', '2026-04-04 13:37:21.438');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `payroll_records`
+--
+
+CREATE TABLE `payroll_records` (
+  `id` varchar(191) NOT NULL,
+  `totalHours` double NOT NULL DEFAULT 0,
+  `amount` double NOT NULL DEFAULT 0,
+  `status` enum('PAID','UNPAID') NOT NULL DEFAULT 'UNPAID',
+  `employeeId` varchar(191) NOT NULL,
+  `createdAt` datetime(3) NOT NULL DEFAULT current_timestamp(3),
+  `updatedAt` datetime(3) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `productivity_rules`
+--
+
+CREATE TABLE `productivity_rules` (
+  `id` varchar(191) NOT NULL,
+  `appName` varchar(191) DEFAULT NULL,
+  `domain` varchar(191) NOT NULL,
+  `productivity` enum('PRODUCTIVE','NEUTRAL','UNPRODUCTIVE') NOT NULL DEFAULT 'NEUTRAL',
+  `category` varchar(191) DEFAULT 'Uncategorized',
+  `tagId` varchar(191) DEFAULT NULL,
+  `organizationId` varchar(191) NOT NULL,
+  `createdAt` datetime(3) NOT NULL DEFAULT current_timestamp(3),
+  `updatedAt` datetime(3) NOT NULL,
+  `isBlocked` tinyint(1) NOT NULL DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `productivity_rules`
+--
+
+INSERT INTO `productivity_rules` (`id`, `appName`, `domain`, `productivity`, `category`, `tagId`, `organizationId`, `createdAt`, `updatedAt`, `isBlocked`) VALUES
+('03bd0cac-833e-4521-a713-8ae8b8cba04f', 'YouTube', 'youtube', 'UNPRODUCTIVE', 'Uncategorized', NULL, 'default-org-id', '2026-07-24 12:09:48.959', '2026-07-24 13:22:21.637', 1),
+('21b157bd-6b85-4b31-aa6e-74064e2f1faf', 'explorer', 'explorer', 'NEUTRAL', 'Uncategorized', 'a4e62448-61fb-4936-8dd8-9c6f4c8a5f3c', 'default-org-id', '2026-05-23 11:40:43.033', '2026-05-23 11:40:43.033', 0),
+('27f48f9c-ef18-4438-a66b-7383325b3bf7', 'ScreenClippingHost', 'screenclippinghost', 'NEUTRAL', 'Uncategorized', 'a4e62448-61fb-4936-8dd8-9c6f4c8a5f3c', 'default-org-id', '2026-05-23 11:40:43.069', '2026-05-23 11:40:43.069', 0),
+('47035f78-682a-41cb-8fda-bff58d46e873', 'facebook.com', 'facebook.com', 'UNPRODUCTIVE', 'Uncategorized', NULL, 'default-org-id', '2026-07-24 13:59:29.530', '2026-07-24 14:10:43.857', 1),
+('8c69e25a-14ac-425b-adc2-84eafd8e8c13', 'instagram.com', 'instagram.com', 'UNPRODUCTIVE', 'Uncategorized', NULL, 'default-org-id', '2026-07-24 14:12:17.619', '2026-07-24 14:12:17.619', 1),
+('a2138d8f-b6f9-4fe7-a715-a672fb9ceaf2', 'Terminal', 'terminal', 'PRODUCTIVE', 'Development', 'a8072147-c502-4dce-abba-c55ea80d8ccd', 'default-org-id', '2026-05-23 11:40:10.582', '2026-05-23 11:42:17.969', 0),
+('c2d04f9f-99d2-4728-b057-1a7748d2f873', 'electron', 'electron', 'PRODUCTIVE', 'Uncategorized', 'a8072147-c502-4dce-abba-c55ea80d8ccd', 'default-org-id', '2026-05-23 11:40:29.071', '2026-05-23 11:40:29.071', 0),
+('cb30982d-add0-4738-80bf-b898942f397b', 'Cursor', 'cursor.sh', 'PRODUCTIVE', 'Development', 'a8072147-c502-4dce-abba-c55ea80d8ccd', 'default-org-id', '2026-05-23 11:40:10.558', '2026-05-23 11:42:17.944', 0);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `productivity_tags`
+--
+
+CREATE TABLE `productivity_tags` (
+  `id` varchar(191) NOT NULL,
+  `name` varchar(191) NOT NULL,
+  `color` varchar(191) NOT NULL,
+  `organizationId` varchar(191) NOT NULL,
+  `createdAt` datetime(3) NOT NULL DEFAULT current_timestamp(3),
+  `updatedAt` datetime(3) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `productivity_tags`
+--
+
+INSERT INTO `productivity_tags` (`id`, `name`, `color`, `organizationId`, `createdAt`, `updatedAt`) VALUES
+('402ded41-a516-4e66-8b18-f8bf09ab0ab5', 'Collaborative', '#69C0FF', 'b27957c7-9430-450b-ab74-9f86dbdaec02', '2026-06-02 05:23:01.937', '2026-06-02 05:23:01.937'),
+('68685436-683b-4547-8ce4-4d82237ab84b', 'Distraction', '#FF4D4F', 'default-org-id', '2026-05-23 11:36:15.085', '2026-05-23 11:36:15.085'),
+('a4e62448-61fb-4936-8dd8-9c6f4c8a5f3c', 'Collaborative', '#69C0FF', 'default-org-id', '2026-05-23 11:36:15.079', '2026-05-23 11:36:15.079'),
+('a8072147-c502-4dce-abba-c55ea80d8ccd', 'Focus', '#9254DE', 'default-org-id', '2026-05-23 11:36:15.074', '2026-05-23 11:36:15.074'),
+('d55cb342-d7dd-4aca-97ce-2ed98c7aad9f', 'Focus', '#9254DE', 'b27957c7-9430-450b-ab74-9f86dbdaec02', '2026-06-02 05:23:01.917', '2026-06-02 05:23:01.917'),
+('e8047580-0412-4245-a7d9-c3f0006f42ac', 'Learning', '#52C41A', 'default-org-id', '2026-05-23 11:36:15.082', '2026-05-23 11:36:15.082'),
+('ea4750ea-b510-4ab3-adf1-479c79dd33b0', 'Learning', '#52C41A', 'b27957c7-9430-450b-ab74-9f86dbdaec02', '2026-06-02 05:23:01.942', '2026-06-02 05:23:01.942'),
+('f10f40c0-c709-43d0-9b05-4d943f0afbe3', 'Distraction', '#FF4D4F', 'b27957c7-9430-450b-ab74-9f86dbdaec02', '2026-06-02 05:23:01.950', '2026-06-02 05:23:01.950');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `projects`
+--
+
+CREATE TABLE `projects` (
+  `id` varchar(191) NOT NULL,
+  `name` varchar(191) NOT NULL,
+  `description` text DEFAULT NULL,
+  `billableRate` double NOT NULL DEFAULT 0,
+  `budget` double NOT NULL DEFAULT 0,
+  `organizationId` varchar(191) NOT NULL,
+  `createdAt` datetime(3) NOT NULL DEFAULT current_timestamp(3),
+  `updatedAt` datetime(3) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `projects`
+--
+
+INSERT INTO `projects` (`id`, `name`, `description`, `billableRate`, `budget`, `organizationId`, `createdAt`, `updatedAt`) VALUES
+('6a4e13b5-4ef3-4055-ab1f-2368ce786160', 'insight ful', 'kajsdjfkaj', 100, 200, 'default-org-id', '2026-04-06 12:47:45.750', '2026-04-06 12:47:45.750'),
+('b41f80c0-5f48-4939-9703-7ce9ecbade2a', 'employee monitoring', 'tracking system', 100, 10000, 'default-org-id', '2026-04-04 13:39:13.616', '2026-04-04 13:39:13.616');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `project_assignments`
+--
+
+CREATE TABLE `project_assignments` (
+  `id` varchar(191) NOT NULL,
+  `projectId` varchar(191) NOT NULL,
+  `employeeId` varchar(191) NOT NULL,
+  `createdAt` datetime(3) NOT NULL DEFAULT current_timestamp(3)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `project_time_logs`
+--
+
+CREATE TABLE `project_time_logs` (
+  `id` varchar(191) NOT NULL,
+  `projectId` varchar(191) NOT NULL,
+  `employeeId` varchar(191) NOT NULL,
+  `duration` int(11) NOT NULL,
+  `type` varchar(191) NOT NULL,
+  `loggedAt` datetime(3) NOT NULL DEFAULT current_timestamp(3)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `report_settings`
+--
+
+CREATE TABLE `report_settings` (
+  `id` varchar(191) NOT NULL,
+  `organizationId` varchar(191) NOT NULL,
+  `workloadOptimalFrom` int(11) NOT NULL DEFAULT 60,
+  `workloadOptimalTo` int(11) NOT NULL DEFAULT 85,
+  `createdAt` datetime(3) NOT NULL DEFAULT current_timestamp(3),
+  `updatedAt` datetime(3) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `screenshots`
+--
+
+CREATE TABLE `screenshots` (
+  `id` varchar(191) NOT NULL,
+  `imageUrl` longtext NOT NULL,
+  `productivity` enum('PRODUCTIVE','NEUTRAL','UNPRODUCTIVE') NOT NULL DEFAULT 'NEUTRAL',
+  `blurred` tinyint(1) NOT NULL DEFAULT 0,
+  `deletedByEmployee` tinyint(1) NOT NULL DEFAULT 0,
+  `capturedAt` datetime(3) NOT NULL DEFAULT current_timestamp(3),
+  `employeeId` varchar(191) NOT NULL,
+  `organizationId` varchar(191) NOT NULL,
+  `createdAt` datetime(3) NOT NULL DEFAULT current_timestamp(3),
+  `updatedAt` datetime(3) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `screenshot_settings`
+--
+
+CREATE TABLE `screenshot_settings` (
+  `id` varchar(191) NOT NULL,
+  `organizationId` varchar(191) NOT NULL,
+  `randomShifts` tinyint(1) NOT NULL DEFAULT 0,
+  `excludeAdmin` tinyint(1) NOT NULL DEFAULT 1,
+  `globalBlur` tinyint(1) NOT NULL DEFAULT 0,
+  `frequency` int(11) NOT NULL DEFAULT 5,
+  `createdAt` datetime(3) NOT NULL DEFAULT current_timestamp(3),
+  `updatedAt` datetime(3) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `screenshot_settings`
+--
+
+INSERT INTO `screenshot_settings` (`id`, `organizationId`, `randomShifts`, `excludeAdmin`, `globalBlur`, `frequency`, `createdAt`, `updatedAt`) VALUES
+('31dbef19-705a-466d-b99e-340c00c66bd6', 'b27957c7-9430-450b-ab74-9f86dbdaec02', 0, 1, 0, 5, '2026-05-27 07:46:41.364', '2026-05-27 07:46:41.364'),
+('68c8168b-1ffe-4fcb-85fb-a7f35dce7ed2', 'default-org-id', 0, 1, 0, 5, '2026-04-04 13:38:05.951', '2026-06-02 06:29:47.428');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `shifts`
+--
+
+CREATE TABLE `shifts` (
+  `id` varchar(191) NOT NULL,
+  `startTime` varchar(191) NOT NULL,
+  `endTime` varchar(191) NOT NULL,
+  `date` date NOT NULL,
+  `employeeId` varchar(191) NOT NULL,
+  `organizationId` varchar(191) NOT NULL,
+  `createdAt` datetime(3) NOT NULL DEFAULT current_timestamp(3),
+  `updatedAt` datetime(3) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `tasks`
+--
+
+CREATE TABLE `tasks` (
+  `id` varchar(191) NOT NULL,
+  `name` varchar(191) NOT NULL,
+  `status` enum('BACKLOG','IN_OPERATIONS','QUALITY_ASSURANCE','FINALIZED') NOT NULL DEFAULT 'BACKLOG',
+  `priority` enum('LOW','MEDIUM','HIGH','CRITICAL') NOT NULL DEFAULT 'MEDIUM',
+  `dueDate` datetime(3) DEFAULT NULL,
+  `projectId` varchar(191) NOT NULL,
+  `employeeId` varchar(191) DEFAULT NULL,
+  `organizationId` varchar(191) NOT NULL,
+  `createdAt` datetime(3) NOT NULL DEFAULT current_timestamp(3),
+  `updatedAt` datetime(3) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `tasks`
+--
+
+INSERT INTO `tasks` (`id`, `name`, `status`, `priority`, `dueDate`, `projectId`, `employeeId`, `organizationId`, `createdAt`, `updatedAt`) VALUES
+('1bc5c690-ed42-44cb-accb-a5489cf8b211', 'kdfjgl', 'FINALIZED', 'MEDIUM', '2026-02-12 00:00:00.000', 'b41f80c0-5f48-4939-9703-7ce9ecbade2a', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', '2026-04-06 10:45:16.862', '2026-04-06 12:46:32.296'),
+('2a685155-4ece-4e16-803e-9eaaa4797037', 'jghjhhjkhkj', 'BACKLOG', 'MEDIUM', '2026-01-23 00:00:00.000', '6a4e13b5-4ef3-4055-ab1f-2368ce786160', NULL, 'default-org-id', '2026-05-23 11:11:46.670', '2026-05-23 13:13:24.678'),
+('3e0a04dc-cd2b-440f-9cc3-f0385fa86375', 'insight ', 'IN_OPERATIONS', 'MEDIUM', '2026-12-12 00:00:00.000', '6a4e13b5-4ef3-4055-ab1f-2368ce786160', NULL, 'default-org-id', '2026-04-06 12:48:25.752', '2026-07-25 01:31:49.303'),
+('80acc53a-8a02-4b92-8d65-76e424e5f3de', 'employee tracking', 'BACKLOG', 'MEDIUM', '2026-12-12 00:00:00.000', 'b41f80c0-5f48-4939-9703-7ce9ecbade2a', 'b93a4d90-2454-4694-8edd-dcbb7e408098', 'default-org-id', '2026-04-04 13:39:38.291', '2026-04-04 13:39:38.291');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `teams`
+--
+
+CREATE TABLE `teams` (
+  `id` varchar(191) NOT NULL,
+  `name` varchar(191) NOT NULL,
+  `description` varchar(191) DEFAULT NULL,
+  `color` varchar(191) DEFAULT 'bg-blue-500',
+  `organizationId` varchar(191) NOT NULL,
+  `createdAt` datetime(3) NOT NULL DEFAULT current_timestamp(3),
+  `updatedAt` datetime(3) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `teams`
+--
+
+INSERT INTO `teams` (`id`, `name`, `description`, `color`, `organizationId`, `createdAt`, `updatedAt`) VALUES
+('default-team-id', 'Development Team', NULL, 'bg-blue-500', 'default-org-id', '2026-04-04 13:37:21.467', '2026-04-04 13:37:21.467'),
+('e27d6e38-63d7-478a-b9f5-3eeb09c4e8a6', 'it team', 'handle coding ', 'bg-blue-500', 'default-org-id', '2026-04-04 13:38:49.499', '2026-04-04 13:38:49.499');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `time_offs`
+--
+
+CREATE TABLE `time_offs` (
+  `id` varchar(191) NOT NULL,
+  `startDate` date NOT NULL,
+  `endDate` date NOT NULL,
+  `type` varchar(191) NOT NULL,
+  `timeOffType` varchar(191) DEFAULT NULL,
+  `timezone` varchar(191) DEFAULT NULL,
+  `note` text DEFAULT NULL,
+  `singleDay` tinyint(1) NOT NULL DEFAULT 0,
+  `employeeId` varchar(191) NOT NULL,
+  `organizationId` varchar(191) NOT NULL,
+  `createdAt` datetime(3) NOT NULL DEFAULT current_timestamp(3),
+  `updatedAt` datetime(3) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `tracking_data`
+--
+
+CREATE TABLE `tracking_data` (
+  `id` varchar(191) NOT NULL,
+  `employeeId` varchar(191) NOT NULL,
+  `screenshotUrl` longtext DEFAULT NULL,
+  `videoUrl` longtext DEFAULT NULL,
+  `activityStatus` varchar(191) DEFAULT NULL,
+  `location` varchar(191) DEFAULT NULL,
+  `source` varchar(191) NOT NULL DEFAULT 'AGENT',
+  `timestamp` datetime(3) NOT NULL DEFAULT current_timestamp(3),
+  `createdAt` datetime(3) NOT NULL DEFAULT current_timestamp(3)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `tracking_settings`
+--
+
+CREATE TABLE `tracking_settings` (
+  `id` varchar(191) NOT NULL,
+  `title` varchar(191) NOT NULL,
+  `computerType` varchar(191) NOT NULL,
+  `isDefault` tinyint(1) NOT NULL DEFAULT 0,
+  `visibility` varchar(191) NOT NULL DEFAULT 'visible',
+  `screenshotsPerHour` int(11) NOT NULL DEFAULT 0,
+  `allowAccessScreenshots` tinyint(1) NOT NULL DEFAULT 0,
+  `allowRemoveScreenshots` tinyint(1) NOT NULL DEFAULT 0,
+  `breakTime` int(11) NOT NULL DEFAULT 0,
+  `allowOverBreak` tinyint(1) NOT NULL DEFAULT 0,
+  `allowNewBreaks` tinyint(1) NOT NULL DEFAULT 0,
+  `idleTime` int(11) NOT NULL DEFAULT 2,
+  `trackingScenario` varchar(191) NOT NULL DEFAULT 'unlimited',
+  `workingDays` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`workingDays`)),
+  `trackTasks` tinyint(1) NOT NULL DEFAULT 0,
+  `allowAddTasks` tinyint(1) NOT NULL DEFAULT 0,
+  `permissions` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`permissions`)),
+  `organizationId` varchar(191) NOT NULL,
+  `createdAt` datetime(3) NOT NULL DEFAULT current_timestamp(3),
+  `updatedAt` datetime(3) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `users`
+--
+
+CREATE TABLE `users` (
+  `id` varchar(191) NOT NULL,
+  `email` varchar(191) NOT NULL,
+  `password` varchar(191) NOT NULL,
+  `role` enum('ADMIN','MANAGER','EMPLOYEE') NOT NULL DEFAULT 'EMPLOYEE',
+  `name` varchar(191) DEFAULT NULL,
+  `avatar` text DEFAULT NULL,
+  `employeeId` varchar(191) DEFAULT NULL,
+  `createdAt` datetime(3) NOT NULL DEFAULT current_timestamp(3),
+  `updatedAt` datetime(3) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `users`
+--
+
+INSERT INTO `users` (`id`, `email`, `password`, `role`, `name`, `avatar`, `employeeId`, `createdAt`, `updatedAt`) VALUES
+('37b7324c-4467-4efd-9c96-200a9125d4cc', 'admin@example.com', '$2b$10$ErNs.2OBNNyVTcN1mTtPnuhe7n/loU2RJJj3CUm.QQEI.pNiL5tiG', 'ADMIN', NULL, NULL, '48285691-ec0c-4c20-bbae-7007670ca096', '2026-04-04 13:37:21.570', '2026-04-04 13:37:21.570'),
+('49bf700c-f0a1-4c82-809c-7cabdfd9777b', 'test@example.com', '$2b$10$7K4DQmyrYoTH62YOLVXa9unZbtnDuXrz3pQqtKcOfzgcQQVzPWTz2', 'EMPLOYEE', NULL, NULL, 'dec4a6b8-c082-4ce2-b525-3b7a545317ee', '2026-05-22 14:09:34.387', '2026-05-22 14:09:34.387'),
+('5330f956-f5b1-4bc0-9fa6-59ff255a568a', 'manager@example.com', '$2b$10$ErNs.2OBNNyVTcN1mTtPnuhe7n/loU2RJJj3CUm.QQEI.pNiL5tiG', 'MANAGER', NULL, NULL, '163aad68-68d7-4a05-b820-86f9e86710f4', '2026-04-04 13:37:21.584', '2026-04-04 13:37:21.584'),
+('5b345bb6-530c-4eca-8801-bea4ca87357f', 'employee@example.com', '$2b$10$ErNs.2OBNNyVTcN1mTtPnuhe7n/loU2RJJj3CUm.QQEI.pNiL5tiG', 'EMPLOYEE', NULL, NULL, 'b93a4d90-2454-4694-8edd-dcbb7e408098', '2026-04-04 13:37:21.597', '2026-04-04 13:37:21.597'),
+('76a4575d-7021-403f-86a4-10c11ad2ef3a', 'admin@gmail.com', '$2b$10$x0RCIIaY/ngnMkkt2tbRL.jB8qp2sZPI2J4vVoybW3L4lk.5JMcrm', 'ADMIN', 'admin demo', NULL, 'c4553f00-3292-4798-8fc6-74737b0c7fa1', '2026-05-27 07:46:31.929', '2026-05-27 07:46:31.929');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `video_recordings`
+--
+
+CREATE TABLE `video_recordings` (
+  `id` varchar(191) NOT NULL,
+  `employeeId` varchar(191) NOT NULL,
+  `organizationId` varchar(191) NOT NULL,
+  `fileUrl` longtext NOT NULL,
+  `sizeMb` double DEFAULT NULL,
+  `createdAt` datetime(3) NOT NULL DEFAULT current_timestamp(3)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `work_zones`
+--
+
+CREATE TABLE `work_zones` (
+  `id` varchar(191) NOT NULL,
+  `organizationId` varchar(191) NOT NULL,
+  `name` varchar(191) NOT NULL,
+  `type` varchar(191) NOT NULL DEFAULT 'Office',
+  `latitude` double NOT NULL,
+  `longitude` double NOT NULL,
+  `radius` double NOT NULL DEFAULT 100,
+  `createdAt` datetime(3) NOT NULL DEFAULT current_timestamp(3)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Indexes for dumped tables
+--
+
+--
+-- Indexes for table `activity_logs`
+--
+ALTER TABLE `activity_logs`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `activity_logs_employeeId_fkey` (`employeeId`),
+  ADD KEY `activity_logs_taskId_fkey` (`taskId`),
+  ADD KEY `activity_logs_organizationId_fkey` (`organizationId`);
+
+--
+-- Indexes for table `advanced_tracking_settings`
+--
+ALTER TABLE `advanced_tracking_settings`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `advanced_tracking_settings_organizationId_key` (`organizationId`);
+
+--
+-- Indexes for table `agents`
+--
+ALTER TABLE `agents`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `agents_employeeId_key` (`employeeId`),
+  ADD UNIQUE KEY `agents_deviceId_key` (`deviceId`);
+
+--
+-- Indexes for table `alert_rules`
+--
+ALTER TABLE `alert_rules`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `alert_rules_organizationId_fkey` (`organizationId`);
+
+--
+-- Indexes for table `alert_settings`
+--
+ALTER TABLE `alert_settings`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `alert_settings_organizationId_key` (`organizationId`);
+
+--
+-- Indexes for table `app_usage_logs`
+--
+ALTER TABLE `app_usage_logs`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `app_usage_logs_employeeId_fkey` (`employeeId`),
+  ADD KEY `app_usage_logs_organizationId_fkey` (`organizationId`);
+
+--
+-- Indexes for table `attendance`
+--
+ALTER TABLE `attendance`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `attendance_employeeId_fkey` (`employeeId`),
+  ADD KEY `attendance_organizationId_fkey` (`organizationId`);
+
+--
+-- Indexes for table `audit_logs`
+--
+ALTER TABLE `audit_logs`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `audit_logs_organizationId_fkey` (`organizationId`),
+  ADD KEY `audit_logs_userId_fkey` (`userId`);
+
+--
+-- Indexes for table `compliance_settings`
+--
+ALTER TABLE `compliance_settings`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `compliance_settings_organizationId_key` (`organizationId`);
+
+--
+-- Indexes for table `email_reports`
+--
+ALTER TABLE `email_reports`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `email_reports_organizationId_fkey` (`organizationId`);
+
+--
+-- Indexes for table `employees`
+--
+ALTER TABLE `employees`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `employees_email_key` (`email`),
+  ADD KEY `employees_teamId_fkey` (`teamId`),
+  ADD KEY `employees_organizationId_fkey` (`organizationId`),
+  ADD KEY `employees_trackingSettingId_fkey` (`trackingSettingId`);
+
+--
+-- Indexes for table `goals`
+--
+ALTER TABLE `goals`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `goals_organizationId_fkey` (`organizationId`);
+
+--
+-- Indexes for table `goal_activities`
+--
+ALTER TABLE `goal_activities`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `goal_activities_goalId_fkey` (`goalId`);
+
+--
+-- Indexes for table `goal_stakeholders`
+--
+ALTER TABLE `goal_stakeholders`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `goal_stakeholders_goalId_employeeId_key` (`goalId`,`employeeId`),
+  ADD KEY `goal_stakeholders_employeeId_fkey` (`employeeId`);
+
+--
+-- Indexes for table `integrations`
+--
+ALTER TABLE `integrations`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `integrations_organizationId_integrationId_key` (`organizationId`,`integrationId`);
+
+--
+-- Indexes for table `invitation_tokens`
+--
+ALTER TABLE `invitation_tokens`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `invitation_tokens_token_key` (`token`);
+
+--
+-- Indexes for table `invoices`
+--
+ALTER TABLE `invoices`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `invoices_invoiceNumber_key` (`invoiceNumber`),
+  ADD KEY `invoices_organizationId_fkey` (`organizationId`);
+
+--
+-- Indexes for table `live_activities`
+--
+ALTER TABLE `live_activities`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `live_activities_employeeId_fkey` (`employeeId`),
+  ADD KEY `live_activities_organizationId_fkey` (`organizationId`);
+
+--
+-- Indexes for table `locations`
+--
+ALTER TABLE `locations`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `locations_organizationId_fkey` (`organizationId`);
+
+--
+-- Indexes for table `location_logs`
+--
+ALTER TABLE `location_logs`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `location_logs_employeeId_fkey` (`employeeId`),
+  ADD KEY `location_logs_organizationId_fkey` (`organizationId`);
+
+--
+-- Indexes for table `manual_time_entries`
+--
+ALTER TABLE `manual_time_entries`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `manual_time_entries_employeeId_fkey` (`employeeId`),
+  ADD KEY `manual_time_entries_organizationId_fkey` (`organizationId`);
+
+--
+-- Indexes for table `organizations`
+--
+ALTER TABLE `organizations`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `organizations_workspaceId_key` (`workspaceId`);
+
+--
+-- Indexes for table `payroll_records`
+--
+ALTER TABLE `payroll_records`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `payroll_records_employeeId_fkey` (`employeeId`);
+
+--
+-- Indexes for table `productivity_rules`
+--
+ALTER TABLE `productivity_rules`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `productivity_rules_organizationId_domain_key` (`organizationId`,`domain`),
+  ADD KEY `productivity_rules_tagId_fkey` (`tagId`);
+
+--
+-- Indexes for table `productivity_tags`
+--
+ALTER TABLE `productivity_tags`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `productivity_tags_organizationId_fkey` (`organizationId`);
+
+--
+-- Indexes for table `projects`
+--
+ALTER TABLE `projects`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `projects_organizationId_fkey` (`organizationId`);
+
+--
+-- Indexes for table `project_assignments`
+--
+ALTER TABLE `project_assignments`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `project_assignments_projectId_employeeId_key` (`projectId`,`employeeId`),
+  ADD KEY `project_assignments_employeeId_fkey` (`employeeId`);
+
+--
+-- Indexes for table `project_time_logs`
+--
+ALTER TABLE `project_time_logs`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `ptl_project_id_fkey` (`projectId`),
+  ADD KEY `ptl_employee_id_fkey` (`employeeId`);
+
+--
+-- Indexes for table `report_settings`
+--
+ALTER TABLE `report_settings`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `report_settings_organizationId_key` (`organizationId`);
+
+--
+-- Indexes for table `screenshots`
+--
+ALTER TABLE `screenshots`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `screenshots_employeeId_fkey` (`employeeId`),
+  ADD KEY `screenshots_organizationId_fkey` (`organizationId`);
+
+--
+-- Indexes for table `screenshot_settings`
+--
+ALTER TABLE `screenshot_settings`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `screenshot_settings_organizationId_key` (`organizationId`);
+
+--
+-- Indexes for table `shifts`
+--
+ALTER TABLE `shifts`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `shifts_employeeId_fkey` (`employeeId`),
+  ADD KEY `shifts_organizationId_fkey` (`organizationId`);
+
+--
+-- Indexes for table `tasks`
+--
+ALTER TABLE `tasks`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `tasks_projectId_fkey` (`projectId`),
+  ADD KEY `tasks_employeeId_fkey` (`employeeId`),
+  ADD KEY `tasks_organizationId_fkey` (`organizationId`);
+
+--
+-- Indexes for table `teams`
+--
+ALTER TABLE `teams`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `teams_organizationId_fkey` (`organizationId`);
+
+--
+-- Indexes for table `time_offs`
+--
+ALTER TABLE `time_offs`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `time_offs_employeeId_fkey` (`employeeId`),
+  ADD KEY `time_offs_organizationId_fkey` (`organizationId`);
+
+--
+-- Indexes for table `tracking_data`
+--
+ALTER TABLE `tracking_data`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `tracking_data_employeeId_fkey` (`employeeId`);
+
+--
+-- Indexes for table `tracking_settings`
+--
+ALTER TABLE `tracking_settings`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `tracking_settings_organizationId_fkey` (`organizationId`);
+
+--
+-- Indexes for table `users`
+--
+ALTER TABLE `users`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `users_email_key` (`email`),
+  ADD UNIQUE KEY `users_employeeId_key` (`employeeId`);
+
+--
+-- Indexes for table `video_recordings`
+--
+ALTER TABLE `video_recordings`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `video_recordings_employeeId_fkey` (`employeeId`),
+  ADD KEY `video_recordings_organizationId_fkey` (`organizationId`);
+
+--
+-- Indexes for table `work_zones`
+--
+ALTER TABLE `work_zones`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `work_zones_organizationId_fkey` (`organizationId`);
+
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `activity_logs`
+--
+ALTER TABLE `activity_logs`
+  ADD CONSTRAINT `activity_logs_employeeId_fkey` FOREIGN KEY (`employeeId`) REFERENCES `employees` (`id`) ON UPDATE CASCADE,
+  ADD CONSTRAINT `activity_logs_organizationId_fkey` FOREIGN KEY (`organizationId`) REFERENCES `organizations` (`id`) ON UPDATE CASCADE,
+  ADD CONSTRAINT `activity_logs_taskId_fkey` FOREIGN KEY (`taskId`) REFERENCES `tasks` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+--
+-- Constraints for table `advanced_tracking_settings`
+--
+ALTER TABLE `advanced_tracking_settings`
+  ADD CONSTRAINT `advanced_tracking_settings_organizationId_fkey` FOREIGN KEY (`organizationId`) REFERENCES `organizations` (`id`) ON UPDATE CASCADE;
+
+--
+-- Constraints for table `agents`
+--
+ALTER TABLE `agents`
+  ADD CONSTRAINT `agents_employeeId_fkey` FOREIGN KEY (`employeeId`) REFERENCES `employees` (`id`) ON UPDATE CASCADE;
+
+--
+-- Constraints for table `alert_rules`
+--
+ALTER TABLE `alert_rules`
+  ADD CONSTRAINT `alert_rules_organizationId_fkey` FOREIGN KEY (`organizationId`) REFERENCES `organizations` (`id`) ON UPDATE CASCADE;
+
+--
+-- Constraints for table `alert_settings`
+--
+ALTER TABLE `alert_settings`
+  ADD CONSTRAINT `alert_settings_organizationId_fkey` FOREIGN KEY (`organizationId`) REFERENCES `organizations` (`id`) ON UPDATE CASCADE;
+
+--
+-- Constraints for table `app_usage_logs`
+--
+ALTER TABLE `app_usage_logs`
+  ADD CONSTRAINT `app_usage_logs_employeeId_fkey` FOREIGN KEY (`employeeId`) REFERENCES `employees` (`id`) ON UPDATE CASCADE,
+  ADD CONSTRAINT `app_usage_logs_organizationId_fkey` FOREIGN KEY (`organizationId`) REFERENCES `organizations` (`id`) ON UPDATE CASCADE;
+
+--
+-- Constraints for table `attendance`
+--
+ALTER TABLE `attendance`
+  ADD CONSTRAINT `attendance_employeeId_fkey` FOREIGN KEY (`employeeId`) REFERENCES `employees` (`id`) ON UPDATE CASCADE,
+  ADD CONSTRAINT `attendance_organizationId_fkey` FOREIGN KEY (`organizationId`) REFERENCES `organizations` (`id`) ON UPDATE CASCADE;
+
+--
+-- Constraints for table `audit_logs`
+--
+ALTER TABLE `audit_logs`
+  ADD CONSTRAINT `audit_logs_organizationId_fkey` FOREIGN KEY (`organizationId`) REFERENCES `organizations` (`id`) ON UPDATE CASCADE,
+  ADD CONSTRAINT `audit_logs_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `employees` (`id`) ON UPDATE CASCADE;
+
+--
+-- Constraints for table `compliance_settings`
+--
+ALTER TABLE `compliance_settings`
+  ADD CONSTRAINT `compliance_settings_organizationId_fkey` FOREIGN KEY (`organizationId`) REFERENCES `organizations` (`id`) ON UPDATE CASCADE;
+
+--
+-- Constraints for table `email_reports`
+--
+ALTER TABLE `email_reports`
+  ADD CONSTRAINT `email_reports_organizationId_fkey` FOREIGN KEY (`organizationId`) REFERENCES `organizations` (`id`) ON UPDATE CASCADE;
+
+--
+-- Constraints for table `employees`
+--
+ALTER TABLE `employees`
+  ADD CONSTRAINT `employees_organizationId_fkey` FOREIGN KEY (`organizationId`) REFERENCES `organizations` (`id`) ON UPDATE CASCADE,
+  ADD CONSTRAINT `employees_teamId_fkey` FOREIGN KEY (`teamId`) REFERENCES `teams` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  ADD CONSTRAINT `employees_trackingSettingId_fkey` FOREIGN KEY (`trackingSettingId`) REFERENCES `tracking_settings` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+--
+-- Constraints for table `goals`
+--
+ALTER TABLE `goals`
+  ADD CONSTRAINT `goals_organizationId_fkey` FOREIGN KEY (`organizationId`) REFERENCES `organizations` (`id`) ON UPDATE CASCADE;
+
+--
+-- Constraints for table `goal_activities`
+--
+ALTER TABLE `goal_activities`
+  ADD CONSTRAINT `goal_activities_goalId_fkey` FOREIGN KEY (`goalId`) REFERENCES `goals` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `goal_stakeholders`
+--
+ALTER TABLE `goal_stakeholders`
+  ADD CONSTRAINT `goal_stakeholders_employeeId_fkey` FOREIGN KEY (`employeeId`) REFERENCES `employees` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `goal_stakeholders_goalId_fkey` FOREIGN KEY (`goalId`) REFERENCES `goals` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `integrations`
+--
+ALTER TABLE `integrations`
+  ADD CONSTRAINT `integrations_organizationId_fkey` FOREIGN KEY (`organizationId`) REFERENCES `organizations` (`id`) ON UPDATE CASCADE;
+
+--
+-- Constraints for table `invoices`
+--
+ALTER TABLE `invoices`
+  ADD CONSTRAINT `invoices_organizationId_fkey` FOREIGN KEY (`organizationId`) REFERENCES `organizations` (`id`) ON UPDATE CASCADE;
+
+--
+-- Constraints for table `live_activities`
+--
+ALTER TABLE `live_activities`
+  ADD CONSTRAINT `live_activities_employeeId_fkey` FOREIGN KEY (`employeeId`) REFERENCES `employees` (`id`) ON UPDATE CASCADE,
+  ADD CONSTRAINT `live_activities_organizationId_fkey` FOREIGN KEY (`organizationId`) REFERENCES `organizations` (`id`) ON UPDATE CASCADE;
+
+--
+-- Constraints for table `locations`
+--
+ALTER TABLE `locations`
+  ADD CONSTRAINT `locations_organizationId_fkey` FOREIGN KEY (`organizationId`) REFERENCES `organizations` (`id`) ON UPDATE CASCADE;
+
+--
+-- Constraints for table `location_logs`
+--
+ALTER TABLE `location_logs`
+  ADD CONSTRAINT `location_logs_employeeId_fkey` FOREIGN KEY (`employeeId`) REFERENCES `employees` (`id`) ON UPDATE CASCADE,
+  ADD CONSTRAINT `location_logs_organizationId_fkey` FOREIGN KEY (`organizationId`) REFERENCES `organizations` (`id`) ON UPDATE CASCADE;
+
+--
+-- Constraints for table `manual_time_entries`
+--
+ALTER TABLE `manual_time_entries`
+  ADD CONSTRAINT `manual_time_entries_employeeId_fkey` FOREIGN KEY (`employeeId`) REFERENCES `employees` (`id`) ON UPDATE CASCADE,
+  ADD CONSTRAINT `manual_time_entries_organizationId_fkey` FOREIGN KEY (`organizationId`) REFERENCES `organizations` (`id`) ON UPDATE CASCADE;
+
+--
+-- Constraints for table `payroll_records`
+--
+ALTER TABLE `payroll_records`
+  ADD CONSTRAINT `payroll_records_employeeId_fkey` FOREIGN KEY (`employeeId`) REFERENCES `employees` (`id`) ON UPDATE CASCADE;
+
+--
+-- Constraints for table `productivity_rules`
+--
+ALTER TABLE `productivity_rules`
+  ADD CONSTRAINT `productivity_rules_organizationId_fkey` FOREIGN KEY (`organizationId`) REFERENCES `organizations` (`id`) ON UPDATE CASCADE,
+  ADD CONSTRAINT `productivity_rules_tagId_fkey` FOREIGN KEY (`tagId`) REFERENCES `productivity_tags` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+--
+-- Constraints for table `productivity_tags`
+--
+ALTER TABLE `productivity_tags`
+  ADD CONSTRAINT `productivity_tags_organizationId_fkey` FOREIGN KEY (`organizationId`) REFERENCES `organizations` (`id`) ON UPDATE CASCADE;
+
+--
+-- Constraints for table `projects`
+--
+ALTER TABLE `projects`
+  ADD CONSTRAINT `projects_organizationId_fkey` FOREIGN KEY (`organizationId`) REFERENCES `organizations` (`id`) ON UPDATE CASCADE;
+
+--
+-- Constraints for table `project_assignments`
+--
+ALTER TABLE `project_assignments`
+  ADD CONSTRAINT `project_assignments_employeeId_fkey` FOREIGN KEY (`employeeId`) REFERENCES `employees` (`id`) ON UPDATE CASCADE,
+  ADD CONSTRAINT `project_assignments_projectId_fkey` FOREIGN KEY (`projectId`) REFERENCES `projects` (`id`) ON UPDATE CASCADE;
+
+--
+-- Constraints for table `project_time_logs`
+--
+ALTER TABLE `project_time_logs`
+  ADD CONSTRAINT `ptl_employee_id_fkey` FOREIGN KEY (`employeeId`) REFERENCES `employees` (`id`) ON UPDATE CASCADE,
+  ADD CONSTRAINT `ptl_project_id_fkey` FOREIGN KEY (`projectId`) REFERENCES `projects` (`id`) ON UPDATE CASCADE;
+
+--
+-- Constraints for table `report_settings`
+--
+ALTER TABLE `report_settings`
+  ADD CONSTRAINT `report_settings_organizationId_fkey` FOREIGN KEY (`organizationId`) REFERENCES `organizations` (`id`) ON UPDATE CASCADE;
+
+--
+-- Constraints for table `screenshots`
+--
+ALTER TABLE `screenshots`
+  ADD CONSTRAINT `screenshots_employeeId_fkey` FOREIGN KEY (`employeeId`) REFERENCES `employees` (`id`) ON UPDATE CASCADE,
+  ADD CONSTRAINT `screenshots_organizationId_fkey` FOREIGN KEY (`organizationId`) REFERENCES `organizations` (`id`) ON UPDATE CASCADE;
+
+--
+-- Constraints for table `screenshot_settings`
+--
+ALTER TABLE `screenshot_settings`
+  ADD CONSTRAINT `screenshot_settings_organizationId_fkey` FOREIGN KEY (`organizationId`) REFERENCES `organizations` (`id`) ON UPDATE CASCADE;
+
+--
+-- Constraints for table `shifts`
+--
+ALTER TABLE `shifts`
+  ADD CONSTRAINT `shifts_employeeId_fkey` FOREIGN KEY (`employeeId`) REFERENCES `employees` (`id`) ON UPDATE CASCADE,
+  ADD CONSTRAINT `shifts_organizationId_fkey` FOREIGN KEY (`organizationId`) REFERENCES `organizations` (`id`) ON UPDATE CASCADE;
+
+--
+-- Constraints for table `tasks`
+--
+ALTER TABLE `tasks`
+  ADD CONSTRAINT `tasks_employeeId_fkey` FOREIGN KEY (`employeeId`) REFERENCES `employees` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  ADD CONSTRAINT `tasks_organizationId_fkey` FOREIGN KEY (`organizationId`) REFERENCES `organizations` (`id`) ON UPDATE CASCADE,
+  ADD CONSTRAINT `tasks_projectId_fkey` FOREIGN KEY (`projectId`) REFERENCES `projects` (`id`) ON UPDATE CASCADE;
+
+--
+-- Constraints for table `teams`
+--
+ALTER TABLE `teams`
+  ADD CONSTRAINT `teams_organizationId_fkey` FOREIGN KEY (`organizationId`) REFERENCES `organizations` (`id`) ON UPDATE CASCADE;
+
+--
+-- Constraints for table `time_offs`
+--
+ALTER TABLE `time_offs`
+  ADD CONSTRAINT `time_offs_employeeId_fkey` FOREIGN KEY (`employeeId`) REFERENCES `employees` (`id`) ON UPDATE CASCADE,
+  ADD CONSTRAINT `time_offs_organizationId_fkey` FOREIGN KEY (`organizationId`) REFERENCES `organizations` (`id`) ON UPDATE CASCADE;
+
+--
+-- Constraints for table `tracking_data`
+--
+ALTER TABLE `tracking_data`
+  ADD CONSTRAINT `tracking_data_employeeId_fkey` FOREIGN KEY (`employeeId`) REFERENCES `employees` (`id`) ON UPDATE CASCADE;
+
+--
+-- Constraints for table `tracking_settings`
+--
+ALTER TABLE `tracking_settings`
+  ADD CONSTRAINT `tracking_settings_organizationId_fkey` FOREIGN KEY (`organizationId`) REFERENCES `organizations` (`id`) ON UPDATE CASCADE;
+
+--
+-- Constraints for table `users`
+--
+ALTER TABLE `users`
+  ADD CONSTRAINT `users_employeeId_fkey` FOREIGN KEY (`employeeId`) REFERENCES `employees` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+--
+-- Constraints for table `video_recordings`
+--
+ALTER TABLE `video_recordings`
+  ADD CONSTRAINT `video_recordings_employeeId_fkey` FOREIGN KEY (`employeeId`) REFERENCES `employees` (`id`) ON UPDATE CASCADE,
+  ADD CONSTRAINT `video_recordings_organizationId_fkey` FOREIGN KEY (`organizationId`) REFERENCES `organizations` (`id`) ON UPDATE CASCADE;
+
+--
+-- Constraints for table `work_zones`
+--
+ALTER TABLE `work_zones`
+  ADD CONSTRAINT `work_zones_organizationId_fkey` FOREIGN KEY (`organizationId`) REFERENCES `organizations` (`id`) ON UPDATE CASCADE;
+COMMIT;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
