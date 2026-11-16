@@ -126,6 +126,8 @@ model Organization {
   screenshotSetting ScreenshotSetting?
   videoRecordings  VideoRecording[]
   timesheets       Timesheet[]
+  notifications    Notification[]
+  alertLogs        AlertLog[]
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
 
@@ -200,6 +202,7 @@ model Employee {
   tracking           Tracking[]
   videoRecordings    VideoRecording[]
   timesheets         Timesheet[]
+  alertLogs          AlertLog[]
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
 
@@ -822,4 +825,43 @@ model TimesheetApproval {
 
   @@index([timesheetId])
   @@map("timesheet_approvals")
+}
+
+model AlertLog {
+  id             String       @id @default(uuid())
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+  employee       Employee     @relation(fields: [employeeId], references: [id])
+  employeeId     String
+  ruleType       String       // "LATE_ARRIVAL", "CONTINUOUS_IDLE", "PROHIBITED_APP", "SECURITY"
+  trigger        String       // e.g., "Late Arrival (18m)", "Idle (30m)", "Prohibited Application"
+  severity       String       @default("warning") // "critical", "warning", "info"
+  message        String       @db.Text
+  screenshotUrl  String?      @db.LongText
+  metadata       Json?
+  resolved       Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([organizationId, createdAt])
+  @@index([employeeId, createdAt])
+  @@map("alert_logs")
+}
+
+model Notification {
+  id             String       @id @default(uuid())
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+  targetUserId   String?      // null for all managers/admins, or specific userId
+  title          String
+  description    String?      @db.Text
+  type           String       @default("info") // "alert", "warning", "success", "info"
+  unread         Boolean      @default(true)
+  link           String?
+  metadata       Json?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([organizationId, unread, createdAt])
+  @@map("notifications")
 }

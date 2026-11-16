@@ -1,5 +1,6 @@
 const emailReportsService = require('./email-reports.service');
 const { getOrganizationId } = require('../../utils/orgId');
+const prisma = require('../../config/db');
 
 exports.createReport = async (req, res) => {
     try {
@@ -50,5 +51,26 @@ exports.deleteReport = async (req, res) => {
     } catch (error) {
         console.error('Error deleting email report:', error);
         res.status(500).json({ success: false, message: 'Failed to delete email report' });
+    }
+};
+
+exports.triggerReport = async (req, res) => {
+    try {
+        const organizationId = await getOrganizationId(req);
+        const report = await prisma.emailReport.findFirst({
+            where: { id: req.params.id, organizationId },
+            include: { organization: true }
+        });
+
+        if (!report) {
+            return res.status(404).json({ success: false, message: 'Email report configuration not found' });
+        }
+
+        const reportScheduler = require('./reportScheduler');
+        const result = await reportScheduler.dispatchReport(report, { force: true });
+        res.json({ success: true, data: result });
+    } catch (error) {
+        console.error('Error triggering email report:', error);
+        res.status(500).json({ success: false, message: error.message });
     }
 };

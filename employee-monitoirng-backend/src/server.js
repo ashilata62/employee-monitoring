@@ -6,6 +6,7 @@ const { startSimulator: startScreenshotSimulator } = require('./modules/screensh
 const { startAppUsageSimulator } = require('./services/appUsageSimulator');
 const { initSocketServer } = require('./socket/server');
 const cleanupService = require('./modules/screenshots/cleanup.service');
+const reportScheduler = require('./modules/email-reports/reportScheduler');
 const { processAllStaleSessions } = require('./utils/attendanceSession');
 
 const server = app.listen(PORT, () => {
@@ -13,6 +14,9 @@ const server = app.listen(PORT, () => {
     
     // Start Cleanup Service
     cleanupService.init();
+
+    // Start Automated PDF Email Reports Scheduler (Developer 4)
+    reportScheduler.init();
 
     // Auto clock-out when agent silent for 10+ minutes
     setInterval(() => {

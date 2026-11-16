@@ -320,6 +320,29 @@ const logActivity = async (employeeId, data) => {
         });
     } catch (e) { console.error('Agent update failed:', e.message); }
 
+    // 7. Background Alert Evaluation (Developer 4 - Non-blocking)
+    try {
+        const alertsService = require('../alerts/alerts.service');
+        // Evaluate Continuous Idle Time
+        alertsService.evaluateContinuousIdle({
+            employeeId,
+            organizationId: employee.organizationId,
+            idleTime,
+            timestamp
+        }).catch(err => console.error('[AgentService] Continuous idle evaluation failed:', err.message));
+
+        // Evaluate Prohibited Application Access & Violation Screenshot Sync
+        alertsService.evaluateProhibitedApp({
+            employeeId,
+            organizationId: employee.organizationId,
+            activeApp,
+            activeWindow,
+            screenshotUrl: finalScreenshotUrl
+        }).catch(err => console.error('[AgentService] Prohibited app evaluation failed:', err.message));
+    } catch (alertErr) {
+        console.error('[AgentService] Alert evaluation trigger failed:', alertErr.message);
+    }
+
     return {
         success: true,
         screenshotSaved,

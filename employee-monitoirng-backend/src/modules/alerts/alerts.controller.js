@@ -62,6 +62,43 @@ const alertsController = {
         } catch (error) {
             res.status(400).json({ message: error.message });
         }
+    },
+
+    // ─── PERSISTENT ALERT HISTORY ──────────────────────────────────────
+    getAlertHistory: async (req, res) => {
+        try {
+            const organizationId = await getOrganizationId(req);
+            const { severity, ruleType, limit, offset } = req.query;
+            const result = await alertsService.getAlertHistory(organizationId, {
+                severity,
+                ruleType,
+                limit,
+                offset
+            });
+            res.json(result);
+        } catch (error) {
+            res.status(500).json({ message: error.message });
+        }
+    },
+
+    dismissAlert: async (req, res) => {
+        try {
+            const organizationId = await getOrganizationId(req);
+            const updated = await alertsService.dismissAlert(req.params.id, organizationId);
+            res.json(updated);
+        } catch (error) {
+            res.status(500).json({ message: error.message });
+        }
+    },
+
+    dismissAllAlerts: async (req, res) => {
+        try {
+            const organizationId = await getOrganizationId(req);
+            const result = await alertsService.dismissAllAlerts(organizationId);
+            res.json({ message: 'All alerts marked as read', count: result.count });
+        } catch (error) {
+            res.status(500).json({ message: error.message });
+        }
     }
 };
 
