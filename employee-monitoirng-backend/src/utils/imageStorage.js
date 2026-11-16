@@ -8,11 +8,13 @@ const ROOT_PUBLIC_DIR = path.join(__dirname, '../../public');
 const SCREENSHOT_UPLOAD_DIR = path.join(ROOT_PUBLIC_DIR, 'uploads/screenshots');
 
 function isCloudinaryConfigured() {
-    return Boolean(
-        process.env.CLOUDINARY_CLOUD_NAME &&
-        process.env.CLOUDINARY_API_KEY &&
-        process.env.CLOUDINARY_API_SECRET
-    );
+    const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+    const apiKey = process.env.CLOUDINARY_API_KEY;
+    const apiSecret = process.env.CLOUDINARY_API_SECRET;
+
+    if (!cloudName || !apiKey || !apiSecret) return false;
+    if (apiKey.includes('your_') || cloudName.includes('your_') || apiSecret.includes('your_')) return false;
+    return true;
 }
 
 function configureCloudinary() {
@@ -69,23 +71,27 @@ async function uploadImageBuffer(buffer, options = {}) {
     const processedBuffer = await processImageBuffer(buffer, { format, quality, blur });
 
     if (useCloudinary && isCloudinaryConfigured()) {
-        configureCloudinary();
-        const publicId = `${fileNamePrefix}_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
+        try {
+            configureCloudinary();
+            const publicId = `${fileNamePrefix}_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
 
-        const result = await cloudinary.uploader.upload(
-            `data:image/${format};base64,${processedBuffer.toString('base64')}`,
-            {
-                folder,
-                public_id: publicId,
-                resource_type: 'image'
-            }
-        );
+            const result = await cloudinary.uploader.upload(
+                `data:image/${format};base64,${processedBuffer.toString('base64')}`,
+                {
+                    folder,
+                    public_id: publicId,
+                    resource_type: 'image'
+                }
+            );
 
-        return {
-            imageUrl: result.secure_url,
-            publicId: result.public_id,
-            storage: 'cloudinary'
-        };
+            return {
+                imageUrl: result.secure_url,
+                publicId: result.public_id,
+                storage: 'cloudinary'
+            };
+        } catch (cloudErr) {
+            console.warn('[imageStorage] Cloudinary upload failed, falling back to local disk storage:', cloudErr.message);
+        }
     }
 
     ensureLocalUploadDir();

@@ -131,6 +131,27 @@ const activityController = {
             return errorResponse(res, error.message);
         }
     },
+
+    getTimelineReport: async (req, res) => {
+        try {
+            const organizationId = await getOrganizationId(req);
+            const { date, employeeId, teamId } = req.query;
+            const { role, employeeId: currentEmployeeId } = req.user;
+
+            const targetEmployeeId = role === 'EMPLOYEE' ? currentEmployeeId : employeeId;
+
+            const report = await activityService.getTimelineReport(
+                organizationId,
+                date,
+                targetEmployeeId,
+                teamId
+            );
+            return successResponse(res, report, 'Activities timeline report fetched successfully');
+        } catch (error) {
+            console.error('[ActivityController] Timeline Error:', error);
+            return errorResponse(res, error.message);
+        }
+    },
 };
 
 module.exports = activityController;

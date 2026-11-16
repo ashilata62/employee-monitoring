@@ -32,6 +32,7 @@ router.use('/organization', organizationRoutes);
 router.use('/teams', teamsRoutes);
 router.use('/employees', employeesRoutes);
 router.use('/activity', activityRoutes);
+router.use('/activities', activityRoutes);
 router.use('/screenshots', screenshotsRoutes);
 router.use('/analytics', analyticsRoutes);
 router.use('/productivity', productivityRoutes);

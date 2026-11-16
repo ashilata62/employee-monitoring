@@ -118,7 +118,7 @@ const deleteAgent = async (agentId) => {
 /**
  * Update agent heartbeat
  */
-const heartbeat = async (deviceId) => {
+const heartbeat = async (deviceId, taskId = null) => {
     const agent = await prisma.agent.update({
         where: { deviceId },
         data: {
@@ -134,7 +134,7 @@ const heartbeat = async (deviceId) => {
             console.error('[AgentService] Heartbeat attendance pulse failed:', err.message);
         }
     }
-    return agent;
+    return { ...agent, activeTaskId: taskId || null };
 };
 
 /**
@@ -171,25 +171,40 @@ const logActivity = async (employeeId, data) => {
     );
     const { cleanAppName, productivity, appCategory, appDomain } = resolved;
 
-    console.log(`[AgentService:${employeeId}] Logging activities: App=${cleanAppName}, Idle=${idleTime}s, Productivity=${productivity}`);
+    const isViolation = !!data.violation;
+    const finalProductivity = isViolation ? 'UNPRODUCTIVE' : productivity;
+    const finalActivityType = isViolation ? 'ACTIVE' : activityType;
+
+    console.log(`[AgentService:${employeeId}] Logging activities: App=${cleanAppName}, Idle=${idleTime}s, Productivity=${finalProductivity}, Task=${data.taskId || 'None'}, Violation=${isViolation}`);
 
     // 1. Save Activity Log
     try {
+        let validTaskIdForDb = null;
+        if (data.taskId) {
+            try {
+                const taskExists = await prisma.task.findUnique({ where: { id: data.taskId }, select: { id: true } });
+                if (taskExists) validTaskIdForDb = taskExists.id;
+            } catch (err) {
+                // Ignore non-UUID or non-existent task IDs safely
+            }
+        }
+
         await prisma.activityLog.create({
             data: {
                 employeeId,
                 organizationId: employee.organizationId,
-                activityType,
-                productivity,
+                activityType: finalActivityType,
+                productivity: finalProductivity,
                 duration: HEARTBEAT_SECONDS,
                 appWebsite: cleanAppName,
-                timestamp: timestamp ? new Date(timestamp) : new Date()
+                timestamp: timestamp ? new Date(timestamp) : new Date(),
+                ...(validTaskIdForDb ? { taskId: validTaskIdForDb } : {})
             }
         });
     } catch (e) { console.error(`[AgentService:${employeeId}] ActivityLog failed:`, e.message); }
 
     // 1b. App usage for Apps & Websites reports
-    if (activityType === 'ACTIVE') {
+    if (finalActivityType === 'ACTIVE') {
         try {
             await upsertAppUsageLog({
                 employeeId,
@@ -197,7 +212,7 @@ const logActivity = async (employeeId, data) => {
                 appName: cleanAppName,
                 domain: appDomain,
                 category: appCategory,
-                productivity,
+                productivity: finalProductivity,
             });
         } catch (e) { console.error(`[AgentService:${employeeId}] AppUsageLog failed:`, e.message); }
     }
@@ -243,18 +258,19 @@ const logActivity = async (employeeId, data) => {
 
         try {
             const isIdle = (idleTime || 0) > 60;
+            const screenshotProductivity = isViolation ? 'UNPRODUCTIVE' : (isIdle ? 'UNPRODUCTIVE' : 'NEUTRAL');
             await prisma.screenshot.create({
                 data: {
                     employeeId,
                     organizationId: employee.organizationId,
                     imageUrl: finalUrl,
                     capturedAt: timestamp ? new Date(timestamp) : new Date(),
-                    productivity: isIdle ? 'UNPRODUCTIVE' : 'NEUTRAL'
+                    productivity: screenshotProductivity
                 }
             });
             screenshotSaved = true;
             finalScreenshotUrl = finalUrl;
-            console.log(`[AgentService:${employeeId}] Screenshot record created in DB`);
+            console.log(`[AgentService:${employeeId}] Screenshot record created in DB (Productivity: ${screenshotProductivity})`);
         } catch (e) { console.error(`[AgentService:${employeeId}] Screenshot log failed:`, e.message); }
         
         // Also update tracking for history with the file URL

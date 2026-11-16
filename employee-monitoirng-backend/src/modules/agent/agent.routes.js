@@ -42,6 +42,7 @@ router.post('/register', agentController.register);
 router.get('/check-device/:deviceId', agentController.checkDevice);
 router.post('/heartbeat', agentController.heartbeat);
 router.post('/activity', agentController.logActivity);
+router.post('/idle-activity', agentController.handleIdleActivity);
 router.post('/stop-tracking', agentController.stopTracking);
 
 // Authenticated status and management

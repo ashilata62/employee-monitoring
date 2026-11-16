@@ -148,7 +148,7 @@ const register = async (req, res) => {
 
 const heartbeat = async (req, res) => {
     try {
-        const { deviceId } = req.body;
+        const { deviceId, taskId } = req.body;
         if (!deviceId) return errorResponse(res, 'Device ID is required', 400);
 
         const agent = await prisma.agent.findUnique({ where: { deviceId } });
@@ -159,8 +159,13 @@ const heartbeat = async (req, res) => {
             return errorResponse(res, 'Agent is not approved. Please contact admin.', 403);
         }
 
-        await agentService.heartbeat(deviceId);
-        return successResponse(res, null, 'Heartbeat received');
+        // Validate and sanitize taskId safely (Requirement 2 & 4)
+        const validatedTaskId = (typeof taskId === 'string' && taskId.trim().length > 0)
+            ? taskId.trim()
+            : null;
+
+        await agentService.heartbeat(deviceId, validatedTaskId);
+        return successResponse(res, { deviceId, taskId: validatedTaskId }, 'Heartbeat received');
     } catch (error) {
         console.error('Agent heartbeat error:', error);
         return errorResponse(res, error.message || 'Heartbeat failed', 500);
@@ -169,10 +174,17 @@ const heartbeat = async (req, res) => {
 
 const logActivity = async (req, res) => {
     try {
-        const { employeeId, data } = req.body;
+        const { employeeId, data, taskId } = req.body;
         const authHeader = req.headers['x-agent-auth'] || req.headers['X-Agent-Auth'];
 
         if (!employeeId || !data) return errorResponse(res, 'Employee ID and Data are required', 400);
+
+        // Validate and sanitize taskId safely (Requirement 2 & 4)
+        const rawTaskId = taskId || data.taskId;
+        const validatedTaskId = (typeof rawTaskId === 'string' && rawTaskId.trim().length > 0)
+            ? rawTaskId.trim()
+            : null;
+        data.taskId = validatedTaskId;
 
         // Check Agent Status
         const agent = await prisma.agent.findUnique({ 
@@ -199,28 +211,45 @@ const logActivity = async (req, res) => {
         if (io && organizationId) {
             const room = `org_${organizationId}`;
             
-            // 1. Notify about new screenshot
+            // 1. Notify about new screenshot (with taskId & violation metadata)
             if (logResult?.screenshotSaved && logResult?.finalScreenshotUrl) {
                 io.to(room).emit('screenshot:new', {
                     employeeId,
                     imageUrl: logResult.finalScreenshotUrl,
                     capturedAt: data.timestamp || new Date(),
-                    productivity: 'NEUTRAL',
-                    employeeName: agent.employee.fullName
+                    productivity: data.violation ? 'UNPRODUCTIVE' : (logResult?.productivity || 'NEUTRAL'),
+                    employeeName: agent.employee.fullName,
+                    taskId: validatedTaskId,
+                    violation: !!data.violation,
+                    violationType: data.violationType || null
                 });
             } else if (data.screenshotUrl) {
                 // Helps debug live mismatch: agent sent screenshot but DB/storage save failed.
                 console.warn(`[AgentController] Screenshot event skipped (not persisted) for employee ${employeeId}`);
             }
 
-            // 2. Update activity stream (resolved app name from service)
+            // 1b. If activity violation detected, emit alert
+            if (data.violation) {
+                io.to(room).emit('alert:violation', {
+                    employeeId,
+                    employeeName: agent.employee.fullName,
+                    appName: data.activeApp,
+                    windowTitle: data.activeWindow,
+                    violationType: data.violationType || 'BLACKLISTED_ACTIVITY',
+                    taskId: validatedTaskId,
+                    timestamp: data.timestamp || new Date()
+                });
+            }
+
+            // 2. Update activity stream (with taskId)
             io.to(room).emit('activity:update', {
                 employeeId,
                 activeApp: logResult?.cleanAppName || data.activeApp || 'Unknown',
                 activeWindow: data.activeWindow || 'Unknown',
                 idleTime: data.idleTime || 0,
-                productivity: logResult?.productivity || 'NEUTRAL',
+                productivity: data.violation ? 'UNPRODUCTIVE' : (logResult?.productivity || 'NEUTRAL'),
                 location: data.location ? `${data.location.city}, ${data.location.country}` : 'Remote',
+                taskId: validatedTaskId,
                 timestamp: new Date()
             });
 
@@ -231,7 +260,7 @@ const logActivity = async (req, res) => {
             });
         }
 
-        return successResponse(res, null, 'Activity logged');
+        return successResponse(res, { taskId: validatedTaskId, violation: !!data.violation }, 'Activity logged');
     } catch (error) {
         console.error('Agent logActivity error:', error);
         return errorResponse(res, error.message || 'Failed to log activity', 500);
