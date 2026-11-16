@@ -58,21 +58,45 @@ const videosController = {
         try {
             const organizationId = await getOrganizationId(req);
             const { role, employeeId: userId } = req.user;
-            const { employeeId, limit = 50, offset = 0 } = req.query;
+            const { employeeId, date, startDate, endDate, limit = 100, offset = 0 } = req.query;
 
             let where = { organizationId };
 
             if (role === 'EMPLOYEE') {
                 where.employeeId = userId;
-            } else if (employeeId) {
+            } else if (employeeId && employeeId !== 'All') {
                 where.employeeId = employeeId;
             }
+
+            // Date filtering
+            if (date) {
+                const start = new Date(date);
+                start.setHours(0, 0, 0, 0);
+                const end = new Date(date);
+                end.setHours(23, 59, 59, 999);
+                where.createdAt = { gte: start, lte: end };
+            } else if (startDate || endDate) {
+                where.createdAt = {};
+                if (startDate) {
+                    const start = new Date(startDate);
+                    start.setHours(0, 0, 0, 0);
+                    where.createdAt.gte = start;
+                }
+                if (endDate) {
+                    const end = new Date(endDate);
+                    end.setHours(23, 59, 59, 999);
+                    where.createdAt.lte = end;
+                }
+            }
+
+            const parsedLimit = parseInt(limit, 10) || 100;
+            const parsedOffset = parseInt(offset, 10) || 0;
 
             const videos = await prisma.videoRecording.findMany({
                 where,
                 orderBy: { createdAt: 'desc' },
-                take: parseInt(limit, 10),
-                skip: parseInt(offset, 10),
+                take: parsedLimit,
+                skip: parsedOffset,
                 include: {
                     employee: { select: { id: true, fullName: true, avatar: true } },
                 },

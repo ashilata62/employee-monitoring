@@ -1,5 +1,5 @@
-const app = require('./app');
 const { PORT } = require('./config/env');
+const app = require('./app');
 const logger = require('./utils/logger');
 const activitySimulator = require('./services/activitySimulator');
 const { startSimulator: startScreenshotSimulator } = require('./modules/screenshots/screenshotSimulator');
