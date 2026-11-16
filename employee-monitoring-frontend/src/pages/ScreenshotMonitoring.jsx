@@ -37,7 +37,11 @@ import {
   PieChart,
   Video,
   FileVideo,
-  HardDrive
+  HardDrive,
+  Maximize,
+  Volume2,
+  VolumeX,
+  AlertCircle
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -46,6 +50,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import screenshotService from '../services/screenshotService';
 import videoService from '../services/videoService';
+import { toast } from '../utils/toastManager';
 import { API_BASE_URL, BASE_URL } from '../config/api';
 
 const cn = (...inputs) => twMerge(clsx(inputs));
@@ -189,6 +194,387 @@ const LiveStreamModal = memo(({ isOpen, onClose, employee, socket }) => {
     </div>
   );
 });
+
+// ─── Video Playback Modal Component (Phase 2) ────────────────────────────────
+const VideoPlaybackModal = memo(({ isOpen, onClose, playlist = [], initialIndex = 0, onDeleteVideo, canDelete = false }) => {
+  const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [playbackRate, setPlaybackRate] = useState(1);
+  const [isBuffering, setIsBuffering] = useState(true);
+  const [hasError, setHasError] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+
+  const videoRef = useRef(null);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    setCurrentIndex(initialIndex);
+  }, [initialIndex]);
+
+  const currentVideo = playlist && playlist[currentIndex] ? playlist[currentIndex] : null;
+
+  // Reset states on chunk switch
+  useEffect(() => {
+    setIsPlaying(false);
+    setCurrentTime(0);
+    setDuration(0);
+    setHasError(false);
+    setIsBuffering(true);
+  }, [currentIndex, currentVideo?.id]);
+
+  // Keyboard shortcuts (Space to play/pause, Esc to close, arrows to seek)
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') onClose();
+      if (e.key === ' ') {
+        e.preventDefault();
+        if (videoRef.current) {
+          if (videoRef.current.paused) {
+            videoRef.current.play().catch(() => {});
+          } else {
+            videoRef.current.pause();
+          }
+        }
+      }
+      if (e.key === 'ArrowRight') {
+        if (videoRef.current) videoRef.current.currentTime = Math.min(videoRef.current.duration || 0, videoRef.current.currentTime + 10);
+      }
+      if (e.key === 'ArrowLeft') {
+        if (videoRef.current) videoRef.current.currentTime = Math.max(0, videoRef.current.currentTime - 10);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
+  if (!isOpen || !currentVideo) return null;
+
+  const videoSrc = getImageUrl(currentVideo.fileUrl);
+
+  const formatTime = (secs) => {
+    if (!secs || isNaN(secs) || secs < 0) return '00:00';
+    const m = Math.floor(secs / 60);
+    const s = Math.floor(secs % 60);
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
+  const togglePlay = () => {
+    if (!videoRef.current) return;
+    if (isPlaying) {
+      videoRef.current.pause();
+    } else {
+      videoRef.current.play().catch(err => console.warn('Play prevented:', err));
+    }
+  };
+
+  const handleSeek = (e) => {
+    const time = parseFloat(e.target.value);
+    if (videoRef.current && !isNaN(time)) {
+      videoRef.current.currentTime = time;
+      setCurrentTime(time);
+    }
+  };
+
+  const handleSpeedChange = (speed) => {
+    setPlaybackRate(speed);
+    if (videoRef.current) {
+      videoRef.current.playbackRate = speed;
+    }
+  };
+
+  const handleFullscreen = () => {
+    const el = containerRef.current;
+    if (!el) return;
+    if (!document.fullscreenElement) {
+      el.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen().catch(() => {});
+    }
+  };
+
+  const handleEnded = () => {
+    if (currentIndex < playlist.length - 1) {
+      setCurrentIndex(prev => prev + 1);
+      setTimeout(() => {
+        if (videoRef.current) videoRef.current.play().catch(() => {});
+      }, 350);
+    } else {
+      setIsPlaying(false);
+    }
+  };
+
+  const handleDownload = () => {
+    const a = document.createElement('a');
+    a.href = videoSrc;
+    a.download = `recording-${currentVideo.employee?.fullName || 'employee'}-${(currentVideo.id || 'vid').slice(0, 8)}.webm`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
+  const chunkDate = new Date(currentVideo.createdAt);
+  const formattedDate = chunkDate.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+  const formattedTime = chunkDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+  return (
+    <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/90 backdrop-blur-md p-2 sm:p-4 animate-fade-in">
+      <div
+        ref={containerRef}
+        className="bg-slate-900 rounded-[2rem] overflow-hidden border border-white/10 w-full max-w-5xl shadow-2xl flex flex-col relative animate-scale-in"
+      >
+        {/* Top Header Bar */}
+        <div className="flex items-center justify-between px-6 py-4 bg-slate-950/80 border-b border-white/10 z-10">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 bg-rose-500/10 border border-rose-500/20 px-3 py-1 rounded-xl">
+              <span className="h-2 w-2 rounded-full bg-rose-500 animate-pulse" />
+              <span className="text-white text-xs font-black uppercase tracking-wider">Screen Recording</span>
+            </div>
+            <div className="h-4 w-[1px] bg-white/20" />
+            <div className="flex items-center gap-2">
+              <div className="h-7 w-7 rounded-lg bg-primary-600 text-white font-black text-xs flex items-center justify-center">
+                {(currentVideo.employee?.fullName || 'E').charAt(0)}
+              </div>
+              <div>
+                <span className="text-white text-xs font-bold block">{currentVideo.employee?.fullName || 'Employee'}</span>
+                <span className="text-slate-400 text-[10px] block">{formattedDate} at {formattedTime}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-slate-400 bg-white/5 px-2.5 py-1 rounded-lg">
+              {currentVideo.sizeMb ? `${currentVideo.sizeMb} MB` : 'Chunk'}
+            </span>
+            {playlist.length > 1 && (
+              <span className="text-xs font-bold text-primary-400 bg-primary-500/10 px-2.5 py-1 rounded-lg border border-primary-500/20">
+                Chunk {currentIndex + 1} of {playlist.length}
+              </span>
+            )}
+            <button
+              onClick={onClose}
+              className="h-9 w-9 bg-white/10 hover:bg-white/20 text-white rounded-xl flex items-center justify-center transition-all ml-2"
+              title="Close (Esc)"
+            >
+              <X size={18} />
+            </button>
+          </div>
+        </div>
+
+        {/* Video Player Display */}
+        <div className="relative aspect-video bg-black flex items-center justify-center overflow-hidden group">
+          <video
+            ref={videoRef}
+            src={videoSrc}
+            playsInline
+            muted={isMuted}
+            className="w-full h-full object-contain cursor-pointer"
+            onTimeUpdate={() => {
+              if (videoRef.current) setCurrentTime(videoRef.current.currentTime);
+            }}
+            onLoadedMetadata={() => {
+              if (videoRef.current) setDuration(videoRef.current.duration);
+              setIsBuffering(false);
+            }}
+            onWaiting={() => setIsBuffering(true)}
+            onCanPlay={() => setIsBuffering(false)}
+            onPlay={() => setIsPlaying(true)}
+            onPause={() => setIsPlaying(false)}
+            onEnded={handleEnded}
+            onError={() => {
+              setHasError(true);
+              setIsBuffering(false);
+            }}
+            onClick={togglePlay}
+          />
+
+          {/* Buffering Spinner */}
+          {isBuffering && !hasError && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/40 pointer-events-none">
+              <div className="h-12 w-12 border-4 border-primary-500/20 border-t-primary-500 rounded-full animate-spin" />
+            </div>
+          )}
+
+          {/* Error Message */}
+          {hasError && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 p-4 text-center">
+              <AlertCircle size={40} className="text-rose-500 mb-2 animate-bounce" />
+              <p className="text-white font-bold text-sm mb-1">Failed to load video recording chunk</p>
+              <p className="text-slate-400 text-xs mb-4">The video file may be corrupt or inaccessible at {currentVideo.fileUrl}</p>
+              <button
+                onClick={() => {
+                  setHasError(false);
+                  setIsBuffering(true);
+                  if (videoRef.current) {
+                    videoRef.current.load();
+                    videoRef.current.play().catch(() => {});
+                  }
+                }}
+                className="px-4 py-1.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-xs font-bold transition-all"
+              >
+                Retry
+              </button>
+            </div>
+          )}
+
+          {/* Center Play Icon Overlay when paused */}
+          {!isPlaying && !isBuffering && !hasError && (
+            <button
+              onClick={togglePlay}
+              className="absolute h-16 w-16 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-full flex items-center justify-center text-white transition-all transform hover:scale-110 shadow-2xl"
+            >
+              <Play size={28} className="translate-x-0.5" />
+            </button>
+          )}
+        </div>
+
+        {/* Multi-Chunk Playlist Bar (Chronological) */}
+        {playlist.length > 1 && (
+          <div className="bg-slate-950 px-6 py-2.5 border-t border-white/5 flex items-center gap-2 overflow-x-auto">
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex-shrink-0">
+              Session Chunks:
+            </span>
+            {playlist.map((c, idx) => (
+              <button
+                key={c.id || idx}
+                onClick={() => setCurrentIndex(idx)}
+                className={cn(
+                  "px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 flex-shrink-0",
+                  idx === currentIndex
+                    ? "bg-primary-600 text-white shadow-sm ring-1 ring-white/20"
+                    : "bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white"
+                )}
+              >
+                <Video size={11} />
+                <span>Chunk {idx + 1}</span>
+                <span className="text-[10px] opacity-60">
+                  {new Date(c.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Bottom Controls Bar */}
+        <div className="bg-slate-950 p-4 border-t border-white/10 space-y-3">
+          {/* Progress / Scrubbing Bar */}
+          <div className="flex items-center gap-3">
+            <span className="font-mono text-xs text-slate-400 font-bold min-w-[40px]">
+              {formatTime(currentTime)}
+            </span>
+            <input
+              type="range"
+              min="0"
+              max={duration || 100}
+              step="0.1"
+              value={currentTime}
+              onChange={handleSeek}
+              className="flex-1 h-1.5 bg-white/20 rounded-lg appearance-none cursor-pointer accent-primary-500 hover:h-2 transition-all"
+            />
+            <span className="font-mono text-xs text-slate-400 font-bold min-w-[40px]">
+              {formatTime(duration)}
+            </span>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            {/* Left Controls: Play/Pause, Prev/Next chunk, Mute */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => { if (currentIndex > 0) setCurrentIndex(prev => prev - 1); }}
+                disabled={currentIndex === 0}
+                className="p-2 text-white/70 hover:text-white disabled:opacity-30 disabled:hover:text-white/70 transition-colors"
+                title="Previous Chunk"
+              >
+                <SkipBack size={18} />
+              </button>
+
+              <button
+                onClick={togglePlay}
+                className="h-10 w-10 bg-primary-600 hover:bg-primary-700 text-white rounded-xl flex items-center justify-center transition-all shadow-md active:scale-95"
+                title={isPlaying ? "Pause (Space)" : "Play (Space)"}
+              >
+                {isPlaying ? <Pause size={18} /> : <Play size={18} className="translate-x-0.5" />}
+              </button>
+
+              <button
+                onClick={() => { if (currentIndex < playlist.length - 1) setCurrentIndex(prev => prev + 1); }}
+                disabled={currentIndex === playlist.length - 1}
+                className="p-2 text-white/70 hover:text-white disabled:opacity-30 disabled:hover:text-white/70 transition-colors"
+                title="Next Chunk"
+              >
+                <SkipForward size={18} />
+              </button>
+
+              <button
+                onClick={() => setIsMuted(!isMuted)}
+                className="p-2 text-white/70 hover:text-white transition-colors ml-1"
+                title={isMuted ? "Unmute" : "Mute"}
+              >
+                {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+              </button>
+            </div>
+
+            {/* Middle Controls: Speed Selector */}
+            <div className="flex items-center gap-1 bg-white/5 p-1 rounded-xl border border-white/10">
+              {[1, 1.5, 2, 4].map(speed => (
+                <button
+                  key={speed}
+                  onClick={() => handleSpeedChange(speed)}
+                  className={cn(
+                    "px-2.5 py-1 rounded-lg text-xs font-bold transition-all",
+                    playbackRate === speed
+                      ? "bg-primary-600 text-white shadow-sm"
+                      : "text-slate-400 hover:text-white"
+                  )}
+                >
+                  {speed}x
+                </button>
+              ))}
+            </div>
+
+            {/* Right Controls: Download, Delete, Fullscreen */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleDownload}
+                className="p-2 text-white/70 hover:text-white bg-white/5 hover:bg-white/10 rounded-xl transition-all"
+                title="Download Recording (.webm)"
+              >
+                <Download size={18} />
+              </button>
+
+              {canDelete && (
+                <button
+                  onClick={() => {
+                    if (window.confirm("Are you sure you want to delete this video recording?")) {
+                      onDeleteVideo(currentVideo.id);
+                    }
+                  }}
+                  className="p-2 text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 rounded-xl transition-all"
+                  title="Delete Recording"
+                >
+                  <Trash2 size={18} />
+                </button>
+              )}
+
+              <button
+                onClick={handleFullscreen}
+                className="p-2 text-white/70 hover:text-white bg-white/5 hover:bg-white/10 rounded-xl transition-all"
+                title="Fullscreen"
+              >
+                <Maximize size={18} />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+VideoPlaybackModal.displayName = 'VideoPlaybackModal';
 
 // --- Components ---
 const FilterButton = memo(({ active, label, icon: Icon, onClick }) => (
@@ -746,6 +1132,70 @@ export function ScreenshotMonitoring() {
     const [backendScreenshots, setBackendScreenshots] = useState([]);
     const [videoRecordings, setVideoRecordings] = useState([]);
     const [loadingVideos, setLoadingVideos] = useState(false);
+    const [activeMainTab, setActiveMainTab] = useState('screenshots'); // 'screenshots' | 'videos'
+    const [videoEmployeeFilter, setVideoEmployeeFilter] = useState('All');
+    const [videoDateFilter, setVideoDateFilter] = useState('');
+    const [videoSearchQuery, setVideoSearchQuery] = useState('');
+    const [activePlaybackVideo, setActivePlaybackVideo] = useState(null);
+    const [activeVideoPlaylist, setActiveVideoPlaylist] = useState([]);
+    const [activeVideoIndex, setActiveVideoIndex] = useState(0);
+    const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+
+    const fetchVideos = useCallback(async () => {
+        try {
+            setLoadingVideos(true);
+            const params = { limit: 100 };
+            if (videoEmployeeFilter && videoEmployeeFilter !== 'All') {
+                params.employeeId = videoEmployeeFilter;
+            }
+            if (videoDateFilter) {
+                params.date = videoDateFilter;
+            }
+            const res = await videoService.getVideos(params);
+            if (res.success && res.data) {
+                setVideoRecordings(Array.isArray(res.data) ? res.data : []);
+            }
+        } catch (err) {
+            console.error('[ScreenshotMonitoring] Failed to fetch video recordings:', err);
+        } finally {
+            setLoadingVideos(false);
+        }
+    }, [videoEmployeeFilter, videoDateFilter]);
+
+    useEffect(() => {
+        fetchVideos();
+    }, [fetchVideos]);
+
+    const handleOpenVideoPlayback = useCallback((video) => {
+        const empChunks = videoRecordings
+            .filter(v => v.employeeId === video.employeeId)
+            .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+        
+        const playlist = empChunks.length > 0 ? empChunks : [video];
+        const idx = playlist.findIndex(v => v.id === video.id);
+        
+        setActiveVideoPlaylist(playlist);
+        setActiveVideoIndex(idx >= 0 ? idx : 0);
+        setActivePlaybackVideo(video);
+        setIsVideoModalOpen(true);
+    }, [videoRecordings]);
+
+    const handleDeleteVideo = useCallback(async (videoId) => {
+        try {
+            const res = await videoService.deleteVideo(videoId);
+            if (res.success) {
+                toast.success('Video recording deleted successfully');
+                setVideoRecordings(prev => prev.filter(v => v.id !== videoId));
+                if (isVideoModalOpen && activePlaybackVideo?.id === videoId) {
+                    setIsVideoModalOpen(false);
+                    setActivePlaybackVideo(null);
+                }
+            }
+        } catch (err) {
+            console.error('Failed to delete video:', err);
+            toast.error(err.response?.data?.message || 'Failed to delete video');
+        }
+    }, [isVideoModalOpen, activePlaybackVideo]);
 
   // Sync context screenshots (newly arrived via socket) to local state
   useEffect(() => {
@@ -1056,6 +1506,17 @@ export function ScreenshotMonitoring() {
 
   // 2. Filter & Derived Logic (Optimized with useMemo)
   const uniqueEmployees = useMemo(() => ['All', ...new Set(localScreenshots.map(s => s.employee))], [localScreenshots]);
+
+  const filteredVideoRecordings = useMemo(() => {
+    return videoRecordings.filter(v => {
+      if (videoSearchQuery) {
+        const query = videoSearchQuery.toLowerCase();
+        const empName = (v.employee?.fullName || '').toLowerCase();
+        if (!empName.includes(query)) return false;
+      }
+      return true;
+    });
+  }, [videoRecordings, videoSearchQuery]);
 
   const filteredScreenshots = useMemo(() => {
     let result = localScreenshots.filter(s => {
@@ -1461,12 +1922,51 @@ export function ScreenshotMonitoring() {
       <div className="min-h-screen bg-[#fcfdfe] dark:bg-slate-950 space-y-6 sm:space-y-8 pb-20 px-2 sm:px-4 lg:px-8 max-w-full overflow-x-hidden box-border animate-fade-in">
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 py-8">
-          <div>
-            <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Screenshots</h1>
+          <div className="flex flex-wrap items-center gap-4">
+            <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Screenshots & Screen Recording</h1>
+
+            {/* Main Navigation Tabs (Phase 2) */}
+            <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-900 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800">
+              <button
+                onClick={() => setActiveMainTab('screenshots')}
+                className={cn(
+                  "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all",
+                  activeMainTab === 'screenshots'
+                    ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/10"
+                    : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
+                )}
+              >
+                <Camera size={15} />
+                <span>Screenshots</span>
+                <span className="text-[10px] bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded-full font-bold">
+                  {filteredScreenshots.length}
+                </span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setActiveMainTab('videos');
+                  fetchVideos();
+                }}
+                className={cn(
+                  "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all",
+                  activeMainTab === 'videos'
+                    ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/10"
+                    : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
+                )}
+              >
+                <Video size={15} />
+                <span>Video Recordings</span>
+                <span className="text-[10px] bg-primary-100 dark:bg-primary-900/50 text-primary-600 dark:text-primary-400 px-2 py-0.5 rounded-full font-bold">
+                  {videoRecordings.length}
+                </span>
+              </button>
+            </div>
           </div>
 
-          {/* Top Controls */}
-          <div className="flex flex-wrap items-center gap-3">
+          {/* Top Controls (Screenshots tab only) */}
+          {activeMainTab === 'screenshots' && (
+            <div className="flex flex-wrap items-center gap-3">
             {role !== 'EMPLOYEE' && (
               <button
                 onClick={handleCaptureRealScreen}
@@ -1651,9 +2151,13 @@ export function ScreenshotMonitoring() {
               <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-primary-600 dark:text-primary-400 pointer-events-none" />
             </div>
           </div>
+          )}
         </div>
 
-        {/* Selection & Bulk Actions Bar */}
+        {/* ── Screenshots Tab View ────────────────────────────────────────── */}
+        {activeMainTab === 'screenshots' && (
+          <>
+            {/* Selection & Bulk Actions Bar */}
         {role !== 'EMPLOYEE' && (
           <div className="flex flex-wrap items-center gap-4 bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-[1.5rem] border border-slate-200 dark:border-slate-800 shadow-sm animate-in slide-in-from-top duration-300">
             <button
@@ -1889,6 +2393,240 @@ export function ScreenshotMonitoring() {
             )}
           </>
         )}
+        </>
+      )}
+
+      {/* ── Video Recordings Tab View (Phase 2) ─────────────────────────── */}
+      {activeMainTab === 'videos' && (
+        <div className="space-y-6 animate-in fade-in duration-300">
+          {/* Filter & Control Bar */}
+          <div className="flex flex-wrap items-center justify-between gap-4 bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-[1.5rem] border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div className="flex flex-wrap items-center gap-3 flex-1 min-w-[280px]">
+              {/* Search input */}
+              <div className="relative flex-1 min-w-[200px] max-w-sm">
+                <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                <input
+                  type="text"
+                  value={videoSearchQuery}
+                  onChange={(e) => setVideoSearchQuery(e.target.value)}
+                  placeholder="Search recordings by employee..."
+                  className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 rounded-xl text-xs font-bold text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                />
+                {videoSearchQuery && (
+                  <button onClick={() => setVideoSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+
+              {/* Employee Filter Dropdown */}
+              {role !== 'EMPLOYEE' && (
+                <div className="relative">
+                  <select
+                    value={videoEmployeeFilter}
+                    onChange={(e) => setVideoEmployeeFilter(e.target.value)}
+                    className="appearance-none pl-3 pr-8 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                  >
+                    <option value="All">All Employees ({contextEmployees.length})</option>
+                    {contextEmployees.map(emp => (
+                      <option key={emp.id} value={emp.id}>{emp.name || emp.fullName}</option>
+                    ))}
+                  </select>
+                  <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                </div>
+              )}
+
+              {/* Date Filter Input */}
+              <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 px-3 py-1.5 rounded-xl">
+                <Calendar size={14} className="text-primary-500" />
+                <input
+                  type="date"
+                  value={videoDateFilter}
+                  onChange={(e) => setVideoDateFilter(e.target.value)}
+                  className="bg-transparent text-xs font-bold text-slate-700 dark:text-slate-300 focus:outline-none cursor-pointer"
+                />
+                {videoDateFilter && (
+                  <button
+                    onClick={() => setVideoDateFilter('')}
+                    className="text-slate-400 hover:text-slate-600 text-xs font-bold ml-1"
+                    title="Clear date filter"
+                  >
+                    <X size={12} />
+                  </button>
+                )}
+              </div>
+
+              {/* Quick Today Filter */}
+              <button
+                onClick={() => {
+                  const todayStr = new Date().toISOString().slice(0, 10);
+                  setVideoDateFilter(videoDateFilter === todayStr ? '' : todayStr);
+                }}
+                className={cn(
+                  "px-3 py-2 rounded-xl text-xs font-bold transition-all border",
+                  videoDateFilter === new Date().toISOString().slice(0, 10)
+                    ? "bg-primary-600 text-white border-primary-600"
+                    : "bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700/60 hover:bg-slate-100"
+                )}
+              >
+                Today
+              </button>
+            </div>
+
+            {/* Refresh & Summary Counter */}
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
+                {filteredVideoRecordings.length} {filteredVideoRecordings.length === 1 ? 'recording' : 'recordings'}
+              </span>
+              <button
+                onClick={fetchVideos}
+                disabled={loadingVideos}
+                className="p-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl transition-all disabled:opacity-50"
+                title="Refresh video list"
+              >
+                <RefreshCw size={16} className={cn(loadingVideos && "animate-spin text-primary-500")} />
+              </button>
+            </div>
+          </div>
+
+          {/* Content: Loading, Empty, or Video Cards Grid */}
+          {loadingVideos ? (
+            <div className="flex flex-col items-center justify-center py-28 px-4 space-y-4">
+              <div className="h-14 w-14 border-4 border-primary-500/20 border-t-primary-500 rounded-full animate-spin" />
+              <p className="text-sm font-bold text-slate-500 dark:text-slate-400">Loading video recordings...</p>
+            </div>
+          ) : filteredVideoRecordings.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-24 px-4 bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200 dark:border-slate-800 text-center">
+              <div className="h-20 w-20 rounded-3xl bg-primary-50 dark:bg-primary-500/10 flex items-center justify-center text-primary-600 dark:text-primary-400 mb-4 shadow-inner">
+                <Video size={36} />
+              </div>
+              <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">No Video Recordings Found</h3>
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400 max-w-md mb-6 leading-relaxed">
+                Screen video recordings are captured in 5-minute chunks when employees run the Screen Tracker. Start the tracker to record screen sessions.
+              </p>
+              {(videoEmployeeFilter !== 'All' || videoDateFilter || videoSearchQuery) && (
+                <button
+                  onClick={() => {
+                    setVideoEmployeeFilter('All');
+                    setVideoDateFilter('');
+                    setVideoSearchQuery('');
+                  }}
+                  className="px-5 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-xs font-bold transition-all shadow-md active:scale-95"
+                >
+                  Clear All Filters
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+              {filteredVideoRecordings.map((recording) => {
+                const recDate = new Date(recording.createdAt);
+                const dateStr = recDate.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+                const timeStr = recDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const empName = recording.employee?.fullName || 'Employee';
+                const initial = empName.charAt(0).toUpperCase();
+
+                return (
+                  <div
+                    key={recording.id}
+                    className="group bg-white dark:bg-slate-900 rounded-[1.75rem] border border-slate-200 dark:border-slate-800/80 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col hover:-translate-y-1"
+                  >
+                    {/* Video Thumbnail / Preview Area */}
+                    <div
+                      onClick={() => handleOpenVideoPlayback(recording)}
+                      className="relative aspect-video bg-slate-950 flex items-center justify-center cursor-pointer overflow-hidden group/thumb"
+                    >
+                      <video
+                        src={`${getImageUrl(recording.fileUrl)}#t=0.5`}
+                        preload="metadata"
+                        className="w-full h-full object-cover opacity-70 group-hover/thumb:opacity-90 group-hover/thumb:scale-105 transition-all duration-300"
+                      />
+                      
+                      {/* Status Chip (Top Left) */}
+                      <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-md border border-white/10 text-white text-[10px] font-black uppercase tracking-wider">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                        <span>5m Chunk</span>
+                      </div>
+
+                      {/* Size Badge (Top Right) */}
+                      <div className="absolute top-3 right-3 px-2 py-0.5 rounded-lg bg-black/60 backdrop-blur-md border border-white/10 text-white/90 text-[10px] font-bold">
+                        {recording.sizeMb ? `${recording.sizeMb} MB` : 'WebM'}
+                      </div>
+
+                      {/* Play Button Overlay */}
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover/thumb:bg-black/10 transition-colors">
+                        <div className="h-12 w-12 rounded-full bg-white/90 dark:bg-primary-600 text-slate-900 dark:text-white flex items-center justify-center shadow-2xl transform group-hover/thumb:scale-110 transition-transform">
+                          <Play size={20} className="translate-x-0.5" />
+                        </div>
+                      </div>
+
+                      {/* Timestamp Overlay (Bottom) */}
+                      <div className="absolute bottom-2 left-2 right-2 flex justify-between items-center text-[11px] text-white/80 font-bold bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-md">
+                        <span>{timeStr}</span>
+                        <span className="text-emerald-400">Recorded</span>
+                      </div>
+                    </div>
+
+                    {/* Card Body */}
+                    <div className="p-4 flex flex-col flex-1 justify-between gap-3">
+                      {/* Employee info */}
+                      <div className="flex items-center gap-2.5">
+                        <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-primary-500 to-indigo-600 text-white font-black text-xs flex items-center justify-center shadow-sm">
+                          {initial}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-sm font-bold text-slate-900 dark:text-white truncate">
+                            {empName}
+                          </h4>
+                          <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                            {dateStr}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Action buttons */}
+                      <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
+                        <button
+                          onClick={() => handleOpenVideoPlayback(recording)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-primary-50 dark:bg-primary-500/10 hover:bg-primary-100 dark:hover:bg-primary-500/20 text-primary-600 dark:text-primary-400 rounded-xl text-xs font-bold transition-colors"
+                        >
+                          <Play size={14} />
+                          <span>Play</span>
+                        </button>
+
+                        <div className="flex items-center gap-1">
+                          <a
+                            href={getImageUrl(recording.fileUrl)}
+                            download={`recording-${recording.id.slice(0, 8)}.webm`}
+                            className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                            title="Download Recording"
+                          >
+                            <Download size={15} />
+                          </a>
+
+                          {(role === 'ADMIN' || role === 'MANAGER') && (
+                            <button
+                              onClick={() => {
+                                if (window.confirm("Are you sure you want to delete this video recording?")) {
+                                  handleDeleteVideo(recording.id);
+                                }
+                              }}
+                              className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-colors"
+                              title="Delete Recording"
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
       </div>
 
@@ -1898,6 +2636,19 @@ export function ScreenshotMonitoring() {
         onClose={() => setViewingLiveEmployee(null)}
         employee={viewingLiveEmployee}
         socket={socket}
+      />
+
+      {/* ── Video Playback Modal (Phase 2) ─────────────────────────────────── */}
+      <VideoPlaybackModal
+        isOpen={isVideoModalOpen}
+        onClose={() => {
+          setIsVideoModalOpen(false);
+          setActivePlaybackVideo(null);
+        }}
+        playlist={activeVideoPlaylist}
+        initialIndex={activeVideoIndex}
+        onDeleteVideo={handleDeleteVideo}
+        canDelete={role === 'ADMIN' || role === 'MANAGER'}
       />
 
       {/* Generic Selection Modal (Handles all filter types) */}

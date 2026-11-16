@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { ShieldAlert, MonitorCheck } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import screenshotService from '../../services/screenshotService';
+import videoService from '../../services/videoService';
 import useSocket from '../../hooks/useSocket';
 import { toast } from '../../utils/toastManager';
 
@@ -16,6 +17,10 @@ export function WebTrackerAgent() {
     const intervalRef = useRef(null);
     const videoRef = useRef(null);
     const isStartingRef = useRef(false);
+
+    // ─── Video Recording Refs ──────────────────────────────────────────────────
+    const mediaRecorderRef = useRef(null);
+    const recordingChunkIntervalRef = useRef(null);
     
     // WebRTC Live Monitoring
     const { socket, on, emit, off } = useSocket();
@@ -24,6 +29,90 @@ export function WebTrackerAgent() {
     // Only render for EMPLOYEE role
     if (role !== 'EMPLOYEE') return null;
 
+
+    // ─── Video Recording (5-minute WebM chunks) ────────────────────────────────
+    const startVideoRecording = () => {
+        if (!streamRef.current || mediaRecorderRef.current) return;
+
+        const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp8')
+            ? 'video/webm;codecs=vp8'
+            : 'video/webm';
+
+        let recorder;
+        try {
+            recorder = new MediaRecorder(streamRef.current, { mimeType });
+        } catch (err) {
+            console.error('[WebTrackerAgent] MediaRecorder init failed:', err);
+            return;
+        }
+
+        const chunks = [];
+
+        recorder.ondataavailable = (e) => {
+            if (e.data && e.data.size > 0) chunks.push(e.data);
+        };
+
+        recorder.onstop = async () => {
+            if (chunks.length === 0) return;
+            const blob = new Blob(chunks, { type: mimeType });
+            chunks.length = 0; // Clear array in-place for GC
+
+            const formData = new FormData();
+            formData.append('video', blob, `recording-${Date.now()}.webm`);
+            formData.append('employeeId', user?.employeeId || '');
+
+            // Upload with exponential backoff (3 attempts)
+            for (let attempt = 1; attempt <= 3; attempt++) {
+                try {
+                    await videoService.uploadVideo(formData);
+                    console.log('[WebTrackerAgent] Video chunk uploaded successfully.');
+                    break;
+                } catch (err) {
+                    console.warn(`[WebTrackerAgent] Video upload attempt ${attempt} failed:`, err.message);
+                    if (attempt === 3) {
+                        console.error('[WebTrackerAgent] Video upload failed after 3 attempts. Chunk dropped.');
+                    } else {
+                        await new Promise((r) => setTimeout(r, 2000 * attempt));
+                    }
+                }
+            }
+        };
+
+        recorder.onerror = (e) => {
+            console.error('[WebTrackerAgent] MediaRecorder error:', e.error);
+        };
+
+        recorder.start();
+        mediaRecorderRef.current = recorder;
+        console.log('[WebTrackerAgent] Video recording started (chunk interval: 5 min).');
+
+        // Every 5 minutes: stop current recorder (triggers onstop → upload), start new chunk
+        recordingChunkIntervalRef.current = setInterval(() => {
+            const current = mediaRecorderRef.current;
+            if (current && current.state === 'recording') {
+                current.stop(); // onstop handler uploads this chunk
+                mediaRecorderRef.current = null;
+                // Brief delay to let onstop fire before starting next recorder
+                setTimeout(() => {
+                    if (streamRef.current) startVideoRecording();
+                }, 500);
+            }
+        }, 5 * 60 * 1000);
+    };
+
+    const stopVideoRecording = () => {
+        // Clear chunk rotation interval
+        if (recordingChunkIntervalRef.current) {
+            clearInterval(recordingChunkIntervalRef.current);
+            recordingChunkIntervalRef.current = null;
+        }
+        // Stop active recorder — onstop will upload the final partial chunk
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+            mediaRecorderRef.current.stop();
+            mediaRecorderRef.current = null;
+            console.log('[WebTrackerAgent] Video recording stopped. Final chunk queued for upload.');
+        }
+    };
 
     // ─── Screenshot capture ────────────────────────────────────────────────────
     const captureAndUpload = async () => {
@@ -100,7 +189,8 @@ export function WebTrackerAgent() {
             const intervalMs = (settings.frequency || 10) * 60 * 1000;
             intervalRef.current = setInterval(captureAndUpload, intervalMs);
 
-            intervalRef.current = setInterval(captureAndUpload, intervalMs);
+            // ─── Start chunked video recording ────────────────────────────────
+            startVideoRecording();
 
         } catch (err) {
             console.error('[WebTrackerAgent] Failed to start tracking:', err);
@@ -112,6 +202,9 @@ export function WebTrackerAgent() {
     };
 
     const stopTracking = async () => {
+
+        // ─── Stop video recording first (uploads final chunk) ─────────────────
+        stopVideoRecording();
 
         if (streamRef.current) {
             streamRef.current.getTracks().forEach((t) => t.stop());
@@ -169,6 +262,10 @@ export function WebTrackerAgent() {
     useEffect(() => {
         return () => {
             if (intervalRef.current) clearInterval(intervalRef.current);
+            if (recordingChunkIntervalRef.current) clearInterval(recordingChunkIntervalRef.current);
+            if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+                mediaRecorderRef.current.stop();
+            }
             if (streamRef.current) {
                 streamRef.current.getTracks().forEach(t => t.stop());
             }
