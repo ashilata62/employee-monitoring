@@ -85,9 +85,9 @@ export function ProductivityStackedChart({
     const displayData = hasBreakdownData ? productivityBreakdown : [];
 
     return (
-        <div className="bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl border border-[#E5DED2] dark:border-[#384232] shadow-warm-xs mb-8 overflow-hidden">
+        <div className="bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs mb-8 overflow-hidden">
             {/* Header with Subtabs & Export button */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-[#E5DED2] dark:border-[#384232]">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[#D6CDBC] dark:border-[#384232]">
                 <button
                     onClick={() => setActiveTab('Timeline')}
                     className={`font-serif text-sm font-semibold transition-colors cursor-pointer ${
@@ -100,7 +100,7 @@ export function ProductivityStackedChart({
                 </button>
 
                 {/* Centered Pill Subtabs: Activities | Productivity */}
-                <div className="flex items-center p-1 bg-[#EEE8DD] dark:bg-[#1E2419] rounded-xl border border-[#E5DED2] dark:border-[#384232]">
+                <div className="flex items-center p-1 bg-[#EEE8DD] dark:bg-[#1E2419] rounded-xl border border-[#D6CDBC] dark:border-[#384232]">
                     <button
                         onClick={() => setActiveTab('Activities')}
                         className={`px-3.5 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
@@ -211,7 +211,7 @@ export function ProductivityStackedChart({
             </div>
 
             {/* Bottom Legend */}
-            <div className="flex items-center justify-start gap-8 py-3.5 px-6 border-t border-[#E5DED2] dark:border-[#384232] text-xs font-semibold text-[#777367] dark:text-[#B8B3A7]">
+            <div className="flex items-center justify-start gap-8 py-3.5 px-6 border-t border-[#D6CDBC] dark:border-[#384232] text-xs font-semibold text-[#777367] dark:text-[#B8B3A7]">
                 {activeTab === 'Productivity' ? (
                     <>
                         <span className="flex items-center gap-2">

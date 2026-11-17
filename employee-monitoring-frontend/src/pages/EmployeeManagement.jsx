@@ -468,7 +468,7 @@ const EmployeeActionsDrawer = ({ isOpen, onClose, employee, onUpdateStatus }) =>
     return createPortal(
         <div className="fixed inset-0 z-[10000] flex justify-end">
             <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-500" onClick={onClose}></div>
-            <div className="relative w-full max-w-md bg-white dark:bg-slate-950 h-full shadow-2xl animate-in slide-in-from-right duration-500 flex flex-col">
+            <div className="relative w-full max-w-md bg-[#EEE8DD] dark:bg-[#252B20] h-full shadow-warm-lg border-l border-[#D6CDBC] dark:border-[#384232] animate-in slide-in-from-right duration-500 flex flex-col">
                 <div className="p-8 border-b border-slate-100 dark:border-slate-800">
                     <div className="flex items-center justify-between mb-8">
                         <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-widest">Quick Actions</h3>
@@ -634,7 +634,7 @@ const AdvancedCalendar = ({ isOpen, onClose, selectedPreset, onSelectPreset, tri
                 left: `${coords.left}px`,
                 position: 'absolute'
             }}
-            className="z-[9999] w-[540px] bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-white/20 dark:border-slate-800/50 flex overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+            className="z-[9999] w-[540px] bg-[#EEE8DD] dark:bg-[#252B20] backdrop-blur-md rounded-2xl shadow-warm-lg border border-[#D6CDBC] dark:border-[#384232] flex overflow-hidden animate-in fade-in zoom-in-95 duration-200"
         >
             {/* Left side: Calendar */}
             <div className="flex-1 p-8 border-r border-slate-50 dark:border-slate-800">
@@ -743,7 +743,7 @@ const EmployeeRow = ({ employee, onEdit, onDelete, onTransparencyClick, visibleC
             <tr className="md:hidden border-b border-slate-100 dark:border-slate-800 last:border-0 relative">
                 <td className="p-4" colSpan={99}>
                     <div
-                        className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm p-5 flex flex-col gap-4 active:scale-[0.98] transition-transform cursor-pointer relative"
+                        className="bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs p-5 flex flex-col gap-4 active:scale-[0.98] transition-transform cursor-pointer relative"
                         onClick={() => navigate(`/admin/employees/${employee.id}`)}
                     >
                         {/* Status Badge (Top Right) */}
@@ -1056,10 +1056,10 @@ export function EmployeeManagement() {
 
 
             {/* Table Container */}
-            <div className="rounded-2xl border border-[#E5DED2] dark:border-[#384232] bg-[#FBF9F5] dark:bg-[#252B20] shadow-warm-xs overflow-hidden mb-8">
+            <div className="rounded-2xl border border-[#D6CDBC] dark:border-[#384232] bg-[#EEE8DD] dark:bg-[#252B20] shadow-warm-xs overflow-hidden mb-8">
 
                 {/* Filter Bar */}
-                <div className="p-4 md:p-5 border-b border-[#E5DED2] dark:border-[#384232] bg-[#FBF9F5] dark:bg-[#252B20]">
+                <div className="p-4 md:p-5 border-b border-[#D6CDBC] dark:border-[#384232] bg-[#EEE8DD] dark:bg-[#252B20]">
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                         {/* Status Filter Dropdown */}
                         <div className="relative min-w-[150px] group">
@@ -1150,7 +1150,7 @@ export function EmployeeManagement() {
                             <button
                                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                                 disabled={currentPage === 1}
-                                className="h-9 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-400 hover:border-primary-500 disabled:opacity-50 transition-all flex items-center gap-2"
+                                className="h-9 px-4 rounded-xl border border-[#D6CDBC] dark:border-[#384232] bg-[#F5F1E9] dark:bg-[#1E2419] text-[10px] font-bold uppercase tracking-wider text-[#29291F] dark:text-[#F5F1E9] hover:bg-[#EAE2D3] disabled:opacity-50 transition-all flex items-center gap-2 cursor-pointer"
                             >
                                 <ChevronLeft size={14} /> Previous
                             </button>
@@ -1163,7 +1163,7 @@ export function EmployeeManagement() {
                                         className={cn(
                                             "h-9 w-9 rounded-xl text-[10px] font-black transition-all",
                                             currentPage === i + 1
-                                                ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-lg"
+                                                ? "bg-[#30382B] text-[#FDFBF7] shadow-warm-xs"
                                                 : "text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
                                         )}
                                     >
@@ -1175,7 +1175,7 @@ export function EmployeeManagement() {
                             <button
                                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                                 disabled={currentPage === totalPages}
-                                className="h-9 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-400 hover:border-primary-500 disabled:opacity-50 transition-all flex items-center gap-2"
+                                className="h-9 px-4 rounded-xl border border-[#D6CDBC] dark:border-[#384232] bg-[#F5F1E9] dark:bg-[#1E2419] text-[10px] font-bold uppercase tracking-wider text-[#29291F] dark:text-[#F5F1E9] hover:bg-[#EAE2D3] disabled:opacity-50 transition-all flex items-center gap-2 cursor-pointer"
                             >
                                 Next <ChevronRight size={14} />
                             </button>

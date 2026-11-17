@@ -277,7 +277,7 @@ export function TimeAndAttendance() {
                                         <th className="px-6 py-4">Status</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-[#D6CDBC]/50 dark:divide-[#384232]">
+                                <tbody className="divide-y divide-[#D6CDBC]/60 dark:divide-[#384232]">
                                     {timesheets.filter(row => {
                                         const matchesSearch = (row.employee?.fullName?.toLowerCase() ?? '').includes(generalSearch.toLowerCase()) ||
                                             (row.employee?.team?.name?.toLowerCase() ?? '').includes(generalSearch.toLowerCase());
@@ -285,7 +285,7 @@ export function TimeAndAttendance() {
                                         const matchesEmp = !selectedEmployee || row.employeeId === selectedEmployee;
                                         return matchesSearch && matchesTeam && matchesEmp;
                                     }).map((row) => (
-                                        <tr key={row.id || `${row.employeeId}-${row.date}`} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
+                                        <tr key={row.id || `${row.employeeId}-${row.date}`} className="bg-[#F5F1E9] dark:bg-[#1E2419] hover:bg-[#EAE2D3] dark:hover:bg-[#252B20] transition-colors border-b border-[#D6CDBC]/50">
                                             <td className="px-6 py-6">
                                                 <div className="flex items-center gap-4">
                                                     <div className="h-9 w-9 rounded-xl bg-[#EEE8DD] text-[#30382B] border border-[#E5DED2] flex items-center justify-center text-xs font-bold tracking-wider shrink-0">
@@ -346,7 +346,7 @@ export function TimeAndAttendance() {
                                         <th className="px-8 py-4">Shift Compliance</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
+                                <tbody className="divide-y divide-[#D6CDBC]/60 dark:divide-[#384232]">
                                     {filteredEmployees.map((emp) => {
                                         // Find shift for this specific employee today
                                         const shift = shifts.find(s => 
@@ -476,7 +476,7 @@ export function TimeAndAttendance() {
                                 {filteredEmployees.map((emp, idx) => {
                                     const empTimesheets = timesheets.filter(t => t.employeeId === emp.id);
                                     return (
-                                        <tr key={idx} className="hover:bg-[#F5F1E9]/60 dark:hover:bg-[#1E2419]/60 transition-colors">
+                                        <tr key={idx} className="bg-[#F5F1E9] dark:bg-[#1E2419] hover:bg-[#EAE2D3] dark:hover:bg-[#252B20] transition-colors border-b border-[#D6CDBC]/50">
                                             <td className="px-6 py-5">
                                                 <div className="flex items-center gap-3">
                                                     <div className={`h-9 w-9 rounded-xl flex items-center justify-center text-xs font-bold border border-[#E5DED2] bg-[#EEE8DD] text-[#30382B]`}>

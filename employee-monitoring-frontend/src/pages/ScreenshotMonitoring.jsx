@@ -2069,9 +2069,9 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                       <div className="relative" ref={calendarRef}>
                         <button
                           onClick={() => setShowCalendarDropdown(!showCalendarDropdown)}
-                          className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm"
+                          className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] bg-[#EEE8DD] dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] hover:bg-[#E5DDCF] transition-all shadow-warm-xs"
                         >
-                          <Calendar size={16} className="text-primary-500" />
+                          <Calendar size={14} className="text-[#B9955B]" />
                           <span>
                             {isAllHistory ? 'All History' : isToday ? 'Today' : timelineDate.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
                           </span>
@@ -2079,7 +2079,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                         </button>
 
                         {showCalendarDropdown && (
-                          <div className="absolute top-full right-0 mt-2 w-[320px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl z-[100] overflow-hidden animate-in fade-in zoom-in duration-200 origin-top-right p-4">
+                          <div className="absolute top-full right-0 mt-2 w-[320px] bg-[#EEE8DD] dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] rounded-2xl shadow-warm-lg z-[100] overflow-hidden animate-in fade-in zoom-in duration-200 origin-top-right p-4">
                             <div className="space-y-4">
                               <div>
                                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 block">Quick Select</label>
@@ -2191,12 +2191,12 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                         <select
                           value={sortOrder}
                           onChange={(e) => setSortOrder(e.target.value)}
-                          className="appearance-none pl-4 pr-10 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-bold text-primary-600 dark:text-primary-400 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-all focus:outline-none focus:ring-2 focus:ring-primary-500/10"
+                          className="appearance-none pl-4 pr-10 py-2 bg-[#EEE8DD] dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] rounded-xl text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] hover:bg-[#E5DDCF] cursor-pointer transition-all focus:outline-none focus:border-[#B9955B]"
                         >
                           <option value="newest">Newest</option>
                           <option value="oldest">Oldest</option>
                         </select>
-                        <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-primary-600 dark:text-primary-400 pointer-events-none" />
+                        <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#777367] pointer-events-none" />
                       </div>
                     </div>
                   )}
@@ -2207,7 +2207,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                   <>
                     {/* Selection & Bulk Actions Bar */}
                     {role !== 'EMPLOYEE' && (
-                      <div className="flex flex-wrap items-center gap-3 bg-[#FBF9F5] dark:bg-[#252B20] p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-[#E5DED2] dark:border-[#384232] shadow-warm-xs">
+                      <div className="flex flex-wrap items-center gap-3 bg-[#EEE8DD] dark:bg-[#252B20] p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs">
                         <button
                           onClick={toggleSelectionMode}
                           className={cn(
@@ -2282,7 +2282,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                       <div className="flex flex-col items-center justify-center py-24 px-4">
                         <div className="w-48 h-48 mb-6">
                           <svg viewBox="0 0 200 200" className="w-full h-full">
-                            <circle cx="100" cy="100" r="80" fill="#F1F5F9" stroke="#CBD5E1" strokeWidth="2" />
+                            <circle cx="100" cy="100" r="80" fill="#EEE8DD" stroke="#D6CDBC" strokeWidth="2" />
                             <circle cx="85" cy="90" r="5" fill="#94A3B8" />
                             <circle cx="115" cy="90" r="5" fill="#94A3B8" />
                             <path d="M 85 115 Q 100 125 115 115" fill="none" stroke="#94A3B8" strokeWidth="2" strokeLinecap="round" />

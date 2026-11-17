@@ -91,7 +91,7 @@ const KpiCard = ({
     }
 
     return (
-        <div className="group bg-[#FBF9F5] dark:bg-[#252B20] rounded-xl sm:rounded-2xl border border-[#E5DED2] dark:border-[#384232] p-3.5 sm:p-4 shadow-[0_1px_3px_rgba(41,41,31,0.03)] hover:shadow-[0_4px_14px_rgba(41,41,31,0.06)] hover:border-[#B9955B]/60 dark:hover:border-[#B9955B]/50 transition-all duration-200 flex flex-col justify-between">
+        <div className="group bg-[#EEE8DD] dark:bg-[#252B20] rounded-xl sm:rounded-2xl border border-[#D6CDBC] dark:border-[#384232] p-3.5 sm:p-4 shadow-warm-xs hover:border-[#B9955B]/60 dark:hover:border-[#B9955B]/50 transition-all duration-200 flex flex-col justify-between">
             {/* Top row: Title & Mini Icon */}
             <div className="flex items-center justify-between gap-2 mb-2">
                 <span className="text-[10px] sm:text-[11px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-[0.12em] truncate">
@@ -108,7 +108,7 @@ const KpiCard = ({
             </div>
 
             {/* Bottom row: Delta Pill & Diff */}
-            <div className="flex items-center justify-between gap-1.5 pt-2 border-t border-[#E5DED2]/70 dark:border-[#384232]/70 text-[11px] mt-1">
+            <div className="flex items-center justify-between gap-1.5 pt-2 border-t border-[#D6CDBC]/70 dark:border-[#384232]/70 text-[11px] mt-1">
                 <span className={`inline-flex items-center gap-0.5 font-bold px-1.5 py-0.5 rounded ${deltaBadgeClass}`}>
                     <span className="text-[9px]">{isUp ? '▲' : '▼'}</span>
                     <span>{activeDelta.percentFormatted || `${activeDelta.percent}%`}</span>

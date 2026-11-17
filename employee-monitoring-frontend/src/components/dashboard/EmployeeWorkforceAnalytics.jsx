@@ -71,9 +71,9 @@ export function EmployeeWorkforceAnalytics({
   });
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden mb-8">
+    <div className="bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs overflow-hidden mb-8">
       {/* Table Header Controls */}
-      <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="p-6 border-b border-[#D6CDBC]/60 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2.5">
             <Users className="text-primary-600" size={22} />
@@ -93,7 +93,7 @@ export function EmployeeWorkforceAnalytics({
               placeholder="Search employee or role..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 w-56"
+              className="pl-9 pr-4 py-2 bg-[#F5F1E9] dark:bg-slate-800/80 border border-[#D6CDBC] dark:border-slate-700 rounded-xl text-xs font-bold text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 w-56"
             />
           </div>
 
@@ -101,7 +101,7 @@ export function EmployeeWorkforceAnalytics({
           <select
             value={selectedTeam}
             onChange={(e) => setSelectedTeam(e.target.value)}
-            className="px-3.5 py-2 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+            className="px-3.5 py-2 bg-[#F5F1E9] dark:bg-slate-800/80 border border-[#D6CDBC] dark:border-slate-700 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
           >
             {teams.map(t => (
               <option key={t} value={t}>{t === 'ALL' ? 'All Departments' : t}</option>
@@ -113,7 +113,7 @@ export function EmployeeWorkforceAnalytics({
       {/* Table Body */}
       <div className="overflow-x-auto">
         <table className="w-full text-left text-xs">
-          <thead className="bg-slate-50/70 dark:bg-slate-800/50 text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800">
+          <thead className="bg-[#F5F1E9]/70 dark:bg-slate-800/50 text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider border-b border-[#D6CDBC]/60 dark:border-slate-800">
             <tr>
               <th className="px-6 py-3.5">Employee Name & Profile</th>
               <th className="px-4 py-3.5">Department & Role</th>
@@ -138,7 +138,7 @@ export function EmployeeWorkforceAnalytics({
                 <tr
                   key={emp.id}
                   onClick={() => setSelectedEmployeeDetail(emp)}
-                  className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors cursor-pointer group"
+                  className="hover:bg-[#F5F1E9]/80 dark:hover:bg-slate-800/40 transition-colors cursor-pointer group"
                 >
                   <td className="px-6 py-3.5">
                     <div className="flex items-center gap-3">
@@ -193,7 +193,7 @@ export function EmployeeWorkforceAnalytics({
                         e.stopPropagation();
                         setSelectedEmployeeDetail(emp);
                       }}
-                      className="px-3 py-1.5 bg-slate-50 hover:bg-primary-50 dark:bg-slate-800 text-slate-600 hover:text-primary-600 dark:text-slate-300 rounded-xl border border-slate-200 dark:border-slate-700 text-[11px] font-black transition-all flex items-center gap-1 mx-auto"
+                      className="px-3 py-1.5 bg-[#F5F1E9] hover:bg-primary-50 dark:bg-slate-800 text-slate-600 hover:text-primary-600 dark:text-slate-300 rounded-xl border border-[#D6CDBC] dark:border-slate-700 text-[11px] font-black transition-all flex items-center gap-1 mx-auto"
                     >
                       <Eye size={12} />
                       <span>Details</span>
@@ -209,9 +209,9 @@ export function EmployeeWorkforceAnalytics({
       {/* ── Detailed Employee Productivity Report Drawer / Modal ─────────── */}
       {selectedEmployeeDetail && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden p-6 space-y-6 animate-in zoom-in-95 duration-200">
+          <div className="bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl max-w-2xl w-full border border-[#D6CDBC] dark:border-[#384232] shadow-warm-lg overflow-hidden p-6 space-y-6 animate-in zoom-in-95 duration-200">
             {/* Modal Header */}
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
+            <div className="flex items-center justify-between pb-4 border-b border-[#D6CDBC]/60 dark:border-slate-800">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-2xl bg-primary-100 dark:bg-primary-950 text-primary-700 dark:text-primary-300 font-black text-base flex items-center justify-center border border-primary-200 dark:border-primary-800">
                   {selectedEmployeeDetail.initials}
@@ -235,19 +235,19 @@ export function EmployeeWorkforceAnalytics({
 
             {/* Quick KPI Strip */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-100 dark:border-slate-700/60">
+              <div className="p-3.5 bg-[#F5F1E9] dark:bg-slate-800/60 rounded-2xl border border-[#D6CDBC]/60 dark:border-slate-700/60">
                 <p className="text-[10px] font-bold text-slate-400 uppercase">Work Time</p>
                 <p className="text-lg font-black text-slate-900 dark:text-white mt-0.5">{selectedEmployeeDetail.workHours}</p>
               </div>
-              <div className="p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-100 dark:border-slate-700/60">
+              <div className="p-3.5 bg-[#F5F1E9] dark:bg-slate-800/60 rounded-2xl border border-[#D6CDBC]/60 dark:border-slate-700/60">
                 <p className="text-[10px] font-bold text-slate-400 uppercase">Active Time</p>
                 <p className="text-lg font-black text-indigo-600 dark:text-indigo-400 mt-0.5">{selectedEmployeeDetail.activeHours}</p>
               </div>
-              <div className="p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-100 dark:border-slate-700/60">
+              <div className="p-3.5 bg-[#F5F1E9] dark:bg-slate-800/60 rounded-2xl border border-[#D6CDBC]/60 dark:border-slate-700/60">
                 <p className="text-[10px] font-bold text-slate-400 uppercase">Productive %</p>
                 <p className="text-lg font-black text-emerald-600 dark:text-emerald-400 mt-0.5">{selectedEmployeeDetail.productivePct}%</p>
               </div>
-              <div className="p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-100 dark:border-slate-700/60">
+              <div className="p-3.5 bg-[#F5F1E9] dark:bg-slate-800/60 rounded-2xl border border-[#D6CDBC]/60 dark:border-slate-700/60">
                 <p className="text-[10px] font-bold text-slate-400 uppercase">Utilization</p>
                 <p className="text-lg font-black text-primary-600 dark:text-primary-400 mt-0.5">{selectedEmployeeDetail.utilization}%</p>
               </div>
@@ -265,7 +265,7 @@ export function EmployeeWorkforceAnalytics({
                   { name: 'Slack Communication', time: '01:45 h', status: 'Productive', color: 'emerald' },
                   { name: 'YouTube Music', time: '00:25 h', status: 'Neutral', color: 'slate' }
                 ].map((app, i) => (
-                  <div key={i} className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-700/50 text-xs font-bold">
+                  <div key={i} className="flex items-center justify-between p-2.5 rounded-xl bg-[#F5F1E9] dark:bg-slate-800/40 border border-[#D6CDBC]/60 dark:border-slate-700/50 text-xs font-bold">
                     <span className="text-slate-800 dark:text-slate-200">{app.name}</span>
                     <div className="flex items-center gap-3">
                       <span className={`text-[9px] uppercase px-2 py-0.5 rounded font-black ${app.color === 'emerald' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-700'}`}>
@@ -279,7 +279,7 @@ export function EmployeeWorkforceAnalytics({
             </div>
 
             {/* Navigation Actions */}
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#D6CDBC]/60 dark:border-slate-800">
               <button
                 onClick={() => {
                   setSelectedEmployeeDetail(null);
