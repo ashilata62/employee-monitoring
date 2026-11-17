@@ -13,14 +13,14 @@ export function InsightfulModuleSwitcher({ activeTab = 'trends' }) {
             id: 'trends',
             label: 'Productivity Trends',
             icon: Zap,
-            color: 'text-amber-500',
+            color: 'text-[#B9955B]',
             path: rolePrefix
         },
         {
             id: 'activities',
             label: 'Activities Timeline',
             icon: Activity,
-            color: 'text-purple-500',
+            color: 'text-[#B9955B]',
             path: `${rolePrefix}/activities`
         },
         ...(role !== 'EMPLOYEE' ? [
@@ -28,21 +28,21 @@ export function InsightfulModuleSwitcher({ activeTab = 'trends' }) {
                 id: 'location',
                 label: 'Office vs Remote',
                 icon: Globe,
-                color: 'text-sky-500',
+                color: 'text-[#5E7D64]',
                 path: `${rolePrefix}/reports/location-insights`
             },
             {
                 id: 'apps',
                 label: 'Apps & Websites Usage',
                 icon: Monitor,
-                color: 'text-emerald-500',
+                color: 'text-[#30382B] dark:text-[#D3B98D]',
                 path: `${rolePrefix}/reports/apps-websites`
             }
         ] : [])
     ];
 
     return (
-        <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-1 scrollbar-none">
+        <div className="flex items-center gap-2.5 mb-6 overflow-x-auto pb-1 scrollbar-none">
             {tabs.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
@@ -51,13 +51,13 @@ export function InsightfulModuleSwitcher({ activeTab = 'trends' }) {
                     <button
                         key={tab.id}
                         onClick={() => navigate(tab.path)}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs whitespace-nowrap transition-all shadow-sm ${
+                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs whitespace-nowrap transition-all shadow-warm-xs cursor-pointer ${
                             isActive
-                                ? 'font-black bg-primary-600 text-white shadow-primary-500/20'
-                                : 'font-bold bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-50'
+                                ? 'font-semibold bg-[#30382B] text-[#FDFBF7]'
+                                : 'font-medium bg-[#EEE8DD] dark:bg-[#252B20] text-[#29291F] dark:text-[#F5F1E9] border border-[#D6CDBC] dark:border-[#384232] hover:bg-[#E5DDCF]'
                         }`}
                     >
-                        <Icon size={14} className={isActive ? 'text-white' : tab.color} />
+                        <Icon size={14} className={isActive ? 'text-[#D3B98D]' : tab.color} />
                         <span>{tab.label}</span>
                     </button>
                 );
