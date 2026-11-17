@@ -412,9 +412,9 @@ const activityService = {
             include: { employee: true }
         });
 
-        // Fallback: If no logs exist on targetDate, load the most recent active date with logs
+        // Fallback: If no logs exist on targetDate and no explicit date was requested, load the most recent active date with logs
         let activeDateDisplay = startOfDay.toISOString().split('T')[0];
-        if (logs.length === 0) {
+        if (!dateStr && logs.length === 0) {
             const latestLog = await prisma.activityLog.findFirst({
                 where: { organizationId },
                 orderBy: { timestamp: 'desc' }
@@ -501,14 +501,7 @@ const activityService = {
                     };
                 });
 
-            // If no apps recorded, default representative apps
-            if (topApps.length === 0) {
-                topApps.push(
-                    { name: 'Word', productivity: 'Productive', durationFormatted: '06:41 h' },
-                    { name: 'drive.google.com', productivity: 'Productive', durationFormatted: '00:59 h' },
-                    { name: 'Facebook', productivity: 'Unproductive', durationFormatted: '00:15 h' }
-                );
-            }
+            // No fake default apps - strictly real apps from database logs
 
             const totalWorkSeconds = activeSeconds + idleSeconds + manualSeconds;
             const activeHours = Math.floor(activeSeconds / 3600);
@@ -519,13 +512,13 @@ const activityService = {
             const workMinutes = Math.floor((totalWorkSeconds % 3600) / 60);
             const workHoursFormatted = `${String(workHours).padStart(2, '0')}:${String(workMinutes).padStart(2, '0')} h`;
 
-            const productivityPct = activeSeconds > 0 ? Math.round((productiveSeconds / activeSeconds) * 100) : 85;
+            const productivityPct = activeSeconds > 0 ? Math.round((productiveSeconds / activeSeconds) * 100) : 0;
 
             // Shift timings & scheduled markers
             const firstLog = empLogs[0];
             const lastLog = empLogs[empLogs.length - 1];
-            const startShift = firstLog ? new Date(firstLog.timestamp).toTimeString().substring(0, 5) : '09:02';
-            const endShift = lastLog ? new Date(new Date(lastLog.timestamp).getTime() + (lastLog.duration || 300) * 1000).toTimeString().substring(0, 5) : '17:14';
+            const startShift = firstLog ? new Date(firstLog.timestamp).toTimeString().substring(0, 5) : '--:--';
+            const endShift = lastLog ? new Date(new Date(lastLog.timestamp).getTime() + (lastLog.duration || 300) * 1000).toTimeString().substring(0, 5) : '--:--';
             
             const isLate = firstLog ? (new Date(firstLog.timestamp).getHours() > 9 || (new Date(firstLog.timestamp).getHours() === 9 && new Date(firstLog.timestamp).getMinutes() > 15)) : false;
 
@@ -543,11 +536,7 @@ const activityService = {
                 isLate,
                 scheduledStartPercent: 37.5, // 09:00 AM (9/24)
                 scheduledEndPercent: 75.0,   // 06:00 PM (18/24)
-                segments: segments.length > 0 ? segments : [
-                    { id: 'def-1', type: 'ACTIVE', productivity: 'PRODUCTIVE', appWebsite: 'Visual Studio Code', startPercent: 38, widthPercent: 12, timeFormatted: '09:05', durationMinutes: 172 },
-                    { id: 'def-2', type: 'BREAK', productivity: 'NEUTRAL', appWebsite: 'Break', startPercent: 51, widthPercent: 4, timeFormatted: '12:15', durationMinutes: 45 },
-                    { id: 'def-3', type: 'ACTIVE', productivity: 'PRODUCTIVE', appWebsite: 'Figma', startPercent: 56, widthPercent: 16, timeFormatted: '13:30', durationMinutes: 230 }
-                ],
+                segments,
                 topApps
             };
         });

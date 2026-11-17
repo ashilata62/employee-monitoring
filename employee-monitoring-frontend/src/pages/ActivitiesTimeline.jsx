@@ -794,8 +794,13 @@ export function ActivitiesTimeline() {
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
-                    {hoveredEmployee.productivityPct}% productivity
+                  <span className={cn(
+                    "text-[10px] font-black px-2 py-0.5 rounded-full border",
+                    (hoveredEmployee.productivityPct || 0) > 0
+                      ? "text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800"
+                      : "text-slate-500 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+                  )}>
+                    {hoveredEmployee.productivityPct || 0}% productivity
                   </span>
                   <button
                     type="button"
@@ -815,7 +820,11 @@ export function ActivitiesTimeline() {
                 </p>
                 <div className="flex items-baseline justify-between mt-1">
                   <p className="text-xl font-black text-slate-900 dark:text-white">{hoveredEmployee.activeHoursFormatted}</p>
-                  <p className="text-xs font-bold text-slate-400">{hoveredEmployee.startShift} → {hoveredEmployee.endShift}</p>
+                  <p className="text-xs font-bold text-slate-400">
+                    {hoveredEmployee.startShift && hoveredEmployee.startShift !== '--:--'
+                      ? `${hoveredEmployee.startShift} → ${hoveredEmployee.endShift}`
+                      : 'No activity'}
+                  </p>
                 </div>
               </div>
 
@@ -824,24 +833,28 @@ export function ActivitiesTimeline() {
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
                   Top 3 most used apps
                 </p>
-                <div className="space-y-1.5">
-                  {hoveredEmployee.topApps?.map((app, i) => (
-                    <div key={i} className="flex items-center justify-between text-[11px] font-bold p-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/60">
-                      <span className="truncate max-w-[110px] text-slate-700 dark:text-slate-200">{app.name}</span>
-                      <div className="flex items-center gap-2">
-                        <span className={cn(
-                          "text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter",
-                          app.productivity === 'Productive'
-                            ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300"
-                            : "bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-300"
-                        )}>
-                          {app.productivity}
-                        </span>
-                        <span className="text-slate-500 font-bold text-[10px]">{app.durationFormatted}</span>
+                {hoveredEmployee.topApps && hoveredEmployee.topApps.length > 0 ? (
+                  <div className="space-y-1.5">
+                    {hoveredEmployee.topApps.map((app, i) => (
+                      <div key={i} className="flex items-center justify-between text-[11px] font-bold p-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/60">
+                        <span className="truncate max-w-[110px] text-slate-700 dark:text-slate-200">{app.name}</span>
+                        <div className="flex items-center gap-2">
+                          <span className={cn(
+                            "text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter",
+                            app.productivity === 'Productive'
+                              ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300"
+                              : "bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-300"
+                          )}>
+                            {app.productivity}
+                          </span>
+                          <span className="text-slate-500 font-bold text-[10px]">{app.durationFormatted}</span>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-[11px] text-slate-400 italic py-1">No app activity recorded yet</p>
+                )}
               </div>
 
               {/* View Logs Button -> Switches to Logs View filtered by this employee */}
