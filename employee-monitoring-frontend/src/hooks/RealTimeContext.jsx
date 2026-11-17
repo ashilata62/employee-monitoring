@@ -94,19 +94,10 @@ export function RealTimeProvider({ children }) {
         notifications: [],
         alerts: [],
         screenshots: [],
-        geofences: [
-            { id: 1, name: 'Headquarters', radius: '500m', status: 'Active', enabled: true, color: 'border-blue-500 bg-blue-500/10' },
-            { id: 2, name: 'Client Site A', radius: '200m', status: 'Active', enabled: true, color: 'border-purple-500 bg-purple-500/10' },
-            { id: 3, name: 'Warehouse Beta', radius: '1km', status: 'Inactive', enabled: false, color: 'border-slate-500 bg-slate-500/10' },
-        ],
-        leaveRequests: [
-            { id: 1, name: 'John Doe', type: 'Sick Leave', range: 'Feb 18 - Feb 20', status: 'Approved', color: 'bg-emerald-50 text-emerald-600' },
-            { id: 2, name: 'Jane Smith', type: 'Annual Leave', range: 'Mar 05 - Mar 12', status: 'Pending', color: 'bg-amber-50 text-amber-600' },
-            { id: 3, name: 'Alex Johnson', type: 'Casual Leave', range: 'Feb 25', status: 'Pending', color: 'bg-amber-50 text-amber-600' },
-            { id: 4, name: 'Sarah Brown', type: 'Sick Leave', range: 'Feb 14 - Feb 15', status: 'Rejected', color: 'bg-red-50 text-red-600' },
-        ],
+        geofences: [],
+        leaveRequests: [],
         checkIns: [],
-        travelStats: { totalDistance: '42.5 km', avgSpeed: '18 km/h', topSpeed: '45 km/h', totalTrips: 12 },
+        travelStats: { totalDistance: '0 km', avgSpeed: '0 km/h', topSpeed: '0 km/h', totalTrips: 0 },
         timer: { isRunning: false, startTime: null, seconds: 0, currentTask: null },
         currentUser: { id: 0, name: 'Admin User', role: 'Admin' },
         // Compliance
@@ -819,11 +810,11 @@ export function RealTimeProvider({ children }) {
         }));
 
         const totalPayroll = (state.payrollData || []).reduce((s, p) => s + (p.grossPayValue || 0), 0);
-        const avgHourlyRate = Math.round(employees.reduce((s, e) => s + (e.hourlyRate || 50), 0) / Math.max(1, employees.length));
+        const avgHourlyRate = employees.length > 0 ? Math.round(employees.reduce((s, e) => s + (e.hourlyRate || 0), 0) / employees.length) : 0;
 
         return {
             ...live,
-            totalHours: { today: summary.workTime, week: '3,840h', month: '16,400h' },
+            totalHours: { today: summary.workTime, week: summary.workTime, month: summary.workTime },
             summary,
             productivityTrend: trend,
             intradayActivity: intraday,
@@ -840,45 +831,26 @@ export function RealTimeProvider({ children }) {
 
     // Employee CRUD
     const addEmployee = useCallback((employee) => {
-        const id = Date.now();
+        const id = employee.id || Date.now();
         const baseEmp = {
             ...employee,
             id,
             status: employee.status || 'active',
-            avatar: `https://i.pravatar.cc/150?u=${id}`,
-            hourlyRate: employee.hourlyRate || 55,
-            productivityScore: 82,
-            utilizationScore: 85,
-            team: employee.team || 'Operations',
-            lat: 40.71 + Math.random() * 0.05,
-            lng: -74.01 + Math.random() * 0.05,
+            avatar: employee.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(employee.name || 'User')}&background=random`,
+            hourlyRate: employee.hourlyRate || 0,
+            productivityScore: employee.productivityScore || 0,
+            utilizationScore: employee.utilizationScore || 0,
+            team: employee.team || 'General',
+            lat: employee.lat || null,
+            lng: employee.lng || null,
         };
-
-        // Generate 30 days of synthetic history
-        const empArr = [baseEmp];
-        const newAttendance = buildAttendanceLogs(empArr);
-        const newActivity = buildActivityLogs(empArr);
-        const newAppUsage = buildAppUsageLogs(empArr);
-        const newLocation = buildLocationLogs(empArr);
-        const newScreenshots = buildScreenshots(empArr);
-        const newTasks = buildTasks(empArr);
-        const newPayroll = buildPayrollData(empArr, newActivity);
-        const newAlerts = buildAlerts(empArr, newActivity);
 
         setState(prev => ({
             ...prev,
             employees: [baseEmp, ...prev.employees],
-            attendanceLogs: [...newAttendance, ...prev.attendanceLogs],
-            activityLogs: [...newActivity, ...prev.activityLogs],
-            appUsageLogs: [...newAppUsage, ...prev.appUsageLogs],
-            locationLogs: [...newLocation, ...prev.locationLogs],
-            screenshots: [...newScreenshots, ...prev.screenshots],
-            tasks: [...newTasks, ...prev.tasks],
-            payrollData: [...newPayroll, ...prev.payrollData],
-            alerts: [...newAlerts, ...prev.alerts],
         }));
 
-        addNotification(`New employee ${employee.name} added with 30 days of history`, 'success');
+        addNotification(`New employee ${employee.name || employee.fullName} added`, 'success');
         return baseEmp;
     }, [addNotification]);
 
@@ -1166,37 +1138,16 @@ export function RealTimeProvider({ children }) {
             id,
             progress: 0,
             color: project.color || 'bg-indigo-500',
-            status: 'Planning',
-            taskCount: 5 + Math.floor(Math.random() * 5)
+            status: project.status || 'Planning',
+            taskCount: 0
         };
-
-        // Generate dummy tasks for this project
-        const projectTasks = [];
-        const currentEmployees = state.employees;
-        for (let i = 0; i < p.taskCount; i++) {
-            const emp = currentEmployees[i % currentEmployees.length];
-            projectTasks.push({
-                id: `ptk-${id}-${i}`,
-                title: `${project.name} Phase ${i + 1}`,
-                project: project.name,
-                priority: i === 0 ? 'High' : 'Medium',
-                assignee: emp.name,
-                assigneeId: emp.id,
-                team: emp.team,
-                status: i < 2 ? 'Finalized' : 'Backlog',
-                progress: i < 2 ? 100 : 0,
-                timeSpent: `${Math.floor(Math.random() * 8) + 2}h`,
-                dueDate: '2026-03-15'
-            });
-        }
 
         setState(prev => ({
             ...prev,
-            projects: [p, ...prev.projects],
-            tasks: [...projectTasks, ...prev.tasks]
+            projects: [p, ...prev.projects]
         }));
-        addNotification(`Project "${project.name}" initialized with ${p.taskCount} tasks`, 'success');
-    }, [addNotification, state.employees]);
+        addNotification(`Project "${project.name}" created successfully`, 'success');
+    }, [addNotification]);
 
     // Screenshots
     const deleteScreenshot = useCallback(async (id) => {

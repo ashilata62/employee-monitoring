@@ -344,14 +344,16 @@ export function ActivitiesTimeline() {
 
         {/* Action Header Buttons */}
         <div className="flex items-center flex-wrap gap-2.5">
-          {/* Review Productivity Button */}
-          <button
-            onClick={() => setShowReviewModal(true)}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-black text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 transition-all shadow-sm active:scale-95"
-          >
-            <ShieldCheck size={14} className="text-primary-600" />
-            <span>Review Productivity</span>
-          </button>
+          {/* Review Productivity Button (Admin / Manager only) */}
+          {role !== 'EMPLOYEE' && (
+            <button
+              onClick={() => setShowReviewModal(true)}
+              className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-black text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 transition-all shadow-sm active:scale-95"
+            >
+              <ShieldCheck size={14} className="text-primary-600" />
+              <span>Review Productivity</span>
+            </button>
+          )}
 
           {/* Interactive Date Picker Dropdown */}
           <div className="relative" ref={datePickerRef}>
@@ -487,76 +489,78 @@ export function ActivitiesTimeline() {
             />
           </div>
 
-          {/* Working + Add Filter Popover */}
-          <div className="relative" ref={filterRef}>
-            <button
-              onClick={() => setShowFilterPopover(!showFilterPopover)}
-              className={cn(
-                "flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-black transition-all shadow-sm",
-                filterTeam || filterShiftStatus !== 'ALL'
-                  ? "bg-primary-600 text-white shadow-primary-600/20"
-                  : "text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-950/40 border border-primary-200 dark:border-primary-800/60 hover:bg-primary-100"
-              )}
-            >
-              <span>+ Add Filter</span>
-              {(filterTeam || filterShiftStatus !== 'ALL') && (
-                <span className="w-1.5 h-1.5 rounded-full bg-white ml-1" />
-              )}
-            </button>
+          {/* Working + Add Filter Popover (Admin / Manager only) */}
+          {role !== 'EMPLOYEE' && (
+            <div className="relative" ref={filterRef}>
+              <button
+                onClick={() => setShowFilterPopover(!showFilterPopover)}
+                className={cn(
+                  "flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-black transition-all shadow-sm",
+                  filterTeam || filterShiftStatus !== 'ALL'
+                    ? "bg-primary-600 text-white shadow-primary-600/20"
+                    : "text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-950/40 border border-primary-200 dark:border-primary-800/60 hover:bg-primary-100"
+                )}
+              >
+                <span>+ Add Filter</span>
+                {(filterTeam || filterShiftStatus !== 'ALL') && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-white ml-1" />
+                )}
+              </button>
 
-            {showFilterPopover && (
-              <div className="absolute top-full left-0 mt-2 w-64 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-4 z-50 animate-in fade-in duration-200 space-y-3">
-                <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
-                  <span className="text-xs font-black text-slate-800 dark:text-white">Filter Timeline</span>
-                  {(filterTeam || filterShiftStatus !== 'ALL') && (
-                    <button
-                      onClick={() => {
-                        setFilterTeam('');
-                        setFilterShiftStatus('ALL');
-                      }}
-                      className="text-[10px] font-black text-rose-500 hover:underline"
+              {showFilterPopover && (
+                <div className="absolute top-full left-0 mt-2 w-64 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-4 z-50 animate-in fade-in duration-200 space-y-3">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+                    <span className="text-xs font-black text-slate-800 dark:text-white">Filter Timeline</span>
+                    {(filterTeam || filterShiftStatus !== 'ALL') && (
+                      <button
+                        onClick={() => {
+                          setFilterTeam('');
+                          setFilterShiftStatus('ALL');
+                        }}
+                        className="text-[10px] font-black text-rose-500 hover:underline"
+                      >
+                        Reset
+                      </button>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase">Team / Department</label>
+                    <select
+                      value={filterTeam}
+                      onChange={(e) => setFilterTeam(e.target.value)}
+                      className="w-full mt-1 p-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-100"
                     >
-                      Reset
-                    </button>
-                  )}
-                </div>
+                      <option value="">All Teams</option>
+                      <option value="General Team">General Team</option>
+                      <option value="Development Team">Development Team</option>
+                      <option value="Design Team">Design Team</option>
+                    </select>
+                  </div>
 
-                <div>
-                  <label className="text-[10px] font-bold text-slate-400 uppercase">Team / Department</label>
-                  <select
-                    value={filterTeam}
-                    onChange={(e) => setFilterTeam(e.target.value)}
-                    className="w-full mt-1 p-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-100"
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase">Shift Punctuality</label>
+                    <select
+                      value={filterShiftStatus}
+                      onChange={(e) => setFilterShiftStatus(e.target.value)}
+                      className="w-full mt-1 p-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-100"
+                    >
+                      <option value="ALL">All Employees</option>
+                      <option value="LATE">Late for Work Only</option>
+                      <option value="ON_TIME">On Time Only</option>
+                    </select>
+                  </div>
+
+                  <button
+                    onClick={() => setShowFilterPopover(false)}
+                    className="w-full py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-xs font-black transition-colors"
                   >
-                    <option value="">All Teams</option>
-                    <option value="General Team">General Team</option>
-                    <option value="Development Team">Development Team</option>
-                    <option value="Design Team">Design Team</option>
-                  </select>
+                    Apply Filters
+                  </button>
                 </div>
-
-                <div>
-                  <label className="text-[10px] font-bold text-slate-400 uppercase">Shift Punctuality</label>
-                  <select
-                    value={filterShiftStatus}
-                    onChange={(e) => setFilterShiftStatus(e.target.value)}
-                    className="w-full mt-1 p-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-100"
-                  >
-                    <option value="ALL">All Employees</option>
-                    <option value="LATE">Late for Work Only</option>
-                    <option value="ON_TIME">On Time Only</option>
-                  </select>
-                </div>
-
-                <button
-                  onClick={() => setShowFilterPopover(false)}
-                  className="w-full py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-xs font-black transition-colors"
-                >
-                  Apply Filters
-                </button>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Legend (Exact match to Insightful Reference Image 4) */}
@@ -1013,8 +1017,8 @@ export function ActivitiesTimeline() {
           </div>
         )}
 
-        {/* Floating Projects & Billable Costs Card */}
-        {showProjectsCard && (
+        {/* Floating Projects & Billable Costs Card (Admin / Manager only) */}
+        {showProjectsCard && role !== 'EMPLOYEE' && (
           <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200 dark:border-slate-800 shadow-xl relative overflow-hidden group">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-2">

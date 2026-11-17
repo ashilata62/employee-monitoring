@@ -1742,6 +1742,19 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
     });
   }, [filteredScreenshots, playbackIndex, globalBlur]);
 
+  const handleLoadArchive = useCallback(async () => {
+    if (isLoadingArchive) return;
+    setIsLoadingArchive(true);
+    try {
+      const nextPage = page + 1;
+      await fetchScreenshots(nextPage);
+      setPage(nextPage);
+    } catch (err) {
+      console.error('Failed to load archive screenshots:', err);
+    } finally {
+      setIsLoadingArchive(false);
+    }
+  }, [isLoadingArchive, page, fetchScreenshots]);
 
   const handleDelete = useCallback((id) => {
               setScreenshotToDelete(id);

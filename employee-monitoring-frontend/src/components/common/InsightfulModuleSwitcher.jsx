@@ -23,20 +23,22 @@ export function InsightfulModuleSwitcher({ activeTab = 'trends' }) {
             color: 'text-purple-500',
             path: `${rolePrefix}/activities`
         },
-        {
-            id: 'location',
-            label: 'Office vs Remote',
-            icon: Globe,
-            color: 'text-sky-500',
-            path: `${rolePrefix}/reports/location-insights`
-        },
-        {
-            id: 'apps',
-            label: 'Apps & Websites Usage',
-            icon: Monitor,
-            color: 'text-emerald-500',
-            path: `${rolePrefix}/reports/apps-websites`
-        }
+        ...(role !== 'EMPLOYEE' ? [
+            {
+                id: 'location',
+                label: 'Office vs Remote',
+                icon: Globe,
+                color: 'text-sky-500',
+                path: `${rolePrefix}/reports/location-insights`
+            },
+            {
+                id: 'apps',
+                label: 'Apps & Websites Usage',
+                icon: Monitor,
+                color: 'text-emerald-500',
+                path: `${rolePrefix}/reports/apps-websites`
+            }
+        ] : [])
     ];
 
     return (

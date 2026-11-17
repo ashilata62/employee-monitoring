@@ -5,9 +5,45 @@ const makeId = () => Math.random().toString(36).slice(2, 9);
 
 const INITIAL_USERS = [];
 
-const INITIAL_ORG_GROUPS = [
-    { id: 'og1', name: 'Design Team', description: '', employees: [], managerId: null, createdAt: Date.now() },
-];
+const INITIAL_ORG_GROUPS = [];
+
+const getInitialUser = () => {
+    try {
+        const u = localStorage.getItem('user');
+        const parsed = u ? JSON.parse(u) : null;
+        if (parsed) {
+            return {
+                id: parsed.id,
+                name: parsed.fullName || parsed.name || '',
+                email: parsed.email || '',
+                role: parsed.role || 'Admin',
+                avatar: parsed.avatar || null,
+                language: parsed.language || "English",
+                timeFormat: parsed.timeFormat || "12h",
+                timeZonePreference: parsed.timeZonePreference || "organization",
+                twoFactorEnabled: !!parsed.twoFactorEnabled,
+                connectedAccounts: parsed.connectedAccounts || { google: false, slack: false }
+            };
+        }
+    } catch (e) {
+        // ignore
+    }
+    return {
+        id: null,
+        name: "",
+        email: "",
+        role: "",
+        avatar: null,
+        language: "English",
+        timeFormat: "12h",
+        timeZonePreference: "organization",
+        twoFactorEnabled: false,
+        connectedAccounts: {
+            google: false,
+            slack: false
+        }
+    };
+};
 
 export const ALL_FEATURES = [
     { id: 'productivity', label: 'Productivity' },
@@ -31,28 +67,14 @@ export const useUserStore = create(
         (set, get) => ({
             users: INITIAL_USERS,
             orgGroups: INITIAL_ORG_GROUPS,
-            currentUser: {
-                id: 1,
-                name: "Admin User",
-                email: "admin@company.com",
-                role: "Admin",
-                avatar: null,
-                language: "English",
-                timeFormat: "12h",
-                timeZonePreference: "organization",
-                twoFactorEnabled: false,
-                connectedAccounts: {
-                    google: false,
-                    slack: false
-                }
-            },
+            currentUser: getInitialUser(),
 
             updateProfile: (updates) => set((s) => ({
                 currentUser: { ...s.currentUser, ...updates }
             })),
             
-            updatePassword: (newPassword) => {
-                // Dummy password update
+            updatePassword: async (newPassword) => {
+                // Password updates handled by auth service
             },
             
             toggle2FA: () => set((s) => ({

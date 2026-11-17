@@ -183,11 +183,12 @@ export function TimeAndAttendance() {
 
 
     return (
-        <div className="min-h-screen bg-[#fcfdfe] dark:bg-slate-950 pb-12 px-2 sm:px-4 lg:px-8 transition-colors duration-200">
+        <div className="min-h-screen bg-[#F5F1E9] dark:bg-[#1A1F18] pb-12 px-2 sm:px-4 lg:px-6 transition-colors duration-200">
             {/* Top Bar */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 py-8 mb-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 py-6 mb-4">
                 <div>
-                    <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Time and Attendance</h1>
+                    <h1 className="font-serif text-3xl font-normal text-[#29291F] dark:text-[#F5F1E9] tracking-tight">Time & Attendance</h1>
+                    <p className="text-xs font-medium text-[#777367] dark:text-[#B8B3A7] mt-0.5">Daily timesheets, attendance logs and approval workflows</p>
                 </div>
                 <div className="flex items-center gap-4">
                     {/* Actions and view toggles removed */}
@@ -196,7 +197,7 @@ export function TimeAndAttendance() {
 
             {/* Tabs */}
             <div className="overflow-x-auto mb-8">
-                <div className="flex items-center gap-10 border-b border-slate-100 dark:border-slate-800 min-w-max">
+                <div className="flex items-center gap-8 border-b border-[#E5DED2] dark:border-[#384232] min-w-max">
                     {[
                         'Weekly Timesheets',
                         'Daily Attendance',
@@ -206,11 +207,14 @@ export function TimeAndAttendance() {
                         <button
                             key={tab}
                             onClick={() => setActiveTab(tab)}
-                            className={`pb-4 text-sm font-black transition-all relative ${activeTab === tab ? 'text-primary-600 dark:text-primary-400' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
-                                }`}
+                            className={`pb-3.5 text-xs uppercase tracking-wider font-bold transition-all relative cursor-pointer ${
+                                activeTab === tab
+                                    ? 'text-[#B9955B] font-bold'
+                                    : 'text-[#777367] hover:text-[#29291F] dark:hover:text-[#F5F1E9]'
+                            }`}
                         >
                             {tab}
-                            {activeTab === tab && <div className="absolute bottom-0 left-0 w-full h-[3px] bg-primary-600 rounded-full" />}
+                            {activeTab === tab && <div className="absolute bottom-0 left-0 w-full h-[2.5px] bg-[#B9955B] rounded-full" />}
                         </button>
                     ))}
                 </div>
@@ -259,9 +263,9 @@ export function TimeAndAttendance() {
             {activeTab === 'Daily Attendance' && (
                 <div className="space-y-6">
                     {viewMode === 'Day View' ? (
-                        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden overflow-x-auto">
+                        <div className="bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl border border-[#E5DED2] dark:border-[#384232] shadow-warm-xs overflow-hidden overflow-x-auto">
                             <table className="w-full text-left min-w-[1000px]">
-                                <thead className="bg-[#fcfdfe] dark:bg-slate-950 text-slate-400 dark:text-slate-500 font-bold text-[10px] uppercase tracking-widest border-b border-slate-50 dark:border-slate-800">
+                                <thead className="bg-[#EEE8DD]/70 dark:bg-[#1E2419] text-[#777367] dark:text-[#B8B3A7] font-bold text-[10px] uppercase tracking-[0.14em] border-b border-[#E5DED2] dark:border-[#384232]">
                                     <tr>
                                         <th className="px-6 py-4">Employee Name</th>
                                         <th className="px-6 py-4">Location</th>

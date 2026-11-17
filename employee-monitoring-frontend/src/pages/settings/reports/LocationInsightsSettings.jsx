@@ -69,17 +69,7 @@ export function LocationInsightsSettings() {
                 addLocation(newLoc);
                 triggerToast('New Location Auto-created');
             }, (error) => {
-                // Fallback for simulation
-                const mockLoc = {
-                    name: 'Simulated Office',
-                    type: 'Office',
-                    address: 'Simulated Coordinate (Browser Denied)',
-                    lat: 34.0522,
-                    lng: -118.2437,
-                    attendanceThreshold: 4
-                };
-                addLocation(mockLoc);
-                triggerToast('Simulated Location Added');
+                triggerToast('Location access denied or unavailable. Please configure manually.');
             });
         }
     };

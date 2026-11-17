@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff, Loader2, Shield, Users, User, Monitor } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, Loader2, Shield, User, Monitor, Sparkles } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useToast } from '../context/ToastContext';
 import authService from '../services/authService';
-import { API_BASE_URL, BASE_URL } from '../config/api';
+import { BASE_URL } from '../config/api';
 import { getErrorMessage } from '../utils/errorHandler';
 
 export function Login() {
@@ -18,8 +18,6 @@ export function Login() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const [info, setInfo] = useState('');
-
-    const from = location.state?.from?.pathname || '/';
 
     const handleForgotPassword = async (e) => {
         e.preventDefault();
@@ -39,9 +37,9 @@ export function Login() {
         setIsLoading(true);
         setError('');
         try {
-            const email = `${role.toLowerCase()}@example.com`;
-            const password = '123456';
-            await login(email, password);
+            const quickEmail = role.toLowerCase() === 'admin' ? 'admin@gmail.com' : 'demo1@gmail.com';
+            const quickPass = '123456';
+            await login(quickEmail, quickPass);
             navigate(`/${role.toLowerCase()}`, { replace: true });
         } catch (err) {
             setError(getErrorMessage(err));
@@ -67,33 +65,36 @@ export function Login() {
     };
 
     return (
-        <div className="min-h-screen w-full flex items-center justify-center bg-slate-50 dark:bg-slate-950 p-2">
-            <div className="w-full max-w-md space-y-2">
-                <div className="text-center group cursor-default">
-                    <div className="flex flex-col items-center mb-2">
-                        <h1 className="text-3xl font-black tracking-tight bg-gradient-to-r from-primary-600 via-primary-400 to-primary-600 bg-[length:200%_auto] animate-gradient-x bg-clip-text text-transparent leading-tight transition-transform duration-500 group-hover:scale-105 px-2 text-center">
-                            Employee Performance Software
-                        </h1>
-                        <p className="text-xs font-black text-slate-600 dark:text-slate-400 tracking-widest uppercase mt-1.5">
-                            DSP Consultants
-                        </p>
-                        <div className="h-0.5 w-16 bg-primary-600 mt-2 rounded-full opacity-30"></div>
+        <div className="min-h-screen w-full flex items-center justify-center bg-[#F5F1E9] dark:bg-[#1A1F18] p-4 text-[#29291F] dark:text-[#F5F1E9]">
+            <div className="w-full max-w-md space-y-4">
+                {/* Brand Header */}
+                <div className="text-center">
+                    <div className="inline-flex h-12 w-12 rounded-2xl bg-[#30382B] text-[#D3B98D] items-center justify-center mb-3 shadow-warm-md">
+                        <Sparkles size={22} />
                     </div>
-                    <p className="text-slate-500 dark:text-slate-400 font-semibold tracking-wide uppercase text-[10px]">Sign in to your portal</p>
+                    <h1 className="font-serif text-3xl sm:text-4xl font-normal text-[#29291F] dark:text-[#F5F1E9] tracking-tight leading-tight">
+                        Employee Performance
+                    </h1>
+                    <p className="text-[10px] font-bold tracking-[0.25em] text-[#B9955B] uppercase mt-1">
+                        Workforce Command Center
+                    </p>
                 </div>
 
-                <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-800">
-                    <form onSubmit={handleSubmit} className="space-y-3">
+                {/* Login Card */}
+                <div className="bg-[#FBF9F5] dark:bg-[#252B20] p-6 sm:p-8 rounded-3xl shadow-warm-lg border border-[#E5DED2] dark:border-[#384232]">
+                    <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
-                            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wide">Email Address</label>
+                            <label className="block text-[11px] font-bold text-[#777367] dark:text-[#B8B3A7] mb-1.5 uppercase tracking-wider">
+                                Email Address
+                            </label>
                             <div className="relative">
-                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#777367]" size={16} />
                                 <input
                                     type="email"
                                     required
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    className="block w-full rounded-xl border border-slate-200 bg-slate-50 py-2 pl-10 pr-4 text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                                    className="block w-full rounded-xl border border-[#E5DED2] bg-[#F5F1E9] py-2.5 pl-10 pr-4 text-xs font-semibold text-[#29291F] focus:border-[#B9955B] outline-none transition-all dark:bg-[#1E2419] dark:border-[#384232] dark:text-[#F5F1E9]"
                                     placeholder="name@company.com"
                                 />
                             </div>
@@ -101,29 +102,31 @@ export function Login() {
 
                         <div>
                             <div className="flex items-center justify-between mb-1.5">
-                                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">Password</label>
+                                <label className="block text-[11px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-wider">
+                                    Password
+                                </label>
                                 <button
                                     type="button"
                                     onClick={handleForgotPassword}
-                                    className="text-[10px] font-black text-primary-600 hover:text-primary-700 uppercase tracking-tighter"
+                                    className="text-[10px] font-bold text-[#B9955B] hover:text-[#A17D45] uppercase tracking-wider cursor-pointer"
                                 >
                                     Forgot Password?
                                 </button>
                             </div>
                             <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#777367]" size={16} />
                                 <input
                                     type={showPassword ? "text" : "password"}
                                     required
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="block w-full rounded-xl border border-slate-200 bg-slate-50 py-2 pl-10 pr-12 text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                                    className="block w-full rounded-xl border border-[#E5DED2] bg-[#F5F1E9] py-2.5 pl-10 pr-12 text-xs font-semibold text-[#29291F] focus:border-[#B9955B] outline-none transition-all dark:bg-[#1E2419] dark:border-[#384232] dark:text-[#F5F1E9]"
                                     placeholder="••••••••"
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#777367] hover:text-[#29291F] dark:hover:text-[#F5F1E9] cursor-pointer"
                                 >
                                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                                 </button>
@@ -131,13 +134,13 @@ export function Login() {
                         </div>
 
                         {error && (
-                            <div className="rounded-lg bg-red-50 p-3 text-xs text-red-600 dark:bg-red-900/20 dark:text-red-400 border border-red-100 dark:border-red-900/30">
+                            <div className="rounded-xl bg-[#FAF3F2] p-3 text-xs font-medium text-[#A84B4B] border border-[#EAC3BE]">
                                 {error}
                             </div>
                         )}
 
                         {info && (
-                            <div className="rounded-lg bg-emerald-50 p-3 text-xs text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/30">
+                            <div className="rounded-xl bg-[#F4F7F4] p-3 text-xs font-medium text-[#5E7D64] border border-[#C8DAC8]">
                                 {info}
                             </div>
                         )}
@@ -145,74 +148,66 @@ export function Login() {
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="relative flex w-full justify-center rounded-xl bg-primary-600 py-2.5 px-4 text-sm font-bold text-white shadow-lg shadow-primary-500/25 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed uppercase tracking-wider"
+                            className="relative flex w-full justify-center rounded-xl bg-[#30382B] hover:bg-[#3C4536] py-3 px-4 text-xs font-bold text-[#FDFBF7] shadow-warm-sm focus:outline-none transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed uppercase tracking-widest cursor-pointer"
                         >
                             {isLoading ? (
-                                <Loader2 className="animate-spin" size={20} />
+                                <Loader2 className="animate-spin text-[#D3B98D]" size={18} />
                             ) : (
-                                'Sign In'
+                                'Sign In to Workspace'
                             )}
                         </button>
                     </form>
 
-                    <div className="relative my-2">
+                    {/* Quick Demo Access */}
+                    <div className="relative my-5">
                         <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                            <div className="w-full border-t border-slate-200 dark:border-slate-800"></div>
+                            <div className="w-full border-t border-[#E5DED2] dark:border-[#384232]"></div>
                         </div>
                         <div className="relative flex justify-center text-[10px] uppercase">
-                            <span className="bg-white px-2 text-slate-500 dark:bg-slate-900 font-black tracking-widest leading-none">Quick Demo Access</span>
+                            <span className="bg-[#FBF9F5] dark:bg-[#252B20] px-3 text-[#777367] font-bold tracking-widest leading-none">
+                                Quick Demo Access
+                            </span>
                         </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
                         <button
                             onClick={() => handleQuickLogin('Admin')}
-                            className="flex flex-col items-center gap-2 rounded-2xl border border-slate-100 p-3 text-center transition-all hover:bg-primary-50 hover:border-primary-200 dark:border-slate-800 dark:hover:bg-primary-900/20 dark:hover:border-primary-800 group"
+                            className="flex flex-col items-center gap-1.5 rounded-2xl border border-[#E5DED2] dark:border-[#384232] bg-[#F5F1E9] dark:bg-[#1E2419] p-3 text-center transition-all hover:border-[#B9955B] group cursor-pointer"
                         >
-                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-100 text-primary-600 dark:bg-primary-900/40 dark:text-primary-400 transition-transform group-hover:scale-110">
-                                <Shield size={20} />
+                            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#30382B] text-[#D3B98D] transition-transform group-hover:scale-105">
+                                <Shield size={18} />
                             </div>
-                            <span className="text-[10px] font-black uppercase text-slate-500 dark:text-slate-400 group-hover:text-primary-600">Admin</span>
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-[#29291F] dark:text-[#F5F1E9]">Admin Portal</span>
                         </button>
-
 
                         <button
                             onClick={() => handleQuickLogin('Employee')}
-                            className="flex flex-col items-center gap-2 rounded-2xl border border-slate-100 p-3 text-center transition-all hover:bg-amber-50 hover:border-amber-200 dark:border-slate-800 dark:hover:bg-amber-900/20 dark:hover:border-amber-800 group"
+                            className="flex flex-col items-center gap-1.5 rounded-2xl border border-[#E5DED2] dark:border-[#384232] bg-[#F5F1E9] dark:bg-[#1E2419] p-3 text-center transition-all hover:border-[#B9955B] group cursor-pointer"
                         >
-                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 text-amber-600 dark:bg-amber-900/40 dark:text-amber-400 transition-transform group-hover:scale-110">
-                                <User size={20} />
+                            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#B9955B] text-white transition-transform group-hover:scale-105">
+                                <User size={18} />
                             </div>
-                            <span className="text-[10px] font-black uppercase text-slate-500 dark:text-slate-400 group-hover:text-amber-600">Employee</span>
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-[#29291F] dark:text-[#F5F1E9]">Employee Portal</span>
                         </button>
                     </div>
 
-                    <div className="relative my-2">
-                        <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                            <div className="w-full border-t border-slate-200 dark:border-slate-800"></div>
-                        </div>
-                        <div className="relative flex justify-center text-[10px] uppercase">
-                            <span className="bg-white px-2 text-slate-500 dark:bg-slate-900 font-black tracking-widest leading-none">Monitor your work</span>
-                        </div>
-                    </div>
-
-                    <div className="bg-gradient-to-br from-slate-900 to-slate-800 dark:from-white dark:to-slate-100 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-xl overflow-hidden relative group">
-                        <div className="absolute top-0 right-0 -m-4 h-16 w-16 bg-primary-500/10 rounded-full blur-2xl group-hover:bg-primary-500/20 transition-all duration-700"></div>
-                        <div className="flex flex-col md:flex-row items-center justify-between gap-4 relative z-10">
-                            <div className="text-center md:text-left">
-                                <h4 className="text-base font-black text-white dark:text-slate-900 flex items-center justify-center md:justify-start gap-2">
-                                    <Monitor size={18} className="text-primary-400" />
+                    {/* Desktop Monitoring Agent Callout */}
+                    <div className="mt-5 rounded-2xl p-4 bg-[#30382B] text-[#F5F1E9] border border-[#3C4536] shadow-warm-xs">
+                        <div className="flex items-center justify-between gap-3">
+                            <div>
+                                <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
+                                    <Monitor size={15} className="text-[#D3B98D]" />
                                     Desktop Monitoring Agent
                                 </h4>
-                                <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 font-medium italic">Essential for performance tracking.</p>
+                                <p className="text-[10px] text-[#B8C2B3] mt-0.5">Windows desktop tracking client (.exe)</p>
                             </div>
                             <a
                                 href={`${BASE_URL}/api/agent/download`}
                                 download="EMS-Tracker-latest.exe"
-                                className="flex items-center gap-2 px-6 py-2.5 bg-primary-600 dark:bg-primary-600 text-white rounded-xl text-xs font-black transition-all hover:scale-105 active:scale-95 shadow-xl shadow-primary-500/20 hover:shadow-primary-500/40 uppercase"
+                                className="px-3.5 py-1.5 bg-[#B9955B] hover:bg-[#A17D45] text-white rounded-xl text-[10px] font-bold transition-all shadow-xs uppercase tracking-wider shrink-0 cursor-pointer"
                             >
-                                <Monitor size={16} />
-                                DOWNLOAD
+                                Download
                             </a>
                         </div>
                     </div>

@@ -24,13 +24,17 @@ import { cn } from '../../utils/cn';
 
 export function AuditLogs() {
     const navigate = useNavigate();
-    const { auditLogs, filters, setFilters, sortConfig, setSort, clearFilters } = useAuditLogStore();
+    const { auditLogs, isLoading, fetchAuditLogs, filters, setFilters, sortConfig, setSort, clearFilters } = useAuditLogStore();
 
     const [isUserModalOpen, setIsUserModalOpen] = useState(false);
     const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
     const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
     const [isDateDropdownOpen, setIsDateDropdownOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+
+    useEffect(() => {
+        fetchAuditLogs();
+    }, [fetchAuditLogs]);
 
     // --- Filter Logic ---
     const filteredLogs = useMemo(() => {
@@ -222,7 +226,12 @@ export function AuditLogs() {
 
             {/* Table */}
             <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden ring-1 ring-slate-200/50 dark:ring-slate-800/50">
-                {filteredLogs.length === 0 ? (
+                {isLoading ? (
+                    <div className="py-32 flex flex-col items-center justify-center text-center">
+                        <div className="h-10 w-10 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mb-4" />
+                        <p className="text-slate-400 font-bold text-sm">Loading audit logs from database...</p>
+                    </div>
+                ) : filteredLogs.length === 0 ? (
                     <div className="py-32 flex flex-col items-center justify-center text-center">
                         <div className="h-24 w-24 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center text-slate-200 dark:text-slate-700 mb-8 border-4 border-white dark:border-slate-800 shadow-xl">
                             <Monitor size={48} />

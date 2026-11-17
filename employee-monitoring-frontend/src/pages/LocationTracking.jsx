@@ -10,21 +10,8 @@ import { cn } from '../utils/cn';
 import { FilterDropdown } from '../components/FilterDropdown';
 import { useRealTime } from '../hooks/RealTimeContext';
 
-// Demo Example: Expanded Mock Routes for History
-const MOCK_ROUTES = {
-    '101': [
-        { x: 20, y: 30 }, { x: 25, y: 35 }, { x: 35, y: 32 }, { x: 45, y: 40 },
-        { x: 50, y: 55 }, { x: 60, y: 50 }, { x: 70, y: 60 }, { x: 80, y: 55 }, { x: 85, y: 40 }
-    ],
-    '102': [
-        { x: 10, y: 80 }, { x: 20, y: 75 }, { x: 30, y: 85 }, { x: 45, y: 70 },
-        { x: 60, y: 75 }, { x: 70, y: 65 }, { x: 85, y: 70 }, { x: 90, y: 80 }
-    ],
-    'default': [
-        { x: 30, y: 20 }, { x: 40, y: 30 }, { x: 50, y: 25 }, { x: 60, y: 40 },
-        { x: 70, y: 35 }, { x: 80, y: 50 }
-    ]
-};
+// Route points derived from real location history
+const DEFAULT_ROUTE = [];
 
 export const LocationTracking = () => {
     const { 
@@ -63,30 +50,17 @@ export const LocationTracking = () => {
         return () => clearInterval(interval);
     }, [isPlaying, activeTab]);
 
-    // Live movement simulation offsets
-    const [liveOffsets, setLiveOffsets] = useState({});
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setLiveOffsets(prev => {
-                const next = { ...prev };
-                employees.forEach(emp => {
-                    if (emp.status === 'moving') {
-                        next[emp.id] = {
-                            x: (next[emp.id]?.x || 0) + (Math.random() - 0.5) * 0.5,
-                            y: (next[emp.id]?.y || 0) + (Math.random() - 0.5) * 0.5
-                        };
-                    }
-                });
-                return next;
-            });
-        }, 1000);
-        return () => clearInterval(interval);
-    }, [employees]);
+    // Live positions from actual employee coordinates
+    const liveOffsets = {};
 
     const currentRoute = useMemo(() => {
-        const routeId = selectedEmployee ? String(selectedEmployee) : 'default';
-        return MOCK_ROUTES[routeId] || MOCK_ROUTES['default'];
-    }, [selectedEmployee]);
+        if (!selectedEmployee) return DEFAULT_ROUTE;
+        const emp = employees.find(e => String(e.id) === String(selectedEmployee) || String(e.employeeId) === String(selectedEmployee));
+        if (emp && emp.routeHistory && Array.isArray(emp.routeHistory) && emp.routeHistory.length > 1) {
+            return emp.routeHistory;
+        }
+        return DEFAULT_ROUTE;
+    }, [selectedEmployee, employees]);
 
     const currentRoutePos = useMemo(() => {
         if (!currentRoute || currentRoute.length < 2) return { x: 0, y: 0 };
@@ -228,7 +202,7 @@ export const LocationTracking = () => {
                                             >
                                                 <div className="absolute bottom-full mb-4 left-1/2 -translate-x-1/2 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl p-3 rounded-2xl shadow-2xl border border-white dark:border-white/5 w-48 flex items-center gap-3">
                                                     <div className="h-10 w-10 rounded-xl overflow-hidden border-2 border-primary-500 p-0.5">
-                                                        <img src={`https://i.pravatar.cc/150?u=${selectedEmployee || 101}`} className="h-full w-full object-cover rounded-lg" alt="" />
+                                                        <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(selectedEmployee || 'Employee')}&background=6366f1&color=fff`} className="h-full w-full object-cover rounded-lg" alt="" />
                                                     </div>
                                                     <div className="flex-1 min-w-0">
                                                         <p className="text-xs font-black truncate text-slate-900 dark:text-white leading-tight">History Replay</p>
@@ -283,7 +257,7 @@ export const LocationTracking = () => {
                                             >
                                                 <div className={cn("absolute bottom-full mb-4 left-1/2 -translate-x-1/2 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl p-4 rounded-[2rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] border border-white dark:border-white/5 transition-all w-52 flex items-center gap-4", isFocused ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-90 translate-y-4 pointer-events-none group-hover:opacity-100 group-hover:scale-100 group-hover:translate-y-0 group-hover:pointer-events-auto")}>
                                                     <div className="h-12 w-12 rounded-2xl overflow-hidden border-2 border-primary-500 p-0.5 shadow-lg flex-shrink-0">
-                                                        <img src={`https://i.pravatar.cc/150?u=${loc.employeeId}`} className="h-full w-full object-cover rounded-[14px]" alt="" />
+                                                        <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(loc.name || 'Employee')}&background=6366f1&color=fff`} className="h-full w-full object-cover rounded-[14px]" alt="" />
                                                     </div>
                                                     <div className="flex-1 min-w-0">
                                                         <p className="text-sm font-black truncate text-slate-900 dark:text-white leading-tight">{loc.name}</p>
@@ -352,7 +326,7 @@ export const LocationTracking = () => {
                                                 )}
                                             >
                                                 <div className="h-10 w-10 rounded-xl overflow-hidden border-2 border-slate-100 dark:border-slate-800 group-hover:border-primary-500/30 transition-all">
-                                                    <img src={`https://i.pravatar.cc/150?u=${loc.employeeId}`} className="h-full w-full object-cover" alt="" />
+                                                    <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(loc.name || 'Employee')}&background=6366f1&color=fff`} className="h-full w-full object-cover" alt="" />
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <p className="text-[13px] font-black truncate text-slate-900 dark:text-white leading-tight">{loc.name}</p>

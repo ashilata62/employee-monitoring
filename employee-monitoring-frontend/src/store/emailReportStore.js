@@ -1,16 +1,5 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-
-// Dummy scheduler simulation — fires console log based on frequency
-function simulateScheduler(report) {
-    const msgs = {
-        daily: `📧 [Email Report Scheduler] "${report.title}" would send daily at midnight to: ${report.recipients.join(', ')}`,
-        weekly: `📧 [Email Report Scheduler] "${report.title}" would send weekly on Monday at midnight to: ${report.recipients.join(', ')}`,
-        monthly: `📧 [Email Report Scheduler] "${report.title}" would send on the 1st of each month at midnight to: ${report.recipients.join(', ')}`,
-    };
-    console.log(msgs[report.frequency] ?? msgs.daily);
-}
-
 import { emailReportService } from '../services/emailReportService';
 
 export const CONTENT_OPTIONS = [

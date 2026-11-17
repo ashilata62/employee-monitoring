@@ -1,23 +1,39 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { X, Search, Check, User } from 'lucide-react';
 import { cn } from '../../utils/cn';
+import { useEmployeeStore } from '../../store/employeeStore';
 
-export function UserFilterModal({ isOpen, onClose, selectedUsers, onApply }) {
+export function UserFilterModal({ isOpen, onClose, selectedUsers = [], onApply, users: propUsers }) {
     const [search, setSearch] = useState('');
     const [localSelected, setLocalSelected] = useState(selectedUsers);
 
-    // Dummy users list for the filter
-    const users = [
-        { id: 'u1', name: 'Jane Smith', role: 'Owner' },
-        { id: 'u2', name: 'Alex Rivera', role: 'Admin' },
-        { id: 'u3', name: 'John Doe', role: 'Manager' },
-        { id: 'u4', name: 'Sarah Wilson', role: 'HR' },
-        { id: 'u5', name: 'Alice Smith', role: 'Employee' }
-    ];
+    const storeEmployees = useEmployeeStore((state) => state.employees);
+    const fetchEmployees = useEmployeeStore((state) => state.fetchEmployees);
+
+    useEffect(() => {
+        if (isOpen && (!storeEmployees || storeEmployees.length === 0)) {
+            fetchEmployees();
+        }
+    }, [isOpen, storeEmployees, fetchEmployees]);
+
+    useEffect(() => {
+        setLocalSelected(selectedUsers || []);
+    }, [selectedUsers, isOpen]);
+
+    // Use real employees from database via store or props
+    const users = useMemo(() => {
+        if (propUsers && propUsers.length > 0) return propUsers;
+        if (!storeEmployees || storeEmployees.length === 0) return [];
+        return storeEmployees.map(emp => ({
+            id: emp.id,
+            name: emp.fullName || emp.name || emp.email || 'Unnamed',
+            role: emp.role || 'Employee'
+        }));
+    }, [propUsers, storeEmployees]);
 
     const filteredUsers = useMemo(() => {
         return users.filter(u => u.name.toLowerCase().includes(search.toLowerCase()));
-    }, [search]);
+    }, [users, search]);
 
     if (!isOpen) return null;
 
@@ -52,7 +68,12 @@ export function UserFilterModal({ isOpen, onClose, selectedUsers, onApply }) {
                     </div>
 
                     <div className="max-h-60 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
-                        {filteredUsers.map(user => (
+                        {filteredUsers.length === 0 ? (
+                            <div className="py-8 text-center text-sm font-bold text-slate-400">
+                                No employees found
+                            </div>
+                        ) : (
+                            filteredUsers.map(user => (
                             <button
                                 key={user.id}
                                 onClick={() => toggleUser(user.name)}
@@ -78,7 +99,8 @@ export function UserFilterModal({ isOpen, onClose, selectedUsers, onApply }) {
                                     </div>
                                 )}
                             </button>
-                        ))}
+                            ))
+                        )}
                     </div>
                 </div>
 

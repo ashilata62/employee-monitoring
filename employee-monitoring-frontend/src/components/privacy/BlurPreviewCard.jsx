@@ -22,23 +22,21 @@ export function BlurPreviewCard({ blurLevel }) {
 
                 {/* Body text */}
                 <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mb-5">
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua - 13pt
+                    Confidential internal document preview. When blur is enabled, sensitive employee screens and data are obscured automatically according to your organization privacy compliance policy.
                 </p>
 
                 {/* Fields row */}
                 <div className="grid grid-cols-2 gap-3">
                     <div>
-                        <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 mb-1.5">Password - 16pt</p>
+                        <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 mb-1.5">Password</p>
                         <div className="px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700">
-                            <span className="text-sm font-mono font-bold text-slate-900 dark:text-white tracking-widest">abcd1234</span>
-                            <span className="text-xs text-slate-400 ml-1">· 14pt</span>
+                            <span className="text-sm font-mono font-bold text-slate-900 dark:text-white tracking-widest">••••••••</span>
                         </div>
                     </div>
                     <div>
-                        <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 mb-1.5">Card Number - 16pt</p>
+                        <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 mb-1.5">Card Number</p>
                         <div className="px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700">
-                            <span className="text-sm font-mono font-bold text-slate-900 dark:text-white tracking-widest">1234 5678 9101</span>
-                            <span className="text-xs text-slate-400 ml-1">· 14pt</span>
+                            <span className="text-sm font-mono font-bold text-slate-900 dark:text-white tracking-widest">•••• •••• •••• 9101</span>
                         </div>
                     </div>
                 </div>

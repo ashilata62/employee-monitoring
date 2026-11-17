@@ -119,38 +119,20 @@ class ProcessMiningService {
             }
         });
 
-        // Ensure graph edges have minimal baseline counts for rendering DFG
-        if (stageTransitions['BACKLOG -> IN_OPERATIONS'].count === 0) {
-            stageTransitions['BACKLOG -> IN_OPERATIONS'].count = 1;
-            stageTransitions['BACKLOG -> IN_OPERATIONS'].totalDurationSec = 7200;
-        }
-        if (stageTransitions['IN_OPERATIONS -> QUALITY_ASSURANCE'].count === 0) {
-            stageTransitions['IN_OPERATIONS -> QUALITY_ASSURANCE'].count = 1;
-            stageTransitions['IN_OPERATIONS -> QUALITY_ASSURANCE'].totalDurationSec = 5400;
-        }
-        if (stageTransitions['QUALITY_ASSURANCE -> FINALIZED'].count === 0) {
-            stageTransitions['QUALITY_ASSURANCE -> FINALIZED'].count = 1;
-            stageTransitions['QUALITY_ASSURANCE -> FINALIZED'].totalDurationSec = 3600;
-        }
-        if (stageTransitions['FINALIZED -> END'].count === 0) {
-            stageTransitions['FINALIZED -> END'].count = 1;
-            stageTransitions['FINALIZED -> END'].totalDurationSec = 300;
-        }
-
         // Process Cycle Efficiency: Active Productive Time / Total Lead Time * 100
         const pce = totalLeadTimeSeconds > 0
             ? Math.min(Math.round((totalActiveWorkSeconds / totalLeadTimeSeconds) * 100), 100)
-            : 62;
-        const avgLeadTimeHours = (totalLeadTimeSeconds / totalCases / 3600).toFixed(1);
-        const reworkRate = Math.round((reworkOccurrences / Math.max(tasks.length, 1)) * 100);
+            : 0;
+        const avgLeadTimeHours = totalCases > 0 ? (totalLeadTimeSeconds / totalCases / 3600).toFixed(1) : '0.0';
+        const reworkRate = tasks.length > 0 ? Math.round((reworkOccurrences / tasks.length) * 100) : 0;
 
         // 4. Build Directly Follows Graph (DFG) Nodes & Edges
         const nodes = [
             { id: 'START', label: 'Process Start', type: 'start', count: totalCases, avgStayHours: '0.0h' },
-            { id: 'BACKLOG', label: 'Backlog Queue', type: 'stage', count: backlogCount + inOpsCount + qaCount + finalizedCount, avgStayHours: ((stageTransitions['START -> BACKLOG'].totalDurationSec / totalCases) / 3600).toFixed(1) + 'h' },
-            { id: 'IN_OPERATIONS', label: 'In Operations (Dev)', type: 'stage', count: inOpsCount + qaCount + finalizedCount, avgStayHours: ((stageTransitions['BACKLOG -> IN_OPERATIONS'].totalDurationSec / Math.max(stageTransitions['BACKLOG -> IN_OPERATIONS'].count, 1)) / 3600).toFixed(1) + 'h' },
-            { id: 'QUALITY_ASSURANCE', label: 'Quality Assurance', type: 'stage', count: qaCount + finalizedCount, avgStayHours: ((stageTransitions['IN_OPERATIONS -> QUALITY_ASSURANCE'].totalDurationSec / Math.max(stageTransitions['IN_OPERATIONS -> QUALITY_ASSURANCE'].count, 1)) / 3600).toFixed(1) + 'h' },
-            { id: 'FINALIZED', label: 'Finalized / Released', type: 'stage', count: finalizedCount, avgStayHours: '1.2h' },
+            { id: 'BACKLOG', label: 'Backlog Queue', type: 'stage', count: backlogCount + inOpsCount + qaCount + finalizedCount, avgStayHours: totalCases > 0 ? ((stageTransitions['START -> BACKLOG'].totalDurationSec / totalCases) / 3600).toFixed(1) + 'h' : '0.0h' },
+            { id: 'IN_OPERATIONS', label: 'In Operations (Dev)', type: 'stage', count: inOpsCount + qaCount + finalizedCount, avgStayHours: stageTransitions['BACKLOG -> IN_OPERATIONS'].count > 0 ? ((stageTransitions['BACKLOG -> IN_OPERATIONS'].totalDurationSec / stageTransitions['BACKLOG -> IN_OPERATIONS'].count) / 3600).toFixed(1) + 'h' : '0.0h' },
+            { id: 'QUALITY_ASSURANCE', label: 'Quality Assurance', type: 'stage', count: qaCount + finalizedCount, avgStayHours: stageTransitions['IN_OPERATIONS -> QUALITY_ASSURANCE'].count > 0 ? ((stageTransitions['IN_OPERATIONS -> QUALITY_ASSURANCE'].totalDurationSec / stageTransitions['IN_OPERATIONS -> QUALITY_ASSURANCE'].count) / 3600).toFixed(1) + 'h' : '0.0h' },
+            { id: 'FINALIZED', label: 'Finalized / Released', type: 'stage', count: finalizedCount, avgStayHours: finalizedCount > 0 ? '1.2h' : '0.0h' },
             { id: 'END', label: 'Process Complete', type: 'end', count: finalizedCount, avgStayHours: '0.0h' },
         ];
 
