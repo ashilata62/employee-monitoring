@@ -92,16 +92,17 @@ export function AgentManagement() {
 
     const handleDelete = async (agent) => {
         const empName = agent.employee?.fullName || 'this employee';
+        const deviceId = agent.deviceId || 'device';
         
-        const confirmed = window.confirm(`Are you sure you want to delete ${empName}? All tracking data, screenshots, and agent registration will be permanently lost.`);
+        const confirmed = window.confirm(`Are you sure you want to remove monitoring agent (${deviceId}) for ${empName}?`);
         if (!confirmed) return;
         
         try {
-            await agentService.removeAgent(agent.employeeId);
-            toast.success(`${empName} and associated agent data deleted successfully`);
+            await agentService.removeAgent(agent.id || agent.employeeId);
+            toast.success(`Agent (${deviceId}) removed successfully`);
             fetchAgents();
         } catch (err) {
-            toast.error(err.userMessage || 'Deletion failed');
+            toast.error(err.userMessage || err.message || 'Deletion failed');
         }
     };
 

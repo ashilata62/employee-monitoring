@@ -39,11 +39,11 @@ const agentService = {
     },
 
     /**
-     * Remove agent and associated employee data
-     * @param {string} employeeId 
+     * Remove agent device
+     * @param {string} id - Agent ID or Employee ID
      */
-    removeAgent: async (employeeId) => {
-        const response = await api.delete(`/employees/${employeeId}`);
+    removeAgent: async (id) => {
+        const response = await api.delete(`/agent/${id}`);
         return response.data;
     },
 

@@ -460,7 +460,20 @@ const update = async (req, res) => {
 };
 
 const remove = async (req, res) => {
-// ... existing code ...
+    try {
+        const { id } = req.params;
+        let agent = await prisma.agent.findUnique({ where: { id } });
+        if (!agent) {
+            agent = await prisma.agent.findFirst({ where: { employeeId: id } });
+        }
+        if (!agent) {
+            return errorResponse(res, 'Agent device not found', 404);
+        }
+        await agentService.deleteAgent(agent.id);
+        return successResponse(res, null, 'Agent device removed successfully');
+    } catch (error) {
+        return errorResponse(res, error.message || 'Failed to remove agent', 500);
+    }
 };
 
 const stopTracking = async (req, res) => {
