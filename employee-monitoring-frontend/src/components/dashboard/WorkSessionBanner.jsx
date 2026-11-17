@@ -58,16 +58,16 @@ export function WorkSessionBanner() {
     };
 
     return (
-        <div className="bg-[#FBF9F5] dark:bg-[#252B20] p-6 rounded-2xl border border-[#E5DED2] dark:border-[#384232] shadow-warm-xs flex flex-col gap-4 mb-8 w-full">
+        <div className="bg-[#FBF9F5] dark:bg-[#252B20] p-4 sm:p-5 rounded-2xl border border-[#E5DED2] dark:border-[#384232] shadow-warm-xs flex flex-col gap-3.5 mb-6 sm:mb-8 w-full">
 
             {/* ── Row 1: Timer + status ───────────────────────────────────────── */}
-            <div className="flex flex-col md:flex-row items-center gap-6 justify-between p-6 bg-[#EEE8DD]/50 dark:bg-[#1E2419] rounded-2xl border border-[#E5DED2] dark:border-[#384232]">
+            <div className="flex flex-col md:flex-row items-center gap-4 justify-between p-4 sm:p-5 bg-[#EEE8DD]/50 dark:bg-[#1E2419] rounded-xl border border-[#E5DED2] dark:border-[#384232]">
                 {/* Timer */}
                 <div className="flex flex-col items-center md:items-start">
                     <span className="text-[10px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-[0.14em] mb-1">
                         {isOnBreak ? 'Session Paused' : 'Total Work Hours'}
                     </span>
-                    <div className="font-serif text-4xl lg:text-5xl font-bold text-[#29291F] dark:text-[#F5F1E9] tabular-nums tracking-tight">
+                    <div className="font-sans text-3xl lg:text-4xl font-bold text-[#29291F] dark:text-[#F5F1E9] tabular-nums tracking-tight">
                         {formatTime(elapsedSeconds)}
                     </div>
                 </div>
