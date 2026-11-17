@@ -71,12 +71,29 @@ const createTeam = async (req, res, next) => {
         if (req.user.role !== 'ADMIN' && req.user.role !== 'MANAGER') {
             return res.status(403).json({ success: false, message: "Only admins and managers can create teams" });
         }
+        const orgId = await getOrganizationId(req);
         const validatedData = createTeamSchema.parse(req.body);
-        const team = await teamsService.createTeam(validatedData);
+        
+        // Securely bind team to authenticated user's organization so it never desyncs or disappears
+        const teamData = {
+            ...validatedData,
+            organizationId: orgId
+        };
+
+        const team = await teamsService.createTeam(teamData);
         res.status(201).json({
             success: true,
             message: "Team created successfully",
-            data: team
+            data: {
+                id: team.id,
+                name: team.name,
+                description: team.description,
+                color: team.color || 'bg-blue-500',
+                memberCount: 0,
+                onlineCount: 0,
+                productivity: 0,
+                organizationId: team.organizationId
+            }
         });
     } catch (error) {
         next(error);

@@ -113,10 +113,10 @@ export function Teams() {
             return;
         }
 
-        // Priority: store, then user, then employees fallback
-        const orgId = organization?.id ||
-            user?.organizationId ||
-            employees?.[0]?.organizationId;
+        // Priority: authenticated user session, employee record, then store fallback
+        const orgId = user?.organizationId ||
+            employees?.[0]?.organizationId ||
+            organization?.id;
 
         if (!orgId) {
             toast.error("No organization found. Please contact support.");
@@ -128,6 +128,7 @@ export function Teams() {
                 ...teamData,
                 organizationId: orgId
             });
+            await fetchTeams();
             setIsModalOpen(false);
         } catch (error) {
             // Error handled by apiClient

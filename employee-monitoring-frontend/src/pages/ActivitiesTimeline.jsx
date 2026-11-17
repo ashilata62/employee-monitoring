@@ -956,7 +956,15 @@ export function ActivitiesTimeline() {
             </div>
             <div className="flex items-center gap-3">
               <button
-                onClick={() => setIsTrackerRunning(!isTrackerRunning)}
+                onClick={() => {
+                  if (isTrackerRunning) {
+                    setIsTrackerRunning(false);
+                    setIsOnBreak(false);
+                  } else {
+                    setIsTrackerRunning(true);
+                    setIsOnBreak(false);
+                  }
+                }}
                 className={cn(
                   "flex-1 py-3 rounded-xl text-xs font-black shadow-lg transition-all active:scale-95 text-white",
                   isTrackerRunning ? "bg-rose-500 hover:bg-rose-600 shadow-rose-500/20" : "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20"
@@ -965,19 +973,42 @@ export function ActivitiesTimeline() {
                 {isTrackerRunning ? "Clock Out" : "Clock In"}
               </button>
               <button
-                onClick={() => setIsOnBreak(!isOnBreak)}
+                onClick={() => {
+                  if (!isTrackerRunning) return;
+                  setIsOnBreak(!isOnBreak);
+                }}
+                disabled={!isTrackerRunning}
                 className={cn(
-                  "flex-1 py-3 rounded-xl text-xs font-black transition-all active:scale-95 text-white shadow-lg",
-                  isOnBreak
-                    ? "bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20"
-                    : "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/20"
+                  "flex-1 py-3 rounded-xl text-xs font-black transition-all text-white shadow-lg",
+                  !isTrackerRunning
+                    ? "bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed shadow-none"
+                    : isOnBreak
+                      ? "bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20 active:scale-95"
+                      : "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/20 active:scale-95"
                 )}
+                title={!isTrackerRunning ? "Clock in first to take a break" : isOnBreak ? "Resume Work" : "Take a Break"}
               >
-                {isOnBreak ? "Resume Work" : "Take a Break"}
+                {!isTrackerRunning ? "Take a Break" : isOnBreak ? "Resume Work" : "Take a Break"}
               </button>
             </div>
             <p className="text-center text-[10px] font-bold text-slate-400 mt-3">
-              Status: <span className={cn("font-black", isOnBreak ? "text-amber-500" : isTrackerRunning ? "text-emerald-500" : "text-slate-400")}>{isOnBreak ? "On Break" : isTrackerRunning ? "Active Working" : "Clocked Out"}</span>
+              Status:{" "}
+              <span
+                className={cn(
+                  "font-black",
+                  !isTrackerRunning
+                    ? "text-slate-400"
+                    : isOnBreak
+                    ? "text-amber-500"
+                    : "text-emerald-500"
+                )}
+              >
+                {!isTrackerRunning
+                  ? "Clocked Out"
+                  : isOnBreak
+                  ? "On Break"
+                  : "Active Working"}
+              </span>
             </p>
           </div>
         )}

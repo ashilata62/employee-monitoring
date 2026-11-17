@@ -21,10 +21,7 @@ export const useTeamStore = create((set, get) => ({
         set({ isLoading: true });
         try {
             const response = await teamService.createTeam(teamData);
-            set((state) => ({
-                teams: [...state.teams, response.data],
-                isLoading: false
-            }));
+            await get().fetchTeams();
             toast.success('Team created successfully!');
             return response;
         } catch (error) {
