@@ -91,7 +91,7 @@ export function Projects() {
             {/* Tabs */}
             <div className="px-0 pt-2 overflow-x-auto no-scrollbar mb-8">
                 <div className="flex items-center gap-8 border-b border-slate-100 dark:border-slate-800 min-w-max">
-                    {['Insightful', 'Integrated'].map(tab => (
+                    {['Insightful', ...(role !== 'EMPLOYEE' ? ['Integrated'] : [])].map(tab => (
                         <button
                             key={tab}
                             onClick={() => setActiveTab(tab)}
@@ -123,7 +123,7 @@ export function Projects() {
                 </div>
 
                 <div className="flex items-center gap-3 self-end md:self-auto">
-                    {activeTab !== 'Integrated' && (
+                    {role !== 'EMPLOYEE' && activeTab !== 'Integrated' && (
                         <button
                             onClick={handleDownload}
                             title="Download CSV report"
@@ -229,9 +229,15 @@ export function Projects() {
                                 <div className="text-left col-span-4">Project Name</div>
                                 <div className="col-span-2">Assignees</div>
                                 <div className="col-span-2">Tasks</div>
-                                <div className="col-span-1">Rate</div>
-                                <div className="col-span-1">Costs</div>
-                                <div className="col-span-2 text-center">Actions</div>
+                                {role !== 'EMPLOYEE' ? (
+                                    <>
+                                        <div className="col-span-1">Rate</div>
+                                        <div className="col-span-1">Costs</div>
+                                        <div className="col-span-2 text-center">Actions</div>
+                                    </>
+                                ) : (
+                                    <div className="col-span-4 text-center">Status</div>
+                                )}
                             </div>
                         </div>
 
@@ -275,56 +281,62 @@ export function Projects() {
                                             <div className="hidden lg:flex flex-col lg:items-center gap-1 lg:col-span-2">
                                                 <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{project.tasks}</span>
                                             </div>
-                                            {/* Bill Rate */}
-                                            <div className="flex flex-col lg:items-center gap-1 lg:col-span-1">
-                                                <span className="lg:hidden text-[9px] font-black text-emerald-500/70 uppercase tracking-widest">Rate</span>
-                                                <span className="text-xs font-black text-emerald-600 dark:text-emerald-400">${project.billRate}</span>
-                                            </div>
-                                            {/* Total Costs */}
-                                            <div className="flex flex-col lg:items-center gap-1 lg:col-span-1">
-                                                <span className="lg:hidden text-[9px] font-black text-primary-500/70 uppercase tracking-widest">Costs</span>
-                                                <span className="text-sm lg:text-xs font-black text-primary-600 dark:text-primary-400">${project.totalCosts}</span>
-                                            </div>
+                                            {role !== 'EMPLOYEE' ? (
+                                                <>
+                                                    {/* Bill Rate */}
+                                                    <div className="flex flex-col lg:items-center gap-1 lg:col-span-1">
+                                                        <span className="lg:hidden text-[9px] font-black text-emerald-500/70 uppercase tracking-widest">Rate</span>
+                                                        <span className="text-xs font-black text-emerald-600 dark:text-emerald-400">${project.billRate}</span>
+                                                    </div>
+                                                    {/* Total Costs */}
+                                                    <div className="flex flex-col lg:items-center gap-1 lg:col-span-1">
+                                                        <span className="lg:hidden text-[9px] font-black text-primary-500/70 uppercase tracking-widest">Costs</span>
+                                                        <span className="text-sm lg:text-xs font-black text-primary-600 dark:text-primary-400">${project.totalCosts}</span>
+                                                    </div>
 
-                                            {/* Actions */}
-                                            {(role === 'ADMIN' || role === 'MANAGER') ? (
-                                                <div className="flex items-center justify-center gap-2 lg:col-span-2">
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setViewingProject(project);
-                                                        }}
-                                                        className="h-8 w-8 flex items-center justify-center rounded-lg bg-slate-50 dark:bg-slate-800 text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all shadow-sm"
-                                                        title="View Project Details"
-                                                    >
-                                                        <Eye size={16} />
-                                                    </button>
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setEditingProject(project);
-                                                            setIsModalOpen(true);
-                                                        }}
-                                                        className="h-8 w-8 flex items-center justify-center rounded-lg bg-slate-50 dark:bg-slate-800 text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-all shadow-sm"
-                                                        title="Edit Project"
-                                                    >
-                                                        <Edit3 size={16} />
-                                                    </button>
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            if (window.confirm('Are you sure you want to delete this project?')) {
-                                                                deleteProject(project.id);
-                                                            }
-                                                        }}
-                                                        className="h-8 w-8 flex items-center justify-center rounded-lg bg-slate-50 dark:bg-slate-800 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all shadow-sm"
-                                                        title="Delete Project"
-                                                    >
-                                                        <Trash2 size={16} />
-                                                    </button>
-                                                </div>
+                                                    {/* Actions */}
+                                                    <div className="flex items-center justify-center gap-2 lg:col-span-2">
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setViewingProject(project);
+                                                            }}
+                                                            className="h-8 w-8 flex items-center justify-center rounded-lg bg-slate-50 dark:bg-slate-800 text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all shadow-sm"
+                                                            title="View Project Details"
+                                                        >
+                                                            <Eye size={16} />
+                                                        </button>
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setEditingProject(project);
+                                                                setIsModalOpen(true);
+                                                            }}
+                                                            className="h-8 w-8 flex items-center justify-center rounded-lg bg-slate-50 dark:bg-slate-800 text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-all shadow-sm"
+                                                            title="Edit Project"
+                                                        >
+                                                            <Edit3 size={16} />
+                                                        </button>
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                if (window.confirm('Are you sure you want to delete this project?')) {
+                                                                    deleteProject(project.id);
+                                                                }
+                                                            }}
+                                                            className="h-8 w-8 flex items-center justify-center rounded-lg bg-slate-50 dark:bg-slate-800 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all shadow-sm"
+                                                            title="Delete Project"
+                                                        >
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    </div>
+                                                </>
                                             ) : (
-                                                <div className="lg:col-span-2" />
+                                                <div className="flex items-center justify-center lg:col-span-4">
+                                                    <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">
+                                                        Active Project
+                                                    </span>
+                                                </div>
                                             )}
                                         </div>
                                     </div>
