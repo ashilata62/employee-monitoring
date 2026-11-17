@@ -824,10 +824,10 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
           </span>
           <button
             onClick={handleDeleteClick}
-            className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-400 hover:text-rose-500 transition-colors"
-            title="Delete"
+            className="p-1 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded text-slate-400 hover:text-rose-500 transition-colors"
+            title="Delete Screenshot"
           >
-            <MoreVertical size={14} />
+            <Trash2 size={13} />
           </button>
         </div>
       </div>
@@ -1330,6 +1330,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
             // View & Filter State
             const [viewMode, setViewMode] = useState('grid');
             const [timelineDate, setTimelineDate] = useState(new Date());
+            const [isAllHistory, setIsAllHistory] = useState(false);
             const [showCalendar, setShowCalendar] = useState(false);
             const [viewDate, setViewDate] = useState(new Date());
             const [isPlaying, setIsPlaying] = useState(false);
@@ -1380,30 +1381,31 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
   // Unified fetcher for both live and historical screenshots
   const fetchScreenshots = useCallback(async (pageNum = 0, isPolling = false) => {
     if (!isPolling) setLoadingScreenshots(true);
-            try {
-      const dateStr = timelineDate.toLocaleDateString('en-CA'); // Reliable YYYY-MM-DD
-            const params = {
-              limit,
-              offset: pageNum * limit,
-            date: dateStr
+    try {
+      const params = {
+        limit,
+        offset: pageNum * limit
       };
+      if (!isAllHistory) {
+        params.date = timelineDate.toLocaleDateString('en-CA'); // Reliable YYYY-MM-DD
+      }
 
       // If specific employees are filtered, pass the first one (backend currently supports single employeeId in query)
       if (selectedFilters.employees.length > 0) {
-              params.employeeId = selectedFilters.employees[0];
+        params.employeeId = selectedFilters.employees[0];
       }
 
-            // Add productivity filter for "Idle" quick filter
-            if (activeFilter === 'Idle') {
-              params.productivity = 'UNPRODUCTIVE';
+      // Add productivity filter for "Idle" quick filter
+      if (activeFilter === 'Idle') {
+        params.productivity = 'UNPRODUCTIVE';
       }
 
-            const res = await screenshotService.getScreenshots(params);
-            if (res.success && res.data) {
+      const res = await screenshotService.getScreenshots(params);
+      if (res.success && res.data) {
         if (res.data.length < limit) {
-              setHasMore(false);
+          setHasMore(false);
         } else {
-              setHasMore(true);
+          setHasMore(true);
         }
         
         setBackendScreenshots(prev => {
@@ -1417,17 +1419,17 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
         });
       }
     } catch (err) {
-              console.error('Failed to fetch screenshots:', err);
+      console.error('Failed to fetch screenshots:', err);
     } finally {
       if (!isPolling) setLoadingScreenshots(false);
     }
-  }, [limit, timelineDate, selectedFilters, activeFilter]); // Correctly depend on filters and quick filters
+  }, [limit, timelineDate, isAllHistory, selectedFilters, activeFilter]); // Correctly depend on filters and quick filters
 
   // Handle date or filter changes
   useEffect(() => {
-              setPage(0);
-            fetchScreenshots(0);
-  }, [timelineDate, selectedFilters.employees, activeFilter]);
+    setPage(0);
+    fetchScreenshots(0);
+  }, [timelineDate, isAllHistory, selectedFilters.employees, activeFilter]);
 
   useEffect(() => {
               fetchSettings();
@@ -1547,9 +1549,8 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
             {id: 3, name: 'Idle Timeout', enabled: true, desc: 'Pause after 5m idle' },
             ]);
 
-            // Detail View & Archive State
+            // Detail View & Selection State
             const [selectedScreenshot, setSelectedScreenshot] = useState(null);
-            const [isLoadingArchive, setIsLoadingArchive] = useState(false);
 
   // 2. Filter & Derived Logic (Optimized with useMemo)
   const uniqueEmployees = useMemo(() => ['All', ...new Set(localScreenshots.map(s => s.employee))], [localScreenshots]);
@@ -1741,34 +1742,6 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
     });
   }, [filteredScreenshots, playbackIndex, globalBlur]);
 
-  const handleLoadArchive = useCallback(async () => {
-    if (isLoadingArchive) return;
-            setIsLoadingArchive(true);
-    const delay = (ms) => new Promise(res => setTimeout(res, ms));
-            try {
-              await delay(800);
-            const year = timelineDate.getFullYear();
-            const month = String(timelineDate.getMonth() + 1).padStart(2, '0');
-            const day = String(timelineDate.getDate()).padStart(2, '0');
-            const targetDateStr = `${year}-${month}-${day}`;
-            const batchSize = 10;
-            const archiveData = Array.from({length: batchSize }).map((_, i) => ({
-              id: `arc-${Date.now()}-${i}`,
-            id_val: `arc-${Date.now()}-${i}`,
-            time: `${8 + Math.floor(i / 2)}:${(i % 2) * 30 + 10} AM`,
-            date: targetDateStr,
-            url: `https://picsum.photos/seed/${Math.random()}/800/450`,
-            employee: ['Sarah Brown', 'Alex Johnson', 'Mike Wilson', 'John Doe'][Math.floor(Math.random() * 4)],
-        isBlurred: Math.random() > 0.7,
-        status: Math.random() > 0.8 ? 'Idle' : 'Active',
-            department: 'Engineering',
-            employeeId: Math.floor(Math.random() * 4) + 1
-      }));
-      setLocalScreenshots(prev => [...archiveData, ...prev]);
-    } finally {
-              setIsLoadingArchive(false);
-    }
-  }, [isLoadingArchive, timelineDate]);
 
   const handleDelete = useCallback((id) => {
               setScreenshotToDelete(id);
@@ -2086,22 +2059,22 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                         >
                           <Calendar size={16} className="text-primary-500" />
                           <span>
-                            {isToday ? 'Today' : timelineDate.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
+                            {isAllHistory ? 'All History' : isToday ? 'Today' : timelineDate.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
                           </span>
                           <ChevronDown size={14} className={cn("transition-transform duration-200", showCalendarDropdown && "rotate-180")} />
                         </button>
 
                         {showCalendarDropdown && (
-                          <div className="absolute top-full right-0 mt-2 w-[300px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl z-[100] overflow-hidden animate-in fade-in zoom-in duration-200 origin-top-right p-4">
+                          <div className="absolute top-full right-0 mt-2 w-[320px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl z-[100] overflow-hidden animate-in fade-in zoom-in duration-200 origin-top-right p-4">
                             <div className="space-y-4">
                               <div>
                                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 block">Quick Select</label>
-                                <div className="grid grid-cols-2 gap-2">
+                                <div className="grid grid-cols-3 gap-2">
                                   <button
-                                    onClick={() => { setTimelineDate(new Date()); setShowCalendarDropdown(false); }}
+                                    onClick={() => { setTimelineDate(new Date()); setIsAllHistory(false); setShowCalendarDropdown(false); }}
                                     className={cn(
-                                      "px-3 py-2 rounded-lg text-xs font-bold transition-all border",
-                                      isToday ? "bg-primary-600 text-white border-primary-600" : "bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-transparent hover:border-slate-200"
+                                      "px-2.5 py-2 rounded-lg text-xs font-bold transition-all border",
+                                      isToday && !isAllHistory ? "bg-primary-600 text-white border-primary-600" : "bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-transparent hover:border-slate-200"
                                     )}
                                   >
                                     Today
@@ -2111,11 +2084,24 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                                       const yesterday = new Date();
                                       yesterday.setDate(yesterday.getDate() - 1);
                                       setTimelineDate(yesterday);
+                                      setIsAllHistory(false);
                                       setShowCalendarDropdown(false);
                                     }}
-                                    className="px-3 py-2 rounded-lg text-xs font-bold bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-transparent hover:border-slate-200 transition-all"
+                                    className="px-2.5 py-2 rounded-lg text-xs font-bold bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-transparent hover:border-slate-200 transition-all"
                                   >
                                     Yesterday
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setIsAllHistory(true);
+                                      setShowCalendarDropdown(false);
+                                    }}
+                                    className={cn(
+                                      "px-2.5 py-2 rounded-lg text-xs font-bold transition-all border",
+                                      isAllHistory ? "bg-primary-600 text-white border-primary-600" : "bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-transparent hover:border-slate-200"
+                                    )}
+                                  >
+                                    All History
                                   </button>
                                 </div>
                               </div>
@@ -2164,6 +2150,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                                         disabled={isFuture}
                                         onClick={() => {
                                           setTimelineDate(currentDay);
+                                          setIsAllHistory(false);
                                           setShowCalendarDropdown(false);
                                         }}
                                         className={cn(
@@ -2363,24 +2350,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                                 </div>
                               )}
 
-                              {role !== 'EMPLOYEE' && (
-                                <div className="flex justify-center mt-6">
-                                  <button
-                                    onClick={handleLoadArchive}
-                                    disabled={isLoadingArchive}
-                                    className="px-8 py-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 font-bold rounded-xl shadow-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-all text-sm flex items-center gap-3 active:scale-95 disabled:opacity-50"
-                                  >
-                                    {isLoadingArchive ? (
-                                      <>
-                                        <RefreshCw size={16} className="animate-spin" />
-                                        <span>Accessing Cloud Storage...</span>
-                                      </>
-                                    ) : (
-                                      <span>Load Archive</span>
-                                    )}
-                                  </button>
-                                </div>
-                              )}
+
                             </>
                           )}
                         </>
