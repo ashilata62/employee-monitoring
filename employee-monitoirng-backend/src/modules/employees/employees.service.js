@@ -222,8 +222,7 @@ const updateEmployee = async (id, data) => {
 };
 
 /**
- * Permanently delete an employee ONLY if no historical records exist.
- * Preserves compliance and prevents accidental deletion of work history.
+ * Permanently delete an employee and cascade-clean all associated records.
  */
 const deleteEmployee = async (id) => {
     const employee = await prisma.employee.findUnique({
@@ -235,62 +234,48 @@ const deleteEmployee = async (id) => {
         throw new Error('Employee not found');
     }
 
-    // Safety check: Prevent deletion if historical attendance, payroll, timesheet, manual time, task time or activity logs exist
-    const [attCount, payrollCount, manualCount, ptlCount, actCount, ttlCount] = await Promise.all([
-        prisma.attendance.count({ where: { employeeId: id } }),
-        prisma.payrollRecord.count({ where: { employeeId: id } }),
-        prisma.manualTime.count({ where: { employeeId: id } }),
-        prisma.projectTimeLog.count({ where: { employeeId: id } }),
-        prisma.activityLog.count({ where: { employeeId: id } }),
-        prisma.taskTimeLog.count({ where: { employeeId: id } }),
-    ]);
-
-    let timesheetCount = 0;
+    // Step-by-step cleanup of all related records to ensure zero foreign key constraint violations
+    await prisma.activityLog.deleteMany({ where: { employeeId: id } }).catch(() => {});
+    await prisma.appUsageLog.deleteMany({ where: { employeeId: id } }).catch(() => {});
+    await prisma.attendance.deleteMany({ where: { employeeId: id } }).catch(() => {});
+    await prisma.manualTime.deleteMany({ where: { employeeId: id } }).catch(() => {});
+    await prisma.projectTimeLog.deleteMany({ where: { employeeId: id } }).catch(() => {});
+    await prisma.taskTimeLog.deleteMany({ where: { employeeId: id } }).catch(() => {});
+    await prisma.payrollRecord.deleteMany({ where: { employeeId: id } }).catch(() => {});
+    await prisma.locationLog.deleteMany({ where: { employeeId: id } }).catch(() => {});
+    await prisma.screenshot.deleteMany({ where: { employeeId: id } }).catch(() => {});
+    await prisma.liveActivity.deleteMany({ where: { employeeId: id } }).catch(() => {});
+    await prisma.shift.deleteMany({ where: { employeeId: id } }).catch(() => {});
+    await prisma.projectAssignment.deleteMany({ where: { employeeId: id } }).catch(() => {});
+    await prisma.timeOff.deleteMany({ where: { employeeId: id } }).catch(() => {});
+    await prisma.auditLog.deleteMany({ where: { userId: id } }).catch(() => {});
+    await prisma.goalStakeholder.deleteMany({ where: { employeeId: id } }).catch(() => {});
+    await prisma.alertLog.deleteMany({ where: { employeeId: id } }).catch(() => {});
+    await prisma.agent.deleteMany({ where: { employeeId: id } }).catch(() => {});
+    await prisma.tracking.deleteMany({ where: { employeeId: id } }).catch(() => {});
+    await prisma.videoRecording.deleteMany({ where: { employeeId: id } }).catch(() => {});
     try {
-        const check = await prisma.$queryRawUnsafe("SHOW TABLES LIKE 'timesheets'");
-        if (check && check.length > 0) {
-            timesheetCount = await prisma.timesheet.count({ where: { employeeId: id } });
-        }
-    } catch (e) {
-        // Table might not exist yet
-    }
-
-    const totalHistoricalRecords = attCount + payrollCount + manualCount + ptlCount + timesheetCount + actCount + ttlCount;
-
-    if (totalHistoricalRecords > 0) {
-        const error = new Error(
-            `Cannot delete employee with existing historical records (${attCount} attendance, ${timesheetCount} timesheets, ${manualCount} manual time entries, ${payrollCount} payroll records, ${ttlCount} task time logs, ${actCount} activity logs). Please deactivate the employee instead to preserve historical and audit data.`
-        );
-        error.statusCode = 400;
-        throw error;
-    }
-
-    // Step-by-step cleanup of non-work relation records for clean/empty employee
-    await prisma.locationLog.deleteMany({ where: { employeeId: id } });
-    await prisma.screenshot.deleteMany({ where: { employeeId: id } });
-    await prisma.liveActivity.deleteMany({ where: { employeeId: id } });
-    await prisma.shift.deleteMany({ where: { employeeId: id } });
-    await prisma.projectAssignment.deleteMany({ where: { employeeId: id } });
-    await prisma.timeOff.deleteMany({ where: { employeeId: id } });
-    await prisma.auditLog.deleteMany({ where: { userId: id } });
-    await prisma.agent.deleteMany({ where: { employeeId: id } });
-    await prisma.tracking.deleteMany({ where: { employeeId: id } });
-    await prisma.videoRecording.deleteMany({ where: { employeeId: id } });
+        await prisma.timesheet.deleteMany({ where: { employeeId: id } });
+    } catch (e) {}
     
     // De-assign from tasks instead of deleting tasks
     await prisma.task.updateMany({
         where: { employeeId: id },
         data: { employeeId: null }
-    });
+    }).catch(() => {});
 
     // Delete User record if exists
     if (employee.user) {
         await prisma.user.delete({
             where: { id: employee.user.id }
-        });
+        }).catch(() => {});
+    } else {
+        await prisma.user.deleteMany({
+            where: { employeeId: id }
+        }).catch(() => {});
     }
 
-    // Finally delete the employee
+    // Finally delete the employee record from database
     return await prisma.employee.delete({
         where: { id }
     });
