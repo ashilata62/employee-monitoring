@@ -6,10 +6,19 @@ const { getOrganizationId } = require('../../utils/orgId');
  */
 const buildReportFilter = (organizationId, startDate, endDate, params = {}) => {
     const { userId, teamId } = params;
-    const where = {
-        organizationId,
-        timestamp: { gte: startDate, lte: endDate }
-    };
+    const where = { organizationId };
+
+    if (startDate || endDate) {
+        where.timestamp = {};
+        if (startDate) {
+            const parsedStart = new Date(startDate);
+            where.timestamp.gte = isNaN(parsedStart.getTime()) ? startDate : parsedStart;
+        }
+        if (endDate) {
+            const parsedEnd = new Date(endDate);
+            where.timestamp.lte = isNaN(parsedEnd.getTime()) ? endDate : parsedEnd;
+        }
+    }
 
     if (userId) {
         where.employeeId = userId;
