@@ -57,6 +57,9 @@ import { AddOns } from './pages/settings/billing/AddOns';
 import { IntegrationsLayout } from './pages/settings/integrations/IntegrationsLayout';
 import { OrgChart } from './pages/settings/integrations/OrgChart';
 import { IntegrationTabPage } from './pages/settings/integrations/IntegrationTabPage';
+import { INTEGRATION_TABS } from './store/integrationStore';
+import ProcessMining from './pages/reports/ProcessMining';
+import ComplianceReadiness from './pages/compliance/ComplianceReadiness';
 import { ProtectedRoute, PublicRoute, RoleRoute } from './components/ProtectedRoute';
 import { ManageUsers } from './pages/settings/ManageUsers';
 import { RealTimeProvider } from './hooks/RealTimeContext';
@@ -153,6 +156,7 @@ function App() {
                                             <Route path="workload-distribution" element={<WorkloadDistribution />} />
                                             <Route path="apps-websites" element={<AppsWebsites />} />
                                             <Route path="location-insights" element={<LocationInsights />} />
+                                            <Route path="process-mining" element={<ProcessMining />} />
                                         </Route>
                                         <Route path="payroll" element={<Payroll />} />
                                         <Route path="alerts" element={<Alerts />} />
@@ -193,9 +197,15 @@ function App() {
                                             <Route path="compliance" element={<PrivacyCompliance />} />
                                         </Route>
                                         <Route path="settings/integrations" element={<IntegrationsLayout />}>
-                                            <Route index element={<Navigate to="overview/org-chart" replace />} />
+                                            <Route index element={<Navigate to="project-management" replace />} />
+                                            <Route path="project-management" element={<IntegrationTabPage integrationKeys={INTEGRATION_TABS[0].keys} />} />
+                                            <Route path="developer-tools" element={<IntegrationTabPage integrationKeys={INTEGRATION_TABS[1].keys} />} />
+                                            <Route path="communication" element={<IntegrationTabPage integrationKeys={INTEGRATION_TABS[2].keys} />} />
+                                            <Route path="hr-identity" element={<IntegrationTabPage integrationKeys={INTEGRATION_TABS[3].keys} />} />
+                                            <Route path="payroll-accounting" element={<IntegrationTabPage integrationKeys={INTEGRATION_TABS[4].keys} />} />
+                                            <Route path="productivity-docs" element={<IntegrationTabPage integrationKeys={INTEGRATION_TABS[5].keys} />} />
                                             <Route path="overview/org-chart" element={<OrgChart />} />
-                                            <Route path="overview/project-management" element={<IntegrationTabPage integrationKeys={['asana', 'azureDevops', 'clickup', 'height', 'jira', 'teamwork']} />} />
+                                            <Route path="overview/project-management" element={<IntegrationTabPage integrationKeys={INTEGRATION_TABS[0].keys} />} />
                                         </Route>
 
                                         <Route path="settings/billing" element={<BillingLayout />}>
@@ -205,6 +215,7 @@ function App() {
                                         </Route>
 
                                         <Route path="compliance" element={<Compliance />} />
+                                        <Route path="compliance/readiness" element={<ComplianceReadiness />} />
                                         <Route path="notifications" element={<Notifications />} />
                                         <Route path="*" element={<Navigate to="/" replace />} />
                                     </Routes>

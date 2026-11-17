@@ -50,6 +50,7 @@ const reportSubItems = [
     { name: 'Workload Distribution', path: '/reports/workload-distribution' },
     { name: 'Apps & Websites', path: '/reports/apps-websites' },
     { name: 'Office vs Remote', path: '/reports/location-insights' },
+    { name: 'Process Mining', path: '/reports/process-mining' },
 ];
 
 export function Sidebar({ collapsed, setCollapsed, onMobileClose }) {

@@ -24,8 +24,8 @@ export function IntegrationsLayout() {
     const rolePath = role?.toLowerCase() === 'admin' ? '/admin' : '/manager';
 
     const activeTab = INTEGRATION_TABS.find((t) => location.pathname.includes(t.id));
-    const activeTabId = activeTab?.id ?? 'org-chart';
-    const subtitle = TAB_SUBTITLES[activeTabId] ?? '';
+    const activeTabId = activeTab?.id ?? 'project-management';
+    const subtitle = activeTab?.subtitle || TAB_SUBTITLES[activeTabId] || '';
 
     return (
         <div className="max-w-[1300px] mx-auto px-4 sm:px-6 lg:px-8 pb-20">
