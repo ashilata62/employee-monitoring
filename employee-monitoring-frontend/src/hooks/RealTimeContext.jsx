@@ -128,6 +128,11 @@ export function RealTimeProvider({ children }) {
 
     const [isLoading, setIsLoading] = useState(true);
     const timerInterval = useRef(null);
+    const employeesRef = useRef(state.employees);
+
+    useEffect(() => {
+        employeesRef.current = state.employees;
+    }, [state.employees]);
 
     const addNotification = useCallback((title, type = 'info') => {
         const n = { id: Date.now(), title, time: 'Just now', type, unread: true };
@@ -274,7 +279,7 @@ export function RealTimeProvider({ children }) {
     const syncTasks = useCallback(async () => {
         if (!isAuthenticated) return;
         try {
-            const currentEmpId = user?.employeeId || state.employees.find(e => e.email === user?.email)?.id || user?.id;
+            const currentEmpId = user?.employeeId || employeesRef.current.find(e => e.email === user?.email)?.id || user?.id;
             const res = await taskService.getTasks(role === 'EMPLOYEE' ? currentEmpId : null);
             if (res.success && res.data) {
                 setState(prev => ({
@@ -316,7 +321,7 @@ export function RealTimeProvider({ children }) {
         } catch (err) {
             console.error('Failed to sync tasks:', err);
         }
-    }, [isAuthenticated, role, user?.employeeId, user?.id, user?.email, state.employees]);
+    }, [isAuthenticated, role, user?.employeeId, user?.id, user?.email]);
 
     const syncProjects = useCallback(async () => {
         if (!isAuthenticated) return;
@@ -398,14 +403,14 @@ export function RealTimeProvider({ children }) {
         syncNotifications();
         syncAlerts();
 
-        const empInt = setInterval(syncEmployees, 5000);
-        const teamInt = setInterval(syncTeams, 5000);
-        const logInt = setInterval(syncLogs, 5000);
-        const taskInt = setInterval(syncTasks, 5000);
-        const projInt = setInterval(syncProjects, 5000);
-        const goalInt = setInterval(syncGoals, 10000);
-        const notifInt = setInterval(syncNotifications, 10000);
-        const alertInt = setInterval(syncAlerts, 10000);
+        const empInt = setInterval(syncEmployees, 15000);
+        const teamInt = setInterval(syncTeams, 30000);
+        const logInt = setInterval(syncLogs, 15000);
+        const taskInt = setInterval(syncTasks, 15000);
+        const projInt = setInterval(syncProjects, 30000);
+        const goalInt = setInterval(syncGoals, 30000);
+        const notifInt = setInterval(syncNotifications, 15000);
+        const alertInt = setInterval(syncAlerts, 15000);
 
         return () => {
             clearInterval(empInt);
@@ -417,7 +422,7 @@ export function RealTimeProvider({ children }) {
             clearInterval(notifInt);
             clearInterval(alertInt);
         };
-    }, [isLoading, isAuthenticated, syncEmployees, syncTeams, syncTasks, syncProjects, syncGoals, syncLogs, syncNotifications, syncAlerts]);
+    }, [isLoading, isAuthenticated, role, user?.id, user?.employeeId]);
 
     const [socketInstance, setSocketInstance] = useState(null);
 
@@ -511,7 +516,7 @@ export function RealTimeProvider({ children }) {
 
             const currentRole = useAuthStore.getState().role?.toUpperCase();
             if (currentRole === 'ADMIN' || currentRole === 'MANAGER') {
-                const emp = state.employees.find(e => String(e.id) === String(data.employeeId));
+                const emp = employeesRef.current.find(e => String(e.id) === String(data.employeeId));
                 const empName = emp ? (emp.fullName || emp.name) : 'An employee';
                 if (data.type === 'clock-in') {
                     addNotification(`${empName} checked in`, 'info');
@@ -596,7 +601,7 @@ export function RealTimeProvider({ children }) {
         });
 
         return () => socket.disconnect();
-    }, [isLoading, isAuthenticated, user, state.employees]);
+    }, [isLoading, isAuthenticated, user?.id, user?.role]);
 
     // ─── REAL-TIME NOTIFICATION TRIGGERS (CLIENT-SIDE) ───────────────────────
 
