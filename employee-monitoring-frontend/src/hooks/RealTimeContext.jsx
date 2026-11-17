@@ -25,6 +25,7 @@ import notificationService from '../services/notificationService';
 import alertService from '../services/alertService';
 import useTaskStore from '../store/taskStore';
 import { io } from 'socket.io-client';
+import { getSharedSocket } from './useSocket';
 
 const SOCKET_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
 
@@ -426,20 +427,20 @@ export function RealTimeProvider({ children }) {
 
     const [socketInstance, setSocketInstance] = useState(null);
 
-    // WebSocket Integration
+    // WebSocket Integration (Singleton connection, resilient to StrictMode remounts)
     useEffect(() => {
-        if (isLoading || !isAuthenticated || !user) return;
+        if (isLoading || !isAuthenticated || !user) {
+            setSocketInstance(null);
+            return;
+        }
 
-        const socket = io(SOCKET_URL, {
-            auth: { token: useAuthStore.getState().token },
-            transports: ['websocket']
-        });
+        const token = useAuthStore.getState().token;
+        const socket = getSharedSocket(token);
+        if (!socket) return;
         setSocketInstance(socket);
 
-        socket.on('connect', () => {
+        const handleConnect = () => {
             console.log('RealTimeContext: Connected to socket');
-
-            // Initial fetch of everything to be safe
             syncEmployees();
             syncTeams();
             syncLogs();
@@ -448,21 +449,24 @@ export function RealTimeProvider({ children }) {
             syncGoals();
             syncNotifications();
             syncAlerts();
-        });
+        };
 
-        socket.on('employee:status', ({ employeeId, status }) => {
+        if (socket.connected) {
+            handleConnect();
+        }
+        socket.on('connect', handleConnect);
+
+        const handleEmployeeStatus = ({ employeeId, status }) => {
             setState(prev => ({
                 ...prev,
                 employees: prev.employees.map(e =>
                     e.id === employeeId ? { ...e, status: status.toLowerCase() === 'active' ? 'online' : status.toLowerCase() } : e
                 )
             }));
-        });
+        };
 
-        socket.on('activity:update', (data) => {
+        const handleActivityUpdate = (data) => {
             console.log('RealTimeContext: Activity update received:', data);
-
-            // 1. Update the employee's real-time state
             setState(prev => ({
                 ...prev,
                 employees: prev.employees.map(e => {
@@ -479,19 +483,13 @@ export function RealTimeProvider({ children }) {
                     return e;
                 })
             }));
+        };
 
-            // 2. Add to logs if today (simplified for now, usually we'd re-sync or append)
-            if (state.selectedDate === TODAY) {
-                // If we need immediate charts update, we'd handle it here
-            }
-        });
-
-        socket.on('screenshot:new', (data) => {
+        const handleScreenshotNew = (data) => {
             console.log('RealTimeContext: New screenshot received:', data);
             setState(prev => ({
                 ...prev,
                 screenshots: [data, ...prev.screenshots].slice(0, 50),
-                // Also update the specific employee's latest screenshot URL for quick preview
                 employees: prev.employees.map(e =>
                     e.id === data.employeeId ? { ...e, screenshotUrl: data.imageUrl } : e
                 )
@@ -500,23 +498,24 @@ export function RealTimeProvider({ children }) {
             if (currentRole === 'ADMIN' || currentRole === 'MANAGER') {
                 addNotification(`New screenshot from ${data.employeeName || 'employee'}`, 'info');
             }
-        });
+        };
 
-        socket.on('goal:update', (data) => {
+        const handleGoalUpdate = (data) => {
             setState(prev => ({
                 ...prev,
                 goals: prev.goals.map(g => g.id === data.id ? data : g)
             }));
-        });
+        };
 
-        socket.on('attendance:update', (data) => {
+        const handleAttendanceUpdate = (data) => {
             console.log('RealTimeContext: Attendance updated:', data);
             syncEmployees();
             syncLogs();
 
             const currentRole = useAuthStore.getState().role?.toUpperCase();
             if (currentRole === 'ADMIN' || currentRole === 'MANAGER') {
-                const emp = employeesRef.current.find(e => String(e.id) === String(data.employeeId));
+                const currentEmps = employeesRef.current || [];
+                const emp = currentEmps.find(e => String(e.id) === String(data.employeeId));
                 const empName = emp ? (emp.fullName || emp.name) : 'An employee';
                 if (data.type === 'clock-in') {
                     addNotification(`${empName} checked in`, 'info');
@@ -528,38 +527,38 @@ export function RealTimeProvider({ children }) {
                     addNotification(`${empName} returned from break`, 'info');
                 }
             }
-        });
+        };
 
-        socket.on('task:update', (data) => {
+        const handleTaskUpdate = (data) => {
             console.log('RealTimeContext: Task updated:', data);
             syncTasks();
-        });
+        };
 
-        socket.on('project:update', (data) => {
+        const handleProjectUpdate = (data) => {
             console.log('RealTimeContext: Project updated:', data);
             syncProjects();
-        });
+        };
 
-        socket.on('team:update', (data) => {
+        const handleTeamUpdate = (data) => {
             console.log('RealTimeContext: Team updated:', data);
             syncTeams();
-            syncEmployees(); // Teams change might affect employee assignments visibility
-        });
+            syncEmployees();
+        };
 
-        socket.on('goal:new', (data) => {
+        const handleGoalNew = (data) => {
             setState(prev => ({
                 ...prev,
                 goals: [data, ...prev.goals]
             }));
             addNotification(`New goal "${data.title}" defined`, 'success');
-        });
+        };
 
-        socket.on('employee:notification', ({ title, type }) => {
+        const handleEmployeeNotification = ({ title, type }) => {
             addNotification(title, type || 'info');
-        });
+        };
 
         // ─── DEVELOPER 4 REAL-TIME LISTENERS ─────────────────────────────────
-        socket.on('alert:new', (alertData) => {
+        const handleAlertNew = (alertData) => {
             console.log('RealTimeContext: Real-time alert received:', alertData);
             playAlertChime();
             setState(prev => ({
@@ -571,17 +570,17 @@ export function RealTimeProvider({ children }) {
             } else {
                 toast.warning(alertData.message);
             }
-        });
+        };
 
-        socket.on('notification:new', (notifData) => {
+        const handleNotificationNew = (notifData) => {
             console.log('RealTimeContext: Real-time notification received:', notifData);
             setState(prev => ({
                 ...prev,
                 notifications: [notifData, ...prev.notifications.filter(n => n.id !== notifData.id)]
             }));
-        });
+        };
 
-        socket.on('screenshot:violation', (violationData) => {
+        const handleScreenshotViolation = (violationData) => {
             console.log('RealTimeContext: Real-time violation screenshot:', violationData);
             playAlertChime();
             toast.error(`Security Violation: Prohibited app "${violationData.appName}" accessed by ${violationData.employeeName}!`);
@@ -598,9 +597,38 @@ export function RealTimeProvider({ children }) {
                     }, ...prev.screenshots].slice(0, 50)
                 }));
             }
-        });
+        };
 
-        return () => socket.disconnect();
+        socket.on('employee:status', handleEmployeeStatus);
+        socket.on('activity:update', handleActivityUpdate);
+        socket.on('screenshot:new', handleScreenshotNew);
+        socket.on('goal:update', handleGoalUpdate);
+        socket.on('attendance:update', handleAttendanceUpdate);
+        socket.on('task:update', handleTaskUpdate);
+        socket.on('project:update', handleProjectUpdate);
+        socket.on('team:update', handleTeamUpdate);
+        socket.on('goal:new', handleGoalNew);
+        socket.on('employee:notification', handleEmployeeNotification);
+        socket.on('alert:new', handleAlertNew);
+        socket.on('notification:new', handleNotificationNew);
+        socket.on('screenshot:violation', handleScreenshotViolation);
+
+        return () => {
+            socket.off('connect', handleConnect);
+            socket.off('employee:status', handleEmployeeStatus);
+            socket.off('activity:update', handleActivityUpdate);
+            socket.off('screenshot:new', handleScreenshotNew);
+            socket.off('goal:update', handleGoalUpdate);
+            socket.off('attendance:update', handleAttendanceUpdate);
+            socket.off('task:update', handleTaskUpdate);
+            socket.off('project:update', handleProjectUpdate);
+            socket.off('team:update', handleTeamUpdate);
+            socket.off('goal:new', handleGoalNew);
+            socket.off('employee:notification', handleEmployeeNotification);
+            socket.off('alert:new', handleAlertNew);
+            socket.off('notification:new', handleNotificationNew);
+            socket.off('screenshot:violation', handleScreenshotViolation);
+        };
     }, [isLoading, isAuthenticated, user?.id, user?.role]);
 
     // ─── REAL-TIME NOTIFICATION TRIGGERS (CLIENT-SIDE) ───────────────────────

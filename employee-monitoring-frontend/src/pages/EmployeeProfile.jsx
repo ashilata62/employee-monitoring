@@ -9,23 +9,7 @@ import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Toolti
 import { useEmployeeStore } from '../store/employeeStore';
 import employeeService from '../services/employeeService';
 import activityService from '../services/activityService';
-
-const mockActivityData = [
-    { name: 'Mon', active: 6.5, idle: 1.2 },
-    { name: 'Tue', active: 7.2, idle: 0.5 },
-    { name: 'Wed', active: 5.8, idle: 1.8 },
-    { name: 'Thu', active: 6.9, idle: 0.8 },
-    { name: 'Fri', active: 6.2, idle: 1.1 },
-    { name: 'Sat', active: 0, idle: 0 },
-    { name: 'Sun', active: 0, idle: 0 },
-];
-
-const mockTopApps = [
-    { name: 'Visual Studio Code', duration: '22h 15m', percentage: 70, type: 'Productive' },
-    { name: 'Google Chrome', duration: '5h 45m', percentage: 18, type: 'Neutral' },
-    { name: 'Slack', duration: '2h 30m', percentage: 8, type: 'Productive' },
-    { name: 'Zoom Meetings', duration: '1h 10m', percentage: 4, type: 'Productive' },
-];
+import api from '../services/apiClient';
 
 export function EmployeeProfile() {
     const { id } = useParams();
@@ -33,6 +17,8 @@ export function EmployeeProfile() {
     const { employees } = useEmployeeStore();
     const [employee, setEmployee] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [activityTrend, setActivityTrend] = useState([]);
+    const [topApps, setTopApps] = useState([]);
     const [stats, setStats] = useState({
         totalHours: '00:00',
         productivity: '0%',
@@ -85,6 +71,29 @@ export function EmployeeProfile() {
                         productivity: `${productivityPct}%`,
                         activity: `${utilizationPct}%`
                     });
+
+                    // Generate 7-day activity trend from real database summaries
+                    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                    const summaryByDate = {};
+                    summaries.forEach(s => { summaryByDate[s.date] = s; });
+
+                    const latestDateStr = summaries.length > 0 ? summaries[0].date : new Date().toISOString().split('T')[0];
+                    const refDate = new Date(latestDateStr);
+
+                    const trendDays = [];
+                    for (let i = 6; i >= 0; i--) {
+                        const d = new Date(refDate);
+                        d.setDate(refDate.getDate() - i);
+                        const dStr = d.toISOString().split('T')[0];
+                        const daySummary = summaryByDate[dStr];
+                        trendDays.push({
+                            name: dayNames[d.getDay()],
+                            date: dStr,
+                            active: daySummary ? Number((daySummary.activeHours || 0).toFixed(1)) : 0,
+                            idle: daySummary ? Number((daySummary.idleHours || 0).toFixed(1)) : 0
+                        });
+                    }
+                    setActivityTrend(trendDays);
                 } else {
                     // Default values if no data
                     setStats({
@@ -92,6 +101,7 @@ export function EmployeeProfile() {
                         productivity: '0%',
                         activity: '0%'
                     });
+                    setActivityTrend([]);
                 }
             } catch (err) {
                 console.error("Failed to fetch stats:", err);
@@ -100,6 +110,25 @@ export function EmployeeProfile() {
                     productivity: '0%',
                     activity: '0%'
                 });
+                setActivityTrend([]);
+            }
+
+            // Fetch real top applications & websites from MySQL database
+            try {
+                const appsRes = await api.get('/reports', {
+                    params: { type: 'apps-websites', userId: id }
+                });
+                const appsList = appsRes.data?.data?.apps || appsRes.data?.apps || [];
+                const formattedApps = appsList.slice(0, 5).map(app => ({
+                    name: app.name,
+                    duration: app.timeFormatted || `${Math.floor((app.duration || 0) / 3600)}h ${Math.floor(((app.duration || 0) % 3600) / 60)}m`,
+                    percentage: Math.round(app.usagePercent || 0),
+                    type: app.productivity === 'PRODUCTIVE' ? 'Productive' : app.productivity === 'UNPRODUCTIVE' ? 'Unproductive' : 'Neutral'
+                }));
+                setTopApps(formattedApps);
+            } catch (err) {
+                console.error("Failed to fetch top apps:", err);
+                setTopApps([]);
             }
         };
 
@@ -213,37 +242,49 @@ export function EmployeeProfile() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="h-64">
                                 <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Activity Trend (Hours)</p>
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={mockActivityData}>
-                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94a3b8' }} />
-                                        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94a3b8' }} />
-                                        <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }} />
-                                        <Bar dataKey="active" name="Active" fill="#6366f1" radius={[4, 4, 0, 0]} />
-                                        <Bar dataKey="idle" name="Idle" fill="#94a3b8" radius={[4, 4, 0, 0]} />
-                                    </BarChart>
-                                </ResponsiveContainer>
+                                {activityTrend.length > 0 ? (
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart data={activityTrend}>
+                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94a3b8' }} />
+                                            <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94a3b8' }} />
+                                            <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }} />
+                                            <Bar dataKey="active" name="Active" fill="#6366f1" radius={[4, 4, 0, 0]} />
+                                            <Bar dataKey="idle" name="Idle" fill="#94a3b8" radius={[4, 4, 0, 0]} />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                ) : (
+                                    <div className="h-full flex items-center justify-center text-xs text-slate-400 font-semibold">
+                                        No activity logs recorded for this employee yet.
+                                    </div>
+                                )}
                             </div>
                             <div className="space-y-4">
                                 <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Top Applications & Websites</p>
-                                <div className="space-y-3">
-                                    {mockTopApps.map((app, index) => (
-                                        <div key={index} className="space-y-1">
-                                            <div className="flex justify-between text-xs">
-                                                <span className="font-bold text-slate-700 dark:text-slate-300">{app.name}</span>
-                                                <span className="text-slate-500 font-medium">{app.duration} ({app.percentage}%)</span>
+                                {topApps.length > 0 ? (
+                                    <div className="space-y-3">
+                                        {topApps.map((app, index) => (
+                                            <div key={index} className="space-y-1">
+                                                <div className="flex justify-between text-xs">
+                                                    <span className="font-bold text-slate-700 dark:text-slate-300">{app.name}</span>
+                                                    <span className="text-slate-500 font-medium">{app.duration} ({app.percentage}%)</span>
+                                                </div>
+                                                <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                                                    <div 
+                                                        className={`h-full rounded-full transition-all duration-500 ${
+                                                            app.type === 'Productive' ? 'bg-emerald-500' : app.type === 'Unproductive' ? 'bg-rose-500' : 'bg-slate-400'
+                                                        }`}
+                                                        style={{ width: `${Math.min(app.percentage, 100)}%` }}
+                                                    />
+                                                </div>
                                             </div>
-                                            <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
-                                                <div 
-                                                    className={`h-full rounded-full ${
-                                                        app.type === 'Productive' ? 'bg-emerald-500' : 'bg-slate-400'
-                                                    }`}
-                                                    style={{ width: `${app.percentage}%` }}
-                                                />
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="h-40 flex items-center justify-center text-xs text-slate-400 font-semibold">
+                                        No tracked application usage for this employee.
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>

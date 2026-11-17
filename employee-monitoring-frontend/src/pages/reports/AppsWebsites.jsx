@@ -1,282 +1,628 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
     Globe,
     Monitor,
     Calendar as CalendarIcon,
     Download,
-    ChevronLeft,
-    ChevronRight,
+    Share2,
     ChevronDown,
-    X,
     Search,
-    Globe2,
-    Users2,
+    Filter,
+    Clock,
+    TrendingUp,
+    TrendingDown,
+    MoreHorizontal,
+    Code,
+    MessageSquare,
+    Chrome,
+    Terminal,
+    Sparkles,
+    Users,
     Tag,
-    FolderOpen,
-    CheckSquare
+    Check
 } from 'lucide-react';
+import {
+    ResponsiveContainer,
+    AreaChart,
+    Area,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip
+} from 'recharts';
+import api from '../../services/apiClient';
+import { InsightfulModuleSwitcher } from '../../components/common/InsightfulModuleSwitcher';
 
-import { useReportsStore } from '../../store/reportsStore';
-import { useFilterStore } from '../../store/filterStore';
-import { FilterDropdown } from '../../components/FilterDropdown';
-import { ReportsCalendar } from '../../components/ReportsCalendar';
-import { ExportDropdown } from '../../components/common/ExportDropdown';
-
-const presets = [
-    "Today", "Yesterday", "This Week", "Last 7 Days",
-    "Previous Week", "This Month", "Previous Month",
-    "Last 3 Months", "Last 6 Months"
-];
-
-const toYMD = (d) => {
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${y}-${m}-${day}`;
+// Helper for standard app logos
+const getAppIcon = (name) => {
+    const n = (name || '').toLowerCase();
+    if (n.includes('code') || n.includes('visual studio') || n.includes('cursor')) return { icon: Code, color: 'text-blue-500 bg-blue-50 dark:bg-blue-900/30' };
+    if (n.includes('slack') || n.includes('teams') || n.includes('zoom')) return { icon: MessageSquare, color: 'text-purple-500 bg-purple-50 dark:bg-purple-900/30' };
+    if (n.includes('chrome') || n.includes('google')) return { icon: Chrome, color: 'text-amber-500 bg-amber-50 dark:bg-amber-900/30' };
+    if (n.includes('terminal') || n.includes('cmd') || n.includes('bash')) return { icon: Terminal, color: 'text-slate-700 bg-slate-100 dark:bg-slate-800' };
+    if (n.includes('chatgpt') || n.includes('claude') || n.includes('copilot') || n.includes('ai')) return { icon: Sparkles, color: 'text-purple-600 bg-purple-50 dark:bg-purple-900/30' };
+    return { icon: Globe, color: 'text-indigo-500 bg-indigo-50 dark:bg-indigo-900/30' };
 };
 
-const filterOptions = [
-    { label: "Employees", icon: Users2 },
-    { label: "Teams", icon: Users2 },
-    { label: "Categories", icon: Tag },
-    { label: "Projects", icon: FolderOpen },
-    { label: "Tasks", icon: CheckSquare }
-];
-
-// ─── Fixed-position Calendar Popover ────────────────────────────────────────
-function CalendarPopover({ buttonRef, isOpen, onClose, children }) {
-    const [style, setStyle] = useState({});
-    const popoverRef = useRef(null);
-
-    useEffect(() => {
-        if (!isOpen || !buttonRef.current) return;
-        const rect = buttonRef.current.getBoundingClientRect();
-        const popoverWidth = Math.min(720, window.innerWidth * 0.95);
-        let left = rect.left;
-        if (left + popoverWidth > window.innerWidth - 12) left = window.innerWidth - popoverWidth - 12;
-        left = Math.max(12, left);
-        setStyle({ position: 'fixed', top: rect.bottom + 8, left, width: popoverWidth, maxHeight: '85vh', zIndex: 9999 });
-    }, [isOpen, buttonRef]);
-
-    useEffect(() => {
-        if (!isOpen) return;
-        const handler = (e) => {
-            if (popoverRef.current && !popoverRef.current.contains(e.target) && !buttonRef.current?.contains(e.target)) onClose();
-        };
-        document.addEventListener('mousedown', handler);
-        return () => document.removeEventListener('mousedown', handler);
-    }, [isOpen, onClose, buttonRef]);
-
-    if (!isOpen) return null;
-    return (
-        <div ref={popoverRef} style={style} className="overflow-y-auto bg-white dark:bg-slate-900 rounded-[2rem] shadow-2xl border border-slate-200 dark:border-slate-800 animate-in fade-in slide-in-from-top-2 duration-200">
-            {children}
-        </div>
-    );
+// CSV Download Helper
+function downloadCsv(filename, headers, rows) {
+    const csvContent = [headers.join(','), ...rows.map(row => row.map(val => `"${String(val).replace(/"/g, '""')}"`).join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
 }
 
+const formatSeconds = (secs) => {
+    if (!secs || isNaN(secs) || secs < 0) return '00:00 h';
+    const h = Math.floor(secs / 3600);
+    const m = Math.floor((secs % 3600) / 60);
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')} h`;
+};
+
 export function AppsWebsites() {
-    const { reportData, fetchReportData, loading } = useReportsStore();
-    const { selectedEmployee, selectedTeam } = useFilterStore();
-    const rawData = reportData['apps-websites'] || [];
+    // ── Interactive State ───────────────────────────────────────────────────
+    const [selectedCategory, setSelectedCategory] = useState('All Apps');
+    const [selectedDatePreset, setSelectedDatePreset] = useState('This Month (Nov 2026)');
+    const [dateRange, setDateRange] = useState({
+        start: '2026-11-01',
+        end: '2026-11-17',
+        display: 'Nov 1, 2026 → Nov 17, 2026'
+    });
+    const [timeGrain, setTimeGrain] = useState('Days'); // 'Days' | 'Weeks' | 'Months'
+    const [searchQuery, setSearchQuery] = useState('');
+    const [productivityFilter, setProductivityFilter] = useState('ALL');
 
-    const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+    // Report data from backend
+    const [reportData, setReportData] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-    const [selectedDate, setSelectedDate] = useState(new Date());
-    const [selectedPreset, setSelectedPreset] = useState("Today");
-    const [searchTerm, setSearchTerm] = useState("");
+    // Dropdown Toggles
+    const [isCategoryOpen, setIsCategoryOpen] = useState(false);
+    const [isDateOpen, setIsDateOpen] = useState(false);
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-    const calendarBtnRef = useRef(null);
-    const closeCalendar = useCallback(() => setIsCalendarOpen(false), []);
+    const categoryRef = useRef(null);
+    const dateRef = useRef(null);
+    const filterRef = useRef(null);
 
-    const getDatesFromPreset = (preset) => {
-        const end = new Date();
-        const start = new Date();
-        switch (preset) {
-            case 'Today':
-                start.setHours(0, 0, 0, 0);
-                end.setHours(23, 59, 59, 999);
-                break;
-            case 'Yesterday': 
-                start.setDate(start.getDate() - 1); start.setHours(0, 0, 0, 0);
-                end.setDate(end.getDate() - 1); end.setHours(23, 59, 59, 999);
-                break;
-            case 'This Week': start.setDate(start.getDate() - start.getDay()); break;
-            case 'Last 7 Days': start.setDate(start.getDate() - 7); break;
-            case 'Last 30 Days': start.setDate(start.getDate() - 30); break;
-            case 'This Month': start.setDate(1); break;
-            case 'Custom': 
-                start.setTime(selectedDate.getTime());
-                start.setHours(0, 0, 0, 0);
-                end.setTime(selectedDate.getTime());
-                end.setHours(23, 59, 59, 999);
-                break;
-            default: start.setDate(start.getDate() - 7);
-        }
-        return { start, end };
-    };
-
+    // Close dropdowns on outside click
     useEffect(() => {
-        const { start, end } = getDatesFromPreset(selectedPreset);
-        fetchReportData('apps-websites', { 
-            startDate: toYMD(start), 
-            endDate: toYMD(end),
-            userId: selectedEmployee,
-            teamId: selectedTeam
-        });
-    }, [selectedPreset, fetchReportData, selectedEmployee, selectedTeam]);
-
-    const activeData = React.useMemo(() => {
-        const formatLabel = (label) => {
-            if (!label) return "Neutral";
-            return label.charAt(0).toUpperCase() + label.slice(1).toLowerCase();
+        const handleClickOutside = (e) => {
+            if (categoryRef.current && !categoryRef.current.contains(e.target)) setIsCategoryOpen(false);
+            if (dateRef.current && !dateRef.current.contains(e.target)) setIsDateOpen(false);
+            if (filterRef.current && !filterRef.current.contains(e.target)) setIsFilterOpen(false);
         };
-
-        return rawData.map(item => ({
-            name: item.appName,
-            usage: Math.round((item._sum.duration / 3600) * 10) / 10,
-            type: formatLabel(item.productivity)
-        }));
-    }, [rawData]);
-
-    useEffect(() => {
-        // No manual filter outside click needed
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const handleApply = () => {
-        setIsCalendarOpen(false);
-        setSearchTerm("");
+    // Fetch report data whenever dateRange changes
+    useEffect(() => {
+        const fetchAppsReport = async () => {
+            setLoading(true);
+            try {
+                const res = await api.get('/reports', {
+                    params: {
+                        type: 'apps-websites',
+                        startDate: dateRange.start,
+                        endDate: dateRange.end
+                    }
+                });
+                const data = res.data?.data || res.data || {};
+                setReportData(data);
+            } catch (err) {
+                console.error('Failed to load apps report:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchAppsReport();
+    }, [dateRange.start, dateRange.end]);
+
+    // Available categories from DB or standard options
+    const categories = useMemo(() => {
+        if (reportData?.categories?.length) return reportData.categories;
+        return ['All Apps', 'Development', 'Communication', 'Productivity', 'Design', 'AI tools', 'Entertainment', 'Uncategorized'];
+    }, [reportData]);
+
+    // Filtered apps based on selected category, productivity, and search query
+    const filteredApps = useMemo(() => {
+        const list = reportData?.apps || [];
+        return list.filter(app => {
+            const matchesCat = selectedCategory === 'All Apps' || app.category === selectedCategory;
+            const matchesProd = productivityFilter === 'ALL' || app.productivity === productivityFilter;
+            const matchesQuery = app.name.toLowerCase().includes(searchQuery.toLowerCase());
+            return matchesCat && matchesProd && matchesQuery;
+        });
+    }, [reportData, selectedCategory, productivityFilter, searchQuery]);
+
+    // ── Dynamic KPI Calculations based on real filtered apps ────────────────
+    const kpiSummary = useMemo(() => {
+        if (!reportData) {
+            return {
+                totalHours: '00:00 h',
+                totalAvg: '00:00 h average',
+                productiveHours: '00:00 h',
+                productiveAvg: '00:00 h average',
+                neutralHours: '00:00 h',
+                neutralAvg: '00:00 h average',
+                unproductiveHours: '00:00 h',
+                unproductiveAvg: '00:00 h average',
+            };
+        }
+
+        // If All Apps is selected, use organization-wide summary from backend
+        if (selectedCategory === 'All Apps' && productivityFilter === 'ALL' && !searchQuery) {
+            return reportData.summary || {
+                totalHours: '00:00 h',
+                totalAvg: '00:00 h average',
+                productiveHours: '00:00 h',
+                productiveAvg: '00:00 h average',
+                neutralHours: '00:00 h',
+                neutralAvg: '00:00 h average',
+                unproductiveHours: '00:00 h',
+                unproductiveAvg: '00:00 h average',
+            };
+        }
+
+        // If filtered, compute sum dynamically
+        let total = 0, prod = 0, neutral = 0, unprod = 0;
+        filteredApps.forEach(a => {
+            const dur = a.duration || 0;
+            total += dur;
+            if (a.productivity === 'PRODUCTIVE') prod += dur;
+            else if (a.productivity === 'UNPRODUCTIVE') unprod += dur;
+            else neutral += dur;
+        });
+
+        return {
+            totalHours: formatSeconds(total),
+            totalAvg: `${formatSeconds(Math.round(total / Math.max(filteredApps.length, 1)))} average`,
+            productiveHours: formatSeconds(prod),
+            productiveAvg: `${formatSeconds(Math.round(prod / Math.max(filteredApps.length, 1)))} average`,
+            neutralHours: formatSeconds(neutral),
+            neutralAvg: `${formatSeconds(Math.round(neutral / Math.max(filteredApps.length, 1)))} average`,
+            unproductiveHours: formatSeconds(unprod),
+            unproductiveAvg: `${formatSeconds(Math.round(unprod / Math.max(filteredApps.length, 1)))} average`,
+        };
+    }, [reportData, selectedCategory, productivityFilter, searchQuery, filteredApps]);
+
+    // ── Dynamic Chart Data based on timeGrain ────────────────────────────────
+    const chartData = useMemo(() => {
+        const trend = reportData?.trend || [];
+        if (timeGrain === 'Weeks') {
+            // Group trend into 7-day chunks
+            const weeks = [];
+            for (let i = 0; i < trend.length; i += 7) {
+                const chunk = trend.slice(i, i + 7);
+                const hrs = chunk.reduce((acc, c) => acc + (c.hours || 0), 0);
+                weeks.push({
+                    label: `Week ${Math.floor(i / 7) + 1}`,
+                    hours: Number(hrs.toFixed(1))
+                });
+            }
+            return weeks.length ? weeks : [{ label: 'Week 1', hours: 0 }];
+        }
+        if (timeGrain === 'Months') {
+            const monthMap = {};
+            trend.forEach(t => {
+                const month = t.label ? t.label.split(' ')[0] : 'Nov';
+                monthMap[month] = (monthMap[month] || 0) + (t.hours || 0);
+            });
+            return Object.keys(monthMap).map(m => ({ label: m, hours: Number(monthMap[m].toFixed(1)) }));
+        }
+        return trend.length ? trend : [{ label: 'Today', hours: 0 }];
+    }, [reportData, timeGrain]);
+
+    // Most Used vs Least Used
+    const mostUsedApps = useMemo(() => {
+        return filteredApps.slice(0, 5);
+    }, [filteredApps]);
+
+    const leastUsedApps = useMemo(() => {
+        return [...filteredApps].reverse().slice(0, 5);
+    }, [filteredApps]);
+
+    // Handle Preset Selection
+    const handleDatePresetSelect = (preset) => {
+        setSelectedDatePreset(preset);
+        setIsDateOpen(false);
+        if (preset === 'Today') {
+            setDateRange({
+                start: '2026-11-17',
+                end: '2026-11-17',
+                display: 'Nov 17, 2026'
+            });
+        } else if (preset === 'Yesterday') {
+            setDateRange({
+                start: '2026-11-16',
+                end: '2026-11-16',
+                display: 'Nov 16, 2026'
+            });
+        } else if (preset === 'Last 7 Days') {
+            setDateRange({
+                start: '2026-11-11',
+                end: '2026-11-17',
+                display: 'Nov 11, 2026 → Nov 17, 2026'
+            });
+        } else if (preset === 'This Month (Nov 2026)') {
+            setDateRange({
+                start: '2026-11-01',
+                end: '2026-11-17',
+                display: 'Nov 1, 2026 → Nov 17, 2026'
+            });
+        }
     };
 
-    const handleCancel = () => {
-        setIsCalendarOpen(false);
+    const handleExport = () => {
+        const headers = ['Application', 'Category', 'Productivity', 'Duration', 'Users', 'Usage %'];
+        const rows = filteredApps.map(a => [a.name, a.category, a.productivity, a.timeFormatted, a.userCount, `${a.usagePercent}%`]);
+        downloadCsv(`apps-websites-usage-${dateRange.start}-to-${dateRange.end}.csv`, headers, rows);
     };
-
-    const displayData = activeData.filter(item =>
-        item.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-
-    const maxUsage = Math.max(...displayData.map(d => d.usage), 1);
 
     return (
-        <div className="space-y-6 relative z-30">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 animate-fade-in relative z-10">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Apps &amp; Websites</h1>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">Track application and website usage across your team.</p>
+        <div className="space-y-6 pb-12 animate-in fade-in duration-500">
+            {/* Top Module Quick Switcher */}
+            <InsightfulModuleSwitcher activeTab="apps" />
+
+            {/* Top Header & Interactive Category Dropdown */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-5">
+                <div className="relative" ref={categoryRef}>
+                    <button
+                        onClick={() => setIsCategoryOpen(!isCategoryOpen)}
+                        className="flex items-center gap-3 group text-left cursor-pointer"
+                    >
+                        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2 group-hover:text-primary-600 transition-colors">
+                            {selectedCategory}
+                            <ChevronDown size={20} className={`text-slate-400 group-hover:text-primary-600 transition-transform ${isCategoryOpen ? 'rotate-180' : ''}`} />
+                        </h1>
+                    </button>
+
+                    {/* Category Dropdown Menu */}
+                    {isCategoryOpen && (
+                        <div className="absolute left-0 top-full mt-2 w-64 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-800 py-2 z-50">
+                            {categories.map((cat) => (
+                                <button
+                                    key={cat}
+                                    onClick={() => {
+                                        setSelectedCategory(cat);
+                                        setIsCategoryOpen(false);
+                                    }}
+                                    className={`w-full text-left px-4 py-2.5 text-xs font-bold flex items-center justify-between transition-colors ${
+                                        selectedCategory === cat
+                                            ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
+                                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
+                                    }`}
+                                >
+                                    <span>{cat}</span>
+                                    {selectedCategory === cat && <Check size={14} />}
+                                </button>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2">
-                    {/* Calendar Button */}
-                    <div className="relative">
-                        <button
-                            ref={calendarBtnRef}
-                            onClick={() => setIsCalendarOpen(v => !v)}
-                            className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold shadow-sm ring-1 transition-all ${isCalendarOpen ? 'bg-primary-50 text-primary-600 ring-primary-100 dark:bg-primary-900/20 dark:text-primary-400' : 'bg-white text-slate-700 ring-slate-200 hover:bg-slate-50 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-800'}`}
-                        >
-                            <CalendarIcon size={16} className={isCalendarOpen ? 'text-primary-600' : 'text-slate-400'} />
-                            <span>{selectedPreset}</span>
-                        </button>
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={handleExport}
+                        className="px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 transition-all shadow-sm flex items-center gap-1.5"
+                    >
+                        <Download size={14} /> Export
+                    </button>
+                </div>
+            </div>
 
-                        {isCalendarOpen && (
-                            <div className="absolute right-0 mt-2 z-50">
-                                <ReportsCalendar 
-                                    selectedPreset={selectedPreset}
-                                    setSelectedPreset={setSelectedPreset}
-                                    selectedDate={selectedDate}
-                                    setSelectedDate={setSelectedDate}
-                                    onApply={handleApply}
-                                    onCancel={handleCancel}
-                                />
-                            </div>
-                        )}
-                    </div>
+            {/* Filter Bar (Date Preset, Productivity Filter, Search) */}
+            <div className="flex flex-wrap items-center gap-3 bg-white dark:bg-slate-900 p-3 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
+                {/* Date Dropdown */}
+                <div className="relative" ref={dateRef}>
+                    <button
+                        onClick={() => setIsDateOpen(!isDateOpen)}
+                        className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 transition-colors"
+                    >
+                        <CalendarIcon size={14} className="text-primary-600" />
+                        <span>{dateRange.display}</span>
+                        <ChevronDown size={14} className="text-slate-400" />
+                    </button>
 
-                    {/* Add Filter */}
-                    <FilterDropdown />
+                    {isDateOpen && (
+                        <div className="absolute left-0 top-full mt-2 w-56 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-100 dark:border-slate-800 py-1.5 z-50">
+                            {['Today', 'Yesterday', 'Last 7 Days', 'This Month (Nov 2026)'].map((p) => (
+                                <button
+                                    key={p}
+                                    onClick={() => handleDatePresetSelect(p)}
+                                    className="w-full text-left px-3.5 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-between"
+                                >
+                                    <span>{p}</span>
+                                    {selectedDatePreset === p && <Check size={13} className="text-primary-600" />}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
 
-                    {/* Search */}
-                    <div className="flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800 shadow-sm">
-                        <Search size={16} className="text-slate-400 flex-shrink-0" />
-                        <input
-                            type="text"
-                            placeholder="Search apps..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="bg-transparent text-sm text-slate-700 placeholder-slate-400 outline-none dark:text-slate-200 w-32"
-                        />
-                        {searchTerm && (
-                            <button onClick={() => setSearchTerm("")} className="text-slate-400 hover:text-slate-600">
-                                <X size={14} />
-                            </button>
-                        )}
-                    </div>
+                {/* Productivity Filter */}
+                <div className="relative" ref={filterRef}>
+                    <button
+                        onClick={() => setIsFilterOpen(!isFilterOpen)}
+                        className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 transition-colors"
+                    >
+                        <Filter size={14} className="text-slate-500" />
+                        <span>Filter: {productivityFilter}</span>
+                        <ChevronDown size={14} className="text-slate-400" />
+                    </button>
 
-                    <ExportDropdown
-                        data={displayData}
-                        columns={[
-                            { header: 'Application / Website', key: 'name' },
-                            { header: 'Productivity Classification', key: 'type' },
-                            { header: 'Usage Duration (Hours)', key: 'usage', formatter: (val) => `${val}h` }
-                        ]}
-                        fileName="apps-websites-report"
-                        metadata={{
-                            title: 'Apps & Websites Report',
-                            dateRange: selectedPreset,
-                            filters: searchTerm ? `Search: "${searchTerm}"` : 'All Applications'
-                        }}
+                    {isFilterOpen && (
+                        <div className="absolute left-0 top-full mt-2 w-48 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-100 dark:border-slate-800 py-1.5 z-50">
+                            {['ALL', 'PRODUCTIVE', 'NEUTRAL', 'UNPRODUCTIVE'].map((f) => (
+                                <button
+                                    key={f}
+                                    onClick={() => {
+                                        setProductivityFilter(f);
+                                        setIsFilterOpen(false);
+                                    }}
+                                    className="w-full text-left px-3.5 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-between"
+                                >
+                                    <span>{f}</span>
+                                    {productivityFilter === f && <Check size={13} className="text-primary-600" />}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {/* Search */}
+                <div className="relative flex-1 min-w-[200px]">
+                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <input
+                        type="text"
+                        placeholder="Search applications & websites..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full pl-8 pr-3 py-1.5 text-xs font-medium bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-primary-500/20"
                     />
                 </div>
             </div>
 
-            {/* Content */}
-            {displayData.length > 0 ? (
-                <div className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 overflow-hidden">
-                    <div className="border-b border-slate-100 p-6 flex items-center justify-between dark:border-slate-800">
-                        <h3 className="text-lg font-bold dark:text-white">
-                            Top Applications &amp; Websites
-                        </h3>
-                        <div className="flex gap-2">
-                            <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 px-2 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 dark:text-emerald-400">
-                                <Monitor size={12} /> Productive
-                            </span>
-                            <span className="flex items-center gap-1.5 text-xs font-bold text-slate-500 px-2 py-1 rounded-lg bg-slate-50 dark:bg-slate-800 dark:text-slate-400">
-                                <Globe size={12} /> Neutral
-                            </span>
-                        </div>
+            {/* 4 Summary KPI Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
+                    <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">TOTAL HOURS</span>
+                        <Clock size={16} className="text-slate-400" />
                     </div>
-                    <div className="p-6">
-                        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                            {displayData.map((item) => (
-                                <div key={item.name} className="relative group p-4 rounded-xl border border-slate-100 hover:border-primary-200 hover:bg-primary-50/10 transition-all dark:border-slate-800 dark:hover:border-primary-900/50">
-                                    <div className="flex items-center justify-between mb-3">
-                                        <div className="p-2 rounded-lg bg-slate-50 text-slate-400 dark:bg-slate-800 group-hover:bg-primary-100 group-hover:text-primary-600 transition-colors">
-                                            {item.type === 'Productive' ? <Monitor size={20} /> : <Globe size={20} />}
-                                        </div>
-                                        <span className="text-2xl font-black text-slate-900 dark:text-white">{item.usage}h</span>
-                                    </div>
-                                    <h4 className="font-bold text-slate-700 dark:text-slate-300 group-hover:text-primary-600 transition-colors">{item.name}</h4>
-                                    <p className="text-xs font-semibold text-slate-400 mt-1 uppercase tracking-wider">{item.type}</p>
-                                    <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-                                        <div className={`h-full rounded-full transition-all duration-700 ${item.type === 'Productive' ? 'bg-emerald-500' : 'bg-primary-500'}`} style={{ width: `${(item.usage / maxUsage) * 100}%` }} />
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
+                    <div className="text-2xl font-black text-slate-900 dark:text-white tabular-nums">
+                        {kpiSummary.totalHours}
                     </div>
-                </div>
-            ) : (
-                <div className="flex flex-col items-center justify-center p-20 rounded-[3rem] border-2 border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
-                    <div className="h-20 w-20 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6">
-                        <Monitor size={40} className="text-slate-300" />
-                    </div>
-                    <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">No data for the selected period</h3>
-                    <p className="text-slate-500 text-center max-w-sm">
-                        {searchTerm ? `No apps matching "${searchTerm}"` : "Try choosing a different time period in the calendar."}
+                    <p className="text-[10px] text-slate-400 font-semibold mt-1">
+                        {kpiSummary.totalAvg}
                     </p>
                 </div>
-            )}
+
+                <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
+                    <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">PRODUCTIVE HOURS</span>
+                        <TrendingUp size={16} className="text-emerald-500" />
+                    </div>
+                    <div className="text-2xl font-black text-slate-900 dark:text-white tabular-nums text-emerald-600 dark:text-emerald-400">
+                        {kpiSummary.productiveHours}
+                    </div>
+                    <p className="text-[10px] text-slate-400 font-semibold mt-1">
+                        {kpiSummary.productiveAvg}
+                    </p>
+                </div>
+
+                <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
+                    <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">NEUTRAL HOURS</span>
+                        <MoreHorizontal size={16} className="text-slate-400" />
+                    </div>
+                    <div className="text-2xl font-black text-slate-900 dark:text-white tabular-nums">
+                        {kpiSummary.neutralHours}
+                    </div>
+                    <p className="text-[10px] text-slate-400 font-semibold mt-1">
+                        {kpiSummary.neutralAvg}
+                    </p>
+                </div>
+
+                <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
+                    <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">UNPRODUCTIVE HOURS</span>
+                        <TrendingDown size={16} className="text-rose-500" />
+                    </div>
+                    <div className="text-2xl font-black text-slate-900 dark:text-white tabular-nums text-rose-600 dark:text-rose-400">
+                        {kpiSummary.unproductiveHours}
+                    </div>
+                    <p className="text-[10px] text-slate-400 font-semibold mt-1">
+                        {kpiSummary.unproductiveAvg}
+                    </p>
+                </div>
+            </div>
+
+            {/* Usage Curve Area Chart */}
+            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 sm:p-8 shadow-sm">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                    <div>
+                        <h3 className="text-base font-black text-slate-900 dark:text-white tracking-tight">
+                            Average Usage
+                        </h3>
+                        <p className="text-xs text-slate-400 font-medium">
+                            Tracked active software utilization across workforce
+                        </p>
+                    </div>
+
+                    <div className="flex items-center p-1 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 self-start">
+                        {['Days', 'Weeks', 'Months'].map((grain) => (
+                            <button
+                                key={grain}
+                                onClick={() => setTimeGrain(grain)}
+                                className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${
+                                    timeGrain === grain
+                                        ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
+                                        : 'text-slate-500 hover:text-slate-700'
+                                }`}
+                            >
+                                {grain}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="h-64 w-full">
+                    {chartData.length > 0 ? (
+                        <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                <defs>
+                                    <linearGradient id="usageGradient" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#6366f1" stopOpacity={0.2} />
+                                        <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                <XAxis
+                                    dataKey="label"
+                                    stroke="#94a3b8"
+                                    fontSize={11}
+                                    fontWeight={600}
+                                    tickLine={false}
+                                    axisLine={false}
+                                />
+                                <YAxis
+                                    stroke="#94a3b8"
+                                    fontSize={11}
+                                    fontWeight={600}
+                                    tickLine={false}
+                                    axisLine={false}
+                                    tickFormatter={(val) => `${val}h`}
+                                />
+                                <Tooltip
+                                    contentStyle={{
+                                        backgroundColor: '#0f172a',
+                                        borderRadius: '12px',
+                                        border: 'none',
+                                        color: '#fff',
+                                        fontSize: '12px',
+                                        fontWeight: 600
+                                    }}
+                                    formatter={(val) => [`${val} h`, 'Tracked Usage']}
+                                />
+                                <Area
+                                    type="monotone"
+                                    dataKey="hours"
+                                    stroke="#6366f1"
+                                    strokeWidth={2.5}
+                                    fillOpacity={1}
+                                    fill="url(#usageGradient)"
+                                />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    ) : (
+                        <div className="h-full flex items-center justify-center text-xs text-slate-400 font-semibold">
+                            No usage data recorded for this range.
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Applications & Websites Usage Table */}
+            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
+                <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                    <div>
+                        <h3 className="text-base font-black text-slate-900 dark:text-white tracking-tight">
+                            All Applications & Websites
+                        </h3>
+                        <p className="text-xs text-slate-400 font-medium">
+                            Ranked by total workforce active time
+                        </p>
+                    </div>
+                    <span className="text-xs font-bold text-slate-500">
+                        {filteredApps.length} tracked software
+                    </span>
+                </div>
+
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs">
+                        <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 font-bold border-b border-slate-100 dark:border-slate-800">
+                            <tr>
+                                <th className="px-6 py-3.5">Application / Website</th>
+                                <th className="px-6 py-3.5">Category</th>
+                                <th className="px-6 py-3.5">Productivity</th>
+                                <th className="px-6 py-3.5">Total Hours</th>
+                                <th className="px-6 py-3.5">Users</th>
+                                <th className="px-6 py-3.5 text-right">Usage Share</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-medium">
+                            {filteredApps.length === 0 ? (
+                                <tr>
+                                    <td colSpan={6} className="px-6 py-8 text-center text-slate-400 font-semibold">
+                                        No applications recorded for this selection.
+                                    </td>
+                                </tr>
+                            ) : (
+                                filteredApps.map((app) => {
+                                    const { icon: AppIcon, color } = getAppIcon(app.name);
+                                    return (
+                                        <tr key={app.id || app.name} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`h-8 w-8 rounded-xl flex items-center justify-center ${color}`}>
+                                                        <AppIcon size={16} />
+                                                    </div>
+                                                    <span className="font-bold text-slate-900 dark:text-white">
+                                                        {app.name}
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-slate-500 font-semibold">
+                                                {app.category}
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
+                                                    app.productivity === 'PRODUCTIVE'
+                                                        ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'
+                                                        : app.productivity === 'UNPRODUCTIVE'
+                                                        ? 'bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400'
+                                                        : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+                                                }`}>
+                                                    {app.productivity}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 font-black text-slate-900 dark:text-white tabular-nums">
+                                                {app.timeFormatted}
+                                            </td>
+                                            <td className="px-6 py-4 text-slate-500 font-bold tabular-nums">
+                                                {app.userCount}
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                <div className="flex items-center justify-end gap-3">
+                                                    <div className="w-20 h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                                                        <div
+                                                            className="h-full rounded-full bg-primary-500 transition-all duration-700"
+                                                            style={{ width: `${Math.min(app.usagePercent, 100)}%` }}
+                                                        />
+                                                    </div>
+                                                    <span className="font-bold text-slate-700 dark:text-slate-300 tabular-nums">
+                                                        {app.usagePercent}%
+                                                    </span>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     );
 }
+
+export default AppsWebsites;

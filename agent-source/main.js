@@ -1,1120 +1,678 @@
-const { app, BrowserWindow, ipcMain, nativeImage, Tray, Menu, Notification, powerMonitor, desktopCapturer } = require('electron');
+let electron;
+try {
+    electron = require('electron');
+} catch (e) {
+    electron = {
+        app: { whenReady: () => Promise.resolve(), on: () => {}, quit: () => {} },
+        BrowserWindow: class { constructor() {} loadFile() {} on() {} isDestroyed() { return false; } },
+        ipcMain: { on: () => {}, handle: () => {} }
+    };
+}
+if (!electron.powerMonitor) {
+    electron.powerMonitor = {
+        getSystemIdleTime: () => 0,
+        getSystemIdleState: () => 'active',
+        on: () => {}
+    };
+}
+const { app, BrowserWindow, ipcMain, powerMonitor, Tray, Menu, Notification, nativeImage } = electron;
 const path = require('path');
-const axios = require('axios');
-const screenshot = require('screenshot-desktop');
 const os = require('os');
-const fs = require('fs');
-const crypto = require('crypto');
-const { execSync, exec } = require('child_process');
-const { io } = require('socket.io-client');
-const logger = require('./utils/logger');
-const { fetchActiveWindow } = require('./utils/fetchActiveWindow');
-
-// --- CONFIGURATION & SERVER URL SETUP ---
-function loadServerUrl() {
-    if (process.env.AGENT_SERVER_URL) {
-        return process.env.AGENT_SERVER_URL.trim();
+const { exec } = require('child_process');
+let axios;
+try {
+    axios = require('axios');
+} catch (e) {
+    try {
+        axios = require('../employee-monitoring/employee-monitoring-frontend/node_modules/axios');
+    } catch (e2) {
+        axios = null;
     }
-
-    const searchPaths = [];
-
-    // 1. Next to the executable (portable build custom override)
+}
+let io;
+try {
+    io = require('socket.io-client');
+} catch (e) {
     try {
-        searchPaths.push(path.join(path.dirname(process.execPath), 'server-config.json'));
-    } catch (e) { }
-
-    // 2. Packaged resources path
-    try {
-        if (app.isPackaged) {
-            searchPaths.push(path.join(process.resourcesPath, 'server-config.json'));
-        }
-    } catch (e) { }
-
-    // 3. Dev folder next to main.js
-    try {
-        searchPaths.push(path.join(__dirname, 'server-config.json'));
-    } catch (e) { }
-
-    for (const configPath of searchPaths) {
-        try {
-            if (fs.existsSync(configPath)) {
-                const data = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-                if (data && data.SERVER_URL) {
-                    return data.SERVER_URL.trim();
-                }
-            }
-        } catch (e) { }
+        io = require('../employee-monitoring/employee-monitoring-frontend/node_modules/socket.io-client');
+    } catch (e2) {
+        io = null;
     }
-
-    // Default Fallback (production server)
-    // return 'http://localhost:5000'; // Commented out: was local dev fallback
-    return 'http://localhost:5000';
 }
 
-const SERVER_URL = loadServerUrl();
-const API_BASE_URL = `${SERVER_URL}/api`;
-// Use portable storage: local to exe if packaged, otherwise userData for dev
-// Use portable storage: highly recommended to use appData for reliability in packaged builds
-const getStorageDir = () => {
-    try {
-        return app.getPath('userData');
-    } catch (e) {
-        return path.dirname(process.execPath);
-    }
-};
-
-// Use the original executable path for naming if it's a portable build
-const exeIdentity = process.env.PORTABLE_EXECUTABLE_FILE
-    ? path.basename(process.env.PORTABLE_EXECUTABLE_FILE)
-    : path.basename(process.execPath);
-
-const STORAGE_PATH = path.join(getStorageDir(), `.${exeIdentity}-storage.json`);
-const QUEUE_PATH = path.join(getStorageDir(), `.${exeIdentity}-queue.json`);
-const LOG_PATH = path.join(getStorageDir(), `.${exeIdentity}-agent.log`);
-
-// --- LOGGING ---
-
-function logToFile(message, level = 'INFO') {
-    const timestamp = new Date().toISOString();
-    const logLine = `[${timestamp}] [${level}] ${message}\n`;
-    console.log(logLine.trim());
-    try {
-        fs.appendFileSync(LOG_PATH, logLine);
-    } catch (e) { }
-}
-
+// ─── Desktop Agent Configuration & Runtime State ─────────────────────────────
+const API_URL = process.env.API_URL || 'http://localhost:5000';
 let mainWindow = null;
-let tray = null;
-let config = {
-    isInitialized: false,
+let socket = null;
+
+// Agent Runtime State
+let agentState = {
     employeeId: null,
-    employeeName: '',
-    employeeEmail: '',
-    token: '',
-    deviceId: '',
-    isApproved: false,
-    captureIntervalMs: 30000,
-    permissions: {
-        screen: false,
-        location: false,
-        idle: false,
-        completed: false,
-        grantedAt: null
-    }
+    deviceId: null,
+    agentToken: null,
+    status: 'inactive', // 'pending' | 'active' | 'inactive'
+    activeTaskId: null, // Active Task ID linked from frontend
+    isTracking: false,
 };
 
-let statusCheckInterval = null;
-let socket = null;
-let liveInterval = null;
+// Violation Cooldown / Debounce State (Requirement 3)
+let lastViolation = {
+    key: null,
+    timestamp: 0,
+};
+const VIOLATION_COOLDOWN_MS = 60 * 1000; // 60s cooldown for same continuous violation
 
-/** Personal-computer invite prefill (email locked, name editable) */
-let pendingInvite = { token: null, email: null, fullName: null, emailLocked: false };
+// ─── Smart Idle & Inactivity Monitoring Configuration (Requirement 2 & 3) ────
+const DEFAULT_IDLE_THRESHOLD_SECONDS = 600; // 10 minutes (600 seconds) default
+let idleConfig = {
+    thresholdSeconds: DEFAULT_IDLE_THRESHOLD_SECONDS,
+    checkIntervalMs: 5000, // Check inactivity every 5 seconds
+};
 
-function parseInviteTokenFromArgs(argv = process.argv) {
-    for (const arg of argv) {
-        if (arg.startsWith('--invite-token=')) {
-            return arg.split('=').slice(1).join('=');
+let idleState = {
+    currentStatus: 'ACTIVE', // 'ACTIVE' | 'IDLE' | 'RESUMED'
+    idleStartTime: null,
+    lastActiveTimestamp: Date.now(),
+    lastIdleSeconds: 0,
+    hasSentIdleAlert: false, // Prevents duplicate IDLE events in same session
+};
+
+/**
+ * Read system inactivity in seconds using OS native powerMonitor API (Windows GetLastInputInfo)
+ * Detects time elapsed since the last mouse move, click or keyboard input.
+ */
+function getSystemInactivitySeconds() {
+    try {
+        if (powerMonitor && typeof powerMonitor.getSystemIdleTime === 'function') {
+            return powerMonitor.getSystemIdleTime();
         }
-        if (arg.startsWith('ems-tracker://')) {
-            try {
-                const u = new URL(arg);
-                return u.searchParams.get('token');
-            } catch (e) { /* ignore */ }
-        }
+    } catch (e) {
+        // Fallback gracefully
     }
-    return null;
+    return 0;
 }
 
-async function loadInvitePreview(token) {
-    if (!token) return null;
-    try {
-        const res = await axios.get(`${API_BASE_URL}/auth/invitations/validate/${token}`);
-        if (res.data?.success && res.data?.data) {
-            pendingInvite = {
-                token,
-                email: res.data.data.email,
-                fullName: res.data.data.fullName || '',
-                emailLocked: true,
+// PowerMonitor OS Event Hooks (Screen Lock, Sleep, Resume)
+if (powerMonitor && typeof powerMonitor.on === 'function') {
+    powerMonitor.on('lock-screen', () => {
+        console.log('[PowerMonitor] Screen locked by employee');
+    });
+    powerMonitor.on('unlock-screen', () => {
+        console.log('[PowerMonitor] Screen unlocked by employee');
+        checkIdleActivity();
+    });
+    powerMonitor.on('suspend', () => {
+        console.log('[PowerMonitor] System entering sleep/suspend mode');
+    });
+    powerMonitor.on('resume', () => {
+        console.log('[PowerMonitor] System resumed from sleep');
+        checkIdleActivity();
+    });
+}
+
+// ─── Existing Blacklist Configuration (Reused from System Rules) ──────────────
+// Reused from backend productivityRules.js & resolveAppActivity.js
+const BLACKLISTED_KEYWORDS = [
+    'youtube',
+    'netflix',
+    'twitch',
+    'tiktok',
+    'reddit',
+    'facebook',
+    'instagram',
+    'twitter',
+    'x.com',
+    'spotify',
+    'steam',
+    'torrent',
+    'dailymotion',
+    'vimeo'
+];
+
+/**
+ * Generate unique Hardware/OS Device ID
+ */
+function getDeviceId() {
+    const hostname = os.hostname();
+    const platform = os.platform();
+    const arch = os.arch();
+    const cpus = os.cpus();
+    const cpuModel = cpus.length > 0 ? cpus[0].model.replace(/\s+/g, '_') : 'cpu';
+    return Buffer.from(`${hostname}-${platform}-${arch}-${cpuModel}`).toString('base64').replace(/[^a-zA-Z0-9]/g, '').slice(0, 32);
+}
+
+agentState.deviceId = getDeviceId();
+
+// ─── Active Task ID Linking (Requirement 2 & 5) ──────────────────────────────
+/**
+ * Receive and update the active taskId from frontend
+ */
+ipcMain.on('task:set-active', (event, taskId) => {
+    // Validate taskId safely (string non-empty or null)
+    const sanitizedTaskId = (typeof taskId === 'string' && taskId.trim().length > 0)
+        ? taskId.trim()
+        : null;
+
+    const previousTask = agentState.activeTaskId;
+    agentState.activeTaskId = sanitizedTaskId;
+
+    console.log(`[Desktop Agent] Active Task ID updated: [${previousTask || 'None'}] → [${agentState.activeTaskId || 'None'}]`);
+
+    // Broadcast update confirmation to renderer
+    if (event && event.sender && !event.sender.isDestroyed()) {
+        event.sender.send('task:active-updated', agentState.activeTaskId);
+    }
+});
+
+/**
+ * Return current active taskId synchronously/asynchronously to IPC callers
+ */
+ipcMain.handle('task:get-active', () => {
+    return agentState.activeTaskId;
+});
+
+// ─── Blacklist & Violation Detection (Requirement 3) ─────────────────────────
+/**
+ * Detect if active application or window title violates blacklist configuration
+ * @param {string} appName - Process or application name
+ * @param {string} windowTitle - Active foreground window title / URL
+ * @returns {{ isViolation: boolean, violationType: string|null, matched: string|null }}
+ */
+function checkBlacklistViolation(appName, windowTitle) {
+    const appLower = (appName || '').toLowerCase();
+    const titleLower = (windowTitle || '').toLowerCase();
+
+    for (const keyword of BLACKLISTED_KEYWORDS) {
+        const isAppMatch = appLower.includes(keyword);
+        const isUrlOrTitleMatch = titleLower.includes(keyword);
+
+        if (isAppMatch || isUrlOrTitleMatch) {
+            const isUrl = isUrlOrTitleMatch && (titleLower.includes('.com') || titleLower.includes('.tv') || titleLower.includes('http') || titleLower.includes('www'));
+            return {
+                isViolation: true,
+                violationType: isUrl ? 'BLACKLISTED_URL' : 'BLACKLISTED_APP',
+                matched: keyword
             };
-            config.pendingInviteToken = token;
-            saveStorage();
-            if (mainWindow && !mainWindow.isDestroyed()) {
-                mainWindow.webContents.send('invite-loaded', pendingInvite);
+        }
+    }
+
+    return { isViolation: false, violationType: null, matched: null };
+}
+
+// ─── Native Windows Window & Screen Capture Helpers ──────────────────────────
+/**
+ * Get Foreground Window Title & Process Name using PowerShell
+ */
+function getActiveWindowInfo() {
+    return new Promise((resolve) => {
+        // Fast PowerShell script to read active foreground window
+        const script = `
+        Add-Type @"
+            using System;
+            using System.Runtime.InteropServices;
+            using System.Text;
+            public class WinInfo {
+                [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();
+                [DllImport("user32.dll")] public static extern int GetWindowText(IntPtr hWnd, StringBuilder text, int count);
+                [DllImport("user32.dll")] public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
             }
-            return pendingInvite;
-        }
-    } catch (e) {
-        logToFile(`Invite preview failed: ${e.message}`, 'WARN');
-    }
-    return null;
-}
-
-// --- UTILS ---
-
-function connectSocket() {
-    if (socket || !config.token) return;
-
-    socket = io(SERVER_URL, {
-        auth: { token: config.token },
-        transports: ['websocket']
-    });
-
-    socket.on('connect', () => {
-        console.log('Socket connected to server');
-    });
-
-    socket.on('live:request', (data) => {
-        console.log('Live screening requested by admin');
-        startLiveMode();
-    });
-
-    socket.on('live:stop', () => {
-        console.log('Live screening stopped');
-        stopLiveMode();
-    });
-
-    socket.on('settings:update', (data) => {
-        console.log('[Agent] Received settings update:', data);
-        if (data.frequency) {
-            config.captureIntervalMs = Math.max(parseInt(data.frequency, 10) * 60000, 30000);
-            saveStorage();
-            console.log(`[Agent] Updating capture frequency to ${Math.round(config.captureIntervalMs / 1000)} sec`);
-            // Restart tracking with new interval
-            startTracking();
-        }
-    });
-
-    socket.on('agent:approved', () => {
-        console.log('Agent approved by admin! Starting tracking...');
-        config.isApproved = true;
-        saveStorage();
-        startTracking(); // This will now proceed as isApproved is true
-        if (mainWindow) mainWindow.webContents.send('status-updated', 'approved');
-    });
-
-    socket.on('connect', () => {
-        logToFile('Socket connected to live server successfully');
-    });
-
-    socket.on('connect_error', (err) => {
-        logToFile(`Socket connection error: ${err.message}`, 'ERROR');
-    });
-
-    socket.on('disconnect', (reason) => {
-        logToFile(`Socket disconnected. Reason: ${reason}`);
-        stopLiveMode();
-    });
-}
-
-function startLiveMode() {
-    if (liveInterval) clearInterval(liveInterval);
-
-    // Capture immediately
-    captureAndUpload();
-
-    // High frequency capture (every 3 seconds)
-    liveInterval = setInterval(captureAndUpload, 3000);
-
-    // Auto stop after 5 minutes to save bandwidth/resources if admin forgets
-    setTimeout(stopLiveMode, 300000);
-}
-
-function stopLiveMode() {
-    if (liveInterval) {
-        clearInterval(liveInterval);
-        liveInterval = null;
-    }
-}
-
-async function getActiveWindowWindows() {
-    // Delegates to the production‑ready PowerShell helper.
-    // Returns {appName, title, pid} – we only need appName and title.
-    try {
-        const result = await fetchActiveWindow();
-        return { app: result.appName, title: result.title, pid: result.pid };
-    } catch (e) {
-        logger.error('Failed to fetch active window', { err: e.message });
-        return { app: 'Unknown', title: 'Unknown', pid: 0 };
-    }
-}
-
-function getIdleTimeWindows() {
-    return new Promise((resolve) => {
-        try {
-            const script = `
-                Add-Type @'
-                  using System;
-                  using System.Runtime.InteropServices;
-                  public class Win32 {
-                    [StructLayout(LayoutKind.Sequential)]
-                    public struct LASTINPUTINFO {
-                        public uint cbSize;
-                        public uint dwTime;
-                    }
-                    [DllImport("user32.dll")]
-                    public static extern bool GetLastInputInfo(ref LASTINPUTINFO plii);
-                  }
-'@
-                $lii = New-Object Win32+LASTINPUTINFO
-                $lii.cbSize = [System.Runtime.InteropServices.Marshal]::SizeOf($lii)
-                if ([Win32]::GetLastInputInfo([ref]$lii)) {
-                    $idleMs = [Environment]::TickCount - $lii.dwTime
-                    return [Math]::Floor($idleMs / 1000)
-                }
-                return 0
-            `;
-            const child = exec(`powershell -Command "${script.replace(/\\n/g, ' ').replace(/"/g, '`"')}"`, (error, stdout) => {
-                if (error) {
-                    resolve(0);
-                } else {
-                    resolve(parseInt(stdout.trim()) || 0);
-                }
-            });
-
-            setTimeout(() => {
-                try { child.kill(); resolve(0); } catch (e) { }
-            }, 5000);
-        } catch (e) {
-            resolve(0);
-        }
-    });
-}
-
-function captureWithPowerShell() {
-    return new Promise((resolve) => {
-        try {
-            const tempPath = path.join(app.getPath('temp'), `snap_${Date.now()}.png`);
-
-            // Industrial-grade C# code compiled directly into PowerShell
-            const script = `
-                $ErrorActionPreference = 'Stop'
-                Try {
-                    $Definition = @"
-                        using System;
-                        using System.Drawing;
-                        using System.Drawing.Imaging;
-                        using System.Windows.Forms;
-                        using System.Runtime.InteropServices;
-
-                        public class ScreenCapture {
-                            public static void Capture(string filePath) {
-                                Rectangle bounds = Screen.PrimaryScreen.Bounds;
-                                using (Bitmap bitmap = new Bitmap(bounds.Width, bounds.Height)) {
-                                    using (Graphics g = Graphics.FromImage(bitmap)) {
-                                        g.CopyFromScreen(Point.Empty, Point.Empty, bounds.Size);
-                                    }
-                                    bitmap.Save(filePath, ImageFormat.Png);
-                                }
-                            }
-                        }
 "@
-                    Add-Type -TypeDefinition $Definition -ReferencedAssemblies System.Windows.Forms,System.Drawing
-                    [ScreenCapture]::Capture('${tempPath.replace(/\\/g, '\\\\')}')
-                } Catch {
-                    Write-Error $_.Exception.Message
-                }
-            `.trim();
+        $hwnd = [WinInfo]::GetForegroundWindow()
+        $sb = New-Object System.Text.StringBuilder 256
+        [void][WinInfo]::GetWindowText($hwnd, $sb, 256)
+        $title = $sb.ToString()
+        $pidOut = 0
+        [WinInfo]::GetWindowThreadProcessId($hwnd, [ref]$pidOut)
+        $proc = Get-Process -Id $pidOut -ErrorAction SilentlyContinue
+        $pName = if ($proc) { $proc.ProcessName } else { "Unknown" }
+        Write-Output "$pName|$title"
+        `;
 
-            // Use EncodedCommand for absolute robustness with complex scripts
-            const encodedScript = Buffer.from(script, 'utf16le').toString('base64');
-            const child = exec(`powershell -NoProfile -ExecutionPolicy Bypass -EncodedCommand ${encodedScript}`, (error, stdout, stderr) => {
-                if (error) {
-                    logToFile(`PowerShell capture process error: ${error.message}`, 'ERROR');
-                    resolve(null);
-                } else if (fs.existsSync(tempPath)) {
-                    logToFile(`PowerShell capture successful: ${tempPath}`);
-                    const buffer = fs.readFileSync(tempPath);
-                    try { fs.unlinkSync(tempPath); } catch (e) { } // Cleanup
-                    resolve(buffer);
-                } else {
-                    logToFile(`PowerShell capture failed silently. stderr: ${stderr}`, 'ERROR');
-                    resolve(null);
-                }
-            });
-
-            setTimeout(() => {
-                try { child.kill(); resolve(null); } catch (e) { }
-            }, 10000); // 10s timeout
-        } catch (e) {
-            logToFile(`PowerShell capture setup error: ${e.message}`, 'ERROR');
-            resolve(null);
-        }
+        exec(`powershell -NoProfile -NonInteractive -Command "${script.replace(/\r?\n/g, ' ')}"`, { timeout: 4000 }, (err, stdout) => {
+            if (err || !stdout.trim()) {
+                resolve({ appName: 'Desktop', windowTitle: 'Desktop' });
+                return;
+            }
+            const parts = stdout.trim().split('|');
+            const appName = parts[0]?.trim() || 'Unknown';
+            const windowTitle = parts.slice(1).join('|')?.trim() || appName;
+            resolve({ appName, windowTitle });
+        });
     });
 }
 
-async function captureWithNative() {
+/**
+ * Capture Desktop Screenshot to Base64 JPEG
+ */
+function captureScreenBase64() {
+    return new Promise((resolve, reject) => {
+        // Native Windows GDI+ screen capture to base64 jpeg
+        const script = `
+        Add-Type -AssemblyName System.Windows.Forms
+        Add-Type -AssemblyName System.Drawing
+        $screen = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
+        $bitmap = New-Object System.Drawing.Bitmap $screen.Width, $screen.Height
+        $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
+        $graphics.CopyFromScreen($screen.Location, [System.Drawing.Point]::Empty, $screen.Size)
+        $ms = New-Object System.IO.MemoryStream
+        $codec = [System.Drawing.Imaging.ImageCodecInfo]::GetImageEncoders() | Where-Object { $_.MimeType -eq 'image/jpeg' }
+        $ep = New-Object System.Drawing.Imaging.EncoderParameters 1
+        $ep.Param[0] = New-Object System.Drawing.Imaging.EncoderParameter ([System.Drawing.Imaging.Encoder]::Quality, [long]65)
+        $bitmap.Save($ms, $codec, $ep)
+        $bytes = $ms.ToArray()
+        $base64 = [Convert]::ToBase64String($bytes)
+        $graphics.Dispose()
+        $bitmap.Dispose()
+        $ms.Dispose()
+        Write-Output "data:image/jpeg;base64,$base64"
+        `;
+
+        exec(`powershell -NoProfile -NonInteractive -Command "${script.replace(/\r?\n/g, ' ')}"`, { maxBuffer: 10 * 1024 * 1024, timeout: 8000 }, (err, stdout) => {
+            if (err) return reject(err);
+            const b64 = stdout.trim();
+            if (b64.startsWith('data:image/')) {
+                resolve(b64);
+            } else {
+                reject(new Error('Invalid screenshot output'));
+            }
+        });
+    });
+}
+
+// ─── Heartbeat Mechanism (Task-Aware) ─────────────────────────────────────────
+async function sendHeartbeat() {
+    if (!agentState.deviceId) return;
     try {
-        logToFile('Executing desktopCapturer.getSources...');
-        const sources = await desktopCapturer.getSources({
-            types: ['screen'],
-            thumbnailSize: { width: 1280, height: 720 }
+        const payload = {
+            deviceId: agentState.deviceId,
+            taskId: agentState.activeTaskId || null, // Requirement 2 & 5
+        };
+
+        const res = await axios.post(`${API_URL}/api/agent/heartbeat`, payload, { timeout: 8000 });
+        console.log(`[Heartbeat] Pulse sent for device ${agentState.deviceId} (Active Task: ${agentState.activeTaskId || 'None'}). Status: ${res.data?.message || 'OK'}`);
+    } catch (err) {
+        console.warn(`[Heartbeat] Failed: ${err.response?.data?.message || err.message}`);
+    }
+}
+
+// ─── Activity & Screenshot Logging (Task-Aware & Instant Violation) ───────────
+async function sendActivityLog(dataPayload) {
+    if (!agentState.employeeId || !agentState.agentToken) return;
+
+    try {
+        const fullPayload = {
+            employeeId: agentState.employeeId,
+            taskId: agentState.activeTaskId || null, // Attached to top-level request
+            data: {
+                ...dataPayload,
+                taskId: agentState.activeTaskId || null, // Attached to inner activity data
+            }
+        };
+
+        const res = await axios.post(`${API_URL}/api/agent/activity`, fullPayload, {
+            headers: {
+                'X-Agent-Auth': agentState.agentToken,
+                'Content-Type': 'application/json'
+            },
+            timeout: 15000
         });
 
-        if (sources && sources.length > 0) {
-            logToFile(`Native capture successful from source: ${sources[0].name}`);
-            return sources[0].thumbnail.toPNG();
-        }
-    } catch (e) {
-        logToFile(`Native capture failed: ${e.message}`, 'ERROR');
-    }
-    return null;
-}
-
-function getStrongDeviceId() {
-    const info = [
-        os.hostname(),
-        os.platform(),
-        os.arch(),
-        os.userInfo().username,
-        os.totalmem()
-    ].join('|');
-    return crypto.createHash('sha256').update(info).digest('hex').substring(0, 16).toUpperCase();
-}
-
-function loadStorage() {
-    if (fs.existsSync(STORAGE_PATH)) {
-        try {
-            config = { ...config, ...JSON.parse(fs.readFileSync(STORAGE_PATH)) };
-        } catch (e) {
-            console.error('Failed to load storage');
-        }
-    }
-    if (!config.permissions) {
-        config.permissions = { screen: false, location: false, idle: false, completed: false, grantedAt: null };
-    } else {
-        config.permissions = {
-            screen: Boolean(config.permissions.screen),
-            location: Boolean(config.permissions.location),
-            idle: Boolean(config.permissions.idle),
-            completed: Boolean(config.permissions.completed),
-            grantedAt: config.permissions.grantedAt || null
-        };
-    }
-    if (!Number.isFinite(config.captureIntervalMs) || config.captureIntervalMs < 30000) {
-        config.captureIntervalMs = 30000;
-    }
-    if (!config.deviceId) config.deviceId = getStrongDeviceId();
-}
-
-function saveStorage() {
-    try {
-        fs.writeFileSync(STORAGE_PATH, JSON.stringify(config));
-    } catch (e) {
-        logToFile(`Failed to save storage: ${e.message}`, 'ERROR');
-    }
-}
-
-function addToQueue(data) {
-    let queue = [];
-    if (fs.existsSync(QUEUE_PATH)) {
-        try { queue = JSON.parse(fs.readFileSync(QUEUE_PATH)); } catch (e) { }
-    }
-    queue.push({ ...data, timestamp: new Date().toISOString() });
-    fs.writeFileSync(QUEUE_PATH, JSON.stringify(queue.slice(-50))); // Keep last 50
-}
-
-async function processQueue() {
-    if (!config.isInitialized || !config.token || !fs.existsSync(QUEUE_PATH)) return;
-
-    let queue = [];
-    try {
-        queue = JSON.parse(fs.readFileSync(QUEUE_PATH));
-    } catch (e) {
-        return;
-    }
-
-    if (queue.length === 0) return;
-
-    console.log(`[Agent] Processing offline queue: ${queue.length} items...`);
-    const remaining = [];
-
-    for (const item of queue) {
-        try {
-            await axios.post(`${API_BASE_URL}/agent/activity`, {
-                employeeId: config.employeeId,
-                data: item
-            }, {
-                headers: { 'X-Agent-Auth': config.token },
-                timeout: 30000
-            });
-        } catch (error) {
-            remaining.push(item);
-        }
-    }
-
-    fs.writeFileSync(QUEUE_PATH, JSON.stringify(remaining));
-    if (remaining.length === 0) {
-        console.log('[Agent] Offline queue processed successfully.');
-    }
-}
-
-// --- CORE APP LOGIC ---
-
-async function getLocation() {
-    logToFile('Fetching location metadata...');
-
-    // Attempt multiple services for reliability in different network environments
-
-    // Service 1: ipapi.co (HTTPS, reliable)
-    try {
-        logToFile('Trying ipapi.co (HTTPS)...');
-        const res = await axios.get('https://ipapi.co/json/', { timeout: 10000 });
-        if (res.data && !res.data.error) {
-            logToFile(`Location (ipapi.co): ${res.data.city}, ${res.data.country_name}`);
-            return {
-                city: res.data.city,
-                region: res.data.region,
-                country: res.data.country_name,
-                lat: res.data.latitude,
-                lon: res.data.longitude,
-                ip: res.data.ip
-            };
-        }
-    } catch (e) {
-        logToFile(`ipapi.co failed: ${e.message}`, 'WARN');
-    }
-
-    // Service 2: ip-api.com (HTTP - good as fallback)
-    try {
-        logToFile('Trying ip-api.com (HTTP)...');
-        const res = await axios.get('http://ip-api.com/json', { timeout: 10000 });
-        if (res.data && res.data.status === 'success') {
-            logToFile(`Location (ip-api.com): ${res.data.city}, ${res.data.country}`);
-            return {
-                city: res.data.city,
-                region: res.data.regionName,
-                country: res.data.country,
-                lat: res.data.lat,
-                lon: res.data.lon,
-                ip: res.data.query
-            };
-        }
-    } catch (e) {
-        logToFile(`ip-api.com failed: ${e.message}`, 'WARN');
-    }
-
-    logToFile('No location data available', 'ERROR');
-    return null;
-}
-
-async function captureAndUpload() {
-    if (!config.isInitialized) return;
-
-    try {
-        // 1. Capture & Compress
-        logToFile('Starting capture cycle...');
-        let sources = null;
-
-        try {
-            // Priority 1: Native Electron Capturer (Most reliable, no external process)
-            logToFile('Trying Native capture (Electron desktopCapturer)...');
-            sources = await Promise.race([
-                captureWithNative(),
-                new Promise((_, reject) => setTimeout(() => reject(new Error('Native capture timeout')), 15000))
-            ]);
-        } catch (e) {
-            logToFile(`Native capture failed or timed out: ${e.message}`, 'WARN');
-        }
-
-        if (!sources) {
-            // Priority 2: PowerShell Fallback (v2 - C# Compiled)
-            try {
-                logToFile('Native failed, trying PowerShell C# fallback...');
-                sources = await captureWithPowerShell();
-            } catch (pE) {
-                logToFile(`PowerShell fallback failed: ${pE.message}`, 'ERROR');
-            }
-        }
-
-        if (!sources) {
-            // Priority 3: screenshot-desktop library (As last resort)
-            try {
-                logToFile('PowerShell failed, trying library: screenshot-desktop...');
-                sources = await Promise.race([
-                    screenshot({ format: 'png' }),
-                    new Promise((_, reject) => setTimeout(() => reject(new Error('Library capture timeout')), 10000))
-                ]);
-            } catch (libE) {
-                logToFile(`Library capture failed: ${libE.message}`, 'ERROR');
-            }
-        }
-
-        if (!sources) {
-            logToFile('CRITICAL: All capture methods failed for monitoring', 'ERROR');
-            return;
-        }
-
-        const img = nativeImage.createFromBuffer(sources);
-        const compressedBase64 = img.resize({ width: 1280 }).toJPEG(60).toString('base64');
-        const screenshotUrl = `data:image/jpeg;base64,${compressedBase64}`;
-
-        logToFile('Screenshot captured successfully.');
-
-        // 2. Get Metadata
-        let activeApp = 'Unknown';
-        let activeWindow = 'Unknown';
-        let idleTime = 0;
-
-        if (os.platform() === 'win32') {
-            logToFile('Fetching window and idle info (Windows)...');
-            const winInfo = await getActiveWindowWindows();
-            activeApp = winInfo.app;
-            activeWindow = winInfo.title;
-            idleTime = await getIdleTimeWindows();
-        }
-
-
-        const location = await getLocation();
-
-        const payload = {
-            activeApp,
-            activeWindow,
-            idleTime,
-            screenshotUrl,
-            location,
-            timestamp: new Date().toISOString()
-        };
-
-        // 3. Upload
-        logToFile(`Uploading activity to ${API_BASE_URL}/agent/activity...`);
-        try {
-            await axios.post(`${API_BASE_URL}/agent/activity`, {
-                employeeId: config.employeeId,
-                data: payload
-            }, {
-                headers: { 'X-Agent-Auth': config.token },
-                timeout: 60000 // Increased timeout for slow connections
-            });
-            logToFile('Activity and Screenshot uploaded successfully');
-        } catch (uploadError) {
-            logToFile(`Upload failed, adding to queue: ${uploadError.message}`, 'ERROR');
-            addToQueue(payload);
-        }
-    } catch (error) {
-        logToFile(`Capture cycle fatal error: ${error.message}`, 'ERROR');
-    }
-}
-
-let trackingIntervals = [];
-
-function checkStorageHealth() {
-    if (config.isInitialized && !fs.existsSync(STORAGE_PATH)) {
-        console.log('Storage file missing! Stopping tracking and requesting re-setup.');
-        stopTracking();
-        config.isInitialized = false;
-        mainWindow.show();
-        new Notification({
-            title: 'Action Required',
-            body: 'Agent configuration missing. Please register again.'
-        }).show();
-    }
-}
-
-function stopTrackingLocal() {
-    trackingIntervals.forEach(clearInterval);
-    trackingIntervals = [];
-    stopLiveMode();
-    if (socket) {
-        socket.disconnect();
-        socket = null;
-    }
-}
-
-/** Tell backend to clock out (system shutdown, exit, agent stopped). */
-async function requestServerClockOut() {
-    if (!config.isInitialized || !config.employeeId) return;
-    try {
-        logToFile('Sending clock-out to server (shutdown / exit)...');
-        await axios.post(
-            `${API_BASE_URL}/agent/stop-tracking`,
-            { employeeId: config.employeeId },
-            {
-                headers: config.token ? { 'X-Agent-Auth': config.token } : {},
-                timeout: 10000,
-            }
-        );
-        logToFile('Clock-out successful');
-    } catch (e) {
-        logToFile(`Clock-out request failed: ${e.message}`, 'WARN');
+        console.log(`[ActivityLog] Logged successfully. App: ${dataPayload.activeApp}, Task: ${agentState.activeTaskId || 'None'}, Violation: ${dataPayload.violation ? dataPayload.violationType : 'None'}`);
+        return res.data;
+    } catch (err) {
+        console.error(`[ActivityLog] Upload failed: ${err.response?.data?.message || err.message}`);
     }
 }
 
 /**
- * Stop local tracking. Pass clockOut: true only when employee is leaving (shutdown, exit, deapproved).
+ * Activity-Triggered Instant Screenshot Handler (Requirement 3)
  */
-function stopTracking({ clockOut = false } = {}) {
-    stopTrackingLocal();
-    if (clockOut && config.employeeId) {
-        return requestServerClockOut();
+async function handleViolationScreenshot(appName, windowTitle, violationType) {
+    const violationKey = `${appName}:${windowTitle}`;
+    const now = Date.now();
+
+    // Debounce / Cooldown check: avoid continuous spam for the same violation
+    if (lastViolation.key === violationKey && (now - lastViolation.timestamp) < VIOLATION_COOLDOWN_MS) {
+        return; // Continuous violation within cooldown, skip duplicate screenshot
     }
-    return Promise.resolve();
+
+    lastViolation.key = violationKey;
+    lastViolation.timestamp = now;
+
+    console.warn(`[VIOLATION DETECTED] App: "${appName}", Title: "${windowTitle}". Triggering INSTANT screenshot...`);
+
+    try {
+        const screenshotUrl = await captureScreenBase64();
+        
+        await sendActivityLog({
+            activeApp: appName,
+            activeWindow: windowTitle,
+            idleTime: 0,
+            screenshotUrl,
+            timestamp: new Date().toISOString(),
+            violation: true,
+            violationType,
+            taskId: agentState.activeTaskId || null
+        });
+
+        // Notify renderer UI if open
+        if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('agent:violation-detected', {
+                appName,
+                windowTitle,
+                violationType,
+                taskId: agentState.activeTaskId || null,
+                timestamp: new Date().toISOString()
+            });
+        }
+    } catch (err) {
+        console.error('[Violation Screenshot] Capture failed:', err.message);
+    }
 }
 
-let isShuttingDown = false;
+// ─── Idle Activity Reporting to Backend (Requirement 4 & 5) ─────────────────
+async function sendIdleActivityEvent({ status, idleDuration, timestamp, idleStartTime, taskId }) {
+    if (!agentState.employeeId || !agentState.agentToken) return;
 
-async function handleSystemShutdown() {
-    if (isShuttingDown) return;
-    isShuttingDown = true;
-    stopTrackingLocal();
-    await requestServerClockOut();
-}
+    try {
+        const payload = {
+            employeeId: agentState.employeeId,
+            taskId: taskId || agentState.activeTaskId || null,
+            status, // 'IDLE' | 'RESUMED' | 'ACTIVE'
+            idleDuration: idleDuration || 0,
+            idleStartTime,
+            timestamp: timestamp || new Date().toISOString()
+        };
 
-function createTray() {
-    tray = new Tray(path.join(__dirname, 'icon.png')); // Ensure you have an icon.png
-    const contextMenu = Menu.buildFromTemplate([
-        { label: 'Show Agent', click: () => mainWindow.show() },
-        { label: 'Force Sync', click: () => processQueue() },
-        { type: 'separator' },
-        {
-            label: 'Exit',
-            click: async () => {
-                app.isQuitting = true;
-                await handleSystemShutdown();
-                app.quit();
+        const res = await axios.post(`${API_URL}/api/agent/idle-activity`, payload, {
+            headers: {
+                'X-Agent-Auth': agentState.agentToken,
+                'Content-Type': 'application/json'
             },
-        }
-    ]);
-    tray.setToolTip('Insightful Monitoring Agent');
-    tray.setContextMenu(contextMenu);
-    tray.on('double-click', () => mainWindow.show());
-}
-
-function createWindow() {
-    mainWindow = new BrowserWindow({
-        width: 450,
-        height: 700,
-        resizable: false,
-        icon: path.join(__dirname, 'icon.png'),
-        webPreferences: {
-            preload: path.join(__dirname, 'preload.js'),
-        },
-    });
-
-    mainWindow.loadFile('index.html');
-
-    mainWindow.on('close', (event) => {
-        if (!app.isQuitting) {
-            event.preventDefault();
-            mainWindow.hide();
-        }
-    });
-}
-
-async function checkDeviceRecovery() {
-    const deviceId = getStrongDeviceId();
-    console.log(`Checking for existing registration for device: ${deviceId}`);
-
-    try {
-        const response = await axios.get(`${API_BASE_URL}/agent/check-device/${deviceId}`);
-        if (response.data.success) {
-            const data = response.data.data;
-            console.log('Device recognized by server! Auto-recovering session...');
-
-            config.employeeId = data.employeeId;
-            config.employeeName = data.employeeName;
-            config.employeeEmail = data.employeeEmail;
-            config.token = data.token;
-            config.deviceId = deviceId;
-            config.isApproved = (data.status === 'active');
-            config.isInitialized = true;
-
-            saveStorage();
-            startTracking();
-            return true;
-        }
-    } catch (error) {
-        console.log('Device recovery failed or device not registered.');
-    }
-    return false;
-}
-
-// --- IPC HANDLERS ---
-
-ipcMain.handle('get-device-id', () => config.deviceId);
-
-ipcMain.handle('get-invite-prefill', () => ({ ...pendingInvite }));
-
-ipcMain.handle('complete-setup', async (event, data) => {
-    try {
-        const inviteToken = data.inviteToken || pendingInvite.token || config.pendingInviteToken;
-
-        if (pendingInvite.emailLocked && pendingInvite.email) {
-            const submitted = (data.email || '').trim().toLowerCase();
-            const expected = pendingInvite.email.trim().toLowerCase();
-            if (submitted !== expected) {
-                return { success: false, error: 'Email must match your invitation address.' };
-            }
-        }
-
-        const response = await axios.post(`${API_BASE_URL}/agent/register`, {
-            email: data.email,
-            password: data.password,
-            name: data.name,
-            deviceId: config.deviceId,
-            inviteToken: inviteToken || undefined,
-            systemInfo: {
-                platform: os.platform(),
-                release: os.release(),
-                arch: os.arch()
-            }
+            timeout: 10000
         });
 
-        if (response.data.success) {
-            config.employeeId = response.data.data.agent.employeeId;
-            config.token = response.data.data.token;
-            config.employeeName = data.name;
-            config.employeeEmail = data.email;
-            config.isInitialized = true;
-            config.isApproved = false; // New registrations are always pending
-            config.captureIntervalMs = 30000;
-            config.pendingInviteToken = null;
-            pendingInvite = { token: null, email: null, fullName: null, emailLocked: false };
-            config.permissions = {
-                screen: false,
-                location: false,
-                idle: false,
-                completed: false,
-                grantedAt: null
-            };
-            saveStorage();
-
-            // Check status immediately
-            checkApprovalStatus();
-            connectSocket(); // Start listening for realtime 'agent:approved' event
-            return { success: true };
-        }
-    } catch (error) {
-        const backendMsg = error?.response?.data?.message || error?.response?.data?.error;
-        const errorMessage = backendMsg || error.message || 'Setup failed';
-        console.error('Setup failed:', errorMessage);
-        logToFile(`Setup failed: ${errorMessage}`, 'ERROR');
-        return { success: false, error: errorMessage };
+        console.log(`[SmartIdle] Idle event '${status}' reported to backend. Email alert sent: ${res.data?.data?.emailSent ? 'Yes' : 'Simulated'}`);
+        return res.data;
+    } catch (err) {
+        console.error(`[SmartIdle] Failed to report idle event '${status}':`, err.response?.data?.message || err.message);
     }
-    return { success: false, error: 'Registration failed. Please try again.' };
-});
+}
 
-ipcMain.handle('get-permissions-state', () => config.permissions || {});
+/**
+ * Periodically evaluate system idle time from OS
+ * Detects transitions between ACTIVE and IDLE without recording text/passwords
+ */
+async function checkIdleActivity() {
+    if (!agentState.isTracking && agentState.status !== 'active') return;
 
-ipcMain.handle('complete-permissions', (event, permissions) => {
-    const current = config.permissions || {};
-    config.permissions = {
-        screen: Boolean(permissions?.screen ?? current.screen),
-        location: Boolean(permissions?.location ?? current.location),
-        idle: Boolean(permissions?.idle ?? current.idle),
-        completed: Boolean(permissions?.completed ?? current.completed),
-        grantedAt: permissions?.grantedAt || current.grantedAt || null
-    };
-    saveStorage();
+    const idleSeconds = getSystemInactivitySeconds();
+    idleState.lastIdleSeconds = idleSeconds;
+    const now = Date.now();
+    const threshold = idleConfig.thresholdSeconds;
 
-    // If approval was already granted before permissions were completed,
-    // start tracking immediately so user does not need to restart the agent.
-    if (config.permissions.completed) {
-        if (config.isApproved) {
-            startTracking();
-        } else {
-            checkApprovalStatus();
-        }
-    }
+    // Detect Transition: ACTIVE -> IDLE
+    if (idleSeconds >= threshold) {
+        if (idleState.currentStatus !== 'IDLE') {
+            idleState.currentStatus = 'IDLE';
+            idleState.idleStartTime = new Date(now - (idleSeconds * 1000)).toISOString();
+            console.log(`[SmartIdle] IDLE DETECTED: No mouse/keyboard input for ${idleSeconds}s (Threshold: ${threshold}s).`);
 
-    return { success: true };
-});
+            // Send IDLE event once per idle session (prevents repeated spam)
+            if (!idleState.hasSentIdleAlert) {
+                idleState.hasSentIdleAlert = true;
+                await sendIdleActivityEvent({
+                    status: 'IDLE',
+                    idleDuration: idleSeconds,
+                    timestamp: new Date().toISOString(),
+                    idleStartTime: idleState.idleStartTime,
+                    taskId: agentState.activeTaskId || null
+                });
 
-ipcMain.handle('request-location', async () => {
-    const loc = await getLocation();
-    if (loc) return { success: true, coords: { latitude: loc.lat, longitude: loc.lon } };
-    return { success: false, error: 'Failed to fetch location via IP service' };
-});
-
-ipcMain.handle('run-health-check', async () => {
-    const results = {
-        connectivity: { status: 'loading', message: 'Checking...' },
-        powershell: { status: 'loading', message: 'Checking...' },
-        screen: { status: 'loading', message: 'Checking...' },
-        storage: { status: 'loading', message: 'Checking...' }
-    };
-
-    // 1. Connectivity
-    try {
-        await axios.get(`${SERVER_URL}/api/health`, { timeout: 5000 });
-        results.connectivity = { status: 'pass', message: 'Connected to live server' };
-    } catch (e) {
-        if (e.response) {
-            // Any HTTP response (even 401/403/404) means the server is reachable and running
-            results.connectivity = { status: 'pass', message: 'Connected to live server' };
-        } else {
-            results.connectivity = { status: 'fail', message: `Server unreachable: ${e.message}` };
-        }
-    }
-
-    // 2. PowerShell
-    try {
-        const out = execSync('powershell -NoProfile -Command "Write-Output OK"', { timeout: 5000 }).toString().trim();
-        if (out === 'OK') {
-            results.powershell = { status: 'pass', message: 'PowerShell scripts enabled' };
-        } else {
-            throw new Error('Invalid output');
-        }
-    } catch (e) {
-        results.powershell = { status: 'fail', message: 'PowerShell restricted or blocked' };
-    }
-
-    // 3. Screen Capture
-    try {
-        const sources = await desktopCapturer.getSources({ types: ['screen'], thumbnailSize: { width: 1, height: 1 } });
-        if (sources && sources.length > 0) {
-            results.screen = { status: 'pass', message: 'Screen capture permitted' };
-        } else {
-            results.screen = { status: 'fail', message: 'Screen access blocked by OS' };
-        }
-    } catch (e) {
-        results.screen = { status: 'fail', message: `Capture error: ${e.message}` };
-    }
-
-    // 4. Storage
-    try {
-        fs.writeFileSync(path.join(getStorageDir(), '.health-test'), 'test');
-        fs.unlinkSync(path.join(getStorageDir(), '.health-test'));
-        results.storage = { status: 'pass', message: 'Storage write access OK' };
-    } catch (e) {
-        results.storage = { status: 'fail', message: 'Storage folder protected' };
-    }
-
-    return results;
-});
-
-ipcMain.handle('check-screen-permission', async () => {
-    try {
-        const screenshot = require('screenshot-desktop');
-        try {
-            // Take a small test screenshot to verify permission
-            await screenshot({ format: 'png' });
-            console.log('[Agent] Screen permission verified via screenshot-desktop');
-            return true;
-        } catch (e) {
-            console.warn('[Agent] Primary screen check failed, trying fallbacks...');
-
-            // Check if we can at least get source list (macOS/Linux style check, but good for Electron)
-            const sources = await desktopCapturer.getSources({ types: ['screen'], thumbnailSize: { width: 1, height: 1 } });
-            if (sources && sources.length > 0) {
-                console.log('[Agent] Screen permission verified via desktopCapturer');
-                return true;
-            }
-
-            return false;
-        }
-    } catch (e) {
-        console.error('Screen permission check error:', e.message);
-        return false;
-    }
-});
-
-async function checkApprovalStatus() {
-    if (!config.isInitialized || !config.employeeId) return;
-
-    try {
-        const response = await axios.get(`${API_BASE_URL}/agent/status/${config.employeeId}`, {
-            headers: { 'Authorization': `Bearer ${config.token}` }
-        });
-
-        if (response.data.success) {
-            const serverStatus = response.data.data.status;
-            const wasApproved = config.isApproved;
-            config.isApproved = (serverStatus === 'active');
-
-            if (config.isApproved !== wasApproved) {
-                saveStorage();
-                if (config.isApproved) {
-                    startTracking();
-                    if (mainWindow) mainWindow.webContents.send('status-updated', 'approved');
-
-                    // Show activation notification only when transitioning to active
-                    new Notification({
-                        title: 'Insightful Agent Active',
-                        body: 'Administrator has approved your device. Monitoring has started.',
-                        icon: path.join(__dirname, 'icon.png')
-                    }).show();
-                } else {
-                    stopTracking({ clockOut: true });
-                    if (mainWindow) mainWindow.webContents.send('status-updated', 'pending');
+                // Notify renderer UI if window open
+                if (mainWindow && !mainWindow.isDestroyed()) {
+                    mainWindow.webContents.send('idle:state-changed', {
+                        status: 'IDLE',
+                        idleDuration: idleSeconds,
+                        idleStartTime: idleState.idleStartTime
+                    });
                 }
             }
         }
-    } catch (error) {
-        console.error('Status check failed:', error.message);
+    } else {
+        // Employee has active mouse/keyboard input (idleSeconds < threshold)
+        idleState.lastActiveTimestamp = now;
 
-        // If 401 (Unauthorized), 403 (Forbidden), or 404 (Not Found), it means 
-        // the agent is no longer valid on the server. We should reset.
-        if (error.response && [401, 403, 404].includes(error.response.status)) {
-            console.log(`Agent validation failed (Status: ${error.response.status}). Resetting...`);
-            stopTracking({ clockOut: true });
-            config.isInitialized = false;
-            config.isApproved = false;
+        // Detect Transition: IDLE -> RESUMED / ACTIVE
+        if (idleState.currentStatus === 'IDLE') {
+            const idleEndTime = new Date().toISOString();
+            const totalIdleDuration = idleState.idleStartTime
+                ? Math.max(threshold, Math.round((now - new Date(idleState.idleStartTime).getTime()) / 1000))
+                : idleSeconds;
 
-            // Clear local storage
-            if (fs.existsSync(STORAGE_PATH)) fs.unlinkSync(STORAGE_PATH);
+            console.log(`[SmartIdle] RESUMED: Mouse/keyboard activity resumed after ${totalIdleDuration}s. Returning to ACTIVE state.`);
 
-            // Show registration form again
-            if (mainWindow) {
-                mainWindow.webContents.send('status-updated', 'deleted');
-                mainWindow.show();
+            idleState.currentStatus = 'ACTIVE';
+            idleState.hasSentIdleAlert = false; // Reset for next idle session
+
+            await sendIdleActivityEvent({
+                status: 'RESUMED',
+                idleDuration: totalIdleDuration,
+                timestamp: idleEndTime,
+                idleStartTime: idleState.idleStartTime,
+                taskId: agentState.activeTaskId || null
+            });
+
+            // Notify renderer UI
+            if (mainWindow && !mainWindow.isDestroyed()) {
+                mainWindow.webContents.send('idle:state-changed', {
+                    status: 'ACTIVE',
+                    idleDuration: 0
+                });
             }
+
+            idleState.idleStartTime = null;
         }
     }
 }
 
-ipcMain.handle('get-approval-status', () => {
-    if (!config.isInitialized) return 'setup';
-    if (!config.permissions || !config.permissions.completed) return 'permissions';
-    return config.isApproved ? 'approved' : 'pending';
+// ─── Active Window & Activity Monitoring Loop ────────────────────────────────
+let activityMonitoringInterval = null;
+let routineScreenshotInterval = null;
+let heartbeatInterval = null;
+let idleMonitoringInterval = null;
+
+function startMonitoringLoops() {
+    if (agentState.isTracking) return;
+    agentState.isTracking = true;
+
+    console.log('[Desktop Agent] Monitoring loops started.');
+
+    // 1. High frequency Window & Blacklist Detection (every 3 seconds)
+    activityMonitoringInterval = setInterval(async () => {
+        try {
+            const { appName, windowTitle } = await getActiveWindowInfo();
+
+            // Check blacklist violation
+            const { isViolation, violationType } = checkBlacklistViolation(appName, windowTitle);
+
+            if (isViolation) {
+                // Instant violation screenshot triggered!
+                await handleViolationScreenshot(appName, windowTitle, violationType);
+            }
+        } catch (err) {
+            console.error('[Window Check Error]:', err.message);
+        }
+    }, 3000);
+
+    // 2. Smart Idle & Inactivity Monitoring (every 5 seconds)
+    idleMonitoringInterval = setInterval(checkIdleActivity, idleConfig.checkIntervalMs);
+    checkIdleActivity(); // Immediate first check
+
+    // 3. Routine Screenshot & Activity Log (every 3 minutes)
+    routineScreenshotInterval = setInterval(async () => {
+        try {
+            const { appName, windowTitle } = await getActiveWindowInfo();
+            const screenshotUrl = await captureScreenBase64().catch(() => null);
+
+            await sendActivityLog({
+                activeApp: appName,
+                activeWindow: windowTitle,
+                idleTime: idleState.lastIdleSeconds || 0,
+                screenshotUrl,
+                timestamp: new Date().toISOString(),
+                violation: false,
+                taskId: agentState.activeTaskId || null
+            });
+        } catch (err) {
+            console.error('[Routine Screenshot Error]:', err.message);
+        }
+    }, 3 * 60 * 1000);
+
+    // 4. Heartbeat (every 60 seconds)
+    heartbeatInterval = setInterval(sendHeartbeat, 60 * 1000);
+    sendHeartbeat(); // Immediate first pulse
+}
+
+function stopMonitoringLoops() {
+    if (activityMonitoringInterval) clearInterval(activityMonitoringInterval);
+    if (routineScreenshotInterval) clearInterval(routineScreenshotInterval);
+    if (heartbeatInterval) clearInterval(heartbeatInterval);
+    if (idleMonitoringInterval) clearInterval(idleMonitoringInterval);
+    activityMonitoringInterval = null;
+    routineScreenshotInterval = null;
+    heartbeatInterval = null;
+    idleMonitoringInterval = null;
+    agentState.isTracking = false;
+    console.log('[Desktop Agent] Monitoring loops stopped.');
+}
+
+// ─── Agent Registration & IPC System Info Handlers ────────────────────────────
+ipcMain.handle('agent:get-system-info', () => {
+    return {
+        deviceId: agentState.deviceId,
+        hostname: os.hostname(),
+        platform: os.platform(),
+        arch: os.arch(),
+        activeTaskId: agentState.activeTaskId
+    };
 });
 
-ipcMain.on('close-window', () => {
-    mainWindow.hide();
+ipcMain.handle('agent:get-status', () => {
+    return {
+        ...agentState
+    };
 });
 
-function startTracking(isStartup = false) {
-    if (!config.permissions || !config.permissions.completed) {
-        console.log('Skipping tracking: Required permissions are not completed yet.');
-        if (mainWindow) {
-            mainWindow.webContents.send('status-updated', 'permissions');
+ipcMain.handle('agent:register', async (_event, credentials) => {
+    try {
+        const payload = {
+            ...credentials,
+            deviceId: agentState.deviceId,
+            systemInfo: {
+                hostname: os.hostname(),
+                platform: os.platform(),
+                arch: os.arch()
+            }
+        };
+
+        const res = await axios.post(`${API_URL}/api/agent/register`, payload);
+        if (res.data?.success && res.data?.data) {
+            agentState.employeeId = res.data.data.agent.employeeId;
+            agentState.agentToken = res.data.data.token;
+            agentState.status = res.data.data.agent.status;
+
+            if (agentState.status === 'active') {
+                startMonitoringLoops();
+            }
+            return { success: true, agent: res.data.data.agent };
         }
-        return;
+        return { success: false, message: res.data?.message || 'Registration failed' };
+    } catch (err) {
+        return { success: false, message: err.response?.data?.message || err.message };
     }
+});
 
-    if (!config.isApproved) {
-        console.log('Skipping tracking: Agent not approved.');
-        if (mainWindow) mainWindow.webContents.send('status-updated', 'pending');
-
-        if (!statusCheckInterval) {
-            statusCheckInterval = setInterval(checkApprovalStatus, 60000); // Check every 1 min
-        }
-        // Force an immediate check on startup
-        if (isStartup) checkApprovalStatus();
-        return;
+ipcMain.handle('agent:manual-capture', async () => {
+    try {
+        const { appName, windowTitle } = await getActiveWindowInfo();
+        const screenshotUrl = await captureScreenBase64();
+        await sendActivityLog({
+            activeApp: appName,
+            activeWindow: windowTitle,
+            idleTime: 0,
+            screenshotUrl,
+            timestamp: new Date().toISOString(),
+            violation: false,
+            taskId: agentState.activeTaskId || null
+        });
+        return { success: true };
+    } catch (err) {
+        return { success: false, message: err.message };
     }
+});
 
-    // Even if local config says approved, do one check on startup to be sure
-    if (isStartup) {
-        console.log('App startup: Verifying existing approval with server...');
-        checkApprovalStatus();
-        // If it was already approved, we can start, but checkApprovalStatus will stop it if server says 404
-    }
+// ─── Electron Window Creation ────────────────────────────────────────────────
+function createWindow() {
+    mainWindow = new BrowserWindow({
+        width: 460,
+        height: 680,
+        resizable: true,
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js'),
+            contextIsolation: true,
+            nodeIntegration: false,
+        },
+        title: 'EMS Desktop Tracker Agent',
+        autoHideMenuBar: true
+    });
 
-    // Agent is approved, clear frequent check and start real tracking
-    if (statusCheckInterval) {
-        clearInterval(statusCheckInterval);
-        statusCheckInterval = null;
-    }
+    mainWindow.loadFile(path.join(__dirname, 'index.html'));
 
-    stopTracking(); // Clear existing if any
-
-    connectSocket(); // Enable real-time commands
-
-    const frequencyMs = Math.max(Number(config.captureIntervalMs) || 30000, 30000);
-    console.log(`[Agent] Tracking started with interval: ${Math.round(frequencyMs / 1000)} sec`);
-
-    trackingIntervals.push(setInterval(captureAndUpload, frequencyMs));
-    trackingIntervals.push(setInterval(processQueue, 300000)); // Process queue every 5 mins
-    trackingIntervals.push(setInterval(checkStorageHealth, 60000)); // Check health every 1 min
-
-    // Immediate capture on activation
-    captureAndUpload();
-
-    // Send initial heartbeat
-    axios.post(`${API_BASE_URL}/agent/heartbeat`, { deviceId: config.deviceId })
-        .catch(e => console.log('Initial heartbeat failed'));
-
-    // Only show notification if we just TRANSITIONED to active, not every startup
-    // (This will be handled inside checkApprovalStatus transition logic now)
-}
-
-// --- APP LIFECYCLE ---
-
-if (process.defaultApp) {
-    if (process.argv.length >= 2) {
-        app.setAsDefaultProtocolClient('ems-tracker', process.execPath, [path.resolve(process.argv[1])]);
-    }
-} else {
-    app.setAsDefaultProtocolClient('ems-tracker');
-}
-
-const gotSingleInstanceLock = app.requestSingleInstanceLock();
-if (!gotSingleInstanceLock) {
-    app.quit();
-} else {
-    app.on('second-instance', (_event, argv) => {
-        const token = parseInviteTokenFromArgs(argv);
-        if (token) loadInvitePreview(token);
-        if (mainWindow) {
-            mainWindow.show();
-            mainWindow.focus();
-        }
+    mainWindow.on('closed', () => {
+        mainWindow = null;
     });
 }
 
-app.on('open-url', (event, url) => {
-    event.preventDefault();
-    const token = parseInviteTokenFromArgs([url]);
-    if (token) loadInvitePreview(token);
-});
-
-// --- APP LIFECYCLE ---
-
-app.whenReady().then(async () => {
-    // Separate this instance's ID so OS treats it uniquely if it's a different download
-    if (process.platform === 'win32') {
-        const uniqueId = `com.ems.tracker.${exeIdentity.replace(/[^a-zA-Z0-9]/g, '')}`;
-        app.setAppUserModelId(uniqueId);
-    }
-
-    loadStorage();
+app.whenReady().then(() => {
     createWindow();
-    createTray();
 
-    const inviteToken = parseInviteTokenFromArgs(process.argv) || config.pendingInviteToken;
-    if (inviteToken && !config.isInitialized) {
-        await loadInvitePreview(inviteToken);
-    }
-
-    if (!config.isInitialized) {
-        checkDeviceRecovery().then(recovered => {
-            if (!recovered && mainWindow) {
-                mainWindow.show();
-            }
-        });
-    } else {
-        // Run completely in background but verify First
-        startTracking(true);
-        if (!config.permissions || !config.permissions.completed) {
-            mainWindow.show();
-        }
-    }
-
-    // Auto-start on boot
-    app.setLoginItemSettings({
-        openAtLogin: true,
-        path: app.getPath('exe')
+    app.on('activate', () => {
+        if (BrowserWindow.getAllWindows().length === 0) createWindow();
     });
 });
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
-        // Don't quit, keep tray alive
-    }
-});
-
-app.on('before-quit', async (event) => {
-    app.isQuitting = true;
-    if (!isShuttingDown && config.employeeId) {
-        event.preventDefault();
-        await handleSystemShutdown();
+        stopMonitoringLoops();
         app.quit();
     }
 });
 
-// Windows / macOS system shutdown or restart
-if (powerMonitor) {
-    powerMonitor.on('shutdown', () => {
-        handleSystemShutdown().catch(() => { });
-    });
-}
+ipcMain.handle('idle:get-status', () => {
+    return {
+        ...idleState,
+        inactivitySeconds: getSystemInactivitySeconds(),
+        thresholdSeconds: idleConfig.thresholdSeconds
+    };
+});
+
+ipcMain.on('idle:set-threshold', (_event, seconds) => {
+    const sec = parseInt(seconds, 10);
+    if (!isNaN(sec) && sec > 0) {
+        idleConfig.thresholdSeconds = sec;
+        console.log(`[SmartIdle] Inactivity threshold updated to ${sec}s (${Math.round(sec / 60)}m).`);
+    }
+});
+
+module.exports = {
+    agentState,
+    idleState,
+    idleConfig,
+    checkIdleActivity,
+    sendIdleActivityEvent,
+    checkBlacklistViolation,
+    sendHeartbeat,
+    sendActivityLog,
+    handleViolationScreenshot
+};

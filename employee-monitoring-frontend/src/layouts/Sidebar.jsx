@@ -35,6 +35,7 @@ const navItems = [
     { name: 'Teams', icon: Users, path: '/teams', key: 'teams' },
     { name: 'Screenshots', icon: Monitor, path: '/screenshots', key: 'screenshots' },
     { name: 'Time & Attendance', icon: Clock, path: '/time-attendance', key: 'timeAttendance' },
+    { name: 'Activities', icon: Activity, path: '/activities', key: 'activity' },
     { name: 'Projects', icon: CheckSquare, path: '/projects', key: 'projects' },
     { name: 'Tasks', icon: CheckSquare, path: '/tasks', key: 'tasks' },
   
@@ -48,7 +49,7 @@ const reportSubItems = [
     { name: 'Schedule Adherence', path: '/reports/schedule-adherence' },
     { name: 'Workload Distribution', path: '/reports/workload-distribution' },
     { name: 'Apps & Websites', path: '/reports/apps-websites' },
-    { name: 'Location Insights', path: '/reports/location-insights' },
+    { name: 'Office vs Remote', path: '/reports/location-insights' },
 ];
 
 export function Sidebar({ collapsed, setCollapsed, onMobileClose }) {

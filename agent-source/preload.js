@@ -1,27 +1,63 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
-contextBridge.exposeInMainWorld('agentAPI', {
-  getDeviceInfo: () => ipcRenderer.invoke('get-device-id'),
-  getInvitePrefill: () => ipcRenderer.invoke('get-invite-prefill'),
-  onInviteLoaded: (callback) => ipcRenderer.on('invite-loaded', (_event, data) => callback(data)),
-  completeSetup: (data) => ipcRenderer.invoke('complete-setup', data),
-  getPermissionsState: () => ipcRenderer.invoke('get-permissions-state'),
-  completePermissions: (data) => ipcRenderer.invoke('complete-permissions', data),
-  getApprovalStatus: () => ipcRenderer.invoke('get-approval-status'),
-  closeWindow: () => ipcRenderer.send('close-window'),
-  requestLocation: () => ipcRenderer.invoke('request-location'),
-  checkScreenPermission: () => ipcRenderer.invoke('check-screen-permission'),
-  onStatusUpdated: (callback) => ipcRenderer.on('status-updated', (_event, status) => callback(status)),
-  runHealthCheck: () => ipcRenderer.invoke('run-health-check'),
+/**
+ * Preload Script - Secure IPC Bridge between Frontend and Electron Main Process
+ */
+contextBridge.exposeInMainWorld('electronAPI', {
+    // ─── Task ID Linking ──────────────────────────────────────────────────
+    setActiveTask: (taskId) => {
+        ipcRenderer.send('task:set-active', taskId);
+    },
+    getActiveTask: () => {
+        return ipcRenderer.invoke('task:get-active');
+    },
+    onActiveTaskChanged: (callback) => {
+        const handler = (_event, taskId) => callback(taskId);
+        ipcRenderer.on('task:active-updated', handler);
+        return () => ipcRenderer.removeListener('task:active-updated', handler);
+    },
+
+    // ─── Agent System Info & Status ───────────────────────────────────────
+    getSystemInfo: () => ipcRenderer.invoke('agent:get-system-info'),
+    getAgentStatus: () => ipcRenderer.invoke('agent:get-status'),
+    registerAgent: (credentials) => ipcRenderer.invoke('agent:register', credentials),
+    triggerManualCapture: () => ipcRenderer.invoke('agent:manual-capture'),
+    
+    // ─── Smart Idle & Inactivity Monitoring ──────────────────────────────
+    getIdleStatus: () => ipcRenderer.invoke('idle:get-status'),
+    setIdleThreshold: (seconds) => ipcRenderer.send('idle:set-threshold', seconds),
+    onIdleStateChanged: (callback) => {
+        const handler = (_event, state) => callback(state);
+        ipcRenderer.on('idle:state-changed', handler);
+        return () => ipcRenderer.removeListener('idle:state-changed', handler);
+    },
+
+    // ─── Event Listeners ──────────────────────────────────────────────────
+    onViolationDetected: (callback) => {
+        const handler = (_event, violation) => callback(violation);
+        ipcRenderer.on('agent:violation-detected', handler);
+        return () => ipcRenderer.removeListener('agent:violation-detected', handler);
+    }
 });
 
-window.addEventListener('DOMContentLoaded', () => {
-  const replaceText = (selector, text) => {
-    const element = document.getElementById(selector);
-    if (element) element.innerText = text;
-  };
+// Backward compatibility alias for 'window.electron'
+contextBridge.exposeInMainWorld('electron', {
+    sendTask: (taskId) => ipcRenderer.send('task:set-active', taskId),
+    getTask: () => ipcRenderer.invoke('task:get-active')
+});
 
-  for (const type of ['chrome', 'node', 'electron']) {
-    replaceText(`${type}-version`, process.versions[type]);
-  }
+// Agent API compatibility from origin/main
+contextBridge.exposeInMainWorld('agentAPI', {
+    getDeviceInfo: () => ipcRenderer.invoke('get-device-id'),
+    getInvitePrefill: () => ipcRenderer.invoke('get-invite-prefill'),
+    onInviteLoaded: (callback) => ipcRenderer.on('invite-loaded', (_event, data) => callback(data)),
+    completeSetup: (data) => ipcRenderer.invoke('complete-setup', data),
+    getPermissionsState: () => ipcRenderer.invoke('get-permissions-state'),
+    completePermissions: (data) => ipcRenderer.invoke('complete-permissions', data),
+    getApprovalStatus: () => ipcRenderer.invoke('get-approval-status'),
+    closeWindow: () => ipcRenderer.send('close-window'),
+    requestLocation: () => ipcRenderer.invoke('request-location'),
+    checkScreenPermission: () => ipcRenderer.invoke('check-screen-permission'),
+    onStatusUpdated: (callback) => ipcRenderer.on('status-updated', (_event, status) => callback(status)),
+    runHealthCheck: () => ipcRenderer.invoke('run-health-check')
 });
