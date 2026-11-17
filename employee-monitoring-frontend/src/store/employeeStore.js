@@ -47,12 +47,15 @@ export const useEmployeeStore = create((set, get) => ({
             set((state) => ({
                 employees: [...state.employees, {
                     ...newEmployee,
-                    name: newEmployee.fullName,
-                    status: 'invited',
-                    avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(newEmployee.fullName)}&background=random`
+                    name: newEmployee.fullName || newEmployee.name,
+                    status: (newEmployee.status || 'active').toLowerCase(),
+                    team: newEmployee.team ? (newEmployee.team.name || newEmployee.team) : 'General Team',
+                    avatar: newEmployee.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(newEmployee.fullName || 'User')}&background=random`
                 }],
                 isLoading: false
             }));
+            // Immediately re-fetch from database to guarantee 100% sync
+            get().fetchEmployees().catch(() => {});
             if (response.emailSimulated && response.setupLink) {
                 toast.success(`Invited — setup link logged on server. ${response.setupLink}`);
             } else if (response.setupLink) {

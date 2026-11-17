@@ -931,7 +931,7 @@ export function EmployeeManagement() {
     const [showColumnDropdown, setShowColumnDropdown] = useState(false);
 
     // Filter & Pagination States
-    const [activeTab, setActiveTab] = useState('Active');
+    const [activeTab, setActiveTab] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(8);
@@ -955,7 +955,7 @@ export function EmployeeManagement() {
         
         const status = emp.status?.toLowerCase() || '';
         const matchesTab = activeTab === 'All' ? true :
-            activeTab === 'Active' ? ['active', 'idle', 'offline', 'online', 'break'].includes(status) :
+            activeTab === 'Active' ? ['active', 'idle', 'offline', 'online', 'break', 'invited', 'pending'].includes(status) :
             activeTab === 'Pending' ? ['pending', 'invited'].includes(status) :
             activeTab === 'Deactivated' ? status === 'deactivated' :
             status === 'merged';
