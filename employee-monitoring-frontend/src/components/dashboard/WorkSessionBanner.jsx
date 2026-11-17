@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '../../store/authStore';
 import { MonitorCheck, MonitorOff, LogIn, LogOut, Video, VideoOff, Clock } from 'lucide-react';
-import useSocket from '../../hooks/useSocket';
 import { toast } from '../../utils/toastManager';
 
 export function WorkSessionBanner() {
     const { user, isClockedIn, clockIn, clockOut, isOnBreak, toggleBreak, activeAttendance, isTrackerActive, setTrackerActive } = useAuthStore();
     const [elapsedSeconds, setElapsedSeconds] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
-    const { emit } = useSocket();
 
     const isAgentActive = isTrackerActive || user?.agentStatus === 'active';
 
