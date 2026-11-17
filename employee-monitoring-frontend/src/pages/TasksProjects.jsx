@@ -155,7 +155,7 @@ const CreateTaskModal = ({ isOpen, onClose, onSave, defaultStatus = 'To Do', emp
                                             className="p-2.5 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 cursor-pointer flex items-center gap-2 transition-colors"
                                         >
                                             <div className="h-6 w-6 rounded-full bg-slate-200 overflow-hidden flex-shrink-0">
-                                                <img src={e.avatar || `https://i.pravatar.cc/150?u=${e.name}`} alt="" className="h-full w-full object-cover" />
+                                                <img src={e.avatar || `https://ui-avatars.com/api/?background=6366f1&color=fff&name=${encodeURIComponent(e.name || 'User')}`} alt="" className="h-full w-full object-cover" />
                                             </div>
                                             <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{e.name}</span>
                                         </div>
@@ -427,7 +427,7 @@ const EditTaskModal = ({ isOpen, onClose, onSave, task, employees = [], projects
                                         <div key={e.id} onClick={() => { setAssignee(e.name); setAssigneeId(e.id); setShowSuggestions(false); }}
                                             className="p-2.5 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 cursor-pointer flex items-center gap-2 transition-colors">
                                             <div className="h-6 w-6 rounded-full bg-slate-200 overflow-hidden flex-shrink-0">
-                                                <img src={e.avatar || `https://i.pravatar.cc/150?u=${e.name}`} alt="" className="h-full w-full object-cover" />
+                                                <img src={e.avatar || `https://ui-avatars.com/api/?background=6366f1&color=fff&name=${encodeURIComponent(e.name || 'User')}`} alt="" className="h-full w-full object-cover" />
                                             </div>
                                             <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{e.name}</span>
                                         </div>
@@ -554,7 +554,7 @@ const GoalStreamModal = ({ goal, onClose }) => {
                             <div className="flex -space-x-3">
                                 {goal.stakeholders?.map((s, i) => (
                                     <div key={s.id} className="h-10 w-10 rounded-2xl border-2 border-white dark:border-slate-900 bg-slate-100 overflow-hidden shadow-lg hover:-translate-y-1 transition-transform">
-                                        <img src={s.employee?.avatar || `https://i.pravatar.cc/150?u=${s.id}`} className="h-full w-full object-cover" />
+                                        <img src={s.employee?.avatar || `https://ui-avatars.com/api/?background=6366f1&color=fff&name=${encodeURIComponent(s.employee?.fullName || 'User')}`} className="h-full w-full object-cover" />
                                     </div>
                                 ))}
                                 {(!goal.stakeholders || goal.stakeholders.length === 0) && (
@@ -761,7 +761,7 @@ const KanbanColumn = ({ title, tasks, status, color, onAdd, updateTaskStatus, on
                             <div className="flex items-center justify-between pt-3 gap-2 border-t border-dashed border-slate-100 dark:border-slate-800/60 group-hover:border-indigo-100 dark:group-hover:border-slate-700 transition-colors">
                                 <div className="flex items-center gap-2 min-w-0">
                                     <div className="relative h-8 w-8 rounded-xl bg-white dark:bg-slate-800 ring-2 ring-slate-100 dark:ring-slate-800 overflow-hidden shadow-sm shrink-0 group-hover:scale-105 transition-transform">
-                                        <img src={`https://i.pravatar.cc/150?u=${task.assignee}`} alt={task.assignee} className="h-full w-full object-cover" />
+                                        <img src={`https://ui-avatars.com/api/?background=6366f1&color=fff&name=${encodeURIComponent(task.assignee || 'User')}`} alt={task.assignee} className="h-full w-full object-cover" />
                                     </div>
                                     <div className="flex flex-col min-w-0">
                                         <span className="text-[10px] font-black text-slate-800 dark:text-slate-100 tracking-tight truncate max-w-[65px] sm:max-w-[75px] leading-tight">{task.assignee}</span>
@@ -1051,29 +1051,32 @@ export function TasksProjects() {
             metrics = metrics.filter(emp => emp.id === user.employeeId);
         }
 
-        return metrics.map(emp => ({
-            id: emp.id,
-            employee: emp.name,
-            avatar: emp.avatar,
-            reliability: Math.round(emp.utilization || 85),
-            timeliness: Math.round(90 + Math.random() * 8), // Placeholder for now
-            productivity: Math.round(emp.productivity || 80),
-            overall: Math.round((emp.productivity + emp.utilization + 90) / 3),
-            role: emp.role || 'Contributor'
-        })).sort((a, b) => b.overall - a.overall);
-    }, [stats?.empMetrics, role, user?.employeeId]);
+        return metrics.map(emp => {
+            const empTasks = (tasks || []).filter(t => t.assigneeId === emp.id);
+            const completedTasks = empTasks.filter(t => t.status === 'Finalized');
+            const onTimeTasks = completedTasks.filter(t => !t.dueDate || t.dueDate === 'No Date' || new Date(t.dueDate) >= new Date());
+            const timeliness = completedTasks.length > 0 ? Math.round((onTimeTasks.length / completedTasks.length) * 100) : (empTasks.length > 0 ? 100 : 0);
+            const reliability = Math.round(emp.utilization || 0);
+            const productivity = Math.round(emp.productivity || 0);
+            const overall = Math.round((productivity + reliability + (timeliness || 0)) / 3);
+
+            return {
+                id: emp.id,
+                employee: emp.name,
+                avatar: emp.avatar,
+                reliability,
+                timeliness,
+                productivity,
+                overall,
+                role: emp.role || 'Contributor'
+            };
+        }).sort((a, b) => b.overall - a.overall);
+    }, [stats?.empMetrics, role, user?.employeeId, tasks]);
 
     // Dynamic Radar Data
     const radarData = useMemo(() => {
         if (!stats?.empMetrics || stats.empMetrics.length === 0) {
-            return [
-                { subject: 'Code Quality', A: 90, fullMark: 100 },
-                { subject: 'Velocity', A: 85, fullMark: 100 },
-                { subject: 'Communication', A: 92, fullMark: 100 },
-                { subject: 'Reliability', A: 88, fullMark: 100 },
-                { subject: 'Leadership', A: 80, fullMark: 100 },
-                { subject: 'Punctuality', A: 90, fullMark: 100 },
-            ];
+            return [];
         }
 
         // RBAC: For employees, show individual stats. For admins/managers, show team avg.
@@ -1098,25 +1101,22 @@ export function TasksProjects() {
         return [
             { subject: 'Quality', A: Math.round(values.productivity * 0.95), fullMark: 100 },
             { subject: 'Velocity', A: Math.round(values.productivity), fullMark: 100 },
-            { subject: 'Communication', A: 94, fullMark: 100 },
+            { subject: 'Communication', A: Math.round((values.productivity + values.utilization) / 2), fullMark: 100 },
             { subject: 'Reliability', A: Math.round(values.utilization), fullMark: 100 },
             { subject: 'Output', A: Math.round((values.productivity + values.utilization) / 2), fullMark: 100 },
-            { subject: 'Punctuality', A: 92, fullMark: 100 },
+            { subject: 'Punctuality', A: Math.round(values.utilization), fullMark: 100 },
         ];
     }, [stats?.empMetrics, role, user?.employeeId]);
 
-    const productivityChartData = stats?.productivityTrend || [
-        { name: 'Mon', value: 85 }, { name: 'Tue', value: 92 }, { name: 'Wed', value: 78 },
-        { name: 'Thu', value: 95 }, { name: 'Fri', value: 88 }, { name: 'Sat', value: 45 }, { name: 'Sun', value: 40 }
-    ];
+    const productivityChartData = stats?.productivityTrend || [];
 
     // Dynamic Project Productivity based on real database projects
     const dynamicProjectProductivity = useMemo(() => {
         if (!projects || projects.length === 0) return [];
         return projects.map(p => ({
             name: p.name,
-            timeSpent: p.totalTime ? Number((p.totalTime / 3600).toFixed(1)) : (p.tasks?.length ? p.tasks.length * 2 : 0),
-            productivityScore: p.productivityScore || 85
+            timeSpent: p.totalTime ? Number((p.totalTime / 3600).toFixed(1)) : 0,
+            productivityScore: p.productivityScore || 0
         })).slice(0, 5);
     }, [projects]);
 
@@ -1275,7 +1275,7 @@ export function TasksProjects() {
                                                 <td className="px-6 md:px-10 py-4 md:py-6">
                                                     <div className="flex items-center gap-3">
                                                         <div className="h-8 w-8 md:h-10 md:w-10 rounded-xl border-2 border-slate-100 dark:border-slate-800 overflow-hidden shadow-sm">
-                                                            <img src={`https://i.pravatar.cc/150?u=${log.employee || (log.task?.split(' ')[0] || 'system')}`} alt="" className="h-full w-full object-cover" />
+                                                            <img src={`https://ui-avatars.com/api/?background=6366f1&color=fff&name=${encodeURIComponent(log.employee || 'User')}`} alt="" className="h-full w-full object-cover" />
                                                         </div>
                                                         <span className="text-sm font-bold text-slate-900 dark:text-white">{log.employee || 'System'}</span>
                                                     </div>
@@ -1424,7 +1424,7 @@ export function TasksProjects() {
                                         <div className="flex items-center justify-between text-sm">
                                             <span className="font-black text-slate-400 text-[10px] uppercase tracking-widest">Lead Stakeholder</span>
                                             <div className="h-8 w-8 rounded-full border-2 border-white dark:border-slate-800 bg-slate-100 overflow-hidden shadow-sm">
-                                                <img src={`https://i.pravatar.cc/150?u=${project.id}`} className="h-full w-full object-cover" />
+                                                <img src={`https://ui-avatars.com/api/?background=6366f1&color=fff&name=${encodeURIComponent(project.name || 'Project')}`} className="h-full w-full object-cover" />
                                             </div>
                                         </div>
                                     </div>
@@ -1461,7 +1461,7 @@ export function TasksProjects() {
                                                     <td className="px-10 py-6">
                                                         <div className="flex items-center gap-4">
                                                             <div className="h-12 w-12 rounded-[1rem] bg-slate-100 overflow-hidden shadow-lg border-2 border-white dark:border-slate-800 transition-transform group-hover:scale-110">
-                                                                <img src={kpi.avatar || `https://i.pravatar.cc/150?u=${kpi.employee}`} alt={kpi.employee} className="h-full w-full object-cover" />
+                                                                <img src={kpi.avatar || `https://ui-avatars.com/api/?background=6366f1&color=fff&name=${encodeURIComponent(kpi.employee || 'User')}`} alt={kpi.employee} className="h-full w-full object-cover" />
                                                             </div>
                                                             <div className="flex flex-col">
                                                                 <span className="text-sm font-black text-slate-900 dark:text-white leading-tight">{kpi.employee}</span>
@@ -1576,7 +1576,7 @@ export function TasksProjects() {
                                         <div className="flex -space-x-3">
                                             {goal.stakeholders?.map((s, i) => (
                                                 <div key={s.id} className="h-8 w-8 rounded-xl border-2 border-white dark:border-slate-900 bg-slate-100 overflow-hidden shadow-sm">
-                                                    <img src={s.employee?.avatar || `https://i.pravatar.cc/150?u=${s.employee?.fullName || 'user'}`} className="h-full w-full object-cover" />
+                                                    <img src={s.employee?.avatar || `https://ui-avatars.com/api/?background=6366f1&color=fff&name=${encodeURIComponent(s.employee?.fullName || 'User')}`} className="h-full w-full object-cover" />
                                                 </div>
                                             ))}
                                         </div>

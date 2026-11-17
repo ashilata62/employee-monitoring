@@ -128,7 +128,7 @@ export function Attendance() {
             ];
             holidays.forEach(h => { csvContent += `${h.date},${h.name},${h.type},${h.status}\n`; });
         } else {
-            csvContent += "Report,Value\nTotal Employees,124\nAvg Punctuality,94.2%\nActive Shifts,Morning\n";
+            csvContent += `Report,Value\nTotal Records,${attendanceData?.length || 0}\nExport Date,${new Date().toISOString()}\n`;
         }
 
         await new Promise(r => setTimeout(r, 1200));
@@ -948,7 +948,7 @@ export function Attendance() {
                                             <td className="sticky left-0 z-20 bg-white dark:bg-slate-900 p-6 border-r border-slate-100 dark:border-slate-800 group-hover:bg-slate-50/50 dark:group-hover:bg-slate-800/20 transition-colors">
                                                 <div className="flex items-center gap-3">
                                                     <div className="h-10 w-10 min-w-[40px] rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-slate-500 overflow-hidden ring-2 ring-white dark:ring-slate-900">
-                                                        <img src={`https://i.pravatar.cc/150?u=${emp.id}`} alt="" />
+                                                        <img src={`https://ui-avatars.com/api/?background=6366f1&color=fff&name=${encodeURIComponent(emp.name || 'User')}`} alt="" />
                                                     </div>
                                                     <div className="min-w-0">
                                                         <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{emp.name}</p>
@@ -1076,7 +1076,7 @@ export function Attendance() {
                                     </div>
                                     <div className="flex -space-x-2 overflow-hidden py-1">
                                         {[1, 2, 3, 4, 5].map((i) => (
-                                            <img key={i} className="inline-block h-6 w-6 rounded-full ring-2 ring-white dark:ring-slate-900" src={`https://i.pravatar.cc/150?u=${i + 20}`} alt="" />
+                                            <img key={i} className="inline-block h-6 w-6 rounded-full ring-2 ring-white dark:ring-slate-900" src={`https://ui-avatars.com/api/?background=6366f1&color=fff&name=User+${i}`} alt="" />
                                         ))}
                                         <div className="h-6 w-6 rounded-full bg-blue-200 text-blue-800 ring-2 ring-white dark:ring-slate-900 flex items-center justify-center text-[9px] font-bold">+7</div>
                                     </div>
@@ -1139,7 +1139,7 @@ export function Attendance() {
                                                 <td className="p-4">
                                                     <div className="flex items-center gap-3">
                                                         <div className="h-8 w-8 rounded-lg bg-slate-100 dark:bg-slate-800 overflow-hidden ring-1 ring-slate-100">
-                                                            <img src={`https://i.pravatar.cc/150?u=${req.id}`} alt="" />
+                                                            <img src={`https://ui-avatars.com/api/?background=6366f1&color=fff&name=${encodeURIComponent(req.name || 'User')}`} alt="" />
                                                         </div>
                                                         <span className="text-sm font-bold text-slate-900 dark:text-white">{req.name}</span>
                                                     </div>

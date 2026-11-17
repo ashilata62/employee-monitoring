@@ -102,16 +102,8 @@ const VisualTimeline = ({ date }) => {
     );
 };
 
-// Generate static mock data outside component to prevent re-render flickering
-const heatmapMockData = Array.from({ length: 30 }, (_, i) => {
-    const val = Math.random() * 10;
-    return {
-        id: i + 1,
-        day: i + 1,
-        hours: val > 2 ? val : 0,
-        intensity: val > 8 ? 'bg-emerald-600' : val > 6 ? 'bg-emerald-500' : val > 4 ? 'bg-emerald-400' : val > 0 ? 'bg-emerald-300' : 'bg-slate-100 dark:bg-slate-800'
-    };
-});
+// Heatmap data initialized empty
+const heatmapMockData = [];
 
 // --- New Component: Shift Heatmap ---
 const HeatmapView = () => {

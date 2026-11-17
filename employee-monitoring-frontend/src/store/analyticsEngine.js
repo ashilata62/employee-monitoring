@@ -41,12 +41,12 @@ export function teamProductivity(employees, teamName, activityLogs) {
     if (!members.length) return 0;
     const scores = members.map(emp => {
         const logs = activityLogs.filter(l => l.employeeId === emp.id).slice(0, 7);
-        if (!logs.length) return emp.productivityScore || 75;
+        if (!logs.length) return emp.productivityScore || 0;
         const avgPrd = logs.reduce((s, l) => s + l.productiveHours, 0);
         const avgAct = logs.reduce((s, l) => s + l.activeHours, 0);
         return productivityPct(avgPrd, avgAct);
     });
-    return Math.round(scores.reduce((s, v) => s + v, 0) / scores.length);
+    return scores.length ? Math.round(scores.reduce((s, v) => s + v, 0) / scores.length) : 0;
 }
 
 /**
@@ -56,7 +56,7 @@ export function payrollTotal(employees, activityLogs) {
     return employees.reduce((total, emp) => {
         const empLogs = activityLogs.filter(l => l.employeeId === emp.id);
         const activeH = empLogs.reduce((s, l) => s + l.activeHours, 0);
-        return total + Math.round(activeH * (emp.hourlyRate || 50));
+        return total + Math.round(activeH * (emp.hourlyRate || 0));
     }, 0);
 }
 

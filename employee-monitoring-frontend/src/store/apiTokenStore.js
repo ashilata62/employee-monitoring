@@ -6,24 +6,7 @@ import { generateSecureToken } from '../utils/generateSecureToken';
 export const useApiTokenStore = create(
     persist(
         (set, get) => ({
-            apiTokens: [
-                {
-                    id: 'tok_1',
-                    name: 'Integration Service',
-                    tokenHash: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', // dummy hash
-                    last4: 'a1b2',
-                    permission: 'read',
-                    createdAt: '2026-02-20T10:00:00Z'
-                },
-                {
-                    id: 'tok_2',
-                    name: 'CRM Connector',
-                    tokenHash: '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8', // dummy hash
-                    last4: 'zyx9',
-                    permission: 'write',
-                    createdAt: '2026-02-25T14:30:00Z'
-                }
-            ],
+            apiTokens: [],
             tempVisibleToken: null,
 
             // Actions
