@@ -193,12 +193,26 @@ body {
   }
 }
 
-/* HearthLedger Luxury Warm Theme Overrides: Eliminate harsh blinding white */
+/* HearthLedger Luxury Warm Cream Palette Overrides: Eliminate all white */
 .bg-white {
-  background-color: #FBF9F5 !important;
+  background-color: #EEE8DD !important;
 }
 
 .dark .bg-white {
+  background-color: #252B20 !important;
+}
+
+.bg-\[\#FBF9F5\],
+.bg-\[\#fbf9f5\],
+.bg-\[\#FAF6EF\],
+.bg-\[\#faf6ef\] {
+  background-color: #EEE8DD !important;
+}
+
+.dark .bg-\[\#FBF9F5\],
+.dark .bg-\[\#fbf9f5\],
+.dark .bg-\[\#FAF6EF\],
+.dark .bg-\[\#faf6ef\] {
   background-color: #252B20 !important;
 }
 
@@ -208,6 +222,15 @@ body {
 
 .dark .bg-\[\#fcfdfe\] {
   background-color: #1A1F18 !important;
+}
+
+/* Ensure borders are warm hairline borders */
+.border-slate-100, .border-slate-200 {
+  border-color: #D6CDBC !important;
+}
+
+.dark .border-slate-100, .dark .border-slate-200 {
+  border-color: #384232 !important;
 }
 
 /* Custom Luxury Scrollbar */
