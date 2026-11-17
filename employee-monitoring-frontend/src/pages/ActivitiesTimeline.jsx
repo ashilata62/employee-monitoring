@@ -31,6 +31,8 @@ import {
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import activityService from '../services/activityService';
+import taskService from '../services/taskService';
+import productivityService from '../services/productivityService';
 import { useAuthStore } from '../store/authStore';
 import { InsightfulModuleSwitcher } from '../components/common/InsightfulModuleSwitcher';
 
@@ -67,26 +69,16 @@ export function ActivitiesTimeline() {
     activityBar: true
   });
 
-  // Productivity Review Apps state
-  const [unreviewedApps, setUnreviewedApps] = useState([
-    { id: 1, name: 'Figma', category: 'Design', current: 'Productive' },
-    { id: 2, name: 'Google Chrome - StackOverflow', category: 'Development', current: 'Productive' },
-    { id: 3, name: 'Spotify Music', category: 'Media', current: 'Neutral' },
-    { id: 4, name: 'YouTube', category: 'Streaming', current: 'Unproductive' },
-    { id: 5, name: 'Microsoft Teams', category: 'Communication', current: 'Productive' }
-  ]);
+  // Productivity Review Apps state (dynamically loaded from database)
+  const [unreviewedApps, setUnreviewedApps] = useState([]);
 
-  // Mini live tracker state
-  const [trackerSeconds, setTrackerSeconds] = useState(8649); // 02:24:09
-  const [isTrackerRunning, setIsTrackerRunning] = useState(true);
+  // Mini live tracker state (dynamically calculated from real session)
+  const [trackerSeconds, setTrackerSeconds] = useState(0);
+  const [isTrackerRunning, setIsTrackerRunning] = useState(false);
   const [isOnBreak, setIsOnBreak] = useState(false);
 
-  // Tasks play/pause states
-  const [tasksList, setTasksList] = useState([
-    { id: 1, name: 'Task 1: Architecture Review', time: '1:32:43 h', isRunning: true },
-    { id: 2, name: 'Task 2: API Integration', time: '1:32:43 h', isRunning: false },
-    { id: 3, name: 'Task 3: Unit Testing', time: '1:32:43 h', isRunning: true }
-  ]);
+  // Tasks play/pause states (dynamically loaded from database)
+  const [tasksList, setTasksList] = useState([]);
 
   const datePickerRef = useRef(null);
   const exportRef = useRef(null);
@@ -136,6 +128,50 @@ export function ActivitiesTimeline() {
   useEffect(() => {
     fetchTimeline();
   }, [selectedDate]);
+
+  // Load real tasks from backend database
+  useEffect(() => {
+    taskService.getTasks().then(res => {
+      const list = res?.data || res || [];
+      if (Array.isArray(list) && list.length > 0) {
+        setTasksList(list.slice(0, 5).map(t => ({
+          id: t.id,
+          name: t.name,
+          time: t.estimatedHours ? `${t.estimatedHours}h est` : 'Active',
+          isRunning: t.status === 'IN_PROGRESS'
+        })));
+      } else {
+        setTasksList([]);
+      }
+    }).catch(err => console.error('Failed to load tasks:', err));
+  }, []);
+
+  // Load real apps from backend database for review
+  useEffect(() => {
+    productivityService.getApps().then(apps => {
+      if (Array.isArray(apps) && apps.length > 0) {
+        setUnreviewedApps(apps.slice(0, 10).map((a, i) => ({
+          id: a.id || a.appName || i,
+          name: a.appName || a.name || a.domain,
+          category: a.category || 'Uncategorized',
+          current: a.productivity === 'PRODUCTIVE' ? 'Productive' : a.productivity === 'UNPRODUCTIVE' ? 'Unproductive' : 'Neutral'
+        })));
+      } else {
+        setUnreviewedApps([]);
+      }
+    }).catch(err => console.error('Failed to load productivity apps:', err));
+  }, []);
+
+  // Sync mini tracker with real user session if active today
+  useEffect(() => {
+    if (data?.employeeTimelines?.length) {
+      const myEmp = data.employeeTimelines.find(e => e.id === user?.employeeId || e.email === user?.email);
+      if (myEmp) {
+        setTrackerSeconds(myEmp.activeSeconds || 0);
+        setIsTrackerRunning(myEmp.isOnline || false);
+      }
+    }
+  }, [data, user]);
 
   const filteredEmployees = useMemo(() => {
     if (!data?.employeeTimelines) return [];
@@ -196,6 +232,24 @@ export function ActivitiesTimeline() {
 
   const toggleTaskTimer = (taskId) => {
     setTasksList(prev => prev.map(t => t.id === taskId ? { ...t, isRunning: !t.isRunning } : t));
+  };
+
+  const handleSaveClassifications = async () => {
+    try {
+      for (const app of unreviewedApps) {
+        await productivityService.updateRule({
+          domain: app.name.toLowerCase().replace(/\s+/g, '-'),
+          appName: app.name,
+          category: app.category,
+          productivity: app.current.toUpperCase()
+        });
+      }
+      setShowReviewModal(false);
+      fetchTimeline();
+    } catch (e) {
+      console.error('Failed to save classifications:', e);
+      setShowReviewModal(false);
+    }
   };
 
   const timeMarkers = [
@@ -867,15 +921,12 @@ export function ActivitiesTimeline() {
               </div>
               <div className="flex items-center gap-1.5 px-3 py-1 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 rounded-xl border border-amber-200 dark:border-amber-800/60 font-black text-xs">
                 <span>Billable Costs:</span>
-                <span className="text-amber-900 dark:text-amber-300">{data?.projectsSummary?.totalBillableCost || '$240.92'}</span>
+                <span className="text-amber-900 dark:text-amber-300">{data?.projectsSummary?.totalBillableCost || '$0.00'}</span>
               </div>
             </div>
 
             <div className="divide-y divide-slate-100 dark:divide-slate-800/60 my-2">
-              {(data?.projectsSummary?.projectsList || [
-                { id: 1, name: 'Project 1: Web App Redesign', status: 'Active', employeesCount: 3, tasksCount: 9, hoursFormatted: '08:21 h', costFormatted: '$123.40' },
-                { id: 2, name: 'Project 2: Mobile Agent Sync', status: 'Active', employeesCount: 4, tasksCount: 4, hoursFormatted: '07:54 h', costFormatted: '$117.52' }
-              ]).map((p, idx) => (
+              {(data?.projectsSummary?.projectsList || []).map((p, idx) => (
                 <div key={p.id || idx} className="py-3 flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
                     <span className="w-6 h-6 rounded-lg bg-primary-100 dark:bg-primary-900/60 text-primary-700 dark:text-primary-400 font-black text-[10px] flex items-center justify-center">
@@ -986,7 +1037,7 @@ export function ActivitiesTimeline() {
                 Close
               </button>
               <button
-                onClick={() => setShowReviewModal(false)}
+                onClick={handleSaveClassifications}
                 className="px-5 py-2 text-xs font-bold bg-primary-600 hover:bg-primary-700 text-white rounded-xl shadow-md shadow-primary-500/20"
               >
                 Save Classifications
