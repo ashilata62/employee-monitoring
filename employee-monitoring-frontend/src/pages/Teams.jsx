@@ -151,20 +151,20 @@ export function Teams() {
     }
 
     return (
-        <div className="min-h-screen bg-[#fcfdfe] dark:bg-slate-950 pb-12 px-2 sm:px-4 lg:px-8">
+        <div className="w-full space-y-6">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 py-8">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div className="space-y-1">
-                    <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Teams</h1>
-                    <div className="flex items-center gap-2 text-xs font-bold text-slate-400">
+                    <h1 className="font-serif text-3xl font-normal text-[#29291F] dark:text-[#F5F1E9] tracking-tight">Teams</h1>
+                    <div className="flex items-center gap-2 text-xs font-medium text-[#777367]">
                         <Users size={13} />
                         {employees.length} employees · {contextTeams.length} teams
                     </div>
                 </div>
                 {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
                     <button onClick={() => { setEditingTeam(null); setIsModalOpen(true); }}
-                        className="w-full md:w-auto bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-xl text-xs font-black transition-all shadow-xl uppercase tracking-wider flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-95">
-                        <Plus size={16} strokeWidth={3} /> Create New Team
+                        className="w-full md:w-auto bg-[#30382B] hover:bg-[#3C4536] text-[#FDFBF7] px-6 py-2.5 rounded-xl text-xs font-semibold transition-all shadow-warm-sm uppercase tracking-wider flex items-center justify-center gap-2 active:scale-95 cursor-pointer">
+                        <Plus size={15} className="text-[#D3B98D]" /> Create New Team
                     </button>
                 )}
             </div>

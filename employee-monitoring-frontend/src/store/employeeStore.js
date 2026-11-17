@@ -27,7 +27,7 @@ export const useEmployeeStore = create((set, get) => ({
                     ...newEmployee,
                     name: newEmployee.fullName,
                     status: newEmployee.status?.toLowerCase() || 'active',
-                    avatar: newEmployee.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(newEmployee.fullName)}&background=random`
+                    avatar: newEmployee.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(newEmployee.fullName)}&background=EEE8DD&color=30382B`
                 }],
                 isLoading: false
             }));
@@ -50,7 +50,7 @@ export const useEmployeeStore = create((set, get) => ({
                     name: newEmployee.fullName || newEmployee.name,
                     status: (newEmployee.status || 'active').toLowerCase(),
                     team: newEmployee.team ? (newEmployee.team.name || newEmployee.team) : 'General Team',
-                    avatar: newEmployee.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(newEmployee.fullName || 'User')}&background=random`
+                    avatar: newEmployee.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(newEmployee.fullName || 'User')}&background=EEE8DD&color=30382B`
                 }],
                 isLoading: false
             }));

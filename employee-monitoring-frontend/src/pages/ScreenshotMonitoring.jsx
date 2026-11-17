@@ -1953,14 +1953,14 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
 
             return (
     <>
-              <div className="min-h-screen bg-[#fcfdfe] dark:bg-slate-950 space-y-6 sm:space-y-8 pb-20 px-2 sm:px-4 lg:px-8 max-w-full overflow-x-hidden box-border animate-fade-in">
+              <div className="w-full space-y-6 sm:space-y-8 pb-20 max-w-full overflow-x-hidden box-border animate-fade-in">
                 {/* Header */}
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 py-8">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                   <div className="flex flex-wrap items-center gap-4">
-                    <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Screenshots & Screen Recording</h1>
+                    <h1 className="font-serif text-3xl font-normal text-[#29291F] dark:text-[#F5F1E9] tracking-tight">Screenshots & Screen Recording</h1>
 
                     {/* Main Navigation Tabs (Phase 2) */}
-                    <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-900 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800">
+                    <div className="flex items-center gap-1.5 bg-[#EEE8DD] dark:bg-[#252B20] p-1.5 rounded-xl border border-[#E5DED2] dark:border-[#384232]">
                       <button
                         onClick={() => setActiveMainTab('screenshots')}
                         className={cn(

@@ -44,7 +44,7 @@ export function Header({ onMenuClick }) {
             <div className="flex items-center gap-4">
                 <button
                     onClick={onMenuClick}
-                    className="lg:hidden flex h-10 w-10 items-center justify-center rounded-xl text-[#777367] hover:bg-[#EEE8DD] hover:text-[#29291F] dark:text-[#B8B3A7] dark:hover:bg-[#283025] transition-colors"
+                    className="md:hidden flex h-10 w-10 items-center justify-center rounded-xl text-[#777367] hover:bg-[#EEE8DD] hover:text-[#29291F] dark:text-[#B8B3A7] dark:hover:bg-[#283025] transition-colors cursor-pointer"
                 >
                     <Menu size={22} />
                 </button>

@@ -823,83 +823,90 @@ const EmployeeRow = ({ employee, onEdit, onDelete, onTransparencyClick, visibleC
 
             {/* ── DESKTOP TABLE ROW (hidden below md) ── */}
             <tr
-                className="hidden md:table-row group hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer transition-all duration-200 border-b border-slate-50 dark:border-slate-800 last:border-0"
+                className="hidden md:table-row group hover:bg-[#EEE8DD]/30 dark:hover:bg-[#1E2419] cursor-pointer transition-all duration-200 border-b border-[#E5DED2]/60 dark:border-[#384232]/60 last:border-0"
                 onClick={() => navigate(`${rolePath}/employees/${employee.id}`)}
             >
                 {visibleColumns.includes('User') && (
-                    <td className="px-6 py-5">
-                        <div className="flex items-center gap-4">
-                            <div className="h-10 w-10 shrink-0 rounded-2xl border-2 border-white dark:border-slate-700 shadow-sm overflow-hidden group-hover:scale-105 transition-transform">
-                                <img src={employee.avatar} className="h-full w-full object-cover" alt="" />
+                    <td className="px-6 py-4">
+                        <div className="flex items-center gap-3.5">
+                            <div className="h-10 w-10 shrink-0 rounded-xl bg-[#EEE8DD] text-[#30382B] border border-[#E5DED2] flex items-center justify-center font-bold text-xs tracking-wider">
+                                {employee.avatar && !employee.avatar.includes('ui-avatars.com') ? (
+                                    <img src={employee.avatar} className="h-full w-full object-cover rounded-xl" alt="" />
+                                ) : (
+                                    <span>{(employee.name || 'U').slice(0, 2).toUpperCase()}</span>
+                                )}
                             </div>
                             <div className="min-w-0 flex-1">
-                                <p className="text-sm font-black text-slate-900 dark:text-white truncate">{employee.name}</p>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">{employee.email}</p>
+                                <p className="text-sm font-semibold text-[#29291F] dark:text-[#F5F1E9] truncate">{employee.name}</p>
+                                <p className="text-[11px] font-medium text-[#777367]">{employee.email}</p>
                             </div>
                         </div>
                     </td>
                 )}
                 {visibleColumns.includes('Team') && (
-                    <td className="px-6 py-5">
-                        <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs font-bold text-slate-600 dark:text-slate-400">
+                    <td className="px-6 py-4">
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-[#EEE8DD]/60 text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9]">
                             {typeof employee.team === 'object' ? (employee.team?.name || 'No Team') : (employee.team || 'No Team')}
                         </span>
                     </td>
                 )}
                 {visibleColumns.includes('Location') && (
-                    <td className="px-6 py-5">
-                        <span className="text-xs font-bold text-slate-600 dark:text-slate-400">{employee.location}</span>
+                    <td className="px-6 py-4">
+                        <span className="text-xs font-medium text-[#777367] dark:text-[#B8B3A7]">{employee.location || 'Remote'}</span>
                     </td>
                 )}
                 {visibleColumns.includes('Work Time') && (
-                    <td className="px-6 py-5">
-                        <span className="text-xs font-bold text-slate-600 dark:text-slate-400">0h 00m</span>
+                    <td className="px-6 py-4">
+                        <span className="text-xs font-medium text-[#29291F] dark:text-[#F5F1E9]">0h 00m</span>
                     </td>
                 )}
                 {visibleColumns.includes('Manual Time') && (
-                    <td className="px-6 py-5">
-                        <span className="text-xs font-bold text-slate-600 dark:text-slate-400">0h 00m</span>
+                    <td className="px-6 py-4">
+                        <span className="text-xs font-medium text-[#29291F] dark:text-[#F5F1E9]">0h 00m</span>
                     </td>
                 )}
                 {visibleColumns.includes('Computer Act.') && (
-                    <td className="px-6 py-5">
-                        <span className="text-xs font-bold text-slate-600 dark:text-slate-400">0h 00m</span>
+                    <td className="px-6 py-4">
+                        <span className="text-xs font-medium text-[#29291F] dark:text-[#F5F1E9]">0h 00m</span>
                     </td>
                 )}
-                <td className="px-6 py-5">
-                    <div className="flex items-center gap-2">
-                        <div className={cn("h-2.5 w-2.5 rounded-full ring-2 ring-white dark:ring-slate-900", statusColor)} />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">{employee.status}</span>
-                    </div>
+                <td className="px-6 py-4">
+                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${
+                        employee.status === 'active' || employee.status === 'online' ? 'bg-[#5E7D64]/10 text-[#5E7D64]' :
+                        employee.status === 'pending' || employee.status === 'invited' ? 'bg-[#B9955B]/15 text-[#A17D45]' :
+                        employee.status === 'deactivated' ? 'bg-[#A84B4B]/10 text-[#A84B4B]' :
+                        'bg-[#777367]/10 text-[#777367]'
+                    }`}>
+                        <span className="h-1.5 w-1.5 rounded-full bg-current" />
+                        {employee.status}
+                    </span>
                 </td>
-                <td className="px-6 py-5 text-right relative">
-                    <div className="flex items-center justify-end gap-[10px]">
-                        {/* Transparency button removed */}
-
+                <td className="px-6 py-4 text-right relative">
+                    <div className="flex items-center justify-end gap-1.5">
                         <button
                             onClick={(e) => { e.stopPropagation(); navigate(`${rolePath}/employees/${employee.id}`); }}
-                            className="h-9 w-9 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-indigo-500 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all shadow-sm group/btn"
+                            className="h-8 w-8 rounded-lg bg-[#EEE8DD]/60 text-[#777367] hover:text-[#30382B] hover:bg-[#EEE8DD] flex items-center justify-center transition-all shadow-warm-xs cursor-pointer"
                             title="View Profile"
                         >
-                            <Eye size={18} className="group-hover/btn:scale-110 transition-transform" />
+                            <Eye size={15} />
                         </button>
 
                         {(userRole === 'ADMIN' || userRole === 'MANAGER') && (
                             <>
                                 <button
                                     onClick={(e) => { e.stopPropagation(); onEdit(employee); }}
-                                    className="h-9 w-9 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-amber-500 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all shadow-sm group/btn"
+                                    className="h-8 w-8 rounded-lg bg-[#EEE8DD]/60 text-[#777367] hover:text-[#B9955B] hover:bg-[#EEE8DD] flex items-center justify-center transition-all shadow-warm-xs cursor-pointer"
                                     title="Edit Employee"
                                 >
-                                    <Edit size={18} className="group-hover/btn:scale-110 transition-transform" />
+                                    <Edit size={15} />
                                 </button>
 
                                 <button
                                     onClick={(e) => { e.stopPropagation(); onDelete(employee); }}
-                                    className="h-9 w-9 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-rose-500 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all shadow-sm group/btn"
+                                    className="h-8 w-8 rounded-lg bg-[#EEE8DD]/60 text-[#777367] hover:text-[#A84B4B] hover:bg-[#FAF3F2] flex items-center justify-center transition-all shadow-warm-xs cursor-pointer"
                                     title="Delete Employee"
                                 >
-                                    <Trash2 size={18} className="group-hover/btn:scale-110 transition-transform" />
+                                    <Trash2 size={15} />
                                 </button>
                             </>
                         )}
@@ -1086,18 +1093,18 @@ export function EmployeeManagement() {
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
                         <thead className="hidden md:table-header-group">
-                            <tr className="bg-slate-50/50 dark:bg-slate-800/30 border-b border-slate-100 dark:border-slate-800">
-                                {visibleColumns.includes('User') && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Employee</th>}
-                                {visibleColumns.includes('Team') && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Team</th>}
-                                {visibleColumns.includes('Location') && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Location</th>}
-                                {visibleColumns.includes('Work Time') && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Work Time [h]</th>}
-                                {visibleColumns.includes('Manual Time') && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Manual Time [h]</th>}
-                                {visibleColumns.includes('Computer Act.') && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Computer Act. [h]</th>}
-                                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Status</th>
-                                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Action</th>
+                            <tr className="bg-[#EEE8DD]/40 dark:bg-[#1E2419] border-b border-[#E5DED2] dark:border-[#384232]">
+                                {visibleColumns.includes('User') && <th className="px-6 py-3.5 text-[10px] font-bold uppercase tracking-wider text-[#777367] dark:text-[#B8B3A7]">Employee</th>}
+                                {visibleColumns.includes('Team') && <th className="px-6 py-3.5 text-[10px] font-bold uppercase tracking-wider text-[#777367] dark:text-[#B8B3A7]">Team</th>}
+                                {visibleColumns.includes('Location') && <th className="px-6 py-3.5 text-[10px] font-bold uppercase tracking-wider text-[#777367] dark:text-[#B8B3A7]">Location</th>}
+                                {visibleColumns.includes('Work Time') && <th className="px-6 py-3.5 text-[10px] font-bold uppercase tracking-wider text-[#777367] dark:text-[#B8B3A7]">Work Time</th>}
+                                {visibleColumns.includes('Manual Time') && <th className="px-6 py-3.5 text-[10px] font-bold uppercase tracking-wider text-[#777367] dark:text-[#B8B3A7]">Manual Time</th>}
+                                {visibleColumns.includes('Computer Act.') && <th className="px-6 py-3.5 text-[10px] font-bold uppercase tracking-wider text-[#777367] dark:text-[#B8B3A7]">Computer Act.</th>}
+                                <th className="px-6 py-3.5 text-[10px] font-bold uppercase tracking-wider text-[#777367] dark:text-[#B8B3A7]">Status</th>
+                                <th className="px-6 py-3.5 text-[10px] font-bold uppercase tracking-wider text-[#777367] dark:text-[#B8B3A7] text-right">Action</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-transparent md:divide-slate-50 dark:md:divide-slate-800/50">
+                        <tbody className="divide-y divide-transparent md:divide-[#E5DED2]/60 dark:md:divide-[#384232]/60">
                             {paginatedEmployees.map((emp) => (
                                 <EmployeeRow
                                     key={emp.id}

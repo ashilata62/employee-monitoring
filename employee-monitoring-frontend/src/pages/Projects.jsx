@@ -69,19 +69,19 @@ export function Projects() {
     ];
 
     return (
-        <div className="min-h-screen bg-[#fcfdfe] dark:bg-slate-950 pb-12 px-2 sm:px-4 lg:px-8 transition-colors duration-200">
+        <div className="w-full space-y-6">
             {/* Top Bar */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 py-6 md:py-8 mb-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
-                    <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Projects</h1>
+                    <h1 className="font-serif text-3xl font-normal text-[#29291F] dark:text-[#F5F1E9] tracking-tight">Projects</h1>
                 </div>
                 <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
                     {(role === 'ADMIN' || role === 'MANAGER') && activeTab !== 'Integrated' && (
                         <button
                             onClick={() => setIsModalOpen(true)}
-                            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-xl text-xs font-black transition-all shadow-xl shadow-primary-200 dark:shadow-none uppercase tracking-wider hover:scale-[1.02] active:scale-95"
+                            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-[#30382B] hover:bg-[#3C4536] text-[#FDFBF7] px-6 py-2.5 rounded-xl text-xs font-semibold shadow-warm-sm transition-all uppercase tracking-wider active:scale-95 cursor-pointer"
                         >
-                            <Plus size={16} strokeWidth={3} />
+                            <Plus size={15} className="text-[#D3B98D]" />
                             <span>Add New Project</span>
                         </button>
                     )}

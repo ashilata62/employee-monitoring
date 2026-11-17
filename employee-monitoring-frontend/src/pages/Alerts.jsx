@@ -74,14 +74,14 @@ export function Alerts() {
     };
 
     return (
-        <div className="min-h-screen bg-[#fcfdfe] dark:bg-slate-950 pb-12 px-2 sm:px-4 lg:px-8">
+        <div className="w-full space-y-6">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 py-8 mb-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-3">
+                    <h1 className="font-serif text-3xl font-normal text-[#29291F] dark:text-[#F5F1E9] tracking-tight flex items-center gap-3">
                         Alerts
                         {unreadCount > 0 && (
-                            <span className="px-2.5 py-0.5 rounded-full bg-rose-500 text-white text-[11px] font-black">{unreadCount}</span>
+                            <span className="px-2.5 py-0.5 rounded-full bg-[#A84B4B] text-white text-[11px] font-bold">{unreadCount}</span>
                         )}
                     </h1>
                     <p className="text-xs text-slate-400 font-medium mt-1">Auto-generated from productivity monitoring</p>

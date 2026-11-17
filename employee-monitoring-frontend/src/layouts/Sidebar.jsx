@@ -80,8 +80,8 @@ export function Sidebar({ collapsed, setCollapsed, onMobileClose }) {
         <aside
             className={cn(
                 "h-full border-r border-[#3C4536] bg-[#30382B] text-[#F5F1E9] transition-all duration-300 ease-in-out relative flex flex-col",
-                "w-[80vw] max-w-[280px] lg:max-w-none shadow-2xl lg:shadow-none",
-                collapsed ? "lg:w-20" : "lg:w-64"
+                "w-[80vw] max-w-[280px] md:max-w-none shadow-2xl md:shadow-none",
+                collapsed ? "md:w-20" : "md:w-60"
             )}
         >
             {/* Header Brand Section */}
@@ -110,7 +110,7 @@ export function Sidebar({ collapsed, setCollapsed, onMobileClose }) {
 
                 <button
                     onClick={onMobileClose}
-                    className="lg:hidden p-2 text-[#C5CEBF] hover:text-white hover:bg-[#3C4536] rounded-lg transition-colors"
+                    className="md:hidden p-2 text-[#C5CEBF] hover:text-white hover:bg-[#3C4536] rounded-lg transition-colors"
                     aria-label="Close menu"
                 >
                     <X size={20} />

@@ -193,6 +193,23 @@ body {
   }
 }
 
+/* HearthLedger Luxury Warm Theme Overrides: Eliminate harsh blinding white */
+.bg-white {
+  background-color: #FBF9F5 !important;
+}
+
+.dark .bg-white {
+  background-color: #252B20 !important;
+}
+
+.bg-\[\#fcfdfe\] {
+  background-color: #F5F1E9 !important;
+}
+
+.dark .bg-\[\#fcfdfe\] {
+  background-color: #1A1F18 !important;
+}
+
 /* Custom Luxury Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
