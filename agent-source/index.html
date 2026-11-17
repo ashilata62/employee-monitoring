@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EMS Tracker Agent</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        body { background: #0f172a; color: #f8fafc; padding: 24px; min-height: 100vh; display: flex; flex-direction: column; }
+        .header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+        .badge { background: #3b82f6; width: 10px; height: 10px; border-radius: 50%; }
+        h1 { font-size: 18px; font-weight: 800; }
+        .card { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 18px; margin-bottom: 16px; }
+        .label { font-size: 11px; text-transform: uppercase; color: #94a3b8; font-weight: 700; margin-bottom: 4px; }
+        .val { font-size: 14px; font-weight: 600; color: #f1f5f9; word-break: break-all; }
+        .task-card { border-left: 4px solid #10b981; }
+        .task-active { color: #10b981; }
+        .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+        .status-active { background: #10b981; }
+        .status-inactive { background: #f43f5e; }
+        .btn { width: 100%; padding: 12px; background: #2563eb; color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; margin-top: 12px; transition: background 0.2s; }
+        .btn:hover { background: #1d4ed8; }
+        .violation-banner { display: none; background: rgba(244, 63, 94, 0.15); border: 1px solid #f43f5e; color: #fda4af; padding: 12px; border-radius: 12px; font-size: 12px; font-weight: 600; margin-bottom: 16px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="badge"></div>
+        <h1>EMS Desktop Tracker</h1>
+    </div>
+
+    <div id="violationAlert" class="violation-banner">
+        ⚠️ Violation Detected: Blacklisted application opened. Instant capture uploaded.
+    </div>
+
+    <div class="card task-card">
+        <div class="label">Linked Active Task</div>
+        <div class="val task-active" id="activeTaskVal">None (No Active Task)</div>
+    </div>
+
+    <div class="card">
+        <div class="label">Device Identifier</div>
+        <div class="val" id="deviceIdVal">Loading...</div>
+    </div>
+
+    <div class="card">
+        <div class="label">Inactivity & Idle Detection</div>
+        <div class="val" id="idleStatusVal">
+            <span class="status-dot status-active"></span>Active (No Idle Detected)
+        </div>
+        <div style="font-size: 11px; color: #64748b; margin-top: 6px;" id="idleThresholdVal">
+            Threshold: 10 mins (600s) inactivity triggers email alert
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="label">Monitoring Status</div>
+        <div class="val" id="statusVal"><span class="status-dot status-inactive"></span>Disconnected</div>
+    </div>
+
+    <button class="btn" id="captureBtn">Trigger Manual Capture</button>
+
+    <script>
+        async function refreshInfo() {
+            if (window.electronAPI) {
+                const info = await window.electronAPI.getSystemInfo();
+                document.getElementById('deviceIdVal').innerText = info.deviceId || 'Unknown';
+
+                const status = await window.electronAPI.getAgentStatus();
+                const activeTask = await window.electronAPI.getActiveTask();
+                
+                document.getElementById('activeTaskVal').innerText = activeTask || 'None (No Active Task)';
+                
+                if (status.isTracking || status.status === 'active') {
+                    document.getElementById('statusVal').innerHTML = '<span class="status-dot status-active"></span>Active & Monitoring';
+                } else {
+                    document.getElementById('statusVal').innerHTML = '<span class="status-dot status-inactive"></span>Idle / Standby';
+                }
+
+                if (window.electronAPI.getIdleStatus) {
+                    const idle = await window.electronAPI.getIdleStatus();
+                    const isIdle = idle.currentStatus === 'IDLE';
+                    document.getElementById('idleStatusVal').innerHTML = isIdle
+                        ? `<span class="status-dot status-inactive"></span>IDLE (${idle.lastIdleSeconds || 0}s inactive)`
+                        : `<span class="status-dot status-active"></span>ACTIVE (${idle.inactivitySeconds || 0}s since last input)`;
+                    document.getElementById('idleThresholdVal').innerText = `Threshold: ${Math.round(idle.thresholdSeconds / 60)} mins (${idle.thresholdSeconds}s) inactivity triggers email alert`;
+                }
+            }
+        }
+
+        if (window.electronAPI) {
+            window.electronAPI.onActiveTaskChanged((taskId) => {
+                document.getElementById('activeTaskVal').innerText = taskId || 'None (No Active Task)';
+            });
+
+            window.electronAPI.onViolationDetected((data) => {
+                const alertEl = document.getElementById('violationAlert');
+                alertEl.style.display = 'block';
+                alertEl.innerText = `⚠️ Violation Detected: "${data.appName}" (${data.violationType}). Instant screenshot recorded.`;
+                setTimeout(() => { alertEl.style.display = 'none'; }, 8000);
+            });
+        }
+
+        document.getElementById('captureBtn').addEventListener('click', async () => {
+            if (window.electronAPI) {
+                await window.electronAPI.triggerManualCapture();
+                alert('Manual capture triggered!');
+            }
+        });
+
+        refreshInfo();
+        setInterval(refreshInfo, 5000);
+    </script>
+</body>
+</html>
