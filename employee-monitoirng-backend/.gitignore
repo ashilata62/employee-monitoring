@@ -9,3 +9,5 @@ tmp/
 
 backups/
 *.sql
+public/uploads/screenshots/
+

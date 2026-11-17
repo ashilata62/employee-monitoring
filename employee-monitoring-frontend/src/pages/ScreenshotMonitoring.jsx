@@ -2298,90 +2298,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                       <>
 
 
-                        {/* 3. Timeline Playback */}
-                        {role !== 'EMPLOYEE' && (
-                          <div className="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden">
-                            <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
-                              <button
-                                onClick={() => setIsPlaying(!isPlaying)}
-                                className={cn(
-                                  "h-14 w-14 flex-shrink-0 flex items-center justify-center rounded-2xl text-white shadow-lg transition-all active:scale-95 group",
-                                  isPlaying ? "bg-amber-500 hover:bg-amber-600 shadow-amber-500/20" : "bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-100 shadow-slate-900/20 dark:shadow-white/20"
-                                )}
-                              >
-                                {isPlaying ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" className="ml-1 group-hover:scale-110 transition-transform" />}
-                              </button>
-                              <div className="flex-1 w-full space-y-2">
-                                <div className="flex justify-between items-end">
-                                  <div className="flex flex-col min-w-0">
-                                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 flex flex-wrap items-center gap-2">
-                                      Playback Timeline
-                                      {selectedEmployee !== 'All' && <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-600 dark:text-slate-400 truncate max-w-[150px]">{selectedEmployee}</span>}
-                                    </span>
-                                    <span className="text-base sm:text-lg font-black text-slate-900 dark:text-white transition-all duration-300">
-                                      {currentPlaybackTime}
-                                      <span className="text-[10px] font-bold text-slate-400 ml-2">
-                                        {timelineDate.toLocaleDateString([], { month: 'short', day: 'numeric' })}
-                                      </span>
-                                    </span>
-                                  </div>
-                                  {isPlaying && (
-                                    <div className="flex items-center gap-2 px-3 py-1 bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-full animate-pulse flex-shrink-0">
-                                      <RefreshCw size={12} className="animate-spin" />
-                                      <span className="text-[10px] font-black uppercase whitespace-nowrap">Live Replay</span>
-                                    </div>
-                                  )}
-                                </div>
-                                <div className="relative pt-6 pb-2 group/slider">
-                                  {/* Floating Playback Time (YouTube style) */}
-                                  <div
-                                    className="absolute bottom-full mb-2 transition-all duration-300 pointer-events-none z-10 opacity-0 group-hover/slider:opacity-100"
-                                    style={{ left: `${progress}%`, transform: 'translateX(-50%)' }}
-                                  >
-                                    <div className="bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-[10px] font-black px-2.5 py-1 rounded-lg shadow-xl shadow-slate-900/20 dark:shadow-white/20 whitespace-nowrap relative">
-                                      {currentPlaybackTime}
-                                      <div className="absolute top-full left-1/2 -translate-x-1/2 border-x-4 border-x-transparent border-t-4 border-t-slate-900 dark:border-t-white" />
-                                    </div>
-                                  </div>
-                                  <input
-                                    type="range"
-                                    min="0"
-                                    max={activePlaybackList.length > 0 ? activePlaybackList.length - 1 : 0}
-                                    value={playbackIndex}
-                                    onChange={(e) => {
-                                      setPlaybackIndex(parseInt(e.target.value));
-                                      setIsPlaying(true);
-                                    }}
-                                    className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-slate-900 dark:accent-white hover:accent-primary-500 transition-all"
-                                    style={{
-                                      background: `linear-gradient(to right, ${role === 'EMPLOYEE' ? '#6366f1' : '#0f172a'} ${progress}%, ${role === 'DARK' ? '#1e293b' : '#f1f5f9'} ${progress}%)`
-                                    }}
-                                  />
-                                  {/* Time markers on slider */}
-                                  <div className="absolute top-0 flex justify-between w-full px-1">
-                                    <div className="flex flex-col items-center">
-                                      <div className="h-2 w-[1px] bg-slate-300 dark:bg-slate-700 mb-1" />
-                                      <span className="text-[8px] font-bold text-slate-400">START</span>
-                                    </div>
-                                    <div className="flex flex-col items-center">
-                                      <div className="h-2 w-[1px] bg-slate-300 dark:bg-slate-700 mb-1" />
-                                      <span className="text-[8px] font-bold text-slate-400">12:00 PM</span>
-                                    </div>
-                                    <div className="flex flex-col items-center">
-                                      <div className="h-2 w-[1px] bg-slate-300 dark:bg-slate-700 mb-1" />
-                                      <span className="text-[8px] font-bold text-slate-400">END</span>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div className="flex justify-between text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider px-1">
-                                  <span>{activePlaybackList[0]?.time || "09:00 AM"}</span>
-                                  <span className="hidden xs:block text-slate-300 dark:text-slate-700">SCRUB TO EXPLORE TIMELINE</span>
-                                  <span>{activePlaybackList[activePlaybackList.length - 1]?.time || "06:00 PM"}</span>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        )}
+
 
                         {/* 4. Screenshot Grid Grouped by Date (Insightful Image 3) */}
                         <div className="space-y-8">
@@ -2926,58 +2843,24 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                             </div>
                           )}
 
-                          {/* Footer Info & Scrub Bar */}
-                          <div className="absolute bottom-0 inset-x-0 p-4 sm:p-8 flex flex-col gap-6 z-30 bg-gradient-to-t from-black/90 via-black/40 to-transparent">
-                            {/* Scrub Bar in Modal */}
-                            <div className="w-full space-y-3 px-2">
-                              <div className="flex items-center gap-4">
-                                <button
-                                  onClick={(e) => { e.stopPropagation(); setIsPlaying(!isPlaying); }}
-                                  className="h-10 w-10 flex-shrink-0 flex items-center justify-center rounded-xl bg-white/10 hover:bg-white/20 text-white backdrop-blur-md transition-all active:scale-95"
-                                >
-                                  {isPlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" className="ml-0.5" />}
-                                </button>
-                                <div className="flex-1 relative pb-1 group/modal-slider">
-                                  {/* Floating Playback Time (YouTube style) */}
-                                  <div
-                                    className="absolute bottom-full mb-3 transition-all duration-300 pointer-events-none z-10 opacity-0 group-hover/modal-slider:opacity-100"
-                                    style={{ left: `${progress}%`, transform: 'translateX(-50%)' }}
-                                  >
-                                    <div className="bg-white text-slate-900 text-[10px] font-black px-2.5 py-1 rounded-lg shadow-2xl whitespace-nowrap relative">
-                                      {currentPlaybackTime}
-                                      <div className="absolute top-full left-1/2 -translate-x-1/2 border-x-4 border-x-transparent border-t-4 border-t-white" />
-                                    </div>
-                                  </div>
-                                  <input
-                                    type="range"
-                                    min="0"
-                                    max={activePlaybackList.length > 0 ? activePlaybackList.length - 1 : 0}
-                                    value={playbackIndex}
-                                    onChange={(e) => {
-                                      setPlaybackIndex(parseInt(e.target.value));
-                                      const item = activePlaybackList[parseInt(e.target.value)];
-                                      if (item) {
-                                        setSelectedScreenshot({
-                                          ...item,
-                                          effectiveBlur: globalBlur || item.isBlurred
-                                        });
-                                      }
-                                      setIsPlaying(true);
-                                    }}
-                                    className="w-full h-1 bg-white/20 rounded-full appearance-none cursor-pointer accent-white hover:accent-emerald-400 transition-all"
-                                    style={{
-                                      background: `linear-gradient(to right, #10b981 ${progress}%, rgba(255,255,255,0.1) ${progress}%)`
-                                    }}
-                                  />
-                                  <div className="flex justify-between text-[8px] font-black text-white/40 uppercase tracking-widest mt-1 px-1">
-                                    <span>{activePlaybackList[0]?.time || "START"}</span>
-                                    <span className="text-emerald-400/60">SCRUB TIMELINE</span>
-                                    <span>{activePlaybackList[activePlaybackList.length - 1]?.time || "END"}</span>
-                                  </div>
-                                </div>
-                              </div>
+                          {/* Footer Info */}
+                          <div className="absolute bottom-0 inset-x-0 p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-3 z-30 bg-gradient-to-t from-black/90 via-black/40 to-transparent">
+                            <div className="flex items-center gap-3">
+                              <span className="text-white text-xs sm:text-sm font-bold">
+                                {selectedScreenshot.time} • {selectedScreenshot.employee}
+                              </span>
+                              {selectedScreenshot.productivity && (
+                                <span className={cn(
+                                  "px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider",
+                                  selectedScreenshot.productivity === 'productive' ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" : "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                                )}>
+                                  {selectedScreenshot.productivity}
+                                </span>
+                              )}
                             </div>
-
+                            <div className="text-[11px] text-white/60 font-medium">
+                              Use <span className="text-white font-bold">←</span> / <span className="text-white font-bold">→</span> arrows or side buttons to browse
+                            </div>
                           </div>
                         </div>
                       </div>
