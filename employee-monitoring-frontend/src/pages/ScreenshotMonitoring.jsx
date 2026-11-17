@@ -2092,7 +2092,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                         </button>
 
                         {showCalendarDropdown && (
-                          <div className="absolute top-full left-0 mt-2 w-[280px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl z-[100] overflow-hidden animate-in fade-in zoom-in duration-200 origin-top-left p-4">
+                          <div className="absolute top-full right-0 mt-2 w-[300px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl z-[100] overflow-hidden animate-in fade-in zoom-in duration-200 origin-top-right p-4">
                             <div className="space-y-4">
                               <div>
                                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 block">Quick Select</label>

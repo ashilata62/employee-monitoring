@@ -143,11 +143,11 @@ export function PeriodComparisonBar({
                             <div className="absolute top-full left-0 mt-2 w-64 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-2 z-50 animate-in fade-in duration-200">
                                 <p className="px-3 py-1.5 text-[10px] font-black text-slate-400 uppercase tracking-wider">Select Reference Range</p>
                                 {[
-                                    { label: 'Mar 01, 2026 → Mar 31, 2026', start: '2026-03-01', end: '2026-03-31' },
-                                    { label: 'Today (Nov 16, 2026)', start: '2026-11-16', end: '2026-11-16' },
-                                    { label: 'Last 7 Days', start: '2026-11-10', end: '2026-11-16' },
-                                    { label: 'Last 30 Days', start: '2026-10-18', end: '2026-11-16' },
-                                    { label: 'This Month (Nov 2026)', start: '2026-11-01', end: '2026-11-16' }
+                                    { label: 'Today (Nov 17, 2026)', start: '2026-11-17', end: '2026-11-17' },
+                                    { label: 'Yesterday (Nov 16, 2026)', start: '2026-11-16', end: '2026-11-16' },
+                                    { label: 'Last 7 Days', start: '2026-11-11', end: '2026-11-17' },
+                                    { label: 'This Month (Nov 2026)', start: '2026-11-01', end: '2026-11-17' },
+                                    { label: 'Mar 01, 2026 → Mar 31, 2026', start: '2026-03-01', end: '2026-03-31' }
                                 ].map(p => (
                                     <button
                                         key={p.label}

@@ -11,70 +11,38 @@ import {
     Tooltip
 } from 'recharts';
 
-const referenceDecemberData = [
-    { name: 'Dec 1', productive: 150, unproductive: 10, neutral: 6, total: 166 },
-    { name: 'Dec 2', productive: 155, unproductive: 6, neutral: 9, total: 170 },
-    { name: 'Dec 3', productive: 136, unproductive: 14, neutral: 7, total: 157 },
-    { name: 'Dec 4', productive: 0, unproductive: 0, neutral: 0, total: 0 },
-    { name: 'Dec 5', productive: 0, unproductive: 0, neutral: 0, total: 0 },
-    { name: 'Dec 6', productive: 118, unproductive: 10, neutral: 4, total: 132 },
-    { name: 'Dec 7', productive: 132, unproductive: 3, neutral: 18, total: 153 },
-    { name: 'Dec 8', productive: 164, unproductive: 2, neutral: 2, total: 168 },
-    { name: 'Dec 9', productive: 150, unproductive: 4, neutral: 10, total: 164 },
-    { name: 'Dec 10', productive: 128, unproductive: 6, neutral: 22, total: 156 },
-    { name: 'Dec 11', productive: 0, unproductive: 0, neutral: 0, total: 0 },
-    { name: 'Dec 12', productive: 0, unproductive: 0, neutral: 0, total: 0 },
-    { name: 'Dec 13', productive: 146, unproductive: 6, neutral: 5, total: 157 },
-    { name: 'Dec 14', productive: 105, unproductive: 5, neutral: 6, total: 116 },
-    { name: 'Dec 15', productive: 155, unproductive: 4, neutral: 10, total: 169 },
-    { name: 'Dec 16', productive: 150, unproductive: 9, neutral: 5, total: 164 },
-    { name: 'Dec 17', productive: 132, unproductive: 4, neutral: 18, total: 154 },
-    { name: 'Dec 18', productive: 0, unproductive: 0, neutral: 0, total: 0 },
-    { name: 'Dec 19', productive: 0, unproductive: 0, neutral: 0, total: 0 },
-    { name: 'Dec 20', productive: 164, unproductive: 2, neutral: 2, total: 168 },
-    { name: 'Dec 21', productive: 155, unproductive: 5, neutral: 10, total: 170 },
-    { name: 'Dec 22', productive: 150, unproductive: 4, neutral: 9, total: 163 },
-    { name: 'Dec 23', productive: 132, unproductive: 3, neutral: 18, total: 153 },
-    { name: 'Dec 24', productive: 123, unproductive: 9, neutral: 14, total: 146 },
-    { name: 'Dec 25', productive: 0, unproductive: 0, neutral: 0, total: 0 },
-    { name: 'Dec 26', productive: 0, unproductive: 0, neutral: 0, total: 0 },
-    { name: 'Dec 27', productive: 141, unproductive: 14, neutral: 6, total: 161 },
-    { name: 'Dec 28', productive: 128, unproductive: 8, neutral: 5, total: 141 },
-    { name: 'Dec 29', productive: 151, unproductive: 9, neutral: 5, total: 165 },
-    { name: 'Dec 30', productive: 145, unproductive: 7, neutral: 5, total: 157 },
-    { name: 'Dec 31', productive: 110, unproductive: 6, neutral: 6, total: 122 }
-];
-
 const ProductivityTooltip = ({ active, payload, label }) => {
     if (!active || !payload || !payload.length) return null;
 
     const data = payload[0]?.payload || {};
-    const total = data.total || (data.productive || 0) + (data.unproductive || 0) + (data.neutral || 0);
+    const total = data.total !== undefined
+        ? data.total
+        : Number(((data.productive || 0) + (data.unproductive || 0) + (data.neutral || 0)).toFixed(2));
 
     return (
         <div className="bg-slate-900/95 dark:bg-slate-800/95 backdrop-blur-md text-white p-3.5 rounded-xl shadow-xl border border-slate-700/60 text-xs min-w-[180px]">
             <div className="font-bold text-slate-300 pb-2 mb-2 border-b border-slate-700/60 flex items-center justify-between">
                 <span>{label || data.name}</span>
-                <span className="font-black text-white">{total}k h total</span>
+                <span className="font-black text-white">{total} h total</span>
             </div>
             <div className="space-y-1.5 font-medium">
                 <div className="flex items-center justify-between gap-3 text-emerald-400">
                     <span className="flex items-center gap-1.5">
                         <span className="w-2 h-2 rounded-full bg-[#00c48c]" /> Productive:
                     </span>
-                    <span className="font-bold">{data.productive || 0}k h</span>
+                    <span className="font-bold">{data.productive || 0} h</span>
                 </div>
                 <div className="flex items-center justify-between gap-3 text-rose-400">
                     <span className="flex items-center gap-1.5">
                         <span className="w-2 h-2 rounded-full bg-[#ff6b72]" /> Unproductive:
                     </span>
-                    <span className="font-bold">{data.unproductive || 0}k h</span>
+                    <span className="font-bold">{data.unproductive || 0} h</span>
                 </div>
                 <div className="flex items-center justify-between gap-3 text-slate-300">
                     <span className="flex items-center gap-1.5">
                         <span className="w-2 h-2 rounded-full bg-[#d6d9e0]" /> Neutral:
                     </span>
-                    <span className="font-bold">{data.neutral || 0}k h</span>
+                    <span className="font-bold">{data.neutral || 0} h</span>
                 </div>
             </div>
         </div>
@@ -95,10 +63,10 @@ export function ProductivityStackedChart({
         }
 
         let csvContent = 'data:text/csv;charset=utf-8,';
-        csvContent += 'Date,Productive (k h),Unproductive (k h),Neutral (k h),Total (k h)\n';
-        const exportData = (productivityBreakdown && productivityBreakdown.length > 2) 
+        csvContent += 'Date,Productive (h),Unproductive (h),Neutral (h),Total (h)\n';
+        const exportData = productivityBreakdown && productivityBreakdown.length > 0 
             ? productivityBreakdown 
-            : referenceDecemberData;
+            : [];
         exportData.forEach(row => {
             csvContent += `${row.name || row.date},${row.productive},${row.unproductive},${row.neutral},${row.total}\n`;
         });
@@ -112,14 +80,15 @@ export function ProductivityStackedChart({
         document.body.removeChild(link);
     };
 
-    // Use live breakdown if multiple days exist, else default to the reference December benchmark from Image 2
-    const displayData = (productivityBreakdown && productivityBreakdown.length > 2)
-        ? productivityBreakdown
-        : referenceDecemberData;
+    // Real dynamic data from MySQL database
+    const hasBreakdownData = Array.isArray(productivityBreakdown) && productivityBreakdown.length > 0;
+    const hasIntradayData = Array.isArray(intradayData) && intradayData.length > 0;
+
+    const displayData = hasBreakdownData ? productivityBreakdown : [];
 
     return (
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm mb-8 overflow-hidden">
-            {/* Header with Subtabs & Export button (Exact match to Image 2) */}
+            {/* Header with Subtabs & Export button */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800">
                 <button
                     onClick={() => setActiveTab('Timeline')}
@@ -132,24 +101,24 @@ export function ProductivityStackedChart({
                     Timeline
                 </button>
 
-                {/* Centered Pill Subtabs: Activites | Productivity */}
+                {/* Centered Pill Subtabs: Activities | Productivity */}
                 <div className="flex items-center p-1 bg-slate-100 dark:bg-slate-800/80 rounded-xl border border-slate-200/80 dark:border-slate-700">
                     <button
                         onClick={() => setActiveTab('Activities')}
-                        className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                        className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${
                             activeTab === 'Activities'
-                                ? 'bg-white dark:bg-slate-900 text-[#4f46e5] shadow-sm border border-slate-200 dark:border-slate-700'
-                                : 'text-slate-500 dark:text-slate-400 hover:text-slate-800'
+                                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
+                                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'
                         }`}
                     >
-                        Activites
+                        Activities
                     </button>
                     <button
                         onClick={() => setActiveTab('Productivity')}
-                        className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                        className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${
                             activeTab === 'Productivity'
-                                ? 'bg-white dark:bg-slate-900 text-[#4f46e5] shadow-sm border border-slate-200 dark:border-slate-700'
-                                : 'text-slate-500 dark:text-slate-400 hover:text-slate-800'
+                                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
+                                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'
                         }`}
                     >
                         Productivity
@@ -158,49 +127,45 @@ export function ProductivityStackedChart({
 
                 <button
                     onClick={handleExport}
-                    className="text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+                    className="text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-1"
                 >
                     Export
                 </button>
             </div>
 
             {/* Chart Area */}
-            <div className="h-[360px] w-full p-4 sm:p-6 pt-6">
+            <div className="p-6 h-80 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                     {activeTab === 'Productivity' ? (
-                        <BarChart
-                            data={displayData}
-                            margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
-                            barGap={2}
-                        >
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" className="dark:stroke-slate-800" />
-                            <XAxis
-                                dataKey="name"
-                                axisLine={false}
-                                tickLine={false}
-                                ticks={['Dec 1', 'Dec 4', 'Dec 7', 'Dec 10', 'Dec 13', 'Dec 16', 'Dec 19', 'Dec 22', 'Dec 25', 'Dec 28', 'Dec 31']}
-                                tick={{ fontSize: 11, fill: '#64748b', fontWeight: 600 }}
-                                dy={10}
-                            />
-                            <YAxis
-                                axisLine={false}
-                                tickLine={false}
-                                ticks={[0, 100, 120, 140, 160, 180, 200]}
-                                domain={[0, 200]}
-                                tick={{ fontSize: 11, fill: '#64748b', fontWeight: 600 }}
-                                tickFormatter={(val) => (val === 0 ? '0' : `${val}k h`)}
-                            />
-                            <Tooltip content={<ProductivityTooltip />} />
-                            {/* Stacked bars matching Image 2: Green (#00c48c), Coral (#ff6b72), Grey (#d6d9e0) */}
-                            <Bar dataKey="productive" name="Productive Time" stackId="prod" fill="#00c48c" maxBarSize={18} />
-                            <Bar dataKey="unproductive" name="Unproductive Time" stackId="prod" fill="#ff6b72" maxBarSize={18} />
-                            <Bar dataKey="neutral" name="Neutral Time" stackId="prod" fill="#d6d9e0" radius={[2, 2, 0, 0]} maxBarSize={18} />
-                        </BarChart>
+                        displayData.length > 0 ? (
+                            <BarChart data={displayData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" className="dark:stroke-slate-800" />
+                                <XAxis
+                                    dataKey="name"
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fontSize: 11, fill: '#64748b', fontWeight: 600 }}
+                                    dy={10}
+                                />
+                                <YAxis
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fontSize: 11, fill: '#64748b', fontWeight: 600 }}
+                                    tickFormatter={(val) => `${val}h`}
+                                />
+                                <Tooltip content={<ProductivityTooltip />} />
+                                <Bar dataKey="productive" name="Productive Time" stackId="a" fill="#00c48c" maxBarSize={28} />
+                                <Bar dataKey="unproductive" name="Unproductive Time" stackId="a" fill="#ff6b72" maxBarSize={28} />
+                                <Bar dataKey="neutral" name="Neutral Time" stackId="a" fill="#d6d9e0" radius={[4, 4, 0, 0]} maxBarSize={28} />
+                            </BarChart>
+                        ) : (
+                            <div className="h-full flex flex-col items-center justify-center text-slate-400">
+                                <p className="text-sm font-semibold">No productivity records found for this period</p>
+                                <p className="text-xs mt-1 text-slate-400">Select a date range with recorded employee activity</p>
+                            </div>
+                        )
                     ) : (
-                        <ComposedChart
-                            data={intradayData && intradayData.length > 0 ? intradayData : []}
-                            margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
-                        >
+                        <ComposedChart data={hasIntradayData ? intradayData : []} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" className="dark:stroke-slate-800" />
                             <XAxis
                                 dataKey="name"
@@ -247,24 +212,21 @@ export function ProductivityStackedChart({
                 </ResponsiveContainer>
             </div>
 
-            {/* Bottom Legend (Exact Match to Image 2 with small ? badges) */}
+            {/* Bottom Legend */}
             <div className="flex items-center justify-start gap-8 py-3.5 px-6 border-t border-slate-100 dark:border-slate-800 text-xs font-semibold text-slate-500 dark:text-slate-400">
                 {activeTab === 'Productivity' ? (
                     <>
                         <span className="flex items-center gap-2">
                             <span className="w-3 h-3 rounded-full bg-[#00c48c]" />
                             <span>Productive Time</span>
-                            <span className="w-3.5 h-3.5 rounded-full border border-slate-300 dark:border-slate-600 text-[9px] font-bold text-slate-400 flex items-center justify-center">?</span>
                         </span>
                         <span className="flex items-center gap-2">
                             <span className="w-3 h-3 rounded-full bg-[#ff6b72]" />
                             <span>Unproductive Time</span>
-                            <span className="w-3.5 h-3.5 rounded-full border border-slate-300 dark:border-slate-600 text-[9px] font-bold text-slate-400 flex items-center justify-center">?</span>
                         </span>
                         <span className="flex items-center gap-2">
                             <span className="w-3 h-3 rounded-full bg-[#d6d9e0]" />
                             <span>Neutral Time</span>
-                            <span className="w-3.5 h-3.5 rounded-full border border-slate-300 dark:border-slate-600 text-[9px] font-bold text-slate-400 flex items-center justify-center">?</span>
                         </span>
                     </>
                 ) : (

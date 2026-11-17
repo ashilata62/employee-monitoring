@@ -42,7 +42,7 @@ export function ActivitiesTimeline() {
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState(null);
-  const [selectedDate, setSelectedDate] = useState('2026-11-15');
+  const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [hoveredEmployee, setHoveredEmployee] = useState(null);
   const [hoveredHour, setHoveredHour] = useState(null);
   const [showProjectsCard, setShowProjectsCard] = useState(true);
@@ -274,10 +274,10 @@ export function ActivitiesTimeline() {
               <div className="absolute top-full right-0 mt-2 w-64 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-3 z-50 animate-in fade-in duration-200 space-y-2">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider px-2">Select Activity Date</p>
                 {[
-                  { label: 'Today (Nov 16, 2026)', date: '2026-11-16' },
-                  { label: 'Yesterday (Nov 15, 2026)', date: '2026-11-15' },
-                  { label: 'Nov 14, 2026', date: '2026-11-14' },
-                  { label: 'Nov 13, 2026', date: '2026-11-13' }
+                  { label: 'Today (Nov 17, 2026)', date: '2026-11-17' },
+                  { label: 'Yesterday (Nov 16, 2026)', date: '2026-11-16' },
+                  { label: 'Nov 15, 2026', date: '2026-11-15' },
+                  { label: 'Nov 14, 2026', date: '2026-11-14' }
                 ].map(p => (
                   <button
                     key={p.date}
