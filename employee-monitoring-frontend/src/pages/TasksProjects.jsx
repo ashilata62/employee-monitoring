@@ -129,8 +129,8 @@ const CreateTaskModal = ({ isOpen, onClose, onSave, defaultStatus = 'To Do', emp
     };
 
     return createPortal(
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-md animate-in fade-in duration-200 p-4">
-            <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-6 w-full max-w-sm shadow-2xl border border-slate-100 dark:border-slate-800 animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-md animate-in fade-in duration-200 p-3 sm:p-4">
+            <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-5 sm:p-6 w-full max-w-sm max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-100 dark:border-slate-800 animate-in zoom-in-95 duration-200">
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-lg font-black text-slate-900 dark:text-white">{role === 'ADMIN' || role === 'MANAGER' ? 'New Task' : 'Request Task'}</h3>
                     <button onClick={onClose} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
@@ -308,8 +308,8 @@ const CreateGoalModal = ({ isOpen, onClose, onSave, employees = [], initialData 
     };
 
     return createPortal(
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-md animate-in fade-in duration-200 p-4">
-            <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-6 w-full max-w-sm shadow-2xl border border-slate-100 dark:border-slate-800 animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-md animate-in fade-in duration-200 p-3 sm:p-4">
+            <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-5 sm:p-6 w-full max-w-sm max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-100 dark:border-slate-800 animate-in zoom-in-95 duration-200">
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-lg font-black text-slate-900 dark:text-white">Define Objective</h3>
                     <button onClick={onClose} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
@@ -433,8 +433,8 @@ const EditTaskModal = ({ isOpen, onClose, onSave, task, employees = [], projects
     };
 
     return createPortal(
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-md animate-in fade-in duration-200 p-4">
-            <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-6 w-full max-w-sm shadow-2xl border border-slate-100 dark:border-slate-800 animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-md animate-in fade-in duration-200 p-3 sm:p-4">
+            <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-5 sm:p-6 w-full max-w-sm max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-100 dark:border-slate-800 animate-in zoom-in-95 duration-200">
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-lg font-black text-slate-900 dark:text-white">Edit Task</h3>
                     <button onClick={onClose} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
@@ -551,8 +551,8 @@ const GoalStreamModal = ({ goal, onClose }) => {
     ];
 
     return createPortal(
-        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-lg animate-in fade-in duration-300 p-4">
-            <div className="bg-white dark:bg-slate-900 rounded-[3rem] p-10 w-full max-w-2xl shadow-2xl border border-slate-100 dark:border-slate-800 animate-in zoom-in-95 duration-300 relative overflow-hidden">
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-lg animate-in fade-in duration-300 p-3 sm:p-4">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-[3rem] p-5 sm:p-10 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-100 dark:border-slate-800 animate-in zoom-in-95 duration-300 relative overflow-hidden">
                 <div className={cn("absolute top-0 right-0 h-48 w-48 translate-x-16 -translate-y-16 rounded-full opacity-[0.03] animate-pulse", goal.color)} />
 
                 <div className="flex justify-between items-start mb-10">

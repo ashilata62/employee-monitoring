@@ -27,13 +27,13 @@ const FormattedDisplayValue = ({ value }) => {
     const matchHMS = value.match(/^(\d{1,3})h\s*(\d{2})m\s*(\d{2})s$/);
     if (matchHMS) {
         return (
-            <div className="flex items-baseline font-sans font-bold tracking-tight text-[#29291F] dark:text-[#F5F1E9] tabular-nums leading-none">
-                <span className="text-xl sm:text-2xl">{matchHMS[1]}</span>
-                <span className="text-[11px] sm:text-xs font-semibold text-[#777367] dark:text-[#9E988A] ml-0.5 mr-1.5">h</span>
-                <span className="text-xl sm:text-2xl">{matchHMS[2]}</span>
-                <span className="text-[11px] sm:text-xs font-semibold text-[#777367] dark:text-[#9E988A] ml-0.5 mr-1.5">m</span>
-                <span className="text-base sm:text-lg text-[#777367] dark:text-[#9E988A]">{matchHMS[3]}</span>
-                <span className="text-[10px] sm:text-[11px] font-semibold text-[#777367]/80 dark:text-[#9E988A]/80 ml-0.5">s</span>
+            <div className="flex items-baseline font-sans font-bold tracking-tight text-[#29291F] dark:text-[#F5F1E9] tabular-nums leading-none flex-wrap">
+                <span className="text-base sm:text-xl md:text-2xl">{matchHMS[1]}</span>
+                <span className="text-[10px] sm:text-xs font-semibold text-[#777367] dark:text-[#9E988A] ml-0.5 mr-1 sm:mr-1.5">h</span>
+                <span className="text-base sm:text-xl md:text-2xl">{matchHMS[2]}</span>
+                <span className="text-[10px] sm:text-xs font-semibold text-[#777367] dark:text-[#9E988A] ml-0.5 mr-1 sm:mr-1.5">m</span>
+                <span className="text-xs sm:text-base md:text-lg text-[#777367] dark:text-[#9E988A]">{matchHMS[3]}</span>
+                <span className="text-[9px] sm:text-[10px] md:text-[11px] font-semibold text-[#777367]/80 dark:text-[#9E988A]/80 ml-0.5">s</span>
             </div>
         );
     }
@@ -43,15 +43,15 @@ const FormattedDisplayValue = ({ value }) => {
     if (matchHM) {
         return (
             <div className="flex items-baseline font-sans font-bold tracking-tight text-[#29291F] dark:text-[#F5F1E9] tabular-nums leading-none">
-                <span className="text-xl sm:text-2xl">{matchHM[1]}:{matchHM[2]}</span>
-                <span className="text-[11px] sm:text-xs font-semibold text-[#777367] dark:text-[#9E988A] ml-1">h</span>
+                <span className="text-base sm:text-xl md:text-2xl">{matchHM[1]}:{matchHM[2]}</span>
+                <span className="text-[10px] sm:text-xs font-semibold text-[#777367] dark:text-[#9E988A] ml-1">h</span>
             </div>
         );
     }
 
     // Pattern 3: percentage like "75%" or other string
     return (
-        <span className="font-sans font-bold text-xl sm:text-2xl text-[#29291F] dark:text-[#F5F1E9] tracking-tight tabular-nums leading-none">
+        <span className="font-sans font-bold text-base sm:text-xl md:text-2xl text-[#29291F] dark:text-[#F5F1E9] tracking-tight tabular-nums leading-none">
             {value}
         </span>
     );

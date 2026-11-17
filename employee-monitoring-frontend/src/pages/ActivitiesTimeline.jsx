@@ -779,6 +779,8 @@ export function ActivitiesTimeline() {
               ))
             )}
           </div>
+          </div>
+          </div>
 
           {/* Interactive Employee Profile Hover Card */}
           {hoveredEmployee && (

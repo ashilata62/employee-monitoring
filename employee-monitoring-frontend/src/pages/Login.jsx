@@ -81,7 +81,7 @@ export function Login() {
                 </div>
 
                 {/* Login Card */}
-                <div className="bg-[#FBF9F5] dark:bg-[#252B20] p-6 sm:p-8 rounded-3xl shadow-warm-lg border border-[#E5DED2] dark:border-[#384232]">
+                <div className="bg-[#FBF9F5] dark:bg-[#252B20] p-5 sm:p-8 rounded-3xl shadow-warm-lg border border-[#E5DED2] dark:border-[#384232]">
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
                             <label className="block text-[11px] font-bold text-[#777367] dark:text-[#B8B3A7] mb-1.5 uppercase tracking-wider">
@@ -193,8 +193,8 @@ export function Login() {
                     </div>
 
                     {/* Desktop Monitoring Agent Callout */}
-                    <div className="mt-5 rounded-2xl p-4 bg-[#30382B] text-[#F5F1E9] border border-[#3C4536] shadow-warm-xs">
-                        <div className="flex items-center justify-between gap-3">
+                    <div className="mt-5 rounded-2xl p-3.5 sm:p-4 bg-[#30382B] text-[#F5F1E9] border border-[#3C4536] shadow-warm-xs">
+                        <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-3">
                             <div>
                                 <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
                                     <Monitor size={15} className="text-[#D3B98D]" />
@@ -205,7 +205,7 @@ export function Login() {
                             <a
                                 href={`${BASE_URL}/api/agent/download`}
                                 download="EMS-Tracker-latest.exe"
-                                className="px-3.5 py-1.5 bg-[#B9955B] hover:bg-[#A17D45] text-white rounded-xl text-[10px] font-bold transition-all shadow-xs uppercase tracking-wider shrink-0 cursor-pointer"
+                                className="px-3.5 py-1.5 bg-[#B9955B] hover:bg-[#A17D45] text-white rounded-xl text-[10px] font-bold transition-all shadow-xs uppercase tracking-wider shrink-0 text-center cursor-pointer"
                             >
                                 Download
                             </a>

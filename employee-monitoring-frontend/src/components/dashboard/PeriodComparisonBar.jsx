@@ -163,7 +163,7 @@ export function PeriodComparisonBar({
                     </div>
 
                     {/* Swap / Compare Icon ⇄ */}
-                    <div className="mt-5 text-[#B9955B] px-1">
+                    <div className="hidden sm:flex items-center self-end mb-2.5 text-[#B9955B] px-1">
                         <ArrowRightLeft size={15} />
                     </div>
 
@@ -204,7 +204,7 @@ export function PeriodComparisonBar({
                     </div>
 
                     {/* 3. + Add Filter Button with Popover */}
-                    <div className="relative mt-5" ref={filterRef}>
+                    <div className="relative self-end" ref={filterRef}>
                         <button
                             onClick={() => setShowFilterPopover(!showFilterPopover)}
                             className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all shadow-warm-xs cursor-pointer ${
@@ -293,7 +293,7 @@ export function PeriodComparisonBar({
                 </div>
 
                 {/* 4. Export Button */}
-                <div className="relative mt-5" ref={exportRef}>
+                <div className="relative self-end mt-2 sm:mt-0" ref={exportRef}>
                     <button
                         onClick={() => setShowExportMenu(!showExportMenu)}
                         className="p-2.5 bg-[#EEE8DD] dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] text-[#777367] hover:text-[#29291F] dark:hover:text-[#F5F1E9] rounded-xl transition-all shadow-warm-xs active:scale-95 cursor-pointer"

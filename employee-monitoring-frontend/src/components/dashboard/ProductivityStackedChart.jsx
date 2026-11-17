@@ -132,7 +132,7 @@ export function ProductivityStackedChart({
             </div>
 
             {/* Chart Area */}
-            <div className="p-6 h-80 w-full">
+            <div className="p-3 sm:p-6 h-64 sm:h-80 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                     {activeTab === 'Productivity' ? (
                         displayData.length > 0 ? (
