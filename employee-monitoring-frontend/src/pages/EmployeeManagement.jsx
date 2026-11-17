@@ -47,16 +47,16 @@ const Modal = ({ isOpen, onClose, title, subtitle, children, maxWidth = "max-w-m
     if (!isOpen) return null;
 
     return createPortal(
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
             <div className="absolute inset-0" onClick={onClose}></div>
             <div
                 className={cn(
-                    "w-full bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl p-8 shadow-2xl border border-[#E5DED2] dark:border-[#384232] animate-in zoom-in-95 duration-200 relative z-10",
+                    "w-full bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl p-5 sm:p-8 max-h-[90vh] overflow-y-auto shadow-2xl border border-[#E5DED2] dark:border-[#384232] animate-in zoom-in-95 duration-200 relative z-10",
                     maxWidth
                 )}
                 onClick={(e) => e.stopPropagation()}
             >
-                <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center justify-between mb-5 sm:mb-8">
                     <div>
                         <h3 className="font-serif text-2xl font-bold text-[#29291F] dark:text-[#F5F1E9] leading-none">{title}</h3>
                         {subtitle && <p className="text-xs font-semibold text-[#777367] mt-1.5 uppercase tracking-wider">{subtitle}</p>}
@@ -237,13 +237,17 @@ const EditEmployeeModal = ({ isOpen, onClose, employee, onUpdate }) => {
 
     useEffect(() => {
         if (employee) {
+            let initialLocation = employee.workMode || 'Remote';
+            if (employee.location && !employee.location.startsWith('—')) {
+                initialLocation = employee.location;
+            }
             setFormData({
-                fullName: employee.name || employee.fullName,
-                email: employee.email,
+                fullName: employee.name || employee.fullName || '',
+                email: employee.email || '',
                 teamId: employee.teamId || '',
-                location: employee.location || 'Remote',
+                location: initialLocation,
                 hourlyRate: employee.hourlyRate || 0,
-                status: employee.status.toUpperCase(),
+                status: (employee.status || 'ACTIVE').toUpperCase(),
                 password: ''
             });
         }
@@ -263,6 +267,19 @@ const EditEmployeeModal = ({ isOpen, onClose, employee, onUpdate }) => {
 
         // Final validation and data prep
         const submitData = { ...formData };
+
+        // Clean teamId: if empty string or not selected, send null so foreign key check succeeds
+        if (!submitData.teamId || submitData.teamId === '') {
+            submitData.teamId = null;
+        }
+
+        // Clean location if it contains display format like "— (Office)"
+        if (submitData.location) {
+            const loc = submitData.location.trim();
+            if (loc.startsWith('— (')) {
+                submitData.location = loc.replace('— (', '').replace(')', '').trim();
+            }
+        }
 
         // Remove empty password so it doesn't fail backend min(6) validation
         if (!submitData.password || submitData.password.trim() === '') {
@@ -371,6 +388,7 @@ const EditEmployeeModal = ({ isOpen, onClose, employee, onUpdate }) => {
                     <div className="relative group">
                         <input
                             type={showPassword ? "text" : "password"}
+                            autoComplete="new-password"
                             value={formData.password}
                             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                             placeholder={formData.status === 'INVITED' ? "Password not set - Enter to create" : "Leave blank to keep existing (********)"}

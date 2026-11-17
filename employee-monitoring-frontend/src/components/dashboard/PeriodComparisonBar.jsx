@@ -139,7 +139,7 @@ export function PeriodComparisonBar({
                         </button>
 
                         {showRefDropdown && (
-                            <div className="absolute top-full left-0 mt-2 w-64 bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl shadow-xl border border-[#E5DED2] dark:border-[#384232] p-2 z-50 animate-in fade-in duration-150">
+                            <div className="absolute top-full left-0 mt-2 w-64 max-w-[calc(100vw-2rem)] bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl shadow-xl border border-[#E5DED2] dark:border-[#384232] p-2 z-50 animate-in fade-in duration-150">
                                 <p className="px-3 py-1.5 text-[9px] font-bold text-[#777367] uppercase tracking-[0.15em]">Select Range</p>
                                 {[
                                     { label: 'Today', start: new Date().toISOString().slice(0, 10), end: new Date().toISOString().slice(0, 10) },
@@ -163,7 +163,7 @@ export function PeriodComparisonBar({
                     </div>
 
                     {/* Swap / Compare Icon ⇄ */}
-                    <div className="mt-5 text-[#B9955B] px-1">
+                    <div className="hidden sm:flex items-center self-end mb-2.5 text-[#B9955B] px-1">
                         <ArrowRightLeft size={15} />
                     </div>
 
@@ -181,7 +181,7 @@ export function PeriodComparisonBar({
                         </button>
 
                         {showCompDropdown && (
-                            <div className="absolute top-full left-0 mt-2 w-64 bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl shadow-xl border border-[#E5DED2] dark:border-[#384232] p-2 z-50 animate-in fade-in duration-150">
+                            <div className="absolute top-full left-0 mt-2 w-64 max-w-[calc(100vw-2rem)] bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl shadow-xl border border-[#E5DED2] dark:border-[#384232] p-2 z-50 animate-in fade-in duration-150">
                                 <p className="px-3 py-1.5 text-[9px] font-bold text-[#777367] uppercase tracking-[0.15em]">Select Comparison Range</p>
                                 {[
                                     { label: 'Prior Period (Equal Duration)', start: null, end: null },
@@ -204,7 +204,7 @@ export function PeriodComparisonBar({
                     </div>
 
                     {/* 3. + Add Filter Button with Popover */}
-                    <div className="relative mt-5" ref={filterRef}>
+                    <div className="relative self-end" ref={filterRef}>
                         <button
                             onClick={() => setShowFilterPopover(!showFilterPopover)}
                             className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all shadow-warm-xs cursor-pointer ${
@@ -219,7 +219,7 @@ export function PeriodComparisonBar({
                         </button>
 
                         {showFilterPopover && (
-                            <div className="absolute top-full left-0 mt-2 w-72 bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl shadow-2xl border border-[#E5DED2] dark:border-[#384232] p-4 z-50 animate-in fade-in duration-150 space-y-3">
+                            <div className="absolute top-full left-0 sm:left-auto sm:right-0 mt-2 w-72 max-w-[calc(100vw-2rem)] bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl shadow-2xl border border-[#E5DED2] dark:border-[#384232] p-4 z-50 animate-in fade-in duration-150 space-y-3">
                                 <div className="flex items-center justify-between pb-2 border-b border-[#E5DED2] dark:border-[#384232]">
                                     <span className="text-xs font-bold text-[#29291F] dark:text-[#F5F1E9] flex items-center gap-1.5">
                                         <Filter size={13} className="text-[#B9955B]" /> Filter Analytics
@@ -293,7 +293,7 @@ export function PeriodComparisonBar({
                 </div>
 
                 {/* 4. Export Button */}
-                <div className="relative mt-5" ref={exportRef}>
+                <div className="relative self-end mt-2 sm:mt-0" ref={exportRef}>
                     <button
                         onClick={() => setShowExportMenu(!showExportMenu)}
                         className="p-2.5 bg-[#FBF9F5] dark:bg-[#252B20] border border-[#E5DED2] dark:border-[#384232] text-[#777367] hover:text-[#29291F] dark:hover:text-[#F5F1E9] rounded-xl transition-all shadow-warm-xs active:scale-95 cursor-pointer"

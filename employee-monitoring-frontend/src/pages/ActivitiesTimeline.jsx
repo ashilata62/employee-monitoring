@@ -599,8 +599,10 @@ export function ActivitiesTimeline() {
       {/* ── 3. Main Body: Timeline vs Logs ─────────────────────────────────── */}
       {activeTab === 'Timeline' ? (
         <div className="bg-white dark:bg-slate-900 rounded-[1.75rem] border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden relative">
-          {/* Top Hourly Workforce Activity Density Histogram */}
-          <div className="pt-4 px-6 pb-2 border-b border-slate-100 dark:border-slate-800/60 bg-slate-50/40 dark:bg-slate-900/40">
+          <div className="overflow-x-auto">
+            <div className="min-w-[850px]">
+              {/* Top Hourly Workforce Activity Density Histogram */}
+              <div className="pt-4 px-6 pb-2 border-b border-slate-100 dark:border-slate-800/60 bg-slate-50/40 dark:bg-slate-900/40">
             <div className="flex items-end h-10 w-full pl-[260px] pr-6 gap-1 relative">
               {data?.hourlyDistribution?.map((bucket, idx) => {
                 const maxEmployees = Math.max(1, bucket.totalEmployees || 4);
@@ -778,6 +780,8 @@ export function ActivitiesTimeline() {
                 </div>
               ))
             )}
+          </div>
+          </div>
           </div>
 
           {/* Interactive Employee Profile Hover Card */}
