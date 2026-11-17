@@ -145,8 +145,8 @@ export function ApiTokens() {
                                                 {new Date(token.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                             </p>
                                         </td>
-                                        <td className="px-10 py-8">
-                                            <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                                        <td className="px-4 sm:px-10 py-4 sm:py-8">
+                                            <div className="flex items-center justify-end gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all">
                                                 <button
                                                     onClick={() => handleCopyMasked(token.last4, token.id)}
                                                     className={cn(

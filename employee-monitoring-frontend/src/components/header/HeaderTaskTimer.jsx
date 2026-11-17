@@ -53,7 +53,7 @@ export function HeaderTaskTimer() {
                     Currently Working On
                 </span>
                 <span 
-                    className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate max-w-[90px] sm:max-w-[140px] md:max-w-[200px]"
+                    className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate max-w-[65px] xs:max-w-[100px] sm:max-w-[140px] md:max-w-[200px]"
                     title={activeTask.title}
                 >
                     {activeTask.title}

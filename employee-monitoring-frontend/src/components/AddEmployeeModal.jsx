@@ -227,19 +227,19 @@ export function AddEmployeeModal({ isOpen, onClose, initialTab = 'single' }) {
     };
 
     return createPortal(
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 backdrop-blur-sm overflow-hidden p-4">
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 backdrop-blur-sm overflow-hidden p-2 sm:p-4">
             <div className="absolute inset-0 transition-opacity" onClick={onClose}></div>
-            <div className="relative w-full max-w-2xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] border border-slate-100 dark:border-slate-800 animate-in fade-in zoom-in-95 duration-200">
+            <div className="relative w-full max-w-2xl bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] border border-slate-100 dark:border-slate-800 animate-in fade-in zoom-in-95 duration-200">
                 
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 dark:border-slate-800">
+                <div className="flex items-center justify-between px-4 sm:px-6 py-4 sm:py-5 border-b border-slate-100 dark:border-slate-800">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-2xl bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center text-primary-600">
+                        <div className="w-10 h-10 rounded-2xl bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center text-primary-600 shrink-0">
                             <UserPlus size={20} />
                         </div>
                         <div>
-                            <h2 className="text-base font-black text-slate-900 dark:text-white">Add New Employee</h2>
-                            <p className="text-xs text-slate-400 font-medium">Create a new team member and link tracking settings</p>
+                            <h2 className="text-sm sm:text-base font-black text-slate-900 dark:text-white">Add New Employee</h2>
+                            <p className="text-[11px] sm:text-xs text-slate-400 font-medium">Create a new team member and link tracking settings</p>
                         </div>
                     </div>
                     <button
@@ -251,7 +251,7 @@ export function AddEmployeeModal({ isOpen, onClose, initialTab = 'single' }) {
                 </div>
 
                 {/* Tab Navigation */}
-                <div className="flex items-center gap-2 px-6 pt-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+                <div className="flex items-center gap-1 sm:gap-2 px-3 sm:px-6 pt-3 sm:pt-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 overflow-x-auto scrollbar-none">
                     {[
                         { id: 'single', label: 'Manual Add Employee', icon: UserPlus },
                         { id: 'batch', label: 'Batch Invite', icon: Users },
@@ -263,7 +263,7 @@ export function AddEmployeeModal({ isOpen, onClose, initialTab = 'single' }) {
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`flex items-center gap-2 px-4 py-2.5 rounded-t-xl text-xs font-black transition-all border-b-2 -mb-px ${
+                                className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-t-xl text-xs font-black transition-all border-b-2 -mb-px whitespace-nowrap ${
                                     isActive
                                         ? 'border-primary-600 text-primary-600 bg-white dark:bg-slate-900'
                                         : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
@@ -277,7 +277,7 @@ export function AddEmployeeModal({ isOpen, onClose, initialTab = 'single' }) {
                 </div>
 
                 {/* Body Content */}
-                <div className="overflow-y-auto px-6 py-6 space-y-6">
+                <div className="overflow-y-auto px-4 sm:px-6 py-4 sm:py-6 space-y-6">
                     {/* ── 1. Single Employee Form (Direct Add) ─────────────────── */}
                     {activeTab === 'single' && (
                         <form onSubmit={handleSingleSubmit} className="space-y-4">

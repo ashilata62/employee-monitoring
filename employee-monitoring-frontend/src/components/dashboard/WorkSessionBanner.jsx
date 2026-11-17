@@ -67,7 +67,7 @@ export function WorkSessionBanner() {
                     <span className="text-[10px] font-bold text-[#64748b] dark:text-[#94a3b8] uppercase tracking-[0.14em] mb-1">
                         {isOnBreak ? 'Session Paused' : 'Total Work Hours'}
                     </span>
-                    <div className="font-sans text-3xl lg:text-4xl font-bold text-[#0f172a] dark:text-[#f8fafc] tabular-nums tracking-tight">
+                    <div className="font-sans text-2xl xs:text-3xl lg:text-4xl font-bold text-[#0f172a] dark:text-[#f8fafc] tabular-nums tracking-tight">
                         {formatTime(elapsedSeconds)}
                     </div>
                 </div>

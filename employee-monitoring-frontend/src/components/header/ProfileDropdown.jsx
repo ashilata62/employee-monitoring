@@ -57,7 +57,7 @@ export function ProfileDropdown() {
             </button>
 
             {isOpen && (
-                <div className="absolute right-0 top-full mt-2 w-64 rounded-2xl border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900 animate-in fade-in slide-in-from-top-2 duration-200 z-50 overflow-hidden">
+                <div className="absolute right-0 top-full mt-2 w-64 max-w-[calc(100vw-1.5rem)] rounded-2xl border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900 animate-in fade-in slide-in-from-top-2 duration-200 z-50 overflow-hidden">
                     <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center gap-3 bg-slate-50/50 dark:bg-slate-850">
                         {currentUser?.avatar ? (
                             <img src={currentUser.avatar} alt="Profile" className="h-10 w-10 rounded-full object-cover" />

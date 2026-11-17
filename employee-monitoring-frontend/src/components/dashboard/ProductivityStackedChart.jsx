@@ -87,7 +87,7 @@ export function ProductivityStackedChart({
     return (
         <div className="bg-[#ffffff] dark:bg-[#0f172a] rounded-2xl border border-[#e2e8f0] dark:border-[#1e293b] shadow-warm-xs mb-8 overflow-hidden">
             {/* Header with Subtabs & Export button */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-[#e2e8f0] dark:border-[#1e293b]">
+            <div className="flex flex-wrap items-center justify-between gap-2.5 px-4 sm:px-6 py-3.5 sm:py-4 border-b border-[#e2e8f0] dark:border-[#1e293b]">
                 <button
                     onClick={() => setActiveTab('Timeline')}
                     className={`font-sans text-sm font-semibold transition-colors cursor-pointer ${
@@ -132,7 +132,7 @@ export function ProductivityStackedChart({
             </div>
 
             {/* Chart Area */}
-            <div className="p-6 h-80 w-full">
+            <div className="p-3 sm:p-6 h-64 sm:h-80 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                     {activeTab === 'Productivity' ? (
                         displayData.length > 0 ? (
@@ -211,7 +211,7 @@ export function ProductivityStackedChart({
             </div>
 
             {/* Bottom Legend */}
-            <div className="flex items-center justify-start gap-8 py-3.5 px-6 border-t border-[#e2e8f0] dark:border-[#1e293b] text-xs font-semibold text-[#64748b] dark:text-[#94a3b8]">
+            <div className="flex flex-wrap items-center justify-start gap-3.5 sm:gap-8 py-3 px-4 sm:px-6 border-t border-[#e2e8f0] dark:border-[#1e293b] text-xs font-semibold text-[#64748b] dark:text-[#94a3b8]">
                 {activeTab === 'Productivity' ? (
                     <>
                         <span className="flex items-center gap-2">

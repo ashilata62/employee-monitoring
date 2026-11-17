@@ -40,8 +40,8 @@ export function Header({ onMenuClick }) {
     const unreadCount = liveNotifications.filter(n => n.unread).length;
 
     return (
-        <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-slate-200 bg-white/95 px-4 md:px-8 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/95 transition-colors">
-            <div className="flex items-center gap-4">
+        <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-slate-200 bg-white/95 px-2.5 sm:px-4 md:px-8 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/95 transition-colors">
+            <div className="flex items-center gap-2 sm:gap-4">
                 <button
                     onClick={onMenuClick}
                     className="lg:hidden flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 transition-colors"
@@ -50,7 +50,7 @@ export function Header({ onMenuClick }) {
                 </button>
             </div>
 
-            <div className="flex items-center gap-2 md:gap-3.5">
+            <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3.5">
                 <HeaderTaskTimer />
                 <WebTrackerAgent />
 
