@@ -5,27 +5,12 @@ const { contextBridge, ipcRenderer } = require('electron');
  */
 contextBridge.exposeInMainWorld('electronAPI', {
     // ─── Task ID Linking ──────────────────────────────────────────────────
-    /**
-     * Send the active taskId from frontend to Electron main process
-     * @param {string|null} taskId - The ID of the currently active task
-     */
     setActiveTask: (taskId) => {
         ipcRenderer.send('task:set-active', taskId);
     },
-
-    /**
-     * Retrieve current active taskId from Electron runtime state
-     * @returns {Promise<string|null>}
-     */
     getActiveTask: () => {
         return ipcRenderer.invoke('task:get-active');
     },
-
-    /**
-     * Subscribe to task change broadcasts
-     * @param {function(string|null): void} callback
-     * @returns {function(): void} Unsubscribe function
-     */
     onActiveTaskChanged: (callback) => {
         const handler = (_event, taskId) => callback(taskId);
         ipcRenderer.on('task:active-updated', handler);
@@ -59,4 +44,20 @@ contextBridge.exposeInMainWorld('electronAPI', {
 contextBridge.exposeInMainWorld('electron', {
     sendTask: (taskId) => ipcRenderer.send('task:set-active', taskId),
     getTask: () => ipcRenderer.invoke('task:get-active')
+});
+
+// Agent API compatibility from origin/main
+contextBridge.exposeInMainWorld('agentAPI', {
+    getDeviceInfo: () => ipcRenderer.invoke('get-device-id'),
+    getInvitePrefill: () => ipcRenderer.invoke('get-invite-prefill'),
+    onInviteLoaded: (callback) => ipcRenderer.on('invite-loaded', (_event, data) => callback(data)),
+    completeSetup: (data) => ipcRenderer.invoke('complete-setup', data),
+    getPermissionsState: () => ipcRenderer.invoke('get-permissions-state'),
+    completePermissions: (data) => ipcRenderer.invoke('complete-permissions', data),
+    getApprovalStatus: () => ipcRenderer.invoke('get-approval-status'),
+    closeWindow: () => ipcRenderer.send('close-window'),
+    requestLocation: () => ipcRenderer.invoke('request-location'),
+    checkScreenPermission: () => ipcRenderer.invoke('check-screen-permission'),
+    onStatusUpdated: (callback) => ipcRenderer.on('status-updated', (_event, status) => callback(status)),
+    runHealthCheck: () => ipcRenderer.invoke('run-health-check')
 });

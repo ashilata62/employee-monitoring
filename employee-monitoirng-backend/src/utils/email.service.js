@@ -23,7 +23,7 @@ function createTransport() {
     });
 }
 
-async function sendMail({ to, subject, html, text }) {
+async function sendMail({ to, subject, html, text, attachments }) {
     const transport = createTransport();
     const from = process.env.EMAIL_FROM || process.env.SMTP_FROM || 'Employee Monitoring <noreply@localhost>';
 
@@ -32,13 +32,14 @@ async function sendMail({ to, subject, html, text }) {
         console.log(`From:    ${from}`);
         console.log(`To:      ${to}`);
         console.log(`Subject: ${subject}`);
+        console.log(`Attachments: ${attachments ? attachments.map(a => a.filename).join(', ') : 'None'}`);
         console.log(`Body:\n${text || html}`);
         console.log('===================================================================================\n');
         return { sent: false, simulated: true };
     }
 
     try {
-        const info = await transport.sendMail({ from, to, subject, html, text });
+        const info = await transport.sendMail({ from, to, subject, html, text, attachments });
         console.log(`[EmailService] Real Email sent successfully to ${to}. MessageId: ${info.messageId}`);
         return { sent: true, messageId: info.messageId };
     } catch (err) {

@@ -64,12 +64,30 @@ async function getRulesWithTags(organizationId) {
     });
 }
 
-function findMatchingRule(rules, cleanAppName, appDomain, activeWindow = '') {
+function findMatchingRule(rules, cleanAppName, appDomain, activeWindow = '', teamId = null) {
     const nameLower = (cleanAppName || '').toLowerCase();
     const domainLower = (appDomain || '').toLowerCase();
     const windowLower = (activeWindow || '').toLowerCase();
 
-    for (const rule of rules) {
+    // If teamId is provided, try team-specific rules first
+    if (teamId) {
+        const teamRules = rules.filter(r => r.teamId === teamId);
+        for (const rule of teamRules) {
+            const ruleDomain = (rule.domain || '').toLowerCase();
+            const ruleApp = (rule.appName || '').toLowerCase();
+
+            if (ruleDomain && (ruleDomain === domainLower || nameLower.includes(ruleDomain) || windowLower.includes(ruleDomain))) {
+                return rule;
+            }
+            if (ruleApp && (ruleApp === nameLower || nameLower.includes(ruleApp))) {
+                return rule;
+            }
+        }
+    }
+
+    // Fall back to global rules (teamId is null)
+    const globalRules = rules.filter(r => !r.teamId);
+    for (const rule of globalRules) {
         const ruleDomain = (rule.domain || '').toLowerCase();
         const ruleApp = (rule.appName || '').toLowerCase();
 

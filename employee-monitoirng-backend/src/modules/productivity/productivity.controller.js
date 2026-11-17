@@ -6,8 +6,8 @@ const productivityController = {
     getApps: async (req, res) => {
         try {
             const organizationId = await getOrganizationId(req);
-            const { startDate, endDate, productivity } = req.query;
-            let data = await productivityService.getAppsUsage(organizationId, startDate, endDate);
+            const { startDate, endDate, productivity, teamId } = req.query;
+            let data = await productivityService.getAppsUsage(organizationId, startDate, endDate, teamId || null);
             if (productivity) {
                 data = data.filter(a => a.productivity === productivity.toUpperCase());
             }
@@ -59,6 +59,17 @@ const productivityController = {
     },
 
     // ── Rules ────────────────────────────────────────────────────────
+    getRules: async (req, res) => {
+        try {
+            const organizationId = await getOrganizationId(req);
+            const { teamId } = req.query;
+            const rules = await productivityService.getRules(organizationId, teamId || null);
+            return successResponse(res, rules, 'Rules fetched successfully');
+        } catch (error) {
+            return errorResponse(res, error.message);
+        }
+    },
+
     updateRule: async (req, res) => {
         try {
             const organizationId = await getOrganizationId(req);

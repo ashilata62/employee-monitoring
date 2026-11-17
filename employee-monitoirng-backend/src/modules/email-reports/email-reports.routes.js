@@ -9,5 +9,6 @@ router.post('/', emailReportsController.createReport);
 router.get('/', emailReportsController.getReports);
 router.put('/:id', emailReportsController.updateReport);
 router.delete('/:id', emailReportsController.deleteReport);
+router.post('/:id/trigger', emailReportsController.triggerReport);
 
 module.exports = router;

@@ -119,6 +119,19 @@ const deleteAgent = async (agentId) => {
  * Update agent heartbeat
  */
 const heartbeat = async (deviceId, taskId = null) => {
+    const existingAgent = await prisma.agent.findUnique({
+        where: { deviceId },
+        include: { employee: true }
+    });
+
+    if (!existingAgent) throw new Error('Agent not found');
+
+    if (existingAgent.employee?.status === 'DEACTIVATED') {
+        const error = new Error('This employee account has been deactivated.');
+        error.code = 'ACCOUNT_DEACTIVATED';
+        error.statusCode = 403;
+        throw error;
+    }
     const agent = await prisma.agent.update({
         where: { deviceId },
         data: {
@@ -129,7 +142,7 @@ const heartbeat = async (deviceId, taskId = null) => {
 
     if (agent?.employeeId) {
         try {
-            await onAgentPulse(agent.employeeId, agent.organizationId || 'default-org-id');
+            await onAgentPulse(agent.employeeId, existingAgent.employee?.organizationId || 'default-org-id');
         } catch (err) {
             console.error('[AgentService] Heartbeat attendance pulse failed:', err.message);
         }
@@ -145,13 +158,20 @@ const logActivity = async (employeeId, data) => {
     let screenshotSaved = false;
     let finalScreenshotUrl = null;
 
-    // Get employee for organizationId
+    // Get employee for organizationId and verify active status
     const employee = await prisma.employee.findUnique({
         where: { id: employeeId },
-        select: { organizationId: true }
+        select: { organizationId: true, status: true }
     });
 
     if (!employee) throw new Error('Employee not found');
+
+    if (employee.status === 'DEACTIVATED') {
+        const error = new Error('This employee account has been deactivated.');
+        error.code = 'ACCOUNT_DEACTIVATED';
+        error.statusCode = 403;
+        throw error;
+    }
     console.log(`[AgentService] Processing activity for employee: ${employeeId}. Screenshot included: ${!!screenshotUrl}`);
 
     try {
@@ -177,6 +197,22 @@ const logActivity = async (employeeId, data) => {
 
     console.log(`[AgentService:${employeeId}] Logging activities: App=${cleanAppName}, Idle=${idleTime}s, Productivity=${finalProductivity}, Task=${data.taskId || 'None'}, Violation=${isViolation}`);
 
+    // Resolve active taskId if not explicitly passed by agent
+    let activeTaskId = data.taskId || null;
+    if (!activeTaskId) {
+        try {
+            const activeTimer = await prisma.taskTimeLog.findFirst({
+                where: { employeeId, isRunning: true },
+                select: { taskId: true }
+            });
+            if (activeTimer) {
+                activeTaskId = activeTimer.taskId;
+            }
+        } catch (e) {
+            console.error(`[AgentService:${employeeId}] Failed to resolve active task timer:`, e.message);
+        }
+    }
+
     // 1. Save Activity Log
     try {
         let validTaskIdForDb = null;
@@ -198,7 +234,7 @@ const logActivity = async (employeeId, data) => {
                 duration: HEARTBEAT_SECONDS,
                 appWebsite: cleanAppName,
                 timestamp: timestamp ? new Date(timestamp) : new Date(),
-                ...(validTaskIdForDb ? { taskId: validTaskIdForDb } : {})
+                ...(validTaskIdForDb ? { taskId: validTaskIdForDb } : (typeof activeTaskId === 'string' ? { taskId: activeTaskId } : {}))
             }
         });
     } catch (e) { console.error(`[AgentService:${employeeId}] ActivityLog failed:`, e.message); }
@@ -335,6 +371,29 @@ const logActivity = async (employeeId, data) => {
             data: { lastSeen: new Date(), status: 'active' }
         });
     } catch (e) { console.error('Agent update failed:', e.message); }
+
+    // 7. Background Alert Evaluation (Developer 4 - Non-blocking)
+    try {
+        const alertsService = require('../alerts/alerts.service');
+        // Evaluate Continuous Idle Time
+        alertsService.evaluateContinuousIdle({
+            employeeId,
+            organizationId: employee.organizationId,
+            idleTime,
+            timestamp
+        }).catch(err => console.error('[AgentService] Continuous idle evaluation failed:', err.message));
+
+        // Evaluate Prohibited Application Access & Violation Screenshot Sync
+        alertsService.evaluateProhibitedApp({
+            employeeId,
+            organizationId: employee.organizationId,
+            activeApp,
+            activeWindow,
+            screenshotUrl: finalScreenshotUrl
+        }).catch(err => console.error('[AgentService] Prohibited app evaluation failed:', err.message));
+    } catch (alertErr) {
+        console.error('[AgentService] Alert evaluation trigger failed:', alertErr.message);
+    }
 
     return {
         success: true,

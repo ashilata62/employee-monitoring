@@ -125,6 +125,10 @@ model Organization {
   goals            Goal[]
   screenshotSetting ScreenshotSetting?
   videoRecordings  VideoRecording[]
+  timesheets       Timesheet[]
+  taskTimeLogs     TaskTimeLog[]
+  notifications    Notification[]
+  alertLogs        AlertLog[]
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
 
@@ -153,6 +157,7 @@ model Team {
   organization   Organization @relation(fields: [organizationId], references: [id])
   organizationId String
   employees      Employee[]
+  productivityRules ProductivityRule[]
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
@@ -171,6 +176,7 @@ model Employee {
   computerType   ComputerType   @default(COMPANY)
   status         EmployeeStatus @default(ACTIVE)
   hourlyRate     Float          @default(0.0)
+  payRateType    String?        @default("HOURLY")
   avatar         String?        @db.Text
   user           User?
   team           Team?          @relation(fields: [teamId], references: [id])
@@ -197,6 +203,9 @@ model Employee {
   agent              Agent?
   tracking           Tracking[]
   videoRecordings    VideoRecording[]
+  timesheets         Timesheet[]
+  taskTimeLogs       TaskTimeLog[]
+  alertLogs          AlertLog[]
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
 
@@ -260,6 +269,7 @@ model Task {
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
   activityLogs   ActivityLog[]
+  timeLogs       TaskTimeLog[]
 
   @@map("tasks")
 }
@@ -634,14 +644,17 @@ model ProductivityRule {
   domain         String
   productivity   ProductivityType @default(NEUTRAL)
   category       String?          @default("Uncategorized")
+  isBlocked      Boolean          @default(false)
   tag            ProductivityTag? @relation(fields: [tagId], references: [id])
   tagId          String?
+  team           Team?            @relation(fields: [teamId], references: [id])
+  teamId         String?
   organization   Organization     @relation(fields: [organizationId], references: [id])
   organizationId String
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
 
-  @@unique([organizationId, domain])
+  @@unique([organizationId, domain, teamId])
   @@map("productivity_rules")
 }
 
@@ -774,4 +787,110 @@ model VideoRecording {
   createdAt      DateTime     @default(now())
 
   @@map("video_recordings")
+}
+
+enum TimesheetStatus {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  REJECTED
+}
+
+model Timesheet {
+  id              String            @id @default(uuid())
+  organization    Organization      @relation(fields: [organizationId], references: [id])
+  organizationId  String
+  employee        Employee          @relation(fields: [employeeId], references: [id])
+  employeeId      String
+  weekStart       String            // Format: "YYYY-MM-DD" (Always Monday)
+  status          TimesheetStatus   @default(DRAFT)
+  submittedAt     DateTime?
+  totalMinutes    Int               @default(0)
+  regularMinutes  Int               @default(0)
+  overtimeMinutes Int               @default(0)
+  totalPay        Float             @default(0.0)
+  approvals       TimesheetApproval[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@unique([organizationId, employeeId, weekStart])
+  @@index([organizationId, weekStart])
+  @@index([employeeId, weekStart])
+  @@map("timesheets")
+}
+
+model TimesheetApproval {
+  id           String    @id @default(uuid())
+  timesheet    Timesheet @relation(fields: [timesheetId], references: [id])
+  timesheetId  String
+  approverId   String
+  approverName String
+  decision     String    // "APPROVED" | "REJECTED"
+  comment      String?   @db.Text
+  createdAt    DateTime  @default(now())
+
+  @@index([timesheetId])
+  @@map("timesheet_approvals")
+}
+
+model TaskTimeLog {
+  id             String       @id @default(uuid())
+  taskId         String
+  employeeId     String
+  organizationId String
+  startTime      DateTime
+  endTime        DateTime?
+  duration       Int          @default(0) // duration in seconds
+  isRunning      Boolean      @default(true)
+  source         String       @default("WEB") // "WEB" | "DESKTOP_AGENT"
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  task           Task         @relation(fields: [taskId], references: [id])
+  employee       Employee     @relation(fields: [employeeId], references: [id])
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([employeeId, isRunning])
+  @@index([taskId])
+  @@index([organizationId])
+  @@map("task_time_logs")
+}
+
+model AlertLog {
+  id             String       @id @default(uuid())
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+  employee       Employee     @relation(fields: [employeeId], references: [id])
+  employeeId     String
+  ruleType       String       // "LATE_ARRIVAL", "CONTINUOUS_IDLE", "PROHIBITED_APP", "SECURITY"
+  trigger        String       // e.g., "Late Arrival (18m)", "Idle (30m)", "Prohibited Application"
+  severity       String       @default("warning") // "critical", "warning", "info"
+  message        String       @db.Text
+  screenshotUrl  String?      @db.LongText
+  metadata       Json?
+  resolved       Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([organizationId, createdAt])
+  @@index([employeeId, createdAt])
+  @@map("alert_logs")
+}
+
+model Notification {
+  id             String       @id @default(uuid())
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+  targetUserId   String?      // null for all managers/admins, or specific userId
+  title          String
+  description    String?      @db.Text
+  type           String       @default("info") // "alert", "warning", "success", "info"
+  unread         Boolean      @default(true)
+  link           String?
+  metadata       Json?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([organizationId, unread, createdAt])
+  @@map("notifications")
 }

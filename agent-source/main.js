@@ -15,7 +15,7 @@ if (!electron.powerMonitor) {
         on: () => {}
     };
 }
-const { app, BrowserWindow, ipcMain, powerMonitor } = electron;
+const { app, BrowserWindow, ipcMain, powerMonitor, Tray, Menu, Notification, nativeImage } = electron;
 const path = require('path');
 const os = require('os');
 const { exec } = require('child_process');

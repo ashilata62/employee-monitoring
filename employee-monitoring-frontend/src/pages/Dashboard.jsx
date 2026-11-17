@@ -354,6 +354,17 @@ export function Dashboard() {
         utilization: dept.productivity || 0,
     }));
 
+    const liveScore = useMemo(() => {
+        const rawUtil = Number(stats.summary?.utilization);
+        if (!isNaN(rawUtil) && rawUtil > 0) return rawUtil;
+        const rawProd = Number(stats.summary?.productivity);
+        if (!isNaN(rawProd) && rawProd > 0) return rawProd;
+        if (liveTick) {
+            return 100;
+        }
+        return 0;
+    }, [stats.summary?.utilization, stats.summary?.productivity, liveTick]);
+
     return (
         <div className="min-h-screen bg-[#fcfdfe] dark:bg-slate-950 pb-12 px-2 sm:px-4 lg:px-8 pt-6">
             {role === 'EMPLOYEE' && <WorkSessionBanner />}

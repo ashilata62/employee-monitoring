@@ -35,14 +35,30 @@ const initSocketServer = (server) => {
             const decoded = Buffer.from(token, 'base64').toString('ascii');
             if (decoded.includes('INSIGHTFUL')) {
                 const [empId, devId] = decoded.split(':');
-                // For agents, we mock the user object enough for the connection logic
-                socket.user = { 
-                    id: `agent_${empId}`, 
-                    employeeId: empId, 
-                    deviceId: devId,
-                    role: 'AGENT' 
-                };
-                return next();
+                prisma.employee.findUnique({
+                    where: { id: empId },
+                    select: { organizationId: true }
+                }).then(emp => {
+                    socket.user = { 
+                        id: `agent_${empId}`, 
+                        userId: `agent_${empId}`,
+                        employeeId: empId, 
+                        deviceId: devId,
+                        role: 'AGENT',
+                        organizationId: emp?.organizationId || null
+                    };
+                    return next();
+                }).catch(() => {
+                    socket.user = { 
+                        id: `agent_${empId}`, 
+                        userId: `agent_${empId}`,
+                        employeeId: empId, 
+                        deviceId: devId,
+                        role: 'AGENT' 
+                    };
+                    return next();
+                });
+                return;
             }
         } catch (e) {
             // Not a base64 agent token, continue to JWT
@@ -62,7 +78,8 @@ const initSocketServer = (server) => {
     });
 
     io.on('connection', (socket) => {
-        const { id: userId, employeeId, organizationId, role } = socket.user;
+        const userId = socket.user.userId || socket.user.id;
+        const { employeeId, organizationId, role } = socket.user;
         
         logger.info(`Socket connected: ${socket.id} (User: ${userId}, Role: ${role})`);
 
@@ -95,6 +112,10 @@ const initSocketServer = (server) => {
         // Join organization-specific room for broadcasting updates
         if (organizationId) {
             socket.join(`org_${organizationId}`);
+            // Join manager-isolated room for sensitive alerts and violations
+            if (role === 'ADMIN' || role === 'MANAGER') {
+                socket.join(`org_${organizationId}_managers`);
+            }
         }
 
         // Handle Status Override (like 'ON_BREAK')
@@ -184,6 +205,24 @@ const initSocketServer = (server) => {
                     activeApp: cleanAppName,  // send clean name to frontend
                     timestamp: new Date()
                 });
+
+                // Developer 4: Alert Evaluation on Live Socket Activity (Non-blocking)
+                try {
+                    const alertsService = require('../modules/alerts/alerts.service');
+                    alertsService.evaluateContinuousIdle({
+                        employeeId,
+                        organizationId,
+                        idleTime,
+                        timestamp: new Date()
+                    }).catch(() => {});
+
+                    alertsService.evaluateProhibitedApp({
+                        employeeId,
+                        organizationId,
+                        activeApp,
+                        activeWindow
+                    }).catch(() => {});
+                } catch (evalErr) {}
             } catch (err) {
                 logger.error('Error saving live activity:', err);
             }
@@ -294,4 +333,13 @@ const updateSessionStatus = (employeeId, status) => {
 const getLiveSessions = () => liveSessions;
 const getIO = () => ioInstance;
 
-module.exports = { initSocketServer, getLiveSessions, getIO, updateSessionStatus };
+/**
+ * Emit an event strictly to managers/admins of an organization
+ */
+const emitToManagers = (organizationId, event, data) => {
+    if (ioInstance && organizationId) {
+        ioInstance.to(`org_${organizationId}_managers`).emit(event, data);
+    }
+};
+
+module.exports = { initSocketServer, getLiveSessions, getIO, updateSessionStatus, emitToManagers };

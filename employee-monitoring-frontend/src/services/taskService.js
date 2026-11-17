@@ -7,6 +7,7 @@ const taskService = {
     updateTask: (id, data) => apiClient.patch(`/tasks/${id}`, data).then(res => res.data),
     updateTaskStatus: (id, status) => apiClient.patch(`/tasks/${id}/status`, { status }).then(res => res.data),
     deleteTask: (id) => apiClient.delete(`/tasks/${id}`).then(res => res.data),
+    getCycleTimeAnalytics: (params = {}) => apiClient.get('/tasks/analytics/cycle-time', { params }).then(res => res.data),
 };
 
 export default taskService;
