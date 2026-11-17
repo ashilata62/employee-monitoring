@@ -353,7 +353,7 @@ export function Dashboard() {
     }, [stats.summary?.utilization, stats.summary?.productivity, liveTick]);
 
     return (
-        <div className="min-h-screen bg-[#F5F1E9] dark:bg-[#1A1F18] pb-12 px-2 sm:px-4 lg:px-6 pt-4">
+        <div className="w-full">
             {role === 'EMPLOYEE' && <WorkSessionBanner />}
 
             {/* Insightful Module Quick Switcher */}
