@@ -98,10 +98,21 @@ const CreateTaskModal = ({ isOpen, onClose, onSave, defaultStatus = 'To Do', emp
             return;
         }
         const project = projects.find(p => p.id === selectedProjectId);
+
+        let finalAssigneeId = assigneeId;
+        if (!finalAssigneeId && assignee) {
+            const matchedEmp = employees.find(emp => 
+                (emp.name || emp.fullName || '').toLowerCase() === assignee.trim().toLowerCase()
+            );
+            if (matchedEmp) {
+                finalAssigneeId = matchedEmp.id;
+            }
+        }
+
         onSave({
             title,
-            assignee,
-            assigneeId,
+            assignee: assignee || (finalAssigneeId ? (employees.find(e => e.id === finalAssigneeId)?.name || employees.find(e => e.id === finalAssigneeId)?.fullName) : ''),
+            assigneeId: finalAssigneeId,
             priority,
             dueDate,
             status,
@@ -111,6 +122,8 @@ const CreateTaskModal = ({ isOpen, onClose, onSave, defaultStatus = 'To Do', emp
         });
         onClose();
         setTitle('');
+        setAssignee('');
+        setAssigneeId('');
         setDueDate('');
         setEstimatedHours('');
     };
@@ -145,24 +158,35 @@ const CreateTaskModal = ({ isOpen, onClose, onSave, defaultStatus = 'To Do', emp
                                 placeholder="Type or select assignee..."
                             />
                             {showSuggestions && (
-                                <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl shadow-xl max-h-40 overflow-y-auto z-50">
-                                    {employees.filter(e => e.status !== 'deactivated' && e.name.toLowerCase().includes(assignee.toLowerCase())).map(e => (
+                                <div 
+                                    onMouseDown={(e) => e.preventDefault()}
+                                    className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl shadow-xl max-h-40 overflow-y-auto z-50"
+                                >
+                                    {employees.filter(e => e.status?.toLowerCase() !== 'deactivated' && (e.name || e.fullName || '').toLowerCase().includes((assignee || '').toLowerCase())).map(e => (
                                         <div
                                             key={e.id}
+                                            onMouseDown={(evt) => {
+                                                evt.preventDefault();
+                                                const empName = e.name || e.fullName || '';
+                                                setAssignee(empName);
+                                                setAssigneeId(e.id);
+                                                setShowSuggestions(false);
+                                            }}
                                             onClick={() => {
-                                                setAssignee(e.name);
+                                                const empName = e.name || e.fullName || '';
+                                                setAssignee(empName);
                                                 setAssigneeId(e.id);
                                                 setShowSuggestions(false);
                                             }}
                                             className="p-2.5 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 cursor-pointer flex items-center gap-2 transition-colors"
                                         >
                                             <div className="h-6 w-6 rounded-full bg-slate-200 overflow-hidden flex-shrink-0">
-                                                <img src={e.avatar || `https://ui-avatars.com/api/?background=6366f1&color=fff&name=${encodeURIComponent(e.name || 'User')}`} alt="" className="h-full w-full object-cover" />
+                                                <img src={e.avatar || `https://ui-avatars.com/api/?background=6366f1&color=fff&name=${encodeURIComponent(e.name || e.fullName || 'User')}`} alt="" className="h-full w-full object-cover" />
                                             </div>
-                                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{e.name}</span>
+                                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{e.name || e.fullName}</span>
                                         </div>
                                     ))}
-                                    {employees.filter(e => e.name.toLowerCase().includes(assignee.toLowerCase())).length === 0 && (
+                                    {employees.filter(e => (e.name || e.fullName || '').toLowerCase().includes((assignee || '').toLowerCase())).length === 0 && (
                                         <div className="p-2.5 text-xs text-slate-400 font-bold text-center">No matches found</div>
                                     )}
                                 </div>
@@ -385,10 +409,21 @@ const EditTaskModal = ({ isOpen, onClose, onSave, task, employees = [], projects
             alert('Estimated hours must be greater than zero');
             return;
         }
+
+        let finalAssigneeId = assigneeId;
+        if (!finalAssigneeId && assignee) {
+            const matchedEmp = employees.find(emp => 
+                (emp.name || emp.fullName || '').toLowerCase() === assignee.trim().toLowerCase()
+            );
+            if (matchedEmp) {
+                finalAssigneeId = matchedEmp.id;
+            }
+        }
+
         onSave(task.id, { 
             title, 
-            assignee, 
-            assigneeId, 
+            assignee: assignee || (finalAssigneeId ? (employees.find(e => e.id === finalAssigneeId)?.name || employees.find(e => e.id === finalAssigneeId)?.fullName) : ''), 
+            assigneeId: finalAssigneeId, 
             priority, 
             dueDate, 
             status,
@@ -424,16 +459,37 @@ const EditTaskModal = ({ isOpen, onClose, onSave, task, employees = [], projects
                                 placeholder="Assignee..."
                             />
                             {showSuggestions && (
-                                <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl shadow-xl max-h-40 overflow-y-auto z-50">
-                                    {employees.filter(e => e.status !== 'deactivated' && e.name.toLowerCase().includes(assignee.toLowerCase())).map(e => (
-                                        <div key={e.id} onClick={() => { setAssignee(e.name); setAssigneeId(e.id); setShowSuggestions(false); }}
-                                            className="p-2.5 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 cursor-pointer flex items-center gap-2 transition-colors">
+                                <div 
+                                    onMouseDown={(e) => e.preventDefault()}
+                                    className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl shadow-xl max-h-40 overflow-y-auto z-50"
+                                >
+                                    {employees.filter(e => e.status?.toLowerCase() !== 'deactivated' && (e.name || e.fullName || '').toLowerCase().includes((assignee || '').toLowerCase())).map(e => (
+                                        <div 
+                                            key={e.id} 
+                                            onMouseDown={(evt) => {
+                                                evt.preventDefault();
+                                                const empName = e.name || e.fullName || '';
+                                                setAssignee(empName);
+                                                setAssigneeId(e.id);
+                                                setShowSuggestions(false);
+                                            }}
+                                            onClick={() => {
+                                                const empName = e.name || e.fullName || '';
+                                                setAssignee(empName);
+                                                setAssigneeId(e.id);
+                                                setShowSuggestions(false);
+                                            }}
+                                            className="p-2.5 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 cursor-pointer flex items-center gap-2 transition-colors"
+                                        >
                                             <div className="h-6 w-6 rounded-full bg-slate-200 overflow-hidden flex-shrink-0">
-                                                <img src={e.avatar || `https://ui-avatars.com/api/?background=6366f1&color=fff&name=${encodeURIComponent(e.name || 'User')}`} alt="" className="h-full w-full object-cover" />
+                                                <img src={e.avatar || `https://ui-avatars.com/api/?background=6366f1&color=fff&name=${encodeURIComponent(e.name || e.fullName || 'User')}`} alt="" className="h-full w-full object-cover" />
                                             </div>
-                                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{e.name}</span>
+                                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{e.name || e.fullName}</span>
                                         </div>
                                     ))}
+                                    {employees.filter(e => (e.name || e.fullName || '').toLowerCase().includes((assignee || '').toLowerCase())).length === 0 && (
+                                        <div className="p-2.5 text-xs text-slate-400 font-bold text-center">No matches found</div>
+                                    )}
                                 </div>
                             )}
                         </div>
