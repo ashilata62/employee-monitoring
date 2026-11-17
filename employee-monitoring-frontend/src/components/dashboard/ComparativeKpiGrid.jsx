@@ -54,7 +54,6 @@ const FormattedDisplayValue = ({ value }) => {
         <span className="font-sans font-bold text-base sm:text-xl md:text-2xl text-[#0f172a] dark:text-[#f8fafc] tracking-tight tabular-nums leading-none">
             {value}
         </span>
-        </span>
     );
 };
 
