@@ -337,9 +337,10 @@ const attendanceService = {
         // Guard: Prevent adding manual time if timesheet for this period is already approved and locked
         try {
             const timesheetsService = require('../timesheets/timesheets.service');
-            const isLocked = await timesheetsService.isPeriodLocked(organizationId, employeeId, startDate);
+            const targetDate = startDate || (startTime ? (String(startTime).includes('T') ? String(startTime).slice(0, 10) : startTime) : null) || data.date;
+            const isLocked = await timesheetsService.isPeriodLocked(organizationId, employeeId, targetDate);
             if (isLocked) {
-                const err = new Error('Cannot add manual time: The timesheet for this period has already been approved and locked');
+                const err = new Error('Cannot add manual time: The timesheet for this period has already been approved and locked. Reopen the timesheet to make adjustments.');
                 err.statusCode = 409;
                 throw err;
             }

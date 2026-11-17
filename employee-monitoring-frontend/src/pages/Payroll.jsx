@@ -46,93 +46,288 @@ import {
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
+import api from '../services/apiClient';
+import { toast } from '../utils/toastManager';
+
 const cn = (...inputs) => twMerge(clsx(inputs));
 
 const INTEGRATIONS = [
-    { id: 'quickbooks', name: 'QuickBooks', desc: 'Sync payroll & expenses with your QuickBooks ledger.', icon: Building2, color: 'text-emerald-500 bg-emerald-500', glow: 'shadow-emerald-500/20' },
-    { id: 'xero', name: 'Xero', desc: 'Automated data sync for cloud-based accounting.', icon: Globe, color: 'text-blue-400 bg-blue-400', glow: 'shadow-blue-400/20' },
-    { id: 'paychex', name: 'Paychex', desc: 'Manage HR, payroll, and benefits in one place.', icon: CreditCard, color: 'text-indigo-600 bg-indigo-600', glow: 'shadow-indigo-600/20' }
+    { id: 'gusto', name: 'Gusto', desc: 'Direct payroll sync: employee hours, compensations and pay runs with Gusto API.', icon: CreditCard, color: 'text-rose-500 bg-rose-500', glow: 'shadow-rose-500/20' },
+    { id: 'adp', name: 'ADP Workforce Now', desc: 'Enterprise time-card batch sync directly to ADP RUN & Workforce Now API.', icon: Building2, color: 'text-blue-600 bg-blue-600', glow: 'shadow-blue-600/20' },
+    { id: 'quickbooks', name: 'QuickBooks Online', desc: 'Sync payroll time activities, billable rates, and expenses with QuickBooks Online ledger.', icon: Building2, color: 'text-emerald-500 bg-emerald-500', glow: 'shadow-emerald-500/20' },
+    { id: 'xero', name: 'Xero Cloud', desc: 'Automated timesheet sync for cloud-based accounting and pay runs.', icon: Globe, color: 'text-sky-500 bg-sky-500', glow: 'shadow-sky-500/20' }
 ];
 
-const IntegrationCard = ({ item, status, onConnect }) => {
+const IntegrationCard = ({ item, status, lastSync, onConnect, onSync, isSyncing }) => {
     const isConnected = status === 'Connected';
 
     return (
-        <div className="group relative overflow-hidden rounded-[2rem] md:rounded-[2rem] border border-slate-200 bg-white p-6 md:p-8 shadow-sm transition-all hover:-translate-y-2 hover:shadow-2xl dark:border-slate-800 dark:bg-slate-900">
+        <div className="group relative overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-6 md:p-8 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900 flex flex-col justify-between">
             <div className={cn("absolute top-0 right-0 h-32 w-32 blur-3xl opacity-5 rounded-full -mr-10 -mt-10", item.color)} />
 
-            <div className="flex items-start justify-between mb-6 md:mb-8 relative z-10">
-                <div className={cn("h-12 w-12 md:h-16 md:w-16 rounded-xl md:rounded-[1.25rem] flex items-center justify-center text-white shadow-lg", item.color)}>
-                    <item.icon size={28} className="md:w-[32px] md:h-[32px]" />
+            <div>
+                <div className="flex items-start justify-between mb-6 relative z-10">
+                    <div className={cn("h-12 w-12 md:h-14 md:w-14 rounded-2xl flex items-center justify-center text-white shadow-md", item.color)}>
+                        <item.icon size={26} />
+                    </div>
+                    <span className={cn(
+                        "px-3 py-1 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest border transition-colors",
+                        isConnected
+                            ? "bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-800"
+                            : "bg-slate-50 text-slate-400 border-slate-100 dark:bg-slate-800 dark:border-slate-700"
+                    )}>
+                        {status}
+                    </span>
                 </div>
-                <span className={cn(
-                    "px-3 py-1 md:px-4 md:py-1.5 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest border transition-colors",
-                    isConnected
-                        ? "bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-800"
-                        : "bg-slate-50 text-slate-400 border-slate-100 dark:bg-slate-800 dark:border-slate-700"
-                )}>
-                    {status}
-                </span>
+
+                <div className="relative z-10">
+                    <h3 className="text-lg font-black text-slate-900 dark:text-white mb-2 tracking-tight">{item.name}</h3>
+                    <p className="text-xs text-slate-500 font-medium mb-4 leading-relaxed min-h-[36px]">{item.desc}</p>
+                    {lastSync && (
+                        <p className="text-[10px] text-slate-400 font-semibold mb-4">
+                            Last synced: {new Date(lastSync).toLocaleString()}
+                        </p>
+                    )}
+                </div>
             </div>
 
-            <div className="relative z-10">
-                <h3 className="text-lg md:text-xl font-black text-slate-900 dark:text-white mb-2 tracking-tight">{item.name}</h3>
-                <p className="text-xs md:text-sm text-slate-500 font-medium mb-6 md:mb-8 leading-relaxed h-auto md:h-10 truncate-2-lines">{item.desc}</p>
-
+            <div className="relative z-10 pt-4 flex gap-2">
                 <button
-                    onClick={() => !isConnected && onConnect(item.id)}
+                    onClick={() => onConnect(item.id)}
                     className={cn(
-                        "w-full py-3.5 md:py-4 rounded-xl md:rounded-2xl font-black text-[9px] md:text-[10px] uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2",
+                        "flex-1 py-3 rounded-xl font-black text-[9px] uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 border border-slate-200 dark:border-slate-700",
                         isConnected
-                            ? "bg-slate-50 text-slate-400 cursor-default dark:bg-slate-800"
-                            : "bg-slate-900 text-white hover:scale-[1.02] active:scale-95 shadow-xl dark:bg-white dark:text-slate-900"
+                            ? "bg-white text-slate-700 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-200"
+                            : "bg-slate-900 text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900 shadow-md"
                     )}
                 >
-                    {isConnected ? (
-                        <><ShieldCheck size={14} className="md:w-[16px] md:h-[16px]" /> Sync Active</>
-                    ) : (
-                        <><Link2 size={14} className="md:w-[16px] md:h-[16px]" /> Connect Now</>
-                    )}
+                    <Link2 size={13} /> {isConnected ? 'Configure' : 'Connect'}
                 </button>
+                {isConnected && (
+                    <button
+                        onClick={() => onSync(item.id)}
+                        disabled={isSyncing}
+                        className="py-3 px-4 rounded-xl font-black text-[9px] uppercase tracking-wider bg-emerald-600 text-white hover:bg-emerald-500 transition-all flex items-center justify-center gap-1.5 shadow-md disabled:opacity-50"
+                        title="Sync live calculated payroll now"
+                    >
+                        {isSyncing ? <Loader2 size={13} className="animate-spin" /> : <Zap size={13} />}
+                        Sync
+                    </button>
+                )}
             </div>
         </div>
     );
 };
 
-const OAuthModal = ({ service, step, onClose }) => {
-    if (!service) return null;
-    const item = INTEGRATIONS.find(i => i.id === service);
+const CloudPayrollModal = ({ service, isOpen, onClose, onConnected }) => {
+    if (!isOpen || !service) return null;
+    const item = INTEGRATIONS.find(i => i.id === service) || { name: service };
+
+    const [apiKey, setApiKey] = useState('');
+    const [clientId, setClientId] = useState('');
+    const [clientSecret, setClientSecret] = useState('');
+    const [companyId, setCompanyId] = useState('');
+    const [sandbox, setSandbox] = useState(true);
+    const [testing, setTesting] = useState(false);
+    const [syncing, setSyncing] = useState(false);
+    const [syncResult, setSyncResult] = useState(null);
+    const [errorMsg, setErrorMsg] = useState(null);
+
+    const handleTest = async () => {
+        setTesting(true);
+        setErrorMsg(null);
+        try {
+            // First save config
+            await api.post(`/payroll/integrations/${service}/config`, {
+                apiKey,
+                clientId,
+                clientSecret,
+                companyId,
+                sandbox
+            });
+            // Then test
+            const res = await api.post(`/payroll/integrations/${service}/test`);
+            toast.success(res.data?.message || 'Connection verified successfully!');
+        } catch (err) {
+            const msg = err.response?.data?.message || err.message;
+            setErrorMsg(msg);
+            toast.error(msg);
+        } finally {
+            setTesting(false);
+        }
+    };
+
+    const handleSaveAndSync = async () => {
+        setSyncing(true);
+        setErrorMsg(null);
+        try {
+            await api.post(`/payroll/integrations/${service}/config`, {
+                apiKey,
+                clientId,
+                clientSecret,
+                companyId,
+                sandbox
+            });
+            const res = await api.post(`/payroll/integrations/${service}/sync`);
+            setSyncResult(res.data?.data || res.data);
+            toast.success(res.data?.message || 'Payroll synced successfully!');
+            if (onConnected) onConnected(service);
+        } catch (err) {
+            const msg = err.response?.data?.message || err.message;
+            setErrorMsg(msg);
+            toast.error(msg);
+        } finally {
+            setSyncing(false);
+        }
+    };
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md animate-in fade-in duration-300">
-            <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-[3rem] p-10 shadow-2xl border border-slate-200 dark:border-slate-800 animate-in zoom-in-95 duration-300 text-center">
-                {step === 'connecting' ? (
-                    <div className="py-6">
-                        <div className="relative w-24 h-24 mx-auto mb-8">
-                            <div className="absolute inset-0 border-4 border-slate-100 dark:border-slate-800 rounded-full" />
-                            <div className="absolute inset-0 border-4 border-indigo-600 rounded-full border-t-transparent animate-spin" />
-                            <div className="absolute inset-0 flex items-center justify-center">
-                                <item.icon size={32} className="text-indigo-600" />
+            <div className="w-full max-w-lg bg-white dark:bg-slate-900 rounded-[2rem] p-8 shadow-2xl border border-slate-200 dark:border-slate-800 text-left">
+                <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100 dark:border-slate-800">
+                    <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 flex items-center justify-center font-black">
+                            <CreditCard size={20} />
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-black text-slate-900 dark:text-white tracking-tight">{item.name} Integration</h3>
+                            <p className="text-xs text-slate-400 font-semibold">Direct API Connection & Payroll Synchronization</p>
+                        </div>
+                    </div>
+                    <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 rounded-lg">
+                        <X size={18} />
+                    </button>
+                </div>
+
+                <div className="space-y-4 mb-6">
+                    {service === 'gusto' && (
+                        <>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">Gusto API Key / OAuth Bearer Token</label>
+                                <input
+                                    type="password"
+                                    value={apiKey}
+                                    onChange={(e) => setApiKey(e.target.value)}
+                                    placeholder="Enter your Gusto API Key or OAuth Bearer Token"
+                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-900 dark:text-white"
+                                />
                             </div>
-                        </div>
-                        <h3 className="text-2xl font-black mb-2 tracking-tight">Connecting {item.name}</h3>
-                        <p className="text-slate-500 font-medium tracking-tight">Please wait while we establish a secure OAuth 2.0 connection...</p>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">Gusto Company ID</label>
+                                <input
+                                    type="text"
+                                    value={companyId}
+                                    onChange={(e) => setCompanyId(e.target.value)}
+                                    placeholder="e.g. comp_01H1234DEMO"
+                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-900 dark:text-white"
+                                />
+                            </div>
+                        </>
+                    )}
+
+                    {service === 'adp' && (
+                        <>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">ADP Client ID</label>
+                                <input
+                                    type="text"
+                                    value={clientId}
+                                    onChange={(e) => setClientId(e.target.value)}
+                                    placeholder="Enter ADP Marketplace Client ID"
+                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-900 dark:text-white"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">ADP Client Secret</label>
+                                <input
+                                    type="password"
+                                    value={clientSecret}
+                                    onChange={(e) => setClientSecret(e.target.value)}
+                                    placeholder="Enter ADP Client Secret"
+                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-900 dark:text-white"
+                                />
+                            </div>
+                        </>
+                    )}
+
+                    {(service === 'quickbooks' || service === 'xero') && (
+                        <>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">OAuth Access Token</label>
+                                <input
+                                    type="password"
+                                    value={apiKey}
+                                    onChange={(e) => setApiKey(e.target.value)}
+                                    placeholder="Enter Intuit / QuickBooks Access Token"
+                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-900 dark:text-white"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">Company / Realm ID</label>
+                                <input
+                                    type="text"
+                                    value={companyId}
+                                    onChange={(e) => setCompanyId(e.target.value)}
+                                    placeholder="e.g. 913035123456789"
+                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-900 dark:text-white"
+                                />
+                            </div>
+                        </>
+                    )}
+
+                    <div className="flex items-center gap-2 pt-1">
+                        <input
+                            type="checkbox"
+                            id="sandbox"
+                            checked={sandbox}
+                            onChange={(e) => setSandbox(e.target.checked)}
+                            className="rounded border-slate-300"
+                        />
+                        <label htmlFor="sandbox" className="text-xs text-slate-500 font-semibold cursor-pointer">
+                            Enable Sandbox / Demo Developer Mode (Recommended for testing)
+                        </label>
                     </div>
-                ) : (
-                    <div className="py-6 animate-in zoom-in-50 duration-500">
-                        <div className="w-24 h-24 bg-emerald-500 rounded-full mx-auto mb-8 flex items-center justify-center text-white shadow-2xl shadow-emerald-200">
-                            <CheckCircle2 size={40} />
+
+                    {errorMsg && (
+                        <div className="p-3 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 text-xs font-semibold">
+                            {errorMsg}
                         </div>
-                        <h3 className="text-2xl font-black mb-2 tracking-tight">Success!</h3>
-                        <p className="text-slate-500 font-medium tracking-tight mb-10">Your {item.name} account is now linked and healthy.</p>
-                        <button
-                            onClick={onClose}
-                            className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:brightness-110 transition-all dark:bg-white dark:text-slate-900"
-                        >
-                            Back to Dashboard
-                        </button>
-                    </div>
-                )}
+                    )}
+
+                    {syncResult && (
+                        <div className="p-3.5 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-semibold space-y-1">
+                            <p className="font-bold">Sync Successful!</p>
+                            <p>Synced Records: {syncResult.syncedCount} employees</p>
+                            <p>Total Hours: {syncResult.totalHours}h | Gross Pay: ${syncResult.totalGrossPay}</p>
+                            <p className="text-[10px] text-emerald-600">Batch ID: {syncResult.syncBatchId}</p>
+                        </div>
+                    )}
+                </div>
+
+                <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+                    <button
+                        onClick={onClose}
+                        className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                    >
+                        Close
+                    </button>
+                    <button
+                        onClick={handleTest}
+                        disabled={testing}
+                        className="px-4 py-2.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-white flex items-center gap-1.5 disabled:opacity-50"
+                    >
+                        {testing ? <Loader2 size={13} className="animate-spin" /> : null}
+                        Test Connection
+                    </button>
+                    <button
+                        onClick={handleSaveAndSync}
+                        disabled={syncing}
+                        className="px-5 py-2.5 rounded-xl text-xs font-black bg-indigo-600 hover:bg-indigo-500 text-white shadow-md flex items-center gap-1.5 disabled:opacity-50"
+                    >
+                        {syncing ? <Loader2 size={13} className="animate-spin" /> : <Zap size={13} />}
+                        Save & Sync Payroll
+                    </button>
+                </div>
             </div>
         </div>
     );
@@ -186,12 +381,49 @@ export function Payroll() {
     const itemsPerPage = 12;
 
     const [integrationStatuses, setIntegrationStatuses] = useState({
+        gusto: 'Not Connected',
+        adp: 'Not Connected',
         quickbooks: 'Not Connected',
-        xero: 'Not Connected',
-        paychex: 'Not Connected'
+        xero: 'Not Connected'
     });
+    const [integrationLastSync, setIntegrationLastSync] = useState({});
     const [connectingService, setConnectingService] = useState(null);
-    const [connectionStep, setConnectionStep] = useState('idle');
+    const [isCloudModalOpen, setIsCloudModalOpen] = useState(false);
+    const [syncingService, setSyncingService] = useState(null);
+
+    const loadCloudIntegrations = async () => {
+        try {
+            const res = await api.get('/payroll/integrations/status');
+            const data = res.data?.data || res.data || [];
+            const statuses = {};
+            const syncs = {};
+            data.forEach(item => {
+                statuses[item.provider] = item.connected ? 'Connected' : 'Not Connected';
+                if (item.lastSync) syncs[item.provider] = item.lastSync;
+            });
+            setIntegrationStatuses(prev => ({ ...prev, ...statuses }));
+            setIntegrationLastSync(syncs);
+        } catch (e) {
+            console.error('Failed to load payroll integrations:', e);
+        }
+    };
+
+    const handleDirectSync = async (provider) => {
+        setSyncingService(provider);
+        try {
+            const res = await api.post(`/payroll/integrations/${provider}/sync`);
+            toast.success(res.data?.message || `Successfully synced with ${provider.toUpperCase()}`);
+            loadCloudIntegrations();
+        } catch (err) {
+            toast.error(err.response?.data?.message || err.message);
+        } finally {
+            setSyncingService(null);
+        }
+    };
+
+    useEffect(() => {
+        loadCloudIntegrations();
+    }, []);
 
     useEffect(() => {
         const params = {
@@ -610,13 +842,19 @@ export function Payroll() {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         {INTEGRATIONS.map(item => (
                             <IntegrationCard
                                 key={item.id}
                                 item={item}
-                                status={integrationStatuses[item.id]}
-                                onConnect={handleConnectTrigger}
+                                status={integrationStatuses[item.id] || 'Not Connected'}
+                                lastSync={integrationLastSync[item.id]}
+                                onConnect={(id) => {
+                                    setConnectingService(id);
+                                    setIsCloudModalOpen(true);
+                                }}
+                                onSync={handleDirectSync}
+                                isSyncing={syncingService === item.id}
                             />
                         ))}
                     </div>
@@ -625,11 +863,12 @@ export function Payroll() {
                 </div>
             )}
 
-            {/* Modals */}
-            <OAuthModal
+            {/* Cloud Payroll Modal */}
+            <CloudPayrollModal
                 service={connectingService}
-                step={connectionStep}
-                onClose={handleIntegrationFinish}
+                isOpen={isCloudModalOpen}
+                onClose={() => setIsCloudModalOpen(false)}
+                onConnected={() => loadCloudIntegrations()}
             />
 
             {/* Create Invoice Modal */}
