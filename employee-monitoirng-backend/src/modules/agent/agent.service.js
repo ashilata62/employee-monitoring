@@ -161,7 +161,7 @@ const logActivity = async (employeeId, data) => {
     // Get employee for organizationId and verify active status
     const employee = await prisma.employee.findUnique({
         where: { id: employeeId },
-        select: { organizationId: true, status: true }
+        select: { organizationId: true, status: true, teamId: true }
     });
 
     if (!employee) throw new Error('Employee not found');
@@ -187,7 +187,8 @@ const logActivity = async (employeeId, data) => {
     const resolved = await resolveAppActivityForOrg(
         employee.organizationId,
         activeApp,
-        activeWindow
+        activeWindow,
+        employee.teamId
     );
     const { cleanAppName, productivity, appCategory, appDomain } = resolved;
 
