@@ -32,7 +32,7 @@ async function onAgentPulse(employeeId, organizationId) {
     try {
         await attendanceService.clockIn(employeeId, organizationId || 'default-org-id');
     } catch (err) {
-        if (!err.message.includes('Already clocked in')) {
+        if (!err.message.includes('Already clocked in') && err.statusCode !== 409) {
             throw err;
         }
     }
