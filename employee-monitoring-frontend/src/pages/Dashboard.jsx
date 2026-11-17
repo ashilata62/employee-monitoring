@@ -372,20 +372,24 @@ export function Dashboard() {
                     <Activity size={14} className="text-[#B9955B]" />
                     <span>Activities Timeline</span>
                 </button>
-                <button
-                    onClick={() => navigate(`${role === 'EMPLOYEE' ? '/employee' : '/admin'}/reports/location-insights`)}
-                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium bg-[#FBF9F5] dark:bg-[#252B20] text-[#29291F] dark:text-[#F5F1E9] border border-[#E5DED2] dark:border-[#384232] hover:bg-[#EEE8DD] transition-all shadow-warm-xs whitespace-nowrap cursor-pointer"
-                >
-                    <Globe size={14} className="text-[#5E7D64]" />
-                    <span>Office vs Remote</span>
-                </button>
-                <button
-                    onClick={() => navigate(`${role === 'EMPLOYEE' ? '/employee' : '/admin'}/reports/apps-websites`)}
-                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium bg-[#FBF9F5] dark:bg-[#252B20] text-[#29291F] dark:text-[#F5F1E9] border border-[#E5DED2] dark:border-[#384232] hover:bg-[#EEE8DD] transition-all shadow-warm-xs whitespace-nowrap cursor-pointer"
-                >
-                    <Monitor size={14} className="text-[#30382B] dark:text-[#D3B98D]" />
-                    <span>Apps & Websites Usage</span>
-                </button>
+                {role !== 'EMPLOYEE' && (
+                    <>
+                        <button
+                            onClick={() => navigate(`${role === 'EMPLOYEE' ? '/employee' : '/admin'}/reports/location-insights`)}
+                            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium bg-[#FBF9F5] dark:bg-[#252B20] text-[#29291F] dark:text-[#F5F1E9] border border-[#E5DED2] dark:border-[#384232] hover:bg-[#EEE8DD] transition-all shadow-warm-xs whitespace-nowrap cursor-pointer"
+                        >
+                            <Globe size={14} className="text-[#5E7D64]" />
+                            <span>Office vs Remote</span>
+                        </button>
+                        <button
+                            onClick={() => navigate(`${role === 'EMPLOYEE' ? '/employee' : '/admin'}/reports/apps-websites`)}
+                            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium bg-[#FBF9F5] dark:bg-[#252B20] text-[#29291F] dark:text-[#F5F1E9] border border-[#E5DED2] dark:border-[#384232] hover:bg-[#EEE8DD] transition-all shadow-warm-xs whitespace-nowrap cursor-pointer"
+                        >
+                            <Monitor size={14} className="text-[#30382B] dark:text-[#D3B98D]" />
+                            <span>Apps & Websites Usage</span>
+                        </button>
+                    </>
+                )}
             </div>
 
             {/* Reference Period vs Compared Period Bar (Insightful Image 1) */}
