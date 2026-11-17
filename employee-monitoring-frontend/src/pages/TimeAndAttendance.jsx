@@ -24,7 +24,7 @@ import { AddTimeOffModal } from '../components/AddTimeOffModal';
 import { ImportTimeOffModal } from '../components/ImportTimeOffModal';
 import { Upload } from 'lucide-react';
 import { useRealTime } from '../hooks/RealTimeContext';
-import { useShiftLogic, sampleShiftData } from '../hooks/useShiftLogic';
+import { useShiftLogic } from '../hooks/useShiftLogic';
 import { cn } from '../utils/cn';
 import useAttendanceStore from '../store/attendanceStore';
 import { useFilterStore } from '../store/filterStore';
