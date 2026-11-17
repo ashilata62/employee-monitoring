@@ -194,12 +194,12 @@ const updateEmployee = async (id, data) => {
     // Handle password update or creation of User record
     if (password) {
         const hashedPassword = await bcrypt.hash(password, 10);
-        
+
         if (employee.user) {
             // Update existing user
             await prisma.user.update({
                 where: { id: employee.user.id },
-                data: { 
+                data: {
                     password: hashedPassword,
                     email: employee.email // Ensure email stays in sync
                 }
@@ -235,50 +235,50 @@ const deleteEmployee = async (id) => {
     }
 
     // Step-by-step cleanup of all related records to ensure zero foreign key constraint violations
-    await prisma.activityLog.deleteMany({ where: { employeeId: id } }).catch(() => {});
-    await prisma.appUsageLog.deleteMany({ where: { employeeId: id } }).catch(() => {});
-    await prisma.attendance.deleteMany({ where: { employeeId: id } }).catch(() => {});
-    await prisma.manualTime.deleteMany({ where: { employeeId: id } }).catch(() => {});
-    await prisma.projectTimeLog.deleteMany({ where: { employeeId: id } }).catch(() => {});
-    await prisma.taskTimeLog.deleteMany({ where: { employeeId: id } }).catch(() => {});
-    await prisma.payrollRecord.deleteMany({ where: { employeeId: id } }).catch(() => {});
-    await prisma.locationLog.deleteMany({ where: { employeeId: id } }).catch(() => {});
-    await prisma.screenshot.deleteMany({ where: { employeeId: id } }).catch(() => {});
-    await prisma.liveActivity.deleteMany({ where: { employeeId: id } }).catch(() => {});
-    await prisma.shift.deleteMany({ where: { employeeId: id } }).catch(() => {});
-    await prisma.projectAssignment.deleteMany({ where: { employeeId: id } }).catch(() => {});
-    await prisma.timeOff.deleteMany({ where: { employeeId: id } }).catch(() => {});
-    await prisma.auditLog.deleteMany({ where: { userId: id } }).catch(() => {});
-    await prisma.goalStakeholder.deleteMany({ where: { employeeId: id } }).catch(() => {});
-    await prisma.alertLog.deleteMany({ where: { employeeId: id } }).catch(() => {});
-    await prisma.agent.deleteMany({ where: { employeeId: id } }).catch(() => {});
-    await prisma.tracking.deleteMany({ where: { employeeId: id } }).catch(() => {});
-    await prisma.videoRecording.deleteMany({ where: { employeeId: id } }).catch(() => {});
+    await prisma.activityLog.deleteMany({ where: { employeeId: id } }).catch(() => { });
+    await prisma.appUsageLog.deleteMany({ where: { employeeId: id } }).catch(() => { });
+    await prisma.attendance.deleteMany({ where: { employeeId: id } }).catch(() => { });
+    await prisma.manualTime.deleteMany({ where: { employeeId: id } }).catch(() => { });
+    await prisma.projectTimeLog.deleteMany({ where: { employeeId: id } }).catch(() => { });
+    await prisma.taskTimeLog.deleteMany({ where: { employeeId: id } }).catch(() => { });
+    await prisma.payrollRecord.deleteMany({ where: { employeeId: id } }).catch(() => { });
+    await prisma.locationLog.deleteMany({ where: { employeeId: id } }).catch(() => { });
+    await prisma.screenshot.deleteMany({ where: { employeeId: id } }).catch(() => { });
+    await prisma.liveActivity.deleteMany({ where: { employeeId: id } }).catch(() => { });
+    await prisma.shift.deleteMany({ where: { employeeId: id } }).catch(() => { });
+    await prisma.projectAssignment.deleteMany({ where: { employeeId: id } }).catch(() => { });
+    await prisma.timeOff.deleteMany({ where: { employeeId: id } }).catch(() => { });
+    await prisma.auditLog.deleteMany({ where: { userId: id } }).catch(() => { });
+    await prisma.goalStakeholder.deleteMany({ where: { employeeId: id } }).catch(() => { });
+    await prisma.alertLog.deleteMany({ where: { employeeId: id } }).catch(() => { });
+    await prisma.agent.deleteMany({ where: { employeeId: id } }).catch(() => { });
+    await prisma.tracking.deleteMany({ where: { employeeId: id } }).catch(() => { });
+    await prisma.videoRecording.deleteMany({ where: { employeeId: id } }).catch(() => { });
     try {
-        await prisma.timesheet.deleteMany({ where: { employeeId: id } });
-    } catch (e) {}
-    
-    // De-assign from tasks instead of deleting tasks
-    await prisma.task.updateMany({
-        where: { employeeId: id },
-        data: { employeeId: null }
-    }).catch(() => {});
+    await prisma.timesheet.deleteMany({ where: { employeeId: id } });
+} catch (e) { }
 
-    // Delete User record if exists
-    if (employee.user) {
-        await prisma.user.delete({
-            where: { id: employee.user.id }
-        }).catch(() => {});
+// De-assign from tasks instead of deleting tasks
+await prisma.task.updateMany({
+    where: { employeeId: id },
+    data: { employeeId: null }
+    }).catch (() => { });
+
+// Delete User record if exists
+if (employee.user) {
+    await prisma.user.delete({
+        where: { id: employee.user.id }
+}).catch (() => { });
     } else {
-        await prisma.user.deleteMany({
-            where: { employeeId: id }
-        }).catch(() => {});
-    }
+    await prisma.user.deleteMany({
+        where: { employeeId: id }
+    }).catch(() => { });
+}
 
-    // Finally delete the employee record from database
-    return await prisma.employee.delete({
-        where: { id }
-    });
+// Finally delete the employee record from database
+return await prisma.employee.delete({
+    where: { id }
+});
 };
 
 module.exports = {
