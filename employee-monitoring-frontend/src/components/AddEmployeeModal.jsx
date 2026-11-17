@@ -19,7 +19,10 @@ import {
     Key,
     Building2,
     MapPin,
-    Shield
+    Shield,
+    Eye,
+    EyeOff,
+    DollarSign
 } from 'lucide-react';
 import { useEmployeeStore } from '../store/employeeStore';
 import { useTeamStore } from '../store/teamStore';
@@ -29,7 +32,7 @@ import { logAction } from '../utils/logAction';
 import { useToast } from '../context/ToastContext';
 import API_BASE_URL from '../config/api';
 
-export function AddEmployeeModal({ isOpen, onClose }) {
+export function AddEmployeeModal({ isOpen, onClose, initialTab = 'single' }) {
     const { inviteEmployee, fetchEmployees } = useEmployeeStore();
     const { fetchTeams, teams } = useTeamStore();
     const { user, role } = useAuthStore();
@@ -37,7 +40,8 @@ export function AddEmployeeModal({ isOpen, onClose }) {
     const { toast } = useToast();
 
     // Mode: 'single' | 'batch' | 'agent'
-    const [activeTab, setActiveTab] = useState('single');
+    const [activeTab, setActiveTab] = useState(initialTab || 'single');
+    const [showPassword, setShowPassword] = useState(false);
     const [copied, setCopied] = useState(false);
     const [submitting, setSubmitting] = useState(false);
 
@@ -46,26 +50,28 @@ export function AddEmployeeModal({ isOpen, onClose }) {
         fullName: '',
         email: '',
         teamId: '',
-        location: 'Remote',
+        location: 'Office',
         computerType: 'PERSONAL',
         role: 'EMPLOYEE',
         password: '',
+        hourlyRate: '',
         status: 'ACTIVE'
     });
 
     // Batch Employees Form
     const [personalEmployees, setPersonalEmployees] = useState([
-        { id: 1, email: '', name: '', team: '', location: 'Remote' },
-        { id: 2, email: '', name: '', team: '', location: 'Remote' },
+        { id: 1, email: '', name: '', team: '', location: 'Office' },
+        { id: 2, email: '', name: '', team: '', location: 'Office' },
     ]);
 
     // Fetch teams and organization info whenever modal opens
     useEffect(() => {
         if (isOpen) {
+            setActiveTab(initialTab || 'single');
             fetchTeams();
             fetchOrganization();
         }
-    }, [isOpen]);
+    }, [isOpen, initialTab]);
 
     // Set default team once teams load
     useEffect(() => {
@@ -138,22 +144,37 @@ export function AddEmployeeModal({ isOpen, onClose }) {
                 fullName: singleForm.fullName.trim(),
                 email: singleForm.email.trim().toLowerCase(),
                 teamId: singleForm.teamId || teams[0]?.id || null,
-                location: singleForm.location || 'Remote',
+                location: singleForm.location || 'Office',
                 computerType: singleForm.computerType || 'PERSONAL',
                 role: singleForm.role || 'EMPLOYEE',
                 status: singleForm.status || 'ACTIVE',
                 organizationId: resolvedOrgId
             };
 
+            if (singleForm.hourlyRate !== '' && !isNaN(Number(singleForm.hourlyRate))) {
+                payload.hourlyRate = Number(singleForm.hourlyRate);
+            }
+
             if (singleForm.password && singleForm.password.trim().length >= 6) {
                 payload.password = singleForm.password.trim();
             }
 
             const res = await inviteEmployee(payload);
-            toast.success(`Employee "${singleForm.fullName}" added to database!`);
+            toast.success(`Employee "${singleForm.fullName}" added to database successfully!`);
             logAction(user?.name || 'Admin', 'Owner', 'Create', 'Employee', `Created employee: "${singleForm.fullName}"`);
             
             await fetchEmployees();
+            setSingleForm({
+                fullName: '',
+                email: '',
+                teamId: teams[0]?.id || '',
+                location: 'Office',
+                computerType: 'PERSONAL',
+                role: 'EMPLOYEE',
+                password: '',
+                hourlyRate: '',
+                status: 'ACTIVE'
+            });
             onClose();
         } catch (err) {
             console.error('[AddEmployeeModal] Submit failed:', err);
@@ -232,9 +253,9 @@ export function AddEmployeeModal({ isOpen, onClose }) {
                 {/* Tab Navigation */}
                 <div className="flex items-center gap-2 px-6 pt-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
                     {[
-                        { id: 'single', label: 'Single Employee', icon: User },
+                        { id: 'single', label: 'Manual Add Employee', icon: UserPlus },
                         { id: 'batch', label: 'Batch Invite', icon: Users },
-                        { id: 'agent', label: 'Agent Download', icon: Monitor }
+                        { id: 'agent', label: 'Agent Installer', icon: Monitor }
                     ].map(tab => {
                         const Icon = tab.icon;
                         const isActive = activeTab === tab.id;
@@ -265,16 +286,14 @@ export function AddEmployeeModal({ isOpen, onClose }) {
                                     <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 px-1">
                                         Full Name <span className="text-rose-500">*</span>
                                     </label>
-                                    <div className="relative">
-                                        <input
-                                            type="text"
-                                            required
-                                            placeholder="e.g. Rahul Sharma"
-                                            value={singleForm.fullName}
-                                            onChange={(e) => setSingleForm({ ...singleForm, fullName: e.target.value })}
-                                            className="w-full h-10 px-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-100 outline-none focus:border-primary-500 transition-all"
-                                        />
-                                    </div>
+                                    <input
+                                        type="text"
+                                        required
+                                        placeholder="e.g. Rahul Sharma"
+                                        value={singleForm.fullName}
+                                        onChange={(e) => setSingleForm({ ...singleForm, fullName: e.target.value })}
+                                        className="w-full h-10 px-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-100 outline-none focus:border-primary-500 transition-all"
+                                    />
                                 </div>
 
                                 <div className="space-y-1.5">
@@ -311,6 +330,37 @@ export function AddEmployeeModal({ isOpen, onClose }) {
 
                                 <div className="space-y-1.5">
                                     <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 px-1">
+                                        Role
+                                    </label>
+                                    <select
+                                        value={singleForm.role}
+                                        onChange={(e) => setSingleForm({ ...singleForm, role: e.target.value })}
+                                        className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-100 outline-none focus:border-primary-500 transition-all cursor-pointer"
+                                    >
+                                        <option value="EMPLOYEE">Employee</option>
+                                        <option value="MANAGER">Manager</option>
+                                        <option value="ADMIN">Admin</option>
+                                    </select>
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 px-1">
+                                        Status
+                                    </label>
+                                    <select
+                                        value={singleForm.status}
+                                        onChange={(e) => setSingleForm({ ...singleForm, status: e.target.value })}
+                                        className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-100 outline-none focus:border-primary-500 transition-all cursor-pointer"
+                                    >
+                                        <option value="ACTIVE">Active</option>
+                                        <option value="INVITED">Pending / Invited</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 px-1">
                                         Work Mode
                                     </label>
                                     <select
@@ -318,8 +368,8 @@ export function AddEmployeeModal({ isOpen, onClose }) {
                                         onChange={(e) => setSingleForm({ ...singleForm, location: e.target.value })}
                                         className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-100 outline-none focus:border-primary-500 transition-all cursor-pointer"
                                     >
-                                        <option value="Remote">Remote</option>
                                         <option value="Office">Office</option>
+                                        <option value="Remote">Remote</option>
                                         <option value="Hybrid">Hybrid</option>
                                     </select>
                                 </div>
@@ -337,12 +387,30 @@ export function AddEmployeeModal({ isOpen, onClose }) {
                                         <option value="COMPANY">Company Computer</option>
                                     </select>
                                 </div>
+
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 px-1">
+                                        Hourly Rate ($/hr)
+                                    </label>
+                                    <div className="relative">
+                                        <input
+                                            type="number"
+                                            step="0.01"
+                                            min="0"
+                                            placeholder="0.00"
+                                            value={singleForm.hourlyRate}
+                                            onChange={(e) => setSingleForm({ ...singleForm, hourlyRate: e.target.value })}
+                                            className="w-full h-10 pl-7 pr-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-100 outline-none focus:border-primary-500 transition-all"
+                                        />
+                                        <DollarSign size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                                    </div>
+                                </div>
                             </div>
 
                             <div className="space-y-1.5 pt-1">
                                 <div className="flex items-center justify-between px-1">
                                     <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1">
-                                        <Key size={11} /> Initial Password (Optional)
+                                        <Key size={11} /> Login Password (Optional)
                                     </label>
                                     <button
                                         type="button"
@@ -352,15 +420,24 @@ export function AddEmployeeModal({ isOpen, onClose }) {
                                         Generate Password
                                     </button>
                                 </div>
-                                <input
-                                    type="text"
-                                    placeholder="Leave blank to send setup invite email, or enter min 6 characters"
-                                    value={singleForm.password}
-                                    onChange={(e) => setSingleForm({ ...singleForm, password: e.target.value })}
-                                    className="w-full h-10 px-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-mono font-bold text-slate-800 dark:text-slate-100 outline-none focus:border-primary-500 transition-all"
-                                />
+                                <div className="relative">
+                                    <input
+                                        type={showPassword ? 'text' : 'password'}
+                                        placeholder="Min 6 characters (or leave empty to send setup email)"
+                                        value={singleForm.password}
+                                        onChange={(e) => setSingleForm({ ...singleForm, password: e.target.value })}
+                                        className="w-full h-10 pl-3.5 pr-10 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-mono font-bold text-slate-800 dark:text-slate-100 outline-none focus:border-primary-500 transition-all"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                                    >
+                                        {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                                    </button>
+                                </div>
                                 <p className="text-[10px] text-slate-400 px-1">
-                                    If provided, an active web & agent login account will be created immediately for this employee.
+                                    When set, creates a direct web & desktop agent login account in database immediately.
                                 </p>
                             </div>
 
@@ -375,9 +452,10 @@ export function AddEmployeeModal({ isOpen, onClose }) {
                                 <button
                                     type="submit"
                                     disabled={submitting}
-                                    className="px-6 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white text-xs font-black uppercase tracking-wider shadow-lg shadow-primary-500/20 active:scale-95 transition-all disabled:opacity-50"
+                                    className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black uppercase tracking-wider shadow-lg shadow-emerald-600/20 active:scale-95 transition-all disabled:opacity-50 flex items-center gap-2"
                                 >
-                                    {submitting ? 'Saving to DB...' : 'Save & Add Employee'}
+                                    <UserPlus size={15} />
+                                    <span>{submitting ? 'Saving to DB...' : 'Save & Add Employee'}</span>
                                 </button>
                             </div>
                         </form>

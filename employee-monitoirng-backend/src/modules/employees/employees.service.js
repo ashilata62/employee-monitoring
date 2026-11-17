@@ -114,6 +114,7 @@ const inviteEmployee = async (data) => {
             trackingSettingId: trackingSetting?.id,
             role: data.role || 'EMPLOYEE',
             status,
+            hourlyRate: (data.hourlyRate !== undefined && data.hourlyRate !== null) ? Number(data.hourlyRate) : 0,
             avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(data.fullName)}&background=random`
         },
         include: {

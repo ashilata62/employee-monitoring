@@ -17,6 +17,28 @@ export const useEmployeeStore = create((set, get) => ({
         }
     },
 
+    createEmployee: async (data) => {
+        set({ isLoading: true });
+        try {
+            const response = await employeeService.createEmployee(data);
+            const newEmployee = response.data;
+            set((state) => ({
+                employees: [...state.employees, {
+                    ...newEmployee,
+                    name: newEmployee.fullName,
+                    status: newEmployee.status?.toLowerCase() || 'active',
+                    avatar: newEmployee.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(newEmployee.fullName)}&background=random`
+                }],
+                isLoading: false
+            }));
+            toast.success('Employee created successfully in database');
+            return response;
+        } catch (error) {
+            set({ error: error.message, isLoading: false });
+            throw error;
+        }
+    },
+
     inviteEmployee: async (inviteData) => {
         set({ isLoading: true });
         try {

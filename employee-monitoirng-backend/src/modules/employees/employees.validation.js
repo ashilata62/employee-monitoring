@@ -8,6 +8,7 @@ const inviteEmployeeSchema = z.object({
     computerType: z.enum(['COMPANY', 'PERSONAL']).default('PERSONAL'),
     organizationId: z.string().optional().nullable(),
     role: z.enum(['ADMIN', 'MANAGER', 'EMPLOYEE']).default('EMPLOYEE'),
+    hourlyRate: z.number().optional().nullable(),
     password: z.string().min(6).optional().nullable(),
     status: z.enum(['INVITED', 'ACTIVE', 'OFFLINE', 'IDLE', 'DEACTIVATED', 'MERGED']).optional().default('ACTIVE')
 });
