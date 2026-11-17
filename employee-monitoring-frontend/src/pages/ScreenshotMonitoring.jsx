@@ -1255,6 +1255,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
     }
   }, [contextScreenshots]);
             const [loadingScreenshots, setLoadingScreenshots] = useState(true);
+            const [isLoadingArchive, setIsLoadingArchive] = useState(false);
             const [page, setPage] = useState(0);
             const [hasMore, setHasMore] = useState(true);
             const limit = 20;
