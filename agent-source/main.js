@@ -44,7 +44,8 @@ try {
             static isSupported() { return false; }
         },
         nativeImage: {
-            createFromPath: () => ({ resize: () => null })
+            createFromPath: () => ({ resize: () => null }),
+            createFromDataURL: () => ({ resize: () => null })
         }
     };
 }
@@ -278,18 +279,21 @@ function matchAutoProject(windowTitle, appName) {
     }
 
     // 2. Generic Regex Rules for Projects:
-    // Matches patterns like [Project: XYZ], "Project - XYZ", "PRJ-1234", "Client ABC", repository names in VS Code / IDEs
+    // Matches patterns like [Project: XYZ], [Fintech SaaS Platform], "Project - XYZ", "PRJ-1234", "Client ABC", repository names in IDEs
     const genericProjectPatterns = [
-        /(?:project|prj|client|workspace)\s*[:\-_|/]\s*([a-zA-Z0-9_\-\s]{3,30})/i,
-        /\[([a-zA-Z0-9_\-\s]{3,20})\]\s*[-–—]/i,
+        /(?:project|prj|client|workspace)\s*[:\-_|/]\s*([a-zA-Z0-9_\-\s]{2,50})/i,
+        /\[([a-zA-Z0-9_\-\s]{2,50})\]/i,
+        /(?:[-–—]\s*)([a-zA-Z0-9_\-\s]{2,40})\s*[-–—]\s*(?:visual studio code|sublime text|webstorm|intellij|android studio|cursor)/i,
         /([a-zA-Z0-9_\-]+)\s*[-–—]\s*(?:visual studio code|sublime text|webstorm|intellij|android studio|cursor)/i
     ];
+
+    const ignoreList = ['chrome', 'edge', 'firefox', 'desktop', 'untitled', 'new tab', 'home', 'settings', 'visual studio code', 'cursor'];
 
     for (const pattern of genericProjectPatterns) {
         const match = combined.match(pattern);
         if (match && match[1]) {
             const detectedName = match[1].trim();
-            if (!['chrome', 'edge', 'firefox', 'desktop', 'untitled', 'new tab', 'home', 'settings'].includes(detectedName.toLowerCase())) {
+            if (detectedName.length >= 2 && !ignoreList.includes(detectedName.toLowerCase())) {
                 return {
                     matched: true,
                     projectId: null,
@@ -636,6 +640,7 @@ let activityMonitoringInterval = null;
 let routineScreenshotInterval = null;
 let heartbeatInterval = null;
 let idleMonitoringInterval = null;
+let projectSyncInterval = null;
 
 function startMonitoringLoops() {
     if (agentState.isTracking) return;
@@ -643,10 +648,30 @@ function startMonitoringLoops() {
 
     console.log('[Desktop Agent] Monitoring loops started.');
 
-    // 1. High frequency Window & Blacklist Detection (every 3 seconds)
+    // 1. High frequency Window, Auto-Project & Blacklist Detection (every 3 seconds)
     activityMonitoringInterval = setInterval(async () => {
         try {
             const { appName, windowTitle } = await getActiveWindowInfo();
+
+            // Auto Project Detection (Regex matching against synchronized backend projects)
+            const match = matchAutoProject(windowTitle, appName);
+            if (match && match.matched) {
+                if (agentState.autoMappedProjectId !== match.projectId || agentState.autoMappedProjectName !== match.projectName) {
+                    agentState.autoMappedProjectId = match.projectId;
+                    agentState.autoMappedProjectName = match.projectName;
+                    console.log(`[AutoProject] Window auto-mapped to project "${match.projectName}" (ID: ${match.projectId})`);
+                    updateTrayMenu();
+                    if (mainWindow && !mainWindow.isDestroyed()) {
+                        mainWindow.webContents.send('project:auto-detected', match);
+                    }
+                }
+            } else if (agentState.autoMappedProjectId || agentState.autoMappedProjectName) {
+                if (!agentState.activeTaskId) {
+                    agentState.autoMappedProjectId = null;
+                    agentState.autoMappedProjectName = null;
+                    updateTrayMenu();
+                }
+            }
 
             // Check blacklist violation
             const { isViolation, violationType } = checkBlacklistViolation(appName, windowTitle);
@@ -687,6 +712,10 @@ function startMonitoringLoops() {
     // 4. Heartbeat (every 60 seconds)
     heartbeatInterval = setInterval(sendHeartbeat, 60 * 1000);
     sendHeartbeat(); // Immediate first pulse
+
+    // 5. Auto Project Synchronization from Database (every 5 minutes)
+    projectSyncInterval = setInterval(syncProjectsFromBackend, 5 * 60 * 1000);
+    syncProjectsFromBackend(); // Immediate sync
 }
 
 function stopMonitoringLoops() {
@@ -694,10 +723,12 @@ function stopMonitoringLoops() {
     if (routineScreenshotInterval) clearInterval(routineScreenshotInterval);
     if (heartbeatInterval) clearInterval(heartbeatInterval);
     if (idleMonitoringInterval) clearInterval(idleMonitoringInterval);
+    if (projectSyncInterval) clearInterval(projectSyncInterval);
     activityMonitoringInterval = null;
     routineScreenshotInterval = null;
     heartbeatInterval = null;
     idleMonitoringInterval = null;
+    projectSyncInterval = null;
     agentState.isTracking = false;
     console.log('[Desktop Agent] Monitoring loops stopped.');
 }
@@ -767,6 +798,168 @@ ipcMain.handle('agent:manual-capture', async () => {
     }
 });
 
+// ─── Agent Stealth Mode, System Tray & Startup Auto-Run ──────────────────────
+let tray = null;
+let isQuitting = false;
+
+function getTrayIcon() {
+    try {
+        if (nativeImage && typeof nativeImage.createFromDataURL === 'function') {
+            const iconDataUri = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAEKADAAQAAAABAAAAEAAAAAA0YuksAAAAUUlEQVQ4y2NgGAWjYBSMAtwAXt7e/1Ewqh60ePbsGYowDDAyMv5HkcaGQ1f8H1kOHTNqALrCcXFxwS1BVsA4qI3xQ0NDwS1BVsA4qI3xQ0MBAACVNxrIe+k/AAAAAElFTkSuQmCC';
+            return nativeImage.createFromDataURL(iconDataUri);
+        }
+        if (nativeImage && typeof nativeImage.createFromPath === 'function') {
+            const iconPath = path.join(__dirname, 'icon.png');
+            if (fs.existsSync(iconPath)) return nativeImage.createFromPath(iconPath);
+        }
+    } catch (e) {}
+    return null;
+}
+
+function isStartupAutoRunEnabled() {
+    try {
+        if (app && typeof app.getLoginItemSettings === 'function') {
+            const settings = app.getLoginItemSettings();
+            return !!settings.openAtLogin;
+        }
+    } catch (e) {
+        console.error('[AutoRun] Error reading login item settings:', e.message);
+    }
+    return false;
+}
+
+function setStartupAutoRun(enable) {
+    try {
+        if (app && typeof app.setLoginItemSettings === 'function') {
+            app.setLoginItemSettings({
+                openAtLogin: !!enable,
+                openAsHidden: true,
+                path: process.execPath,
+                args: ['--hidden']
+            });
+            console.log(`[AutoRun] Windows startup auto-run configured: ${!!enable}`);
+            updateTrayMenu();
+            return true;
+        }
+    } catch (e) {
+        console.error('[AutoRun] Error setting login item settings:', e.message);
+    }
+    return false;
+}
+
+function createTray() {
+    if (tray) return tray;
+    try {
+        const icon = getTrayIcon();
+        if (!icon && typeof Tray !== 'function') return null;
+        tray = new Tray(icon || path.join(__dirname, 'icon.png'));
+        tray.setToolTip('EMS Desktop Tracker Agent');
+
+        tray.on('double-click', () => {
+            if (mainWindow) {
+                if (mainWindow.isVisible()) {
+                    mainWindow.hide();
+                } else {
+                    mainWindow.show();
+                    mainWindow.focus();
+                }
+                updateTrayMenu();
+            }
+        });
+
+        updateTrayMenu();
+        return tray;
+    } catch (e) {
+        console.error('[Tray] Error initializing tray:', e.message);
+        return null;
+    }
+}
+
+function updateTrayMenu() {
+    if (!tray || typeof Menu.buildFromTemplate !== 'function') return;
+    try {
+        const isTracking = agentState.isTracking;
+        const isIdle = idleState.isIdle;
+        const statusLabel = isTracking ? (isIdle ? '🟡 Status: Idle' : '🟢 Status: Active Tracking') : '⚪ Status: Stopped';
+        const projectLabel = agentState.autoMappedProjectName
+            ? `📁 Project: ${agentState.autoMappedProjectName}`
+            : (agentState.activeTaskId ? `📌 Task: ${agentState.activeTaskId}` : '📁 Project: Auto-detecting...');
+        const autoRunActive = isStartupAutoRunEnabled();
+
+        const contextMenu = Menu.buildFromTemplate([
+            { label: 'EMS Desktop Tracker Agent', enabled: false },
+            { type: 'separator' },
+            { label: statusLabel, enabled: false },
+            { label: projectLabel, enabled: false },
+            { type: 'separator' },
+            {
+                label: (mainWindow && mainWindow.isVisible()) ? 'Hide to Tray (Stealth)' : 'Show Dashboard',
+                click: () => {
+                    if (!mainWindow) {
+                        createWindow();
+                    } else if (mainWindow.isVisible()) {
+                        mainWindow.hide();
+                    } else {
+                        mainWindow.show();
+                        mainWindow.focus();
+                    }
+                    updateTrayMenu();
+                }
+            },
+            {
+                label: 'Run on Windows Startup',
+                type: 'checkbox',
+                checked: autoRunActive,
+                click: (item) => {
+                    setStartupAutoRun(item.checked);
+                }
+            },
+            {
+                label: 'Trigger Activity Sync',
+                click: async () => {
+                    await syncProjectsFromBackend();
+                    await sendHeartbeat();
+                }
+            },
+            { type: 'separator' },
+            {
+                label: 'Exit Agent Permanently',
+                click: () => {
+                    isQuitting = true;
+                    stopMonitoringLoops();
+                    if (tray && typeof tray.destroy === 'function') tray.destroy();
+                    app.quit();
+                }
+            }
+        ]);
+
+        tray.setContextMenu(contextMenu);
+        tray.setToolTip(`EMS Agent: ${isTracking ? (isIdle ? 'Idle' : 'Active') : 'Stopped'} | ${agentState.autoMappedProjectName || 'Auto Mapping'}`);
+    } catch (err) {
+        console.error('[Tray] Error updating tray menu:', err.message);
+    }
+}
+
+// ─── Single Instance Lock ───────────────────────────────────────────────────
+const gotSingleInstanceLock = (app && typeof app.requestSingleInstanceLock === 'function')
+    ? app.requestSingleInstanceLock()
+    : true;
+
+if (!gotSingleInstanceLock) {
+    console.log('[Desktop Agent] Another instance is already running. Quitting.');
+    if (app && typeof app.quit === 'function') app.quit();
+} else {
+    if (app && typeof app.on === 'function') {
+        app.on('second-instance', () => {
+            if (mainWindow) {
+                if (mainWindow.isMinimized()) mainWindow.restore();
+                if (!mainWindow.isVisible()) mainWindow.show();
+                mainWindow.focus();
+            }
+        });
+    }
+}
+
 // ─── Electron Window Creation ────────────────────────────────────────────────
 function createWindow() {
     mainWindow = new BrowserWindow({
@@ -784,23 +977,59 @@ function createWindow() {
 
     mainWindow.loadFile(path.join(__dirname, 'index.html'));
 
+    // Stealth Mode: Hide to Tray on window close instead of exiting
+    mainWindow.on('close', (event) => {
+        if (!isQuitting) {
+            event.preventDefault();
+            mainWindow.hide();
+            updateTrayMenu();
+            if (Notification && typeof Notification.isSupported === 'function' && Notification.isSupported()) {
+                try {
+                    new Notification({
+                        title: 'EMS Agent Running in Background',
+                        body: 'The tracker agent is minimized to system tray and continuing background monitoring.'
+                    }).show();
+                } catch (e) {}
+            }
+            return false;
+        }
+    });
+
     mainWindow.on('closed', () => {
         mainWindow = null;
     });
+
+    // Auto-Run hidden startup support
+    if (process.argv.includes('--hidden')) {
+        mainWindow.hide();
+    }
 }
 
 app.whenReady().then(() => {
     createWindow();
+    createTray();
+    syncProjectsFromBackend();
 
     app.on('activate', () => {
-        if (BrowserWindow.getAllWindows().length === 0) createWindow();
+        if (BrowserWindow.getAllWindows().length === 0) {
+            createWindow();
+        } else if (mainWindow) {
+            mainWindow.show();
+            mainWindow.focus();
+        }
     });
+});
+
+app.on('before-quit', () => {
+    isQuitting = true;
 });
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
-        stopMonitoringLoops();
-        app.quit();
+        if (isQuitting) {
+            stopMonitoringLoops();
+            app.quit();
+        }
     }
 });
 
@@ -820,6 +1049,45 @@ ipcMain.on('idle:set-threshold', (_event, seconds) => {
     }
 });
 
+// Tray & Stealth Window IPC Handlers
+ipcMain.on('close-window', () => {
+    if (mainWindow) {
+        mainWindow.hide();
+        updateTrayMenu();
+    }
+});
+
+ipcMain.handle('tray:toggle-visibility', () => {
+    if (mainWindow) {
+        if (mainWindow.isVisible()) {
+            mainWindow.hide();
+        } else {
+            mainWindow.show();
+            mainWindow.focus();
+        }
+        updateTrayMenu();
+        return mainWindow.isVisible();
+    }
+    return false;
+});
+
+// Auto Project & Windows Auto-Run IPC Handlers
+ipcMain.handle('project:get-auto-detected', () => {
+    return {
+        projectId: agentState.autoMappedProjectId,
+        projectName: agentState.autoMappedProjectName,
+        cachedProjectsCount: agentState.cachedProjects ? agentState.cachedProjects.length : 0
+    };
+});
+
+ipcMain.handle('autostart:get-status', () => {
+    return isStartupAutoRunEnabled();
+});
+
+ipcMain.handle('autostart:set-status', (_event, enabled) => {
+    return setStartupAutoRun(enabled);
+});
+
 module.exports = {
     agentState,
     idleState,
@@ -829,5 +1097,11 @@ module.exports = {
     checkBlacklistViolation,
     sendHeartbeat,
     sendActivityLog,
-    handleViolationScreenshot
+    handleViolationScreenshot,
+    matchAutoProject,
+    syncProjectsFromBackend,
+    isStartupAutoRunEnabled,
+    setStartupAutoRun,
+    createTray,
+    updateTrayMenu
 };
