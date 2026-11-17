@@ -205,10 +205,15 @@ const attendanceService = {
     },
 
     getTimesheets: async (organizationId, filters = {}) => {
-        const where = { organizationId };
+        const where = {
+            organizationId,
+            employee: {
+                role: 'EMPLOYEE'
+            }
+        };
 
         if (filters.employeeId) where.employeeId = filters.employeeId;
-        if (filters.teamId) where.employee = { teamId: filters.teamId };
+        if (filters.teamId) where.employee = { ...where.employee, teamId: filters.teamId };
         if (filters.startDate && filters.endDate) {
             const start = new Date(filters.startDate);
             start.setHours(0, 0, 0, 0);
@@ -239,9 +244,14 @@ const attendanceService = {
      * One row per employee per day (merged sessions, correct total hours).
      */
     getTimesheetsGrouped: async (organizationId, filters = {}) => {
-        const where = { organizationId };
+        const where = {
+            organizationId,
+            employee: {
+                role: 'EMPLOYEE'
+            }
+        };
         if (filters.employeeId) where.employeeId = filters.employeeId;
-        if (filters.teamId) where.employee = { teamId: filters.teamId };
+        if (filters.teamId) where.employee = { ...where.employee, teamId: filters.teamId };
         if (filters.startDate && filters.endDate) {
             const start = new Date(filters.startDate);
             start.setHours(0, 0, 0, 0);
