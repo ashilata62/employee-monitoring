@@ -215,19 +215,6 @@ const AppSection = ({ title }) => (
 
 import dashboardService from '../services/dashboardService';
 
-const pieData = [
-    { name: 'Productive', value: 75, color: '#6366f1' },
-    { name: 'Unproductive', value: 15, color: '#f43f5e' },
-    { name: 'Neutral', value: 10, color: '#94a3b8' }
-];
-
-const categories = [
-    { name: 'Core Work', time: '5h 30m', trend: '+12%', color: '#6366f1' },
-    { name: 'Communication', time: '1h 15m', trend: '-5%', color: '#22d3ee' },
-    { name: 'Social Media', time: '0h 45m', trend: '+20%', color: '#f43f5e' },
-    { name: 'Others', time: '0h 30m', trend: '+2%', color: '#cbd5e1' }
-];
-
 export function Dashboard() {
     const { employees: contextEmployees, teams: contextTeams, stats: realTimeStats, isLoading: isRealTimeLoading } = useRealTime();
     const { role, isClockedIn, isOnBreak } = useAuthStore();

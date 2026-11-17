@@ -552,7 +552,7 @@ const activityService = {
             };
         });
 
-        // Compute 24-hour distribution histogram
+        // Compute 24-hour distribution histogram strictly from real activity logs
         const hourlyDistribution = Array.from({ length: 24 }).map((_, h) => {
             const hourLogs = logs.filter(l => new Date(l.timestamp).getHours() === h);
             const activeEmps = new Set(hourLogs.filter(l => l.activityType === 'ACTIVE').map(l => l.employeeId)).size;
@@ -564,8 +564,8 @@ const activityService = {
             return {
                 hour: h,
                 hourLabel: `${String(h).padStart(2, '0')}:00`,
-                activeCount: activeEmps > 0 ? activeEmps : (h >= 9 && h <= 18 ? Math.min(employees.length, Math.max(1, Math.round(employees.length * 0.75))) : 0),
-                totalEmployees: employees.length || 3,
+                activeCount: activeEmps,
+                totalEmployees: employees.length,
                 onBreakCount: breakEmps,
                 breakOverageCount: Math.max(0, breakEmps - 1),
                 manualTimeCount: hourLogs.filter(l => l.activityType === 'MANUAL').length,
@@ -575,26 +575,54 @@ const activityService = {
             };
         });
 
-        // Projects & Billable Costs Summary (Matching bottom card of Insightful Image 4)
+        // Projects & Billable Costs Summary computed dynamically from database
         const projects = await prisma.project.findMany({
             where: { organizationId },
-            include: { tasks: true }
+            include: {
+                tasks: {
+                    select: {
+                        id: true,
+                        name: true,
+                        status: true,
+                        activityLogs: {
+                            where: { organizationId },
+                            select: { duration: true }
+                        }
+                    }
+                }
+            }
         });
 
-        const projectsSummary = {
-            totalBillableCost: '$240.92',
-            projectsList: projects.length > 0 ? projects.map((p, idx) => ({
+        let totalOrgProjectSecs = 0;
+        const projectsList = projects.map((p) => {
+            let projSecs = 0;
+            (p.tasks || []).forEach(t => {
+                (t.activityLogs || []).forEach(al => {
+                    projSecs += (al.duration || 0);
+                });
+            });
+            totalOrgProjectSecs += projSecs;
+            const hours = (projSecs / 3600);
+            const hoursFormatted = `${String(Math.floor(hours)).padStart(2, '0')}:${String(Math.floor((projSecs % 3600) / 60)).padStart(2, '0')} h`;
+            const cost = (hours * 25).toFixed(2);
+
+            return {
                 id: p.id,
                 name: p.name,
-                status: 'Active',
-                employeesCount: idx === 0 ? 3 : 4,
-                tasksCount: p.tasks.length || (idx === 0 ? 9 : 4),
-                hoursFormatted: idx === 0 ? '08:21 h' : '07:54 h',
-                costFormatted: idx === 0 ? '$123.50' : '$117.42'
-            })) : [
-                { id: 'p1', name: 'Insightful Development', status: 'Active', employeesCount: 3, tasksCount: 9, hoursFormatted: '08:21 h', costFormatted: '$123.50' },
-                { id: 'p2', name: 'UI / UX System', status: 'Active', employeesCount: 4, tasksCount: 4, hoursFormatted: '07:54 h', costFormatted: '$117.42' }
-            ]
+                status: p.status || 'Active',
+                employeesCount: employees.length,
+                tasksCount: p.tasks.length,
+                hoursFormatted,
+                costFormatted: `$${cost}`
+            };
+        });
+
+        const totalOrgHours = (totalOrgProjectSecs / 3600);
+        const totalBillableCost = `$${(totalOrgHours * 25).toFixed(2)}`;
+
+        const projectsSummary = {
+            totalBillableCost,
+            projectsList
         };
 
         return {

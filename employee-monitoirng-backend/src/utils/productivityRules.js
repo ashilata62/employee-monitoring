@@ -166,23 +166,33 @@ async function autoLabelOrganization(organizationId) {
         const domain = ruleDomainKey(log.domain, log.appName);
         const category = log._max?.category || 'Uncategorized';
 
-        await prisma.productivityRule.upsert({
-            where: { organizationId_domain: { organizationId, domain } },
-            update: {
-                appName: log.appName,
-                tagId: matchedTag.id,
-                productivity,
-                category,
-            },
-            create: {
-                organizationId,
-                domain,
-                appName: log.appName,
-                tagId: matchedTag.id,
-                productivity,
-                category,
-            },
+        const existingRule = await prisma.productivityRule.findFirst({
+            where: { organizationId, domain, teamId: null },
         });
+
+        if (existingRule) {
+            await prisma.productivityRule.update({
+                where: { id: existingRule.id },
+                data: {
+                    appName: log.appName,
+                    tagId: matchedTag.id,
+                    productivity,
+                    category,
+                },
+            });
+        } else {
+            await prisma.productivityRule.create({
+                data: {
+                    organizationId,
+                    domain,
+                    appName: log.appName,
+                    tagId: matchedTag.id,
+                    productivity,
+                    category,
+                    teamId: null,
+                },
+            });
+        }
 
         await backfillProductivityForApp(organizationId, domain, log.appName, productivity, category);
         updated += 1;

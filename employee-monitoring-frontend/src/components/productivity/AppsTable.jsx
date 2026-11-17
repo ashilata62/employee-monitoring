@@ -91,7 +91,18 @@ export function AppsTable({ apps, tags, onSelectAll, onSelectApp, onChangeTag, t
                                             <Monitor size={14} />
                                         </div>
                                         <div>
-                                            <p className="text-sm font-black text-slate-900 dark:text-white">{app.appName || app.name}</p>
+                                            <div className="flex items-center gap-2">
+                                                <p className="text-sm font-black text-slate-900 dark:text-white">{app.appName || app.name}</p>
+                                                {app.isTeamSpecific ? (
+                                                    <span className="px-1.5 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800/40">
+                                                        Dept Override
+                                                    </span>
+                                                ) : (
+                                                    <span className="px-1.5 py-0.5 rounded-md text-[9px] font-bold text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60">
+                                                        Global
+                                                    </span>
+                                                )}
+                                            </div>
                                             <p className="text-[11px] font-medium text-slate-400">{app.domain}</p>
                                         </div>
                                         {isLow && (

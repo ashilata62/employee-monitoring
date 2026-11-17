@@ -161,7 +161,7 @@ const logActivity = async (employeeId, data) => {
     // Get employee for organizationId and verify active status
     const employee = await prisma.employee.findUnique({
         where: { id: employeeId },
-        select: { organizationId: true, status: true }
+        select: { organizationId: true, status: true, teamId: true }
     });
 
     if (!employee) throw new Error('Employee not found');
@@ -187,7 +187,8 @@ const logActivity = async (employeeId, data) => {
     const resolved = await resolveAppActivityForOrg(
         employee.organizationId,
         activeApp,
-        activeWindow
+        activeWindow,
+        employee.teamId
     );
     const { cleanAppName, productivity, appCategory, appDomain } = resolved;
 
@@ -222,6 +223,52 @@ const logActivity = async (employeeId, data) => {
                 if (taskExists) validTaskIdForDb = taskExists.id;
             } catch (err) {
                 // Ignore non-UUID or non-existent task IDs safely
+            }
+        }
+
+        // Auto Project Mapping from Window Title & Agent Metadata (Regex Matching)
+        let autoMappedProjectId = data.autoMappedProjectId || null;
+        let autoMappedProjectName = data.autoMappedProjectName || null;
+
+        if (activeWindow && activeWindow !== 'Unknown') {
+            try {
+                const orgProjects = await prisma.project.findMany({
+                    where: { organizationId: employee.organizationId },
+                    include: {
+                        tasks: {
+                            select: { id: true, name: true, status: true },
+                            take: 1
+                        }
+                    }
+                });
+
+                for (const proj of orgProjects) {
+                    if (!proj.name) continue;
+                    const projPattern = new RegExp(`\\b${proj.name.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&')}\\b`, 'i');
+                    if (projPattern.test(activeWindow) || projPattern.test(cleanAppName || '')) {
+                        autoMappedProjectId = proj.id;
+                        autoMappedProjectName = proj.name;
+
+                        if (!validTaskIdForDb && !activeTaskId && proj.tasks.length > 0) {
+                            validTaskIdForDb = proj.tasks[0].id;
+                        }
+                        break;
+                    }
+                }
+
+                // Automatically credit time to project if matched and active
+                if (autoMappedProjectId && finalActivityType === 'ACTIVE') {
+                    await prisma.projectTimeLog.create({
+                        data: {
+                            projectId: autoMappedProjectId,
+                            employeeId,
+                            duration: HEARTBEAT_SECONDS,
+                            type: 'CLOCKED'
+                        }
+                    }).catch(() => {});
+                }
+            } catch (projErr) {
+                console.error(`[AgentService:${employeeId}] Auto project mapping error:`, projErr.message);
             }
         }
 

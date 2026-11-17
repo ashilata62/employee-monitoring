@@ -65,15 +65,31 @@ const formatSeconds = (secs) => {
     return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')} h`;
 };
 
+const formatDateKey = (d) => {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
+
+const getInitialDateRange = () => {
+    const today = new Date();
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const startKey = formatDateKey(startOfMonth);
+    const endKey = formatDateKey(today);
+    const monthName = today.toLocaleString('en-US', { month: 'short' });
+    return {
+        start: startKey,
+        end: endKey,
+        display: `${monthName} 1, ${today.getFullYear()} → ${monthName} ${today.getDate()}, ${today.getFullYear()}`
+    };
+};
+
 export function AppsWebsites() {
     // ── Interactive State ───────────────────────────────────────────────────
     const [selectedCategory, setSelectedCategory] = useState('All Apps');
-    const [selectedDatePreset, setSelectedDatePreset] = useState('This Month (Nov 2026)');
-    const [dateRange, setDateRange] = useState({
-        start: '2026-11-01',
-        end: '2026-11-17',
-        display: 'Nov 1, 2026 → Nov 17, 2026'
-    });
+    const [selectedDatePreset, setSelectedDatePreset] = useState('This Month');
+    const [dateRange, setDateRange] = useState(getInitialDateRange);
     const [timeGrain, setTimeGrain] = useState('Days'); // 'Days' | 'Weeks' | 'Months'
     const [searchQuery, setSearchQuery] = useState('');
     const [productivityFilter, setProductivityFilter] = useState('ALL');
@@ -233,29 +249,42 @@ export function AppsWebsites() {
     const handleDatePresetSelect = (preset) => {
         setSelectedDatePreset(preset);
         setIsDateOpen(false);
+        const now = new Date();
+        const todayKey = formatDateKey(now);
+        const monthName = now.toLocaleString('en-US', { month: 'short' });
+
         if (preset === 'Today') {
             setDateRange({
-                start: '2026-11-17',
-                end: '2026-11-17',
-                display: 'Nov 17, 2026'
+                start: todayKey,
+                end: todayKey,
+                display: `${monthName} ${now.getDate()}, ${now.getFullYear()}`
             });
         } else if (preset === 'Yesterday') {
+            const yesterday = new Date(now);
+            yesterday.setDate(now.getDate() - 1);
+            const yKey = formatDateKey(yesterday);
+            const yMonth = yesterday.toLocaleString('en-US', { month: 'short' });
             setDateRange({
-                start: '2026-11-16',
-                end: '2026-11-16',
-                display: 'Nov 16, 2026'
+                start: yKey,
+                end: yKey,
+                display: `${yMonth} ${yesterday.getDate()}, ${yesterday.getFullYear()}`
             });
         } else if (preset === 'Last 7 Days') {
+            const past7 = new Date(now);
+            past7.setDate(now.getDate() - 6);
+            const past7Key = formatDateKey(past7);
+            const pMonth = past7.toLocaleString('en-US', { month: 'short' });
             setDateRange({
-                start: '2026-11-11',
-                end: '2026-11-17',
-                display: 'Nov 11, 2026 → Nov 17, 2026'
+                start: past7Key,
+                end: todayKey,
+                display: `${pMonth} ${past7.getDate()}, ${past7.getFullYear()} → ${monthName} ${now.getDate()}, ${now.getFullYear()}`
             });
-        } else if (preset === 'This Month (Nov 2026)') {
+        } else if (preset.startsWith('This Month')) {
+            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
             setDateRange({
-                start: '2026-11-01',
-                end: '2026-11-17',
-                display: 'Nov 1, 2026 → Nov 17, 2026'
+                start: formatDateKey(startOfMonth),
+                end: todayKey,
+                display: `${monthName} 1, ${now.getFullYear()} → ${monthName} ${now.getDate()}, ${now.getFullYear()}`
             });
         }
     };
@@ -333,7 +362,7 @@ export function AppsWebsites() {
 
                     {isDateOpen && (
                         <div className="absolute left-0 top-full mt-2 w-56 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-100 dark:border-slate-800 py-1.5 z-50">
-                            {['Today', 'Yesterday', 'Last 7 Days', 'This Month (Nov 2026)'].map((p) => (
+                            {['Today', 'Yesterday', 'Last 7 Days', 'This Month'].map((p) => (
                                 <button
                                     key={p}
                                     onClick={() => handleDatePresetSelect(p)}
