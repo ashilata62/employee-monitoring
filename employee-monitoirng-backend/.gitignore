@@ -6,3 +6,6 @@ prisma/migrations/
 *.log
 *.zip
 tmp/
+
+backups/
+*.sql
