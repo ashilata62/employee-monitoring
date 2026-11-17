@@ -6,7 +6,9 @@ import {
     Clock,
     TrendingUp,
     TrendingDown,
-    MoreHorizontal
+    Award,
+    Activity,
+    PieChart
 } from 'lucide-react';
 import { useLiveTimeDisplay } from '../../hooks/useLiveTime';
 
@@ -26,10 +28,8 @@ const KpiCard = ({
     inverse = false,
     icon: Icon
 }) => {
-    // If live tracking is ticking
     const liveSecsDisplay = useLiveTimeDisplay(baseSeconds, liveTick);
     
-    // Format display value strictly from real DB data
     let displayValue = '00:00 h';
     if (value !== undefined && value !== null) {
         displayValue = value;
@@ -37,36 +37,37 @@ const KpiCard = ({
         displayValue = liveSecsDisplay || formatSecondsToHoursMins(baseSeconds);
     }
 
-    // Delta resolution strictly from comparison API
     const activeDelta = delta?.percent !== undefined
         ? delta
         : { percent: 0, percentFormatted: '0%', diffHoursFormatted: '', direction: 'up' };
 
     const isUp = activeDelta.direction === 'up' || (activeDelta.percentFormatted || '').includes('▲') || (activeDelta.percentFormatted || '').startsWith('+');
     const isPositive = inverse ? !isUp : isUp;
-    const deltaColor = isPositive ? 'text-emerald-500' : 'text-rose-500';
+    const deltaColor = isPositive ? 'text-[#5E7D64]' : 'text-[#A84B4B]';
 
     return (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-5 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between">
+        <div className="bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl border border-[#E5DED2] dark:border-[#384232] p-5 shadow-warm-xs hover:shadow-warm-md transition-all duration-200 flex flex-col justify-between">
             <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                <span className="text-[11px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-[0.14em]">
                     {title}
                 </span>
-                <Icon size={17} className="text-slate-400 dark:text-slate-500" strokeWidth={1.8} />
+                <div className="h-8 w-8 rounded-xl bg-[#EEE8DD]/70 dark:bg-[#30382B] flex items-center justify-center text-[#B9955B]">
+                    <Icon size={16} strokeWidth={2} />
+                </div>
             </div>
 
-            <div className="mb-3">
-                <div className="text-2xl lg:text-3xl font-black text-slate-900 dark:text-white tracking-tight tabular-nums">
+            <div className="my-2">
+                <div className="text-2xl lg:text-3xl font-serif font-bold text-[#29291F] dark:text-[#F5F1E9] tracking-tight tabular-nums">
                     {displayValue}
                 </div>
             </div>
 
-            <div className="flex items-center gap-2 text-xs">
+            <div className="flex items-center gap-2 pt-2 border-t border-[#E5DED2]/60 dark:border-[#384232]/60 text-xs mt-1">
                 <span className={`flex items-center gap-0.5 font-bold ${deltaColor}`}>
                     {isUp ? '▲' : '▼'} {activeDelta.percentFormatted || `${activeDelta.percent}%`}
                 </span>
                 {activeDelta.diffHoursFormatted && (
-                    <span className="text-slate-400 dark:text-slate-500 font-medium tabular-nums">
+                    <span className="text-[#777367] dark:text-[#B8B3A7] font-medium tabular-nums text-[11px]">
                         {activeDelta.diffHoursFormatted}
                     </span>
                 )}
@@ -83,8 +84,7 @@ export function ComparativeKpiGrid({ sec, stats, deltas, liveTick }) {
         : '0%';
 
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            {/* Row 1: Work Time, Active Time, Idle Time, Manual Time */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4.5 mb-8">
             <KpiCard
                 title="Work Time"
                 baseSeconds={sec?.workTime}
@@ -118,13 +118,12 @@ export function ComparativeKpiGrid({ sec, stats, deltas, liveTick }) {
                 icon={Clock}
             />
 
-            {/* Row 2: Productive Time, Unproductive Time, Neutral Time, Utilization */}
             <KpiCard
                 title="Productive Time"
                 baseSeconds={sec?.productiveTime}
                 liveTick={liveTick}
                 delta={d.productiveTime}
-                icon={TrendingUp}
+                icon={Award}
             />
 
             <KpiCard
@@ -133,7 +132,7 @@ export function ComparativeKpiGrid({ sec, stats, deltas, liveTick }) {
                 liveTick={liveTick}
                 delta={d.unproductiveTime}
                 inverse={true}
-                icon={TrendingDown}
+                icon={Activity}
             />
 
             <KpiCard
@@ -141,17 +140,15 @@ export function ComparativeKpiGrid({ sec, stats, deltas, liveTick }) {
                 baseSeconds={sec?.neutralTime}
                 liveTick={liveTick}
                 delta={d.neutralTime}
-                icon={MoreHorizontal}
+                icon={PieChart}
             />
 
             <KpiCard
-                title="Utilization"
+                title="Productivity"
                 value={utilizationVal}
-                delta={d.utilization}
+                delta={d.productivity}
                 icon={TrendingUp}
             />
         </div>
     );
 }
-
-export default ComparativeKpiGrid;

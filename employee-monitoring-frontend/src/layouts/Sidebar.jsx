@@ -18,8 +18,7 @@ import {
     Monitor,
     Zap,
     X,
-    LogOut,
-    Power
+    Sparkles
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -29,7 +28,7 @@ const cn = (...inputs) => twMerge(clsx(inputs));
 
 const navItems = [
     { name: 'Dashboard', icon: LayoutDashboard, path: '/', key: 'dashboard' },
-      { name: 'Monitoring Agents', icon: Monitor, path: '/agents', key: 'agents' },
+    { name: 'Monitoring Agents', icon: Monitor, path: '/agents', key: 'agents' },
     { name: 'Real-time Insights', icon: Zap, path: '/real-time', key: 'realtime' },
     { name: 'Employees', icon: Users, path: '/employees', key: 'employees' },
     { name: 'Teams', icon: Users, path: '/teams', key: 'teams' },
@@ -38,7 +37,6 @@ const navItems = [
     { name: 'Activities', icon: Activity, path: '/activities', key: 'activity' },
     { name: 'Projects', icon: CheckSquare, path: '/projects', key: 'projects' },
     { name: 'Tasks', icon: CheckSquare, path: '/tasks', key: 'tasks' },
-  
     { name: 'Payroll', icon: CreditCard, path: '/payroll', key: 'payroll' },
     { name: 'Compliance', icon: ShieldCheck, path: '/compliance', key: 'compliance' },
     { name: 'Settings', icon: Settings, path: '/settings', key: 'settings' },
@@ -55,17 +53,13 @@ const reportSubItems = [
 
 export function Sidebar({ collapsed, setCollapsed, onMobileClose }) {
     const [reportsOpen, setReportsOpen] = React.useState(false);
-    const { hasAccess, role, isClockedIn, clockOut } = useAuthStore();
-    const location = React.useRef(window.location.pathname);
+    const { hasAccess, role } = useAuthStore();
 
     const rolePath = role ? `/${role.toLowerCase()}` : '';
 
     // Filter nav items based on RBAC and inject role path
     const allowedNavItems = navItems
-        .filter(item => {
-            if (!hasAccess(item.key)) return false;
-            return true;
-        })
+        .filter(item => hasAccess(item.key))
         .map(item => ({
             ...item,
             path: `${rolePath}${item.path === '/' ? '' : item.path}`
@@ -76,7 +70,6 @@ export function Sidebar({ collapsed, setCollapsed, onMobileClose }) {
         path: `${rolePath}${item.path}`
     }));
 
-    // Update reportsOpen if we are on a reports subpage
     React.useEffect(() => {
         if (window.location.pathname.includes('/reports')) {
             setReportsOpen(true);
@@ -86,41 +79,48 @@ export function Sidebar({ collapsed, setCollapsed, onMobileClose }) {
     return (
         <aside
             className={cn(
-                "h-full border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 transition-all duration-500 ease-in-out",
-                "w-[80vw] max-w-[300px] lg:max-w-none shadow-sm lg:shadow-none",
+                "h-full border-r border-[#3C4536] bg-[#30382B] text-[#F5F1E9] transition-all duration-300 ease-in-out relative flex flex-col",
+                "w-[80vw] max-w-[280px] lg:max-w-none shadow-2xl lg:shadow-none",
                 collapsed ? "lg:w-20" : "lg:w-64"
             )}
         >
-            <div className="flex flex-col justify-center px-4 pt-3 pb-1 border-b border-slate-100 dark:border-slate-800/50 min-h-[60px]">
-                {!collapsed && (
-                    <div className="animate-in fade-in duration-500 flex justify-center items-center w-full py-1">
-                        <span className="text-[17px] font-black tracking-tight bg-gradient-to-r from-primary-600 via-primary-500 to-primary-700 bg-clip-text text-transparent dark:from-primary-400 dark:to-primary-500 select-none leading-tight text-center">
-                            Employee Performance<br />Software
-                        </span>
+            {/* Header Brand Section */}
+            <div className="flex items-center justify-between px-5 pt-6 pb-5 border-b border-[#3C4536]/80 min-h-[76px]">
+                {!collapsed ? (
+                    <div className="flex items-center gap-3 animate-in fade-in duration-300">
+                        <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-[#B9955B] to-[#8C6D38] flex items-center justify-center text-white shadow-md shadow-black/20 shrink-0">
+                            <Sparkles size={18} className="text-[#FDFBF7]" />
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="font-serif text-[18px] font-semibold text-[#FBF9F5] tracking-tight leading-tight">
+                                Performance
+                            </span>
+                            <span className="text-[9px] font-bold tracking-[0.22em] text-[#D3B98D] uppercase leading-tight mt-0.5">
+                                Command Center
+                            </span>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="mx-auto flex items-center justify-center">
+                        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-[#B9955B] to-[#8C6D38] flex items-center justify-center text-white shadow-md shadow-black/20">
+                            <span className="font-serif text-lg font-bold text-[#FDFBF7]">P</span>
+                        </div>
                     </div>
                 )}
-                {collapsed && (
-                    <div className="mx-auto flex items-center justify-center cursor-pointer transition-all duration-300 hover:scale-110">
-                        <span className="text-base font-black tracking-wider bg-gradient-to-r from-primary-600 to-primary-800 bg-clip-text text-transparent dark:from-primary-400 dark:to-primary-600 select-none">
-                            EPS
-                        </span>
-                    </div>
-                )}
+
                 <button
                     onClick={onMobileClose}
-                    className="lg:hidden p-2 text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                    className="lg:hidden p-2 text-[#C5CEBF] hover:text-white hover:bg-[#3C4536] rounded-lg transition-colors"
+                    aria-label="Close menu"
                 >
-                    <X size={24} />
+                    <X size={20} />
                 </button>
             </div>
 
-            <nav className="mt-3 flex flex-col gap-1 px-2 overflow-y-auto max-h-[calc(100vh-100px)] scrollbar-thin pb-20">
-                {allowedNavItems.map((item, i) => {
-                    // Inject Reports group before Payroll (which is key 'payroll') or at a reasonable spot
-                    // In our case, if 'reports' is allowed (Admin or Manager), we show it.
+            {/* Navigation List */}
+            <nav className="flex-1 mt-4 flex flex-col gap-1.5 px-3 overflow-y-auto scrollbar-thin pb-8">
+                {allowedNavItems.map((item) => {
                     const isReportsAllowed = hasAccess('reports');
-
-                    // Simple logic: if this is the first item after 'Projects & Tasks', inject Reports
                     const isLastItemInGroup = item.key === 'tasks';
 
                     return (
@@ -129,62 +129,78 @@ export function Sidebar({ collapsed, setCollapsed, onMobileClose }) {
                                 to={item.path}
                                 onClick={onMobileClose}
                                 className={({ isActive }) => cn(
-                                    "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-600 transition-all duration-300 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-50",
-                                    isActive && "bg-primary-50 text-primary-600 dark:bg-primary-900/20 dark:text-primary-400 font-bold",
-                                    collapsed && "justify-center"
+                                    "group flex items-center gap-3.5 rounded-xl px-3.5 py-2.5 text-[13px] font-medium transition-all duration-200",
+                                    isActive
+                                        ? "bg-[#B9955B] text-white shadow-sm shadow-black/15 font-semibold"
+                                        : "text-[#D2DACB] hover:bg-[#3C4536] hover:text-[#FFFFFF]",
+                                    collapsed && "justify-center px-0"
                                 )}
                                 title={collapsed ? item.name : ""}
-                                style={{ animationDelay: `${i * 50}ms` }}
                             >
                                 {({ isActive }) => (
                                     <>
-                                        <item.icon size={22} className="transition-transform group-hover:scale-110" />
-                                        {!collapsed && <span className="font-medium tracking-tight">{item.name}</span>}
+                                        <item.icon
+                                            size={19}
+                                            className={cn(
+                                                "shrink-0 transition-transform duration-200 group-hover:scale-105",
+                                                isActive ? "text-white" : "text-[#B9C6B1] group-hover:text-white"
+                                            )}
+                                        />
+                                        {!collapsed && (
+                                            <span className="tracking-tight">{item.name}</span>
+                                        )}
                                         {isActive && !collapsed && (
-                                            <div className="ml-auto h-1.5 w-1.5 rounded-full bg-primary-600 animate-pulse"></div>
+                                            <div className="ml-auto h-1.5 w-1.5 rounded-full bg-white/90 shadow-xs" />
                                         )}
                                     </>
                                 )}
                             </NavLink>
 
+                            {/* Reports Collapsible Accordion */}
                             {isLastItemInGroup && isReportsAllowed && (
-                                <div className="space-y-1 my-1">
+                                <div className="space-y-1 my-0.5">
                                     <button
                                         onClick={() => {
                                             if (collapsed) setCollapsed(false);
                                             setReportsOpen(!reportsOpen);
                                         }}
                                         className={cn(
-                                            "group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-slate-600 transition-all duration-300 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-50",
-                                            window.location.pathname.includes('/reports') && "text-primary-600 dark:text-primary-400 font-bold",
-                                            collapsed && "justify-center"
+                                            "group flex w-full items-center gap-3.5 rounded-xl px-3.5 py-2.5 text-[13px] font-medium transition-all duration-200",
+                                            window.location.pathname.includes('/reports')
+                                                ? "bg-[#3C4536] text-[#D3B98D] font-semibold"
+                                                : "text-[#D2DACB] hover:bg-[#3C4536] hover:text-[#FFFFFF]",
+                                            collapsed && "justify-center px-0"
                                         )}
+                                        title={collapsed ? "Reports" : ""}
                                     >
-                                        <BarChart3 size={22} className="transition-transform group-hover:scale-110" />
-                                        {!collapsed && <span className="font-medium tracking-tight">Reports</span>}
+                                        <BarChart3
+                                            size={19}
+                                            className="shrink-0 text-[#B9C6B1] group-hover:text-white transition-transform group-hover:scale-105"
+                                        />
+                                        {!collapsed && <span className="tracking-tight">Reports</span>}
                                         {!collapsed && (
                                             <ChevronRight
-                                                size={16}
+                                                size={15}
                                                 className={cn(
-                                                    "ml-auto transition-transform duration-300",
-                                                    reportsOpen && "rotate-90"
+                                                    "ml-auto text-[#B9C6B1] transition-transform duration-200",
+                                                    reportsOpen && "rotate-90 text-[#D3B98D]"
                                                 )}
                                             />
                                         )}
                                     </button>
 
                                     {reportsOpen && !collapsed && (
-                                        <div className="ml-9 flex flex-col gap-1 border-l-2 border-slate-100 dark:border-slate-800 pl-2 animate-in slide-in-from-left-2 duration-300">
+                                        <div className="ml-5 flex flex-col gap-1 border-l border-[#3C4536] pl-3 py-1 my-1 animate-in slide-in-from-left-2 duration-200">
                                             {allowedReportSubItems.map((subItem) => (
                                                 <NavLink
                                                     key={subItem.path}
                                                     to={subItem.path}
                                                     onClick={onMobileClose}
                                                     className={({ isActive }) => cn(
-                                                        "rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200",
+                                                        "rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all duration-150",
                                                         isActive
-                                                            ? "bg-primary-50 text-primary-600 dark:bg-primary-900/20 dark:text-primary-400"
-                                                            : "text-slate-500 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                                                            ? "text-[#D3B98D] bg-[#3C4536]/80 font-semibold"
+                                                            : "text-[#B9C6B1] hover:text-white hover:bg-[#3C4536]/50"
                                                     )}
                                                 >
                                                     {subItem.name}
@@ -199,12 +215,13 @@ export function Sidebar({ collapsed, setCollapsed, onMobileClose }) {
                 })}
             </nav>
 
-            {/* End Session buttons removed as per user request */}
+            {/* Collapse/Expand Toggle Pill Button */}
             <button
                 onClick={() => setCollapsed(!collapsed)}
-                className="absolute -right-3 top-20 hidden lg:flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-xl transition-all hover:scale-110 hover:bg-primary-600 hover:text-white dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 z-50"
+                className="absolute -right-3 top-20 hidden lg:flex h-6 w-6 items-center justify-center rounded-full border border-[#3C4536] bg-[#30382B] text-[#D3B98D] shadow-lg transition-all hover:scale-110 hover:bg-[#B9955B] hover:text-white hover:border-[#B9955B] z-50 cursor-pointer"
+                aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
             >
-                {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+                {collapsed ? <ChevronRight size={13} /> : <ChevronLeft size={13} />}
             </button>
         </aside>
     );

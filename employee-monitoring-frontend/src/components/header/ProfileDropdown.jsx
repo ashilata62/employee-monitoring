@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { UserCircle, Settings, Building, HelpCircle, LogOut } from 'lucide-react';
+import { Settings, Building, LogOut } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 
 export function ProfileDropdown() {
@@ -8,7 +8,7 @@ export function ProfileDropdown() {
     const dropdownRef = useRef(null);
     const navigate = useNavigate();
     const { user, logout } = useAuthStore();
-    const currentUser = user; // Map for compatibility with existing JSX
+    const currentUser = user;
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -27,45 +27,49 @@ export function ProfileDropdown() {
 
     const getRoleBrandColor = (role) => {
         const r = role?.toUpperCase();
-        if (r === 'ADMIN') return 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400';
-        if (r === 'MANAGER') return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400';
-        return 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400';
+        if (r === 'ADMIN') return 'bg-[#30382B] text-[#FDFBF7]';
+        if (r === 'MANAGER') return 'bg-[#B9955B] text-white';
+        return 'bg-[#EEE8DD] text-[#29291F]';
     };
 
     return (
         <div className="relative" ref={dropdownRef}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center gap-3 rounded-xl p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                className="flex items-center gap-3 rounded-xl p-1.5 hover:bg-[#EEE8DD] dark:hover:bg-[#283025] transition-colors cursor-pointer"
             >
                 {currentUser?.avatar ? (
-                    <img src={currentUser.avatar} alt="Profile" className="h-9 w-9 rounded-full object-cover" />
+                    <img src={currentUser.avatar} alt="Profile" className="h-9 w-9 rounded-full object-cover ring-1 ring-[#E5DED2]" />
                 ) : (
-                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300">
-                        <span className="text-sm font-black">{currentUser?.name?.substring(0, 2).toUpperCase()}</span>
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#B9955B] to-[#8C6D38] text-white shadow-xs">
+                        <span className="text-xs font-bold font-serif">{(currentUser?.fullName || currentUser?.name || 'User').substring(0, 2).toUpperCase()}</span>
                     </div>
                 )}
 
                 <div className="hidden text-left md:block pr-2">
-                    <p className="text-sm font-bold text-slate-900 dark:text-slate-100 leading-tight">{currentUser?.fullName || currentUser?.name || 'User'}</p>
-                    <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">{currentUser?.role || 'Member'}</p>
+                    <p className="text-xs font-bold text-[#29291F] dark:text-[#F5F1E9] leading-tight">
+                        {currentUser?.fullName || currentUser?.name || 'User'}
+                    </p>
+                    <p className="text-[10px] font-semibold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-wider">
+                        {currentUser?.role || 'Member'}
+                    </p>
                 </div>
             </button>
 
             {isOpen && (
-                <div className="absolute right-0 top-full mt-2 w-64 rounded-2xl border border-slate-200 bg-white shadow-2xl ring-1 ring-black ring-opacity-5 dark:border-slate-800 dark:bg-slate-900 animate-in fade-in slide-in-from-top-2 duration-200 z-50 overflow-hidden">
-                    <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center gap-3">
+                <div className="absolute right-0 top-full mt-2 w-64 rounded-2xl border border-[#E5DED2] bg-[#FBF9F5] shadow-xl dark:border-[#384232] dark:bg-[#252B20] animate-in fade-in slide-in-from-top-2 duration-200 z-50 overflow-hidden">
+                    <div className="p-4 border-b border-[#E5DED2] dark:border-[#384232] flex items-center gap-3 bg-[#EEE8DD]/30 dark:bg-[#1E2419]">
                         {currentUser?.avatar ? (
                             <img src={currentUser.avatar} alt="Profile" className="h-10 w-10 rounded-full object-cover" />
                         ) : (
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300">
-                                <span className="text-sm font-black">{(currentUser?.fullName || currentUser?.name || '??').substring(0, 2).toUpperCase()}</span>
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#30382B] text-[#D3B98D]">
+                                <span className="text-sm font-bold font-serif">{(currentUser?.fullName || currentUser?.name || '??').substring(0, 2).toUpperCase()}</span>
                             </div>
                         )}
                         <div className="overflow-hidden">
-                            <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{currentUser?.fullName || currentUser?.name}</p>
-                            <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{currentUser?.email}</p>
-                            <span className={`inline-block mt-1.5 px-2 py-0.5 text-[10px] font-black uppercase tracking-widest rounded-md ${getRoleBrandColor(currentUser?.role)}`}>
+                            <p className="text-sm font-bold text-[#29291F] dark:text-[#F5F1E9] truncate">{currentUser?.fullName || currentUser?.name}</p>
+                            <p className="text-xs text-[#777367] dark:text-[#B8B3A7] truncate">{currentUser?.email}</p>
+                            <span className={`inline-block mt-1.5 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-md ${getRoleBrandColor(currentUser?.role)}`}>
                                 {currentUser?.role}
                             </span>
                         </div>
@@ -78,9 +82,9 @@ export function ProfileDropdown() {
                                 navigate(`/${rolePath}/settings/personal`);
                                 setIsOpen(false);
                             }}
-                            className="w-full flex items-center gap-3 px-3 py-2 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-colors"
+                            className="w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold text-[#29291F] dark:text-[#E2E8DE] hover:bg-[#EEE8DD] dark:hover:bg-[#2E362A] rounded-xl transition-colors"
                         >
-                            <Settings size={18} className="text-slate-400" />
+                            <Settings size={16} className="text-[#777367]" />
                             Personal Settings
                         </button>
 
@@ -91,28 +95,20 @@ export function ProfileDropdown() {
                                     navigate(`/${rolePath}/settings/organization`);
                                     setIsOpen(false);
                                 }}
-                                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-colors"
+                                className="w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold text-[#29291F] dark:text-[#E2E8DE] hover:bg-[#EEE8DD] dark:hover:bg-[#2E362A] rounded-xl transition-colors"
                             >
-                                <Building size={18} className="text-slate-400" />
+                                <Building size={16} className="text-[#777367]" />
                                 Organizations
                             </button>
                         )}
-
-                        {/* <button
-                            onClick={() => { window.open('https://help.insightful.io', '_blank'); setIsOpen(false); }}
-                            className="w-full flex items-center gap-3 px-3 py-2 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-colors"
-                        >
-                            <HelpCircle size={18} className="text-slate-400" />
-                            Help
-                        </button> */}
                     </div>
 
-                    <div className="p-2 border-t border-slate-100 dark:border-slate-800">
+                    <div className="p-2 border-t border-[#E5DED2] dark:border-[#384232]">
                         <button
                             onClick={handleLogout}
-                            className="w-full flex items-center gap-3 px-3 py-2 text-sm font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 dark:text-red-400 rounded-xl transition-colors"
+                            className="w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold text-[#A84B4B] hover:bg-[#FAF3F2] dark:hover:bg-[#382626] rounded-xl transition-colors"
                         >
-                            <LogOut size={18} className="text-red-500" />
+                            <LogOut size={16} className="text-[#A84B4B]" />
                             Sign Out
                         </button>
                     </div>

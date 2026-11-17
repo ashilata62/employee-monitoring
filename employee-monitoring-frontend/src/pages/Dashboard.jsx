@@ -353,37 +353,37 @@ export function Dashboard() {
     }, [stats.summary?.utilization, stats.summary?.productivity, liveTick]);
 
     return (
-        <div className="min-h-screen bg-[#fcfdfe] dark:bg-slate-950 pb-12 px-2 sm:px-4 lg:px-8 pt-6">
+        <div className="min-h-screen bg-[#F5F1E9] dark:bg-[#1A1F18] pb-12 px-2 sm:px-4 lg:px-6 pt-4">
             {role === 'EMPLOYEE' && <WorkSessionBanner />}
 
             {/* Insightful Module Quick Switcher */}
-            <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-1 scrollbar-none">
+            <div className="flex items-center gap-2.5 mb-6 overflow-x-auto pb-1 scrollbar-none">
                 <button
                     onClick={() => navigate(role === 'EMPLOYEE' ? '/employee' : '/admin')}
-                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black bg-primary-600 text-white shadow-md shadow-primary-500/20 whitespace-nowrap"
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-[#30382B] text-white shadow-warm-xs whitespace-nowrap cursor-pointer"
                 >
-                    <Zap size={14} />
+                    <Zap size={14} className="text-[#D3B98D]" />
                     <span>Productivity Trends</span>
                 </button>
                 <button
                     onClick={() => navigate(`${role === 'EMPLOYEE' ? '/employee' : '/admin'}/activities`)}
-                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 transition-all shadow-sm whitespace-nowrap"
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium bg-[#FBF9F5] dark:bg-[#252B20] text-[#29291F] dark:text-[#F5F1E9] border border-[#E5DED2] dark:border-[#384232] hover:bg-[#EEE8DD] transition-all shadow-warm-xs whitespace-nowrap cursor-pointer"
                 >
-                    <Activity size={14} className="text-purple-500" />
+                    <Activity size={14} className="text-[#B9955B]" />
                     <span>Activities Timeline</span>
                 </button>
                 <button
                     onClick={() => navigate(`${role === 'EMPLOYEE' ? '/employee' : '/admin'}/reports/location-insights`)}
-                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 transition-all shadow-sm whitespace-nowrap"
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium bg-[#FBF9F5] dark:bg-[#252B20] text-[#29291F] dark:text-[#F5F1E9] border border-[#E5DED2] dark:border-[#384232] hover:bg-[#EEE8DD] transition-all shadow-warm-xs whitespace-nowrap cursor-pointer"
                 >
-                    <Globe size={14} className="text-sky-500" />
+                    <Globe size={14} className="text-[#5E7D64]" />
                     <span>Office vs Remote</span>
                 </button>
                 <button
                     onClick={() => navigate(`${role === 'EMPLOYEE' ? '/employee' : '/admin'}/reports/apps-websites`)}
-                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 transition-all shadow-sm whitespace-nowrap"
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium bg-[#FBF9F5] dark:bg-[#252B20] text-[#29291F] dark:text-[#F5F1E9] border border-[#E5DED2] dark:border-[#384232] hover:bg-[#EEE8DD] transition-all shadow-warm-xs whitespace-nowrap cursor-pointer"
                 >
-                    <Monitor size={14} className="text-emerald-500" />
+                    <Monitor size={14} className="text-[#30382B] dark:text-[#D3B98D]" />
                     <span>Apps & Websites Usage</span>
                 </button>
             </div>
