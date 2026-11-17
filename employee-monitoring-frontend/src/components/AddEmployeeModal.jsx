@@ -88,7 +88,7 @@ export function AddEmployeeModal({ isOpen, onClose, initialTab = 'single' }) {
 
     if (!isOpen) return null;
 
-    const resolvedOrgId = organization?.id || user?.organizationId || user?.employee?.organizationId;
+    const resolvedOrgId = user?.organizationId || user?.employee?.organizationId || organization?.id || 'default-org-id';
 
     const generatePassword = () => {
         const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%";

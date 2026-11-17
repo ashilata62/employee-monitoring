@@ -113,7 +113,8 @@ const inviteEmployee = async (req, res, next) => {
         if (req.user.role !== 'ADMIN' && req.user.role !== 'MANAGER') {
             return res.status(403).json({ success: false, message: "Unauthorized" });
         }
-        const orgId = req.body.organizationId || req.user.organizationId || await getOrganizationId(req);
+        const userOrgId = req.user?.organizationId || (req.user?.employeeId ? (await prisma.employee.findUnique({ where: { id: req.user.employeeId }, select: { organizationId: true } }))?.organizationId : null);
+        const orgId = userOrgId || req.body.organizationId || await getOrganizationId(req);
         const validatedData = inviteEmployeeSchema.parse({
             ...req.body,
             organizationId: orgId
