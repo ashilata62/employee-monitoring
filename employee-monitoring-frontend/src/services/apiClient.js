@@ -32,8 +32,8 @@ api.interceptors.response.use(
     (error) => {
         const message = getErrorMessage(error);
         
-        // Don't show toast for 401 Unauthorized as it's handled by auth logic usually
-        if (error.response?.status !== 401) {
+        // Don't show toast for 401 Unauthorized or when explicitly skipped by caller
+        if (error.response?.status !== 401 && !error.config?.skipToast) {
             toast.error(message);
         }
         

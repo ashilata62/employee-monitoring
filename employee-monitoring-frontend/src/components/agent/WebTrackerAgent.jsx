@@ -13,6 +13,46 @@ export function WebTrackerAgent() {
     const [error, setError] = useState('');
     const [settings, setSettings] = useState({ frequency: 10, globalBlur: false });
 
+    // ─── Active Task ID State (Requirement 2 & 5) ─────────────────────────────
+    const [activeTaskId, setActiveTaskId] = useState(() => {
+        return localStorage.getItem('activeTaskId') || null;
+    });
+    const activeTaskIdRef = useRef(activeTaskId);
+    activeTaskIdRef.current = activeTaskId;
+
+    // Sync task ID with Electron Desktop Agent whenever it changes
+    useEffect(() => {
+        if (window.electronAPI?.setActiveTask) {
+            window.electronAPI.setActiveTask(activeTaskId);
+        } else if (window.electron?.sendTask) {
+            window.electron.sendTask(activeTaskId);
+        }
+    }, [activeTaskId]);
+
+    // Listen for custom task change events from frontend components or Dev 2 integrations
+    useEffect(() => {
+        const handleTaskChange = (event) => {
+            const newTaskId = event.detail?.taskId || event.detail || null;
+            const sanitized = (typeof newTaskId === 'string' && newTaskId.trim().length > 0) ? newTaskId.trim() : null;
+            setActiveTaskId(sanitized);
+            if (sanitized) {
+                localStorage.setItem('activeTaskId', sanitized);
+            } else {
+                localStorage.removeItem('activeTaskId');
+            }
+            if (window.electronAPI?.setActiveTask) {
+                window.electronAPI.setActiveTask(sanitized);
+            }
+        };
+
+        window.addEventListener('task:change', handleTaskChange);
+        window.addEventListener('task:set-active', handleTaskChange);
+        return () => {
+            window.removeEventListener('task:change', handleTaskChange);
+            window.removeEventListener('task:set-active', handleTaskChange);
+        };
+    }, []);
+
     const streamRef = useRef(null);
     const intervalRef = useRef(null);
     const videoRef = useRef(null);
@@ -131,8 +171,11 @@ export function WebTrackerAgent() {
                 formData.append('employeeId', user?.employeeId || '');
                 formData.append('productivity', 'PRODUCTIVE');
                 formData.append('blurred', settings.globalBlur ? 'true' : 'false');
+                if (activeTaskIdRef.current) {
+                    formData.append('taskId', activeTaskIdRef.current);
+                }
                 await screenshotService.uploadRealScreenshot(formData);
-                console.log('[WebTrackerAgent] Screenshot uploaded.');
+                console.log(`[WebTrackerAgent] Screenshot uploaded. Active Task: ${activeTaskIdRef.current || 'None'}`);
             }, 'image/png');
         } catch (err) {
             console.error('[WebTrackerAgent] Screenshot capture failed:', err);

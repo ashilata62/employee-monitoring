@@ -58,6 +58,14 @@ const activityService = {
     getTeamSummary: async (teamId, params = {}) => {
         const response = await api.get(`/activity/team/${teamId}/summary`, { params });
         return response.data;
+    },
+
+    /**
+     * Get Activities Gantt Timeline report (Phase 4 - Insightful Image 4)
+     */
+    getTimelineReport: async (params = {}) => {
+        const response = await api.get('/activity/timeline', { params });
+        return response.data;
     }
 };
 

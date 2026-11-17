@@ -43,6 +43,28 @@ const authMiddleware = async (req, res, next) => {
         }
 
         req.user = decoded;
+
+        // Ensure fresh employee & organization mapping so cached/stale tokens don't desync
+        try {
+            const emp = await prisma.employee.findFirst({
+                where: {
+                    OR: [
+                        ...(decoded.employeeId ? [{ id: decoded.employeeId }] : []),
+                        ...(decoded.email ? [{ email: decoded.email }] : [])
+                    ]
+                },
+                select: { id: true, organizationId: true, role: true }
+            });
+            if (emp) {
+                req.user.employeeId = emp.id;
+                req.user.organizationId = emp.organizationId || 'default-org-id';
+            } else if (!req.user.organizationId) {
+                req.user.organizationId = 'default-org-id';
+            }
+        } catch (e) {
+            // Fallback to decoded token
+        }
+
         next();
     } catch (err) {
         console.error('[AuthMiddleware] Error verifying user status:', err);
