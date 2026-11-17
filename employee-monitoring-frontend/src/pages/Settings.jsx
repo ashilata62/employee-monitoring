@@ -142,19 +142,19 @@ export function Settings() {
     );
 
     return (
-        <div className="min-h-screen bg-[#fcfdfe] dark:bg-slate-950 pb-12 px-2 sm:px-4 lg:px-8">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 py-8 mb-8">
+        <div className="w-full space-y-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Settings</h1>
+                    <h1 className="font-serif text-3xl font-normal text-[#29291F] dark:text-[#F5F1E9] tracking-tight">Settings</h1>
                 </div>
                 <div className="relative group w-full md:w-64">
-                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 group-focus-within:text-primary-500 dark:group-focus-within:text-primary-400 transition-colors" />
+                    <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#777367]" />
                     <input
                         type="text"
                         placeholder="Search settings..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg pl-9 pr-4 py-2 text-xs font-medium text-slate-700 dark:text-slate-300 placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:ring-2 focus:ring-primary-500/10 dark:focus:ring-primary-500/20 focus:border-primary-500 dark:focus:border-primary-400 outline-none transition-all"
+                        className="w-full bg-[#FBF9F5] dark:bg-[#252B20] border border-[#E5DED2] dark:border-[#384232] rounded-xl pl-9 pr-4 py-2 text-xs font-medium text-[#29291F] dark:text-[#F5F1E9] placeholder-[#777367] focus:border-[#B9955B] outline-none transition-all shadow-warm-xs"
                     />
                 </div>
             </div>
