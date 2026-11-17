@@ -650,11 +650,53 @@ const handleIdleActivity = async (req, res) => {
     }
 };
 
+/**
+ * Get active projects and window-title regex patterns for auto project mapping
+ */
+const getAgentProjects = async (req, res) => {
+    try {
+        const employeeId = req.user?.employeeId;
+        if (!employeeId) return errorResponse(res, 'Employee ID is required', 400);
+
+        const employee = await prisma.employee.findUnique({
+            where: { id: employeeId },
+            select: { organizationId: true }
+        });
+
+        if (!employee) return errorResponse(res, 'Employee not found', 404);
+
+        const projects = await prisma.project.findMany({
+            where: { organizationId: employee.organizationId },
+            select: {
+                id: true,
+                name: true,
+                description: true,
+                tasks: {
+                    select: { id: true, name: true, status: true }
+                }
+            }
+        });
+
+        const mapped = projects.map(p => ({
+            id: p.id,
+            name: p.name,
+            regexPattern: `\\b${p.name.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&')}\\b`,
+            tasks: p.tasks
+        }));
+
+        return successResponse(res, mapped, 'Projects for agent auto-mapping retrieved successfully');
+    } catch (error) {
+        console.error('getAgentProjects error:', error);
+        return errorResponse(res, error.message || 'Failed to retrieve projects for agent', 500);
+    }
+};
+
 module.exports = {
     register,
     heartbeat,
     logActivity,
     handleIdleActivity,
+    getAgentProjects,
     downloadAgent,
     getVersion,
     getHealth,

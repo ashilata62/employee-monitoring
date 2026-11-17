@@ -221,13 +221,25 @@
 
     <div class="container" id="success-view" style="display: none;">
         <h1 style="color: #10b981;">Agent Active</h1>
-        <p>Monitoring is active in the background. You can close this window.</p>
-        <div style="margin: 2rem 0; color: #10b981;">
-            <svg style="width: 64px; height: 64px; margin: 0 auto;" fill="currentColor" viewBox="0 0 20 20">
+        <p>Monitoring is active in the background. Minimizes to System Tray.</p>
+        <div style="margin: 1.5rem 0; color: #10b981;">
+            <svg style="width: 56px; height: 56px; margin: 0 auto;" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
             </svg>
         </div>
-        <button id="success-close-btn">Close Window</button>
+
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 0.75rem; padding: 0.75rem 1rem; margin-bottom: 1.25rem; text-align: left;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">ACTIVE PROJECT</span>
+                <span id="detected-project-badge" style="font-size: 0.75rem; color: #818cf8; font-weight: 600;">Auto-detecting...</span>
+            </div>
+            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: var(--text-muted); cursor: pointer; margin: 0; text-transform: none; letter-spacing: normal;">
+                <input type="checkbox" id="chk-autorun" style="width: auto; margin: 0;">
+                <span>Start automatically on Windows boot</span>
+            </label>
+        </div>
+
+        <button id="success-close-btn">Hide to System Tray</button>
         <div style="margin-top: 1rem;">
             <a href="#" id="success-health-btn" style="color: var(--text-muted); font-size: 0.75rem; text-decoration: none;">System Health Check</a>
         </div>
@@ -541,11 +553,48 @@
             });
         };
 
-        // Close handlers
+        // Close handlers & stealth mode
         ['pending-close-btn', 'rejected-close-btn', 'success-close-btn'].forEach(id => {
             const el = document.getElementById(id);
-            if (el) el.onclick = () => window.agentAPI.closeWindow();
+            if (el) el.onclick = () => {
+                if (window.electronAPI?.hideToTray) {
+                    window.electronAPI.hideToTray();
+                } else if (window.agentAPI?.closeWindow) {
+                    window.agentAPI.closeWindow();
+                }
+            };
         });
+
+        // Initialize Windows Startup Auto-Run and Auto-Project Watchers
+        const autorunChk = document.getElementById('chk-autorun');
+        const projectBadge = document.getElementById('detected-project-badge');
+
+        if (window.electronAPI) {
+            if (window.electronAPI.getStartupAutoRun) {
+                window.electronAPI.getStartupAutoRun().then(enabled => {
+                    if (autorunChk) autorunChk.checked = !!enabled;
+                }).catch(() => {});
+            }
+            if (autorunChk && window.electronAPI.setStartupAutoRun) {
+                autorunChk.onchange = (e) => {
+                    window.electronAPI.setStartupAutoRun(e.target.checked);
+                };
+            }
+            if (window.electronAPI.getAutoProject) {
+                window.electronAPI.getAutoProject().then(proj => {
+                    if (projectBadge && proj && proj.projectName) {
+                        projectBadge.textContent = proj.projectName;
+                    }
+                }).catch(() => {});
+            }
+            if (window.electronAPI.onAutoProjectDetected) {
+                window.electronAPI.onAutoProjectDetected(proj => {
+                    if (projectBadge) {
+                        projectBadge.textContent = proj.projectName || 'Auto-detecting...';
+                    }
+                });
+            }
+        }
     </script>
     <style>
         .perm-item {

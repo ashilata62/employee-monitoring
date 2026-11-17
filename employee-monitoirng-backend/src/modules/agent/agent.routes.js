@@ -92,6 +92,7 @@ router.post('/stop-tracking', agentController.stopTracking);
 // Authenticated status and management
 router.get('/status', combinedAuth, agentController.getStatus);
 router.get('/status/:employeeId', combinedAuth, agentController.getStatus);
+router.get('/projects', combinedAuth, agentController.getAgentProjects);
 router.get('/list', authenticate, agentController.listAgents);
 
 // Admin/Manager only management routes

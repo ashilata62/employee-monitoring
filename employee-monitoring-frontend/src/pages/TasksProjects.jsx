@@ -37,7 +37,6 @@ import { NewProjectModal } from '../components/NewProjectModal';
 import { CycleTimeAnalyticsView } from '../components/tasks/CycleTimeAnalyticsView';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { performanceKPIs as mockKPIs, projectProductivity, workLogs as mockLogs } from '../data/mockData'; // Fallbacks if needed
 import { useRealTime } from '../hooks/RealTimeContext';
 import { formatDuration, formatFriendlyDuration, useTaskStore } from '../store/taskStore';
 import { useFilterStore } from '../store/filterStore';
@@ -1111,14 +1110,14 @@ export function TasksProjects() {
         { name: 'Thu', value: 95 }, { name: 'Fri', value: 88 }, { name: 'Sat', value: 45 }, { name: 'Sun', value: 40 }
     ];
 
-    // Dynamic Project Productivity
+    // Dynamic Project Productivity based on real database projects
     const dynamicProjectProductivity = useMemo(() => {
-        if (projects.length === 0) return projectProductivity;
+        if (!projects || projects.length === 0) return [];
         return projects.map(p => ({
             name: p.name,
-            timeSpent: p.taskCount * 2, // Estimated
-            productivityScore: Math.round(85 + Math.random() * 10)
-        })).slice(0, 3);
+            timeSpent: p.totalTime ? Number((p.totalTime / 3600).toFixed(1)) : (p.tasks?.length ? p.tasks.length * 2 : 0),
+            productivityScore: p.productivityScore || 85
+        })).slice(0, 5);
     }, [projects]);
 
     return (

@@ -7,6 +7,10 @@
   "scripts": {
     "start": "electron .",
     "build": "node prebuild.js && electron-builder",
+    "build:win": "node prebuild.js && electron-builder --win",
+    "build:mac": "node prebuild.js && electron-builder --mac",
+    "build:linux": "node prebuild.js && electron-builder --linux",
+    "build:all": "node prebuild.js && electron-builder -mwl",
     "publish-latest": "node copy-latest-exe.js"
   },
   "dependencies": {
@@ -45,6 +49,62 @@
       ],
       "icon": "icon.png",
       "publisherName": "Employee Monitoring System"
+    },
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "category": "public.app-category.business",
+      "icon": "icon.png",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "entitlements.mac.plist",
+      "entitlementsInherit": "entitlements.mac.plist",
+      "extendInfo": {
+        "NSCameraUsageDescription": "Insightful Agent requires access for video verification if enabled.",
+        "NSMicrophoneUsageDescription": "Insightful Agent requires microphone access for audio monitoring if enabled.",
+        "NSScreenCaptureUsageDescription": "Insightful Agent requires screen recording permission to monitor employee screen activities.",
+        "NSAppleEventsUsageDescription": "Insightful Agent requires AppleEvents permission to detect active window titles and application names."
+      }
+    },
+    "dmg": {
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Utility",
+      "icon": "icon.png",
+      "maintainer": "Employee Monitoring System <support@company.com>",
+      "synopsis": "Employee Activity Monitoring Desktop Agent",
+      "description": "Cross-platform background monitoring agent for employee productivity and time tracking."
+    },
+    "deb": {
+      "depends": [
+        "gconf2",
+        "gconf-service",
+        "libnotify4",
+        "libappindicator1",
+        "libxtst6",
+        "libnss3",
+        "libasound2",
+        "xdotool",
+        "xprintidle"
+      ]
     },
     "nsis": {
       "oneClick": false,

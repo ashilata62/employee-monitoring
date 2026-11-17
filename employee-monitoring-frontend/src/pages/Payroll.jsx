@@ -349,16 +349,6 @@ const StatCard = ({ title, value, subValue, icon: Icon, color, trend }) => (
     </div>
 );
 
-// Mock Data for Charts (Restored)
-const earningsData = [
-    { month: 'Jan', earnings: 45000, hours: 1200 },
-    { month: 'Feb', earnings: 48000, hours: 1250 },
-    { month: 'Mar', earnings: 42000, hours: 1100 },
-    { month: 'Apr', earnings: 52000, hours: 1350 },
-    { month: 'May', earnings: 50000, hours: 1300 },
-    { month: 'Jun', earnings: 55000, hours: 1400 },
-];
-
 export function Payroll() {
     const { employees, addNotification, socket } = useRealTime();
     const { 
@@ -373,6 +363,16 @@ export function Payroll() {
     } = usePayrollStore();
 
     const { dateRange, selectedEmployee, selectedTeam } = useFilterStore();
+
+    // Real dynamic monthly trend from backend database summary
+    const earningsData = useMemo(() => {
+        if (summary?.monthlyTrends && summary.monthlyTrends.length > 0) {
+            return summary.monthlyTrends;
+        }
+        return [
+            { month: 'Current', earnings: summary?.totalPayroll || 0, hours: summary?.totalHours || 0 }
+        ];
+    }, [summary?.monthlyTrends, summary?.totalPayroll, summary?.totalHours]);
 
     const [selectedPayslip, setSelectedPayslip] = useState(null);
     const [activeTab, setActiveTab] = useState('payroll'); // payroll, invoices
