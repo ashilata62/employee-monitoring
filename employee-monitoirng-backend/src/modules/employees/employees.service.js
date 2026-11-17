@@ -58,41 +58,86 @@ const getEmployeeById = async (id) => {
  * Invite a new employee (creates employee record with INVITED status)
  */
 const inviteEmployee = async (data) => {
-    // Find the default tracking setting for this computer type in the organization
+    // 1. Check if employee already exists with this email
+    const existing = await prisma.employee.findUnique({
+        where: { email: data.email }
+    });
+    if (existing) {
+        const error = new Error(`Employee with email "${data.email}" already exists.`);
+        error.statusCode = 409;
+        throw error;
+    }
+
+    // 2. Resolve teamId - if not provided or invalid, fallback to first team of org
+    let teamId = data.teamId;
+    if (teamId) {
+        const teamExists = await prisma.team.findUnique({ where: { id: teamId } });
+        if (!teamExists) teamId = null;
+    }
+    if (!teamId) {
+        const defaultTeam = await prisma.team.findFirst({
+            where: { organizationId: data.organizationId }
+        });
+        teamId = defaultTeam ? defaultTeam.id : null;
+    }
+
+    // 3. Resolve default tracking setting
+    const computerType = (data.computerType || 'PERSONAL').toLowerCase();
     let trackingSetting = await prisma.trackingSetting.findFirst({
         where: {
             organizationId: data.organizationId,
-            computerType: data.computerType.toLowerCase(),
+            computerType,
             isDefault: true
         }
     });
 
-    // Fallback: If no default, pick the first one of that type
     if (!trackingSetting) {
         trackingSetting = await prisma.trackingSetting.findFirst({
             where: {
-                organizationId: data.organizationId,
-                computerType: data.computerType.toLowerCase()
+                organizationId: data.organizationId
             }
         });
     }
 
     const workMode = data.location || 'Remote';
+    const status = data.status || 'ACTIVE';
 
-    return await prisma.employee.create({
+    const employee = await prisma.employee.create({
         data: {
             fullName: data.fullName,
             email: data.email,
             organizationId: data.organizationId,
-            teamId: data.teamId,
+            teamId,
             workMode,
-            location: null,
+            location: data.location || 'Remote',
             computerType: data.computerType || 'PERSONAL',
             trackingSettingId: trackingSetting?.id,
-            role: 'EMPLOYEE',
-            status: 'INVITED'
+            role: data.role || 'EMPLOYEE',
+            status,
+            hourlyRate: (data.hourlyRate !== undefined && data.hourlyRate !== null) ? Number(data.hourlyRate) : 0,
+            avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(data.fullName)}&background=random`
+        },
+        include: {
+            team: true,
+            user: true
         }
     });
+
+    // 4. If password is provided, create linked User login account
+    if (data.password) {
+        const hashedPassword = await bcrypt.hash(data.password, 10);
+        await prisma.user.create({
+            data: {
+                email: employee.email,
+                password: hashedPassword,
+                role: employee.role,
+                name: employee.fullName,
+                employeeId: employee.id
+            }
+        });
+    }
+
+    return employee;
 };
 
 /**

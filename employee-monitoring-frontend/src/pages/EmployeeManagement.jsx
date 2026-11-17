@@ -20,6 +20,7 @@ import {
     Edit,
     Trash2,
     UserPlus,
+    Users,
     Bell,
     UserCheck,
     Info,
@@ -922,6 +923,7 @@ export function EmployeeManagement() {
     const [editingEmployee, setEditingEmployee] = useState(null);
     const [deletingEmployee, setDeletingEmployee] = useState(null);
     const [showAddModal, setShowAddModal] = useState(false);
+    const [addModalTab, setAddModalTab] = useState('single');
     const [showEditModal, setShowEditModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [showMergeModal, setShowMergeModal] = useState(false);
@@ -929,7 +931,7 @@ export function EmployeeManagement() {
     const [showColumnDropdown, setShowColumnDropdown] = useState(false);
 
     // Filter & Pagination States
-    const [activeTab, setActiveTab] = useState('Active');
+    const [activeTab, setActiveTab] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(8);
@@ -953,7 +955,7 @@ export function EmployeeManagement() {
         
         const status = emp.status?.toLowerCase() || '';
         const matchesTab = activeTab === 'All' ? true :
-            activeTab === 'Active' ? ['active', 'idle', 'offline', 'online', 'break'].includes(status) :
+            activeTab === 'Active' ? ['active', 'idle', 'offline', 'online', 'break', 'invited', 'pending'].includes(status) :
             activeTab === 'Pending' ? ['pending', 'invited'].includes(status) :
             activeTab === 'Deactivated' ? status === 'deactivated' :
             status === 'merged';
@@ -989,6 +991,7 @@ export function EmployeeManagement() {
             <AddEmployeeModal
                 isOpen={showAddModal}
                 onClose={() => setShowAddModal(false)}
+                initialTab={addModalTab}
             />
 
             <EditEmployeeModal
@@ -1014,16 +1017,31 @@ export function EmployeeManagement() {
                 </div>
                 <div className="flex flex-wrap items-center gap-2 md:gap-3">
                     {(role === 'ADMIN' || role === 'MANAGER') && (
-                        <>
-                            {/* Merge button removed */}
+                        <div className="flex items-center gap-2">
+                            {/* 1. Add Employee Manually Button */}
                             <button
-                                onClick={() => setShowAddModal(true)}
-                                className="flex-[2] md:flex-none flex items-center justify-center gap-2 rounded-xl bg-primary-600 px-5 py-3 text-xs font-black uppercase tracking-wider text-white hover:bg-primary-700 transition-all shadow-xl hover:scale-[1.02] active:scale-95"
+                                onClick={() => {
+                                    setAddModalTab('single');
+                                    setShowAddModal(true);
+                                }}
+                                className="flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-5 py-3 text-xs font-black uppercase tracking-wider text-white transition-all shadow-xl shadow-emerald-600/20 hover:scale-[1.02] active:scale-95"
                             >
-                                <Plus size={16} strokeWidth={3} />
-                                <span>Invite Employee</span>
+                                <UserPlus size={16} strokeWidth={2.5} />
+                                <span>+ Add Employee Manually</span>
                             </button>
-                        </>
+
+                            {/* 2. Invite / Batch Button */}
+                            <button
+                                onClick={() => {
+                                    setAddModalTab('batch');
+                                    setShowAddModal(true);
+                                }}
+                                className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm hover:scale-[1.02] active:scale-95"
+                            >
+                                <Users size={16} />
+                                <span>Invite / Batch</span>
+                            </button>
+                        </div>
                     )}
                 </div>
             </div>

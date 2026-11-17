@@ -1,6 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Monitor, User, Info, Download, ChevronRight, Apple, Laptop, Copy, Check, Plus, Trash2 } from 'lucide-react';
+import {
+    X,
+    Monitor,
+    User,
+    UserPlus,
+    Users,
+    Info,
+    Download,
+    ChevronRight,
+    Apple,
+    Laptop,
+    Copy,
+    Check,
+    Plus,
+    Trash2,
+    Lock,
+    Key,
+    Building2,
+    MapPin,
+    Shield,
+    Eye,
+    EyeOff,
+    DollarSign
+} from 'lucide-react';
 import { useEmployeeStore } from '../store/employeeStore';
 import { useTeamStore } from '../store/teamStore';
 import { useAuthStore } from '../store/authStore';
@@ -9,28 +32,78 @@ import { logAction } from '../utils/logAction';
 import { useToast } from '../context/ToastContext';
 import API_BASE_URL from '../config/api';
 
-export function AddEmployeeModal({ isOpen, onClose }) {
+export function AddEmployeeModal({ isOpen, onClose, initialTab = 'single' }) {
     const { inviteEmployee, fetchEmployees } = useEmployeeStore();
-    const { teams } = useTeamStore();
+    const { fetchTeams, teams } = useTeamStore();
     const { user, role } = useAuthStore();
-    const { organization } = useOrganizationStore();
+    const { fetchOrganization, organization } = useOrganizationStore();
     const { toast } = useToast();
-    const [step, setStep] = useState('choice'); // choice, company, personal
-    const [copied, setCopied] = useState(false);
 
-    const rolePath = role?.toLowerCase() === 'admin' ? '/admin' : '/manager';
+    // Mode: 'single' | 'batch' | 'agent'
+    const [activeTab, setActiveTab] = useState(initialTab || 'single');
+    const [showPassword, setShowPassword] = useState(false);
+    const [copied, setCopied] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+
+    // Single Employee Form
+    const [singleForm, setSingleForm] = useState({
+        fullName: '',
+        email: '',
+        teamId: '',
+        location: 'Office',
+        computerType: 'PERSONAL',
+        role: 'EMPLOYEE',
+        password: '',
+        hourlyRate: '',
+        status: 'ACTIVE'
+    });
+
+    // Batch Employees Form
     const [personalEmployees, setPersonalEmployees] = useState([
-        { id: 1, email: '', name: '', team: 'Default team', location: 'Remote' },
-        { id: 2, email: '', name: '', team: 'Default team', location: 'Remote' },
-        { id: 3, email: '', name: '', team: 'Default team', location: 'Remote' },
+        { id: 1, email: '', name: '', team: '', location: 'Office' },
+        { id: 2, email: '', name: '', team: '', location: 'Office' },
     ]);
+
+    // Fetch teams and organization info whenever modal opens
+    useEffect(() => {
+        if (isOpen) {
+            setActiveTab(initialTab || 'single');
+            fetchTeams();
+            fetchOrganization();
+        }
+    }, [isOpen, initialTab]);
+
+    // Set default team once teams load
+    useEffect(() => {
+        if (teams && teams.length > 0) {
+            if (!singleForm.teamId) {
+                setSingleForm(prev => ({ ...prev, teamId: teams[0].id }));
+            }
+            setPersonalEmployees(prev => prev.map(emp => ({
+                ...emp,
+                team: emp.team || teams[0].id
+            })));
+        }
+    }, [teams]);
 
     if (!isOpen) return null;
 
+    const resolvedOrgId = user?.organizationId || user?.employee?.organizationId || organization?.id || 'default-org-id';
+
+    const generatePassword = () => {
+        const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%";
+        let retVal = "";
+        for (let i = 0; i < 10; i++) {
+            retVal += charset.charAt(Math.floor(Math.random() * charset.length));
+        }
+        setSingleForm(prev => ({ ...prev, password: retVal }));
+    };
+
     const handleCopy = () => {
-        navigator.clipboard.writeText("https://app.insightful.io/#/installation/company/12345");
+        const url = `${window.location.origin}/setup-agent`;
+        navigator.clipboard.writeText(url);
         setCopied(true);
-        toast.success("Installation URL copied to clipboard!");
+        toast.success("Agent Setup URL copied to clipboard!");
         setTimeout(() => setCopied(false), 2000);
     };
 
@@ -45,356 +118,490 @@ export function AddEmployeeModal({ isOpen, onClose }) {
     };
 
     const addAnotherEmployee = () => {
-        setPersonalEmployees([...personalEmployees, { id: Date.now(), email: '', name: '', team: 'Default team', location: 'Remote' }]);
+        setPersonalEmployees(prev => [
+            ...prev,
+            { id: Date.now(), email: '', name: '', team: teams[0]?.id || '', location: 'Remote' }
+        ]);
     };
 
     const removeEmployee = (id) => {
-        setPersonalEmployees(personalEmployees.filter(emp => emp.id !== id));
+        if (personalEmployees.length > 1) {
+            setPersonalEmployees(prev => prev.filter(emp => emp.id !== id));
+        }
     };
 
-    const renderChoice = () => (
-        <>
-            <h2 className="text-xl font-bold text-slate-700 dark:text-slate-200 mb-8">Add New Employees & Download</h2>
+    // ── Handle Single Employee Direct Submit ────────────────────────────────
+    const handleSingleSubmit = async (e) => {
+        e.preventDefault();
+        if (!singleForm.fullName.trim() || !singleForm.email.trim()) {
+            toast.error("Please enter both Full Name and Email.");
+            return;
+        }
 
-            <div className="text-center mb-8">
-                <p className="text-slate-600 dark:text-slate-400 font-bold text-sm mb-2">Choose Your Employee's Computer Type</p>
-                <button className="text-indigo-500 text-xs font-bold flex items-center justify-center gap-1 mx-auto hover:underline">
-                    <div className="w-4 h-4 rounded-full border border-indigo-200 flex items-center justify-center text-[10px]">?</div>
-                    Not sure which to choose? Learn here.
-                </button>
-            </div>
+        setSubmitting(true);
+        try {
+            const payload = {
+                fullName: singleForm.fullName.trim(),
+                email: singleForm.email.trim().toLowerCase(),
+                teamId: singleForm.teamId || teams[0]?.id || null,
+                location: singleForm.location || 'Office',
+                computerType: singleForm.computerType || 'PERSONAL',
+                role: singleForm.role || 'EMPLOYEE',
+                status: singleForm.status || 'ACTIVE',
+                organizationId: resolvedOrgId
+            };
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                {/* Company Computers */}
-                <div
-                    onClick={() => setStep('company')}
-                    className="border border-slate-200 dark:border-slate-800 rounded-xl p-6 flex flex-col items-center text-center cursor-pointer hover:border-indigo-300 dark:hover:border-indigo-500/50 hover:shadow-lg transition-all group"
-                >
-                    <div className="w-20 h-20 bg-slate-50 dark:bg-slate-800/50 rounded-lg flex items-center justify-center mb-6 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/20 transition-colors">
-                        <Monitor size={40} className="text-slate-300 dark:text-slate-600 group-hover:text-indigo-300 dark:group-hover:text-indigo-400" />
-                    </div>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed mb-6 font-medium">
-                        Employees work on company-owned computers, and only admins will be able to modify tracking settings.
-                    </p>
-                    <span className="text-indigo-600 dark:text-indigo-400 font-black text-sm uppercase tracking-tight">Company Computers</span>
-                </div>
+            if (singleForm.hourlyRate !== '' && !isNaN(Number(singleForm.hourlyRate))) {
+                payload.hourlyRate = Number(singleForm.hourlyRate);
+            }
 
-                {/* Personal Computers */}
-                <div
-                    onClick={() => setStep('personal')}
-                    className="border border-slate-200 dark:border-slate-800 rounded-xl p-6 flex flex-col items-center text-center cursor-pointer hover:border-indigo-300 dark:hover:border-indigo-500/50 hover:shadow-lg transition-all group"
-                >
-                    <div className="w-20 h-20 bg-slate-50 dark:bg-slate-800/50 rounded-lg flex items-center justify-center mb-6 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/20 transition-colors">
-                        <div className="relative">
-                            <User size={40} className="text-slate-300 dark:text-slate-600 group-hover:text-indigo-300 dark:group-hover:text-indigo-400" />
-                            <div className="absolute -bottom-1 -right-1 bg-slate-300 dark:bg-slate-600 group-hover:bg-indigo-300 dark:group-hover:bg-indigo-400 rounded-sm w-4 h-4 flex items-center justify-center">
-                                <Apple size={10} className="text-white" />
-                            </div>
-                        </div>
-                    </div>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed mb-6 font-medium">
-                        Employees work on their personal computers and should have the ability to control when Insightful tracks their activities.
-                    </p>
-                    <span className="text-indigo-600 dark:text-indigo-400 font-black text-sm uppercase tracking-tight">Personal Computers</span>
-                </div>
-            </div>
+            if (singleForm.password && singleForm.password.trim().length >= 6) {
+                payload.password = singleForm.password.trim();
+            }
 
-            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/50 rounded-lg p-4 flex items-center gap-3">
-                <div className="h-6 w-6 rounded-full bg-amber-100 dark:bg-amber-800/50 flex items-center justify-center text-amber-600 dark:text-amber-500">
-                    <Info size={14} />
-                </div>
-                <p className="text-xs font-bold text-amber-800 dark:text-amber-400">
-                    Adding computers will impact your billing. <button className="underline hover:text-amber-500">Learn More here.</button>
-                </p>
-            </div>
-        </>
-    );
+            const res = await inviteEmployee(payload);
+            toast.success(`Employee "${singleForm.fullName}" added to database successfully!`);
+            logAction(user?.name || 'Admin', 'Owner', 'Create', 'Employee', `Created employee: "${singleForm.fullName}"`);
+            
+            await fetchEmployees();
+            setSingleForm({
+                fullName: '',
+                email: '',
+                teamId: teams[0]?.id || '',
+                location: 'Office',
+                computerType: 'PERSONAL',
+                role: 'EMPLOYEE',
+                password: '',
+                hourlyRate: '',
+                status: 'ACTIVE'
+            });
+            onClose();
+        } catch (err) {
+            console.error('[AddEmployeeModal] Submit failed:', err);
+            const msg = err.response?.data?.message || err.message || "Failed to add employee";
+            toast.error(msg);
+        } finally {
+            setSubmitting(false);
+        }
+    };
 
-    const renderCompany = () => (
-        <>
-            <h2 className="text-xl font-bold text-slate-700 dark:text-slate-200 mb-8 underline decoration-indigo-200 dark:decoration-indigo-800/50 underline-offset-8">Add New Employees - Company Computers</h2>
+    // ── Handle Batch Invite Submit ──────────────────────────────────────────
+    const handleBatchSubmit = async () => {
+        const validEmployees = personalEmployees.filter(emp => emp.email?.trim() && emp.name?.trim());
+        if (validEmployees.length === 0) {
+            toast.error("Please fill in at least one employee with Name and Email.");
+            return;
+        }
 
-            <div className="space-y-4 mb-8">
-                <p className="text-slate-700 dark:text-slate-400 font-bold text-sm">Download and install it on all employees' computers.</p>
+        setSubmitting(true);
+        let successCount = 0;
+        let lastError = null;
 
-                {/* Windows Download */}
-                <div
-                    onClick={handleDownloadWindows}
-                    className="flex items-center justify-between p-4 border border-indigo-200 dark:border-indigo-800/50 bg-white dark:bg-slate-800/50 rounded-lg group cursor-pointer hover:shadow-md transition-all"
-                >
-                    <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 bg-slate-100 dark:bg-slate-900 rounded flex items-center justify-center">
-                            <Monitor size={24} className="text-slate-400 dark:text-slate-500" />
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <span className="font-black text-slate-800 dark:text-slate-200">Windows</span>
-                            <div className="w-4 h-4 rounded-full border border-slate-300 dark:border-slate-600 flex items-center justify-center text-[10px] text-slate-400 dark:text-slate-500">?</div>
-                        </div>
-                    </div>
-                    <Download size={20} className="text-indigo-500 dark:text-indigo-400" />
-                </div>
+        for (const emp of validEmployees) {
+            try {
+                const selectedTeamId = emp.team || teams[0]?.id || null;
+                await inviteEmployee({
+                    fullName: emp.name.trim(),
+                    email: emp.email.trim().toLowerCase(),
+                    teamId: selectedTeamId,
+                    location: emp.location || 'Remote',
+                    computerType: 'PERSONAL',
+                    status: 'ACTIVE',
+                    organizationId: resolvedOrgId
+                });
+                successCount++;
+            } catch (err) {
+                console.error('Batch item failed:', err);
+                lastError = err.response?.data?.message || err.message;
+            }
+        }
 
-                <p className="text-slate-700 dark:text-slate-400 font-bold text-sm pt-4">Read the instructions how to install it on employees' computers.</p>
-
-                {/* macOS */}
-                <div className="flex items-center justify-between p-4 border border-indigo-100 dark:border-indigo-900/40 bg-white dark:bg-slate-800/50 rounded-lg cursor-pointer hover:border-indigo-300 dark:hover:border-indigo-700/50 transition-all">
-                    <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 bg-slate-50 dark:bg-slate-900 rounded flex items-center justify-center">
-                            <Apple size={24} className="text-slate-400 dark:text-slate-500" />
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <span className="font-bold text-slate-700 dark:text-slate-300 uppercase tracking-tighter">macOS</span>
-                            <div className="w-4 h-4 rounded-full border border-slate-300 dark:border-slate-600 flex items-center justify-center text-[10px] text-slate-400 dark:text-slate-500">?</div>
-                        </div>
-                    </div>
-                    <ChevronRight size={20} className="text-indigo-400 dark:text-indigo-500/80" />
-                </div>
-
-                {/* Linux */}
-                <div className="flex items-center justify-between p-4 border border-indigo-100 dark:border-indigo-900/40 bg-white dark:bg-slate-800/50 rounded-lg cursor-pointer hover:border-indigo-300 dark:hover:border-indigo-700/50 transition-all">
-                    <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 bg-slate-50 dark:bg-slate-900 rounded flex items-center justify-center text-slate-400 dark:text-slate-500">
-                            <Laptop size={24} />
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <span className="font-bold text-slate-700 dark:text-slate-300 uppercase tracking-tighter">Linux</span>
-                            <div className="w-4 h-4 rounded-full border border-slate-300 dark:border-slate-600 flex items-center justify-center text-[10px] text-slate-400 dark:text-slate-500">?</div>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        <span className="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest">Beta</span>
-                        <ChevronRight size={20} className="text-indigo-400 dark:text-indigo-500/80" />
-                    </div>
-                </div>
-            </div>
-
-            <div className="text-center mb-6">
-                <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">OR</span>
-            </div>
-
-            <div className="mb-8">
-                <p className="text-slate-600 dark:text-slate-400 font-bold text-xs mb-2">Copy installation URL and send it to system administrators or employees</p>
-                <div className="flex gap-2">
-                    <div className="flex-1 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-4 py-2.5 text-xs text-slate-500 dark:text-slate-400 font-medium truncate">
-                        https://app.insightful.io/#/installation/company/123456789...
-                    </div>
-                    <button
-                        onClick={handleCopy}
-                        className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-xs font-black uppercase tracking-tight flex items-center gap-2 whitespace-nowrap hover:bg-indigo-700 dark:hover:bg-indigo-500 transition-colors"
-                    >
-                        {copied ? <Check size={14} /> : <Copy size={14} />}
-                        {copied ? 'Copied' : 'Copy URL'}
-                    </button>
-                </div>
-            </div>
-
-            <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800/20 rounded-lg p-4 flex items-start gap-3 mb-8">
-                <div className="h-6 w-6 rounded-full bg-blue-100 dark:bg-blue-800/30 flex items-center justify-center text-blue-600 dark:text-blue-500 mt-0.5">
-                    <Info size={14} />
-                </div>
-                <p className="text-xs font-bold text-blue-800 dark:text-blue-400 leading-relaxed">
-                    Employees will show up on your dashboard automatically after the installation, no other sign ups are required.
-                </p>
-            </div>
-
-            <div className="flex justify-between items-center mt-6 pt-6 border-t border-slate-100 dark:border-slate-800">
-                <button
-                    onClick={() => setStep('choice')}
-                    className="px-6 py-2 border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 rounded-lg text-xs font-black uppercase tracking-tight hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors"
-                >
-                    Back
-                </button>
-            </div>
-        </>
-    );
-
-    const renderPersonal = () => (
-        <>
-            <h2 className="text-xl font-bold text-slate-700 dark:text-slate-200 mb-8">Add New Employees - Personal Computers</h2>
-
-            <div className="space-y-6 mb-8 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                <div className="grid grid-cols-12 gap-4">
-                    <div className="col-span-3 text-[11px] font-bold text-slate-500 uppercase tracking-tight">Email</div>
-                    <div className="col-span-3 text-[11px] font-bold text-slate-500 uppercase tracking-tight">Full Name</div>
-                    <div className="col-span-3 text-[11px] font-bold text-slate-500 uppercase tracking-tight">Team</div>
-                    <div className="col-span-2 text-[11px] font-bold text-slate-500 uppercase tracking-tight">Location</div>
-                </div>
-
-                {personalEmployees.map((emp, idx) => (
-                    <div key={emp.id} className="grid grid-cols-12 gap-3 group">
-                        <div className="col-span-3">
-                            <input
-                                type="email"
-                                placeholder="Email"
-                                value={emp.email}
-                                onChange={(e) => {
-                                    const newEmps = [...personalEmployees];
-                                    newEmps[idx].email = e.target.value;
-                                    setPersonalEmployees(newEmps);
-                                }}
-                                className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-2 text-xs dark:text-slate-200 focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all"
-                            />
-                        </div>
-                        <div className="col-span-3">
-                            <input
-                                type="text"
-                                placeholder="Name"
-                                value={emp.name}
-                                onChange={(e) => {
-                                    const newEmps = [...personalEmployees];
-                                    newEmps[idx].name = e.target.value;
-                                    setPersonalEmployees(newEmps);
-                                }}
-                                className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-2 text-xs dark:text-slate-200 focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all"
-                            />
-                        </div>
-                        <div className="col-span-3">
-                            <select
-                                value={emp.team}
-                                onChange={(e) => {
-                                    const newEmps = [...personalEmployees];
-                                    newEmps[idx].team = e.target.value;
-                                    setPersonalEmployees(newEmps);
-                                }}
-                                className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-2 text-xs dark:text-slate-200 focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all appearance-none cursor-pointer"
-                            >
-                                <option value="">Select team</option>
-                                {teams.map(t => (
-                                    <option key={t.id} value={t.id}>{t.name}</option>
-                                ))}
-                            </select>
-                        </div>
-                        <div className="col-span-2">
-                            <select
-                                value={emp.location}
-                                onChange={(e) => {
-                                    const newEmps = [...personalEmployees];
-                                    newEmps[idx].location = e.target.value;
-                                    setPersonalEmployees(newEmps);
-                                }}
-                                className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-2 text-xs dark:text-slate-200 focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all appearance-none cursor-pointer"
-                            >
-                                <option value="Remote">Remote</option>
-                                <option value="Office">Office</option>
-                                <option value="Hybrid">Hybrid</option>
-                            </select>
-                        </div>
-                        <div className="col-span-1 flex items-center justify-end">
-                            <button
-                                onClick={() => removeEmployee(emp.id)}
-                                className="text-slate-300 hover:text-rose-500 transition-colors"
-                            >
-                                <X size={18} />
-                            </button>
-                        </div>
-                    </div>
-                ))}
-
-                <button
-                    onClick={addAnotherEmployee}
-                    className="flex items-center gap-2 text-indigo-600 text-xs font-black uppercase tracking-tight hover:text-indigo-700 decoration-indigo-200"
-                >
-                    <Plus size={16} strokeWidth={3} />
-                    Add Another Employee
-                </button>
-            </div>
-
-            <div className="flex justify-between items-center mt-6 pt-6 border-t border-slate-100 dark:border-slate-800">
-                <button
-                    onClick={() => setStep('choice')}
-                    className="px-6 py-2 border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 rounded-lg text-xs font-black uppercase tracking-tight hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors"
-                >
-                    Back
-                </button>
-                <div className="flex gap-3">
-                    <button
-                        onClick={onClose}
-                        className="px-6 py-2 border border-indigo-100 dark:border-indigo-900/50 text-indigo-400 dark:text-indigo-500 rounded-lg text-xs font-black uppercase tracking-tight hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        onClick={async () => {
-                            const orgId = organization?.id;
-                            if (!orgId) {
-                                toast.error("No organization ID found. Please try logging in again.");
-                                return;
-                            }
-
-                            let successCount = 0;
-                            let failCount = 0;
-
-                            for (const emp of personalEmployees) {
-                                if (emp.email && emp.name) {
-                                    const selectedTeamId = (emp.team === 'Default team' || !emp.team)
-                                        ? teams[0]?.id
-                                        : emp.team;
-
-                                    if (!selectedTeamId) continue;
-
-                                    try {
-                                        const res = await inviteEmployee({
-                                            fullName: emp.name,
-                                            email: emp.email,
-                                            teamId: selectedTeamId,
-                                            location: emp.location || 'Remote',
-                                            computerType: 'PERSONAL',
-                                            organizationId: orgId
-                                        });
-                                        
-                                        // Log for testing as requested by user - Made extremely prominent
-                                        console.log("%c 🚀 [INVITATION SENT] 🚀 ", 'background: #10b981; color: white; font-size: 16px; font-weight: bold; padding: 4px; border-radius: 4px;');
-                                        console.log(`%c User: ${emp.email}`, 'color: #10b981; font-weight: bold;');
-                                        if (res.setupLink) {
-                                            console.log(`%c AGENT SETUP LINK: %c ${res.setupLink} `, 'color: #6366f1; font-weight: bold;', 'background: #6366f1; color: white; padding: 2px; border-radius: 2px;');
-                                        }
-                                        if (res.emailSimulated) {
-                                            toast.info(`Invite created for ${emp.email}. Check backend console for email (SMTP not configured).`);
-                                        }
-
-                                        logAction(user?.name || 'Admin', 'Owner', 'Create', 'Employee', `Invited new employee: "${emp.name}"`);
-                                        successCount++;
-                                    } catch (err) {
-                                        failCount++;
-                                        if (err.response?.data?.message?.toLowerCase().includes("duplicate")) break;
-                                    }
-                                }
-                            }
-
-                            if (successCount > 0) {
-                                await fetchEmployees();
-                                if (failCount === 0) {
-                                    onClose();
-                                }
-                            }
-                        }}
-                        className="px-6 py-2 bg-indigo-600 text-white rounded-lg text-xs font-black uppercase tracking-tight shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-colors"
-                    >
-                        Send Invitations
-                    </button>
-                </div>
-            </div>
-        </>
-    );
+        setSubmitting(false);
+        if (successCount > 0) {
+            toast.success(`Successfully added ${successCount} employee(s) to database!`);
+            await fetchEmployees();
+            onClose();
+        } else if (lastError) {
+            toast.error(lastError);
+        }
+    };
 
     return createPortal(
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/40 backdrop-blur-sm overflow-hidden p-4">
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 backdrop-blur-sm overflow-hidden p-4">
             <div className="absolute inset-0 transition-opacity" onClick={onClose}></div>
-            <div className="relative w-full max-w-2xl mx-4 bg-white dark:bg-slate-950 rounded-2xl shadow-2xl animate-scale-in overflow-hidden flex flex-col max-h-[90vh]">
-                <button
-                    onClick={onClose}
-                    className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors z-[10]"
-                >
-                    <X size={20} />
-                </button>
+            <div className="relative w-full max-w-2xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] border border-slate-100 dark:border-slate-800 animate-in fade-in zoom-in-95 duration-200">
+                
+                {/* Header */}
+                <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 dark:border-slate-800">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-2xl bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center text-primary-600">
+                            <UserPlus size={20} />
+                        </div>
+                        <div>
+                            <h2 className="text-base font-black text-slate-900 dark:text-white">Add New Employee</h2>
+                            <p className="text-xs text-slate-400 font-medium">Create a new team member and link tracking settings</p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={onClose}
+                        className="w-8 h-8 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors"
+                    >
+                        <X size={18} />
+                    </button>
+                </div>
 
-                <div className="overflow-y-auto max-h-[85vh] px-6 py-8 sm:px-8">
-                    {step === 'choice' && renderChoice()}
-                    {step === 'company' && renderCompany()}
-                    {step === 'personal' && renderPersonal()}
+                {/* Tab Navigation */}
+                <div className="flex items-center gap-2 px-6 pt-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+                    {[
+                        { id: 'single', label: 'Manual Add Employee', icon: UserPlus },
+                        { id: 'batch', label: 'Batch Invite', icon: Users },
+                        { id: 'agent', label: 'Agent Installer', icon: Monitor }
+                    ].map(tab => {
+                        const Icon = tab.icon;
+                        const isActive = activeTab === tab.id;
+                        return (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id)}
+                                className={`flex items-center gap-2 px-4 py-2.5 rounded-t-xl text-xs font-black transition-all border-b-2 -mb-px ${
+                                    isActive
+                                        ? 'border-primary-600 text-primary-600 bg-white dark:bg-slate-900'
+                                        : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                                }`}
+                            >
+                                <Icon size={14} />
+                                <span>{tab.label}</span>
+                            </button>
+                        );
+                    })}
+                </div>
+
+                {/* Body Content */}
+                <div className="overflow-y-auto px-6 py-6 space-y-6">
+                    {/* ── 1. Single Employee Form (Direct Add) ─────────────────── */}
+                    {activeTab === 'single' && (
+                        <form onSubmit={handleSingleSubmit} className="space-y-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 px-1">
+                                        Full Name <span className="text-rose-500">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        required
+                                        placeholder="e.g. Rahul Sharma"
+                                        value={singleForm.fullName}
+                                        onChange={(e) => setSingleForm({ ...singleForm, fullName: e.target.value })}
+                                        className="w-full h-10 px-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-100 outline-none focus:border-primary-500 transition-all"
+                                    />
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 px-1">
+                                        Email Address <span className="text-rose-500">*</span>
+                                    </label>
+                                    <input
+                                        type="email"
+                                        required
+                                        placeholder="rahul@company.com"
+                                        value={singleForm.email}
+                                        onChange={(e) => setSingleForm({ ...singleForm, email: e.target.value })}
+                                        className="w-full h-10 px-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-100 outline-none focus:border-primary-500 transition-all"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 px-1">
+                                        Department / Team
+                                    </label>
+                                    <select
+                                        value={singleForm.teamId}
+                                        onChange={(e) => setSingleForm({ ...singleForm, teamId: e.target.value })}
+                                        className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-100 outline-none focus:border-primary-500 transition-all cursor-pointer"
+                                    >
+                                        {teams.map(t => (
+                                            <option key={t.id} value={t.id}>{t.name}</option>
+                                        ))}
+                                        {teams.length === 0 && <option value="">General Team</option>}
+                                    </select>
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 px-1">
+                                        Role
+                                    </label>
+                                    <select
+                                        value={singleForm.role}
+                                        onChange={(e) => setSingleForm({ ...singleForm, role: e.target.value })}
+                                        className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-100 outline-none focus:border-primary-500 transition-all cursor-pointer"
+                                    >
+                                        <option value="EMPLOYEE">Employee</option>
+                                        <option value="MANAGER">Manager</option>
+                                        <option value="ADMIN">Admin</option>
+                                    </select>
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 px-1">
+                                        Status
+                                    </label>
+                                    <select
+                                        value={singleForm.status}
+                                        onChange={(e) => setSingleForm({ ...singleForm, status: e.target.value })}
+                                        className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-100 outline-none focus:border-primary-500 transition-all cursor-pointer"
+                                    >
+                                        <option value="ACTIVE">Active</option>
+                                        <option value="INVITED">Pending / Invited</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 px-1">
+                                        Work Mode
+                                    </label>
+                                    <select
+                                        value={singleForm.location}
+                                        onChange={(e) => setSingleForm({ ...singleForm, location: e.target.value })}
+                                        className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-100 outline-none focus:border-primary-500 transition-all cursor-pointer"
+                                    >
+                                        <option value="Office">Office</option>
+                                        <option value="Remote">Remote</option>
+                                        <option value="Hybrid">Hybrid</option>
+                                    </select>
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 px-1">
+                                        Computer Type
+                                    </label>
+                                    <select
+                                        value={singleForm.computerType}
+                                        onChange={(e) => setSingleForm({ ...singleForm, computerType: e.target.value })}
+                                        className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-100 outline-none focus:border-primary-500 transition-all cursor-pointer"
+                                    >
+                                        <option value="PERSONAL">Personal Computer</option>
+                                        <option value="COMPANY">Company Computer</option>
+                                    </select>
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 px-1">
+                                        Hourly Rate ($/hr)
+                                    </label>
+                                    <div className="relative">
+                                        <input
+                                            type="number"
+                                            step="0.01"
+                                            min="0"
+                                            placeholder="0.00"
+                                            value={singleForm.hourlyRate}
+                                            onChange={(e) => setSingleForm({ ...singleForm, hourlyRate: e.target.value })}
+                                            className="w-full h-10 pl-7 pr-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-100 outline-none focus:border-primary-500 transition-all"
+                                        />
+                                        <DollarSign size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="space-y-1.5 pt-1">
+                                <div className="flex items-center justify-between px-1">
+                                    <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1">
+                                        <Key size={11} /> Login Password (Optional)
+                                    </label>
+                                    <button
+                                        type="button"
+                                        onClick={generatePassword}
+                                        className="text-[10px] font-bold text-primary-600 hover:underline"
+                                    >
+                                        Generate Password
+                                    </button>
+                                </div>
+                                <div className="relative">
+                                    <input
+                                        type={showPassword ? 'text' : 'password'}
+                                        placeholder="Min 6 characters (or leave empty to send setup email)"
+                                        value={singleForm.password}
+                                        onChange={(e) => setSingleForm({ ...singleForm, password: e.target.value })}
+                                        className="w-full h-10 pl-3.5 pr-10 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-mono font-bold text-slate-800 dark:text-slate-100 outline-none focus:border-primary-500 transition-all"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                                    >
+                                        {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                                    </button>
+                                </div>
+                                <p className="text-[10px] text-slate-400 px-1">
+                                    When set, creates a direct web & desktop agent login account in database immediately.
+                                </p>
+                            </div>
+
+                            <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+                                <button
+                                    type="button"
+                                    onClick={onClose}
+                                    className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={submitting}
+                                    className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black uppercase tracking-wider shadow-lg shadow-emerald-600/20 active:scale-95 transition-all disabled:opacity-50 flex items-center gap-2"
+                                >
+                                    <UserPlus size={15} />
+                                    <span>{submitting ? 'Saving to DB...' : 'Save & Add Employee'}</span>
+                                </button>
+                            </div>
+                        </form>
+                    )}
+
+                    {/* ── 2. Batch Invite ──────────────────────────────────────── */}
+                    {activeTab === 'batch' && (
+                        <div className="space-y-4">
+                            <p className="text-xs text-slate-500 font-medium">
+                                Add multiple employees simultaneously. They will be added to the database and sent setup instructions.
+                            </p>
+
+                            <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1">
+                                {personalEmployees.map((emp, idx) => (
+                                    <div key={emp.id} className="grid grid-cols-12 gap-2 items-center p-2 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-700/50">
+                                        <div className="col-span-4">
+                                            <input
+                                                type="text"
+                                                placeholder="Full Name"
+                                                value={emp.name}
+                                                onChange={(e) => {
+                                                    const updated = [...personalEmployees];
+                                                    updated[idx].name = e.target.value;
+                                                    setPersonalEmployees(updated);
+                                                }}
+                                                className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-100"
+                                            />
+                                        </div>
+                                        <div className="col-span-4">
+                                            <input
+                                                type="email"
+                                                placeholder="email@company.com"
+                                                value={emp.email}
+                                                onChange={(e) => {
+                                                    const updated = [...personalEmployees];
+                                                    updated[idx].email = e.target.value;
+                                                    setPersonalEmployees(updated);
+                                                }}
+                                                className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-100"
+                                            />
+                                        </div>
+                                        <div className="col-span-3">
+                                            <select
+                                                value={emp.team}
+                                                onChange={(e) => {
+                                                    const updated = [...personalEmployees];
+                                                    updated[idx].team = e.target.value;
+                                                    setPersonalEmployees(updated);
+                                                }}
+                                                className="w-full h-9 px-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-100"
+                                            >
+                                                {teams.map(t => (
+                                                    <option key={t.id} value={t.id}>{t.name}</option>
+                                                ))}
+                                                {teams.length === 0 && <option value="">General Team</option>}
+                                            </select>
+                                        </div>
+                                        <div className="col-span-1 flex items-center justify-center">
+                                            <button
+                                                type="button"
+                                                onClick={() => removeEmployee(emp.id)}
+                                                className="text-slate-400 hover:text-rose-500 transition-colors"
+                                            >
+                                                <X size={16} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <button
+                                type="button"
+                                onClick={addAnotherEmployee}
+                                className="flex items-center gap-1.5 text-xs font-black text-primary-600 hover:underline"
+                            >
+                                <Plus size={14} /> Add Another Row
+                            </button>
+
+                            <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+                                <button
+                                    type="button"
+                                    onClick={onClose}
+                                    className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleBatchSubmit}
+                                    disabled={submitting}
+                                    className="px-6 py-2.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white text-xs font-black uppercase tracking-wider shadow-lg shadow-primary-500/20 active:scale-95 transition-all disabled:opacity-50"
+                                >
+                                    {submitting ? 'Saving to DB...' : 'Save & Invite All'}
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* ── 3. Agent Download (Company Computers) ───────────────── */}
+                    {activeTab === 'agent' && (
+                        <div className="space-y-4">
+                            <p className="text-xs text-slate-500 font-medium">
+                                For company-owned desktops/laptops, install the agent software directly or share the installer URL.
+                            </p>
+
+                            <div
+                                onClick={handleDownloadWindows}
+                                className="flex items-center justify-between p-4 border-2 border-primary-100 dark:border-primary-900/40 bg-primary-50/30 dark:bg-primary-900/10 rounded-2xl cursor-pointer hover:border-primary-400 transition-all group"
+                            >
+                                <div className="flex items-center gap-3.5">
+                                    <div className="w-10 h-10 rounded-xl bg-primary-600 text-white flex items-center justify-center shadow-md">
+                                        <Monitor size={20} />
+                                    </div>
+                                    <div>
+                                        <h4 className="text-xs font-black text-slate-900 dark:text-white">Windows Desktop Agent (.exe)</h4>
+                                        <p className="text-[10px] text-slate-400 font-semibold">Native agent with auto-start, tray, and stealth support</p>
+                                    </div>
+                                </div>
+                                <Download size={18} className="text-primary-600 group-hover:translate-y-0.5 transition-transform" />
+                            </div>
+
+                            <div className="space-y-1.5 pt-2">
+                                <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 px-1">
+                                    Agent Setup Web URL
+                                </label>
+                                <div className="flex gap-2">
+                                    <div className="flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2 text-xs font-mono text-slate-600 dark:text-slate-300 truncate">
+                                        {window.location.origin}/setup-agent
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={handleCopy}
+                                        className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-xs font-black flex items-center gap-1.5 transition-colors"
+                                    >
+                                        {copied ? <Check size={14} /> : <Copy size={14} />}
+                                        <span>{copied ? 'Copied' : 'Copy'}</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>,
         document.body
     );
 }
+
+export default AddEmployeeModal;

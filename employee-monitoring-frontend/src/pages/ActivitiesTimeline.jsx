@@ -46,6 +46,46 @@ export function ActivitiesTimeline() {
   const [data, setData] = useState(null);
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [hoveredEmployee, setHoveredEmployee] = useState(null);
+  const hoverTimeoutRef = useRef(null);
+
+  const handleRowMouseEnter = (emp) => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+    setHoveredEmployee(emp);
+  };
+
+  const handleRowMouseLeave = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+    hoverTimeoutRef.current = setTimeout(() => {
+      setHoveredEmployee(null);
+    }, 200);
+  };
+
+  const handleCardMouseEnter = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+  };
+
+  const handleCardMouseLeave = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+    hoverTimeoutRef.current = setTimeout(() => {
+      setHoveredEmployee(null);
+    }, 150);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    };
+  }, []);
   const [hoveredHour, setHoveredHour] = useState(null);
   const [showProjectsCard, setShowProjectsCard] = useState(true);
   const [showMiniTracker, setShowMiniTracker] = useState(true);
@@ -631,7 +671,10 @@ export function ActivitiesTimeline() {
           </div>
 
           {/* Table Employee Rows */}
-          <div className="divide-y divide-slate-100 dark:divide-slate-800/60 relative">
+          <div 
+            onMouseLeave={handleRowMouseLeave}
+            className="divide-y divide-slate-100 dark:divide-slate-800/60 relative"
+          >
             {loading ? (
               <div className="py-20 flex flex-col items-center justify-center gap-3 text-slate-400">
                 <RefreshCw className="animate-spin text-primary-600" size={28} />
@@ -645,7 +688,8 @@ export function ActivitiesTimeline() {
               filteredEmployees.map((emp) => (
                 <div
                   key={emp.id}
-                  onMouseEnter={() => setHoveredEmployee(emp)}
+                  onMouseEnter={() => handleRowMouseEnter(emp)}
+                  onMouseLeave={handleRowMouseLeave}
                   className="flex items-center px-6 py-4 hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors relative group"
                 >
                   {/* Employee Name & Team */}
@@ -734,7 +778,11 @@ export function ActivitiesTimeline() {
 
           {/* Interactive Employee Profile Hover Card */}
           {hoveredEmployee && (
-            <div className="absolute right-8 top-28 w-72 bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 p-5 z-40 animate-in fade-in duration-200">
+            <div 
+              onMouseEnter={handleCardMouseEnter}
+              onMouseLeave={handleCardMouseLeave}
+              className="absolute right-8 top-28 w-72 bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 p-5 z-40 animate-in fade-in duration-200"
+            >
               <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
                 <div className="flex items-center gap-2.5">
                   <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 font-black text-xs flex items-center justify-center">
@@ -745,9 +793,24 @@ export function ActivitiesTimeline() {
                     <p className="text-[10px] font-bold text-slate-400">{hoveredEmployee.team}</p>
                   </div>
                 </div>
-                <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
-                  {hoveredEmployee.productivityPct}% productivity
-                </span>
+                <div className="flex items-center gap-1.5">
+                  <span className={cn(
+                    "text-[10px] font-black px-2 py-0.5 rounded-full border",
+                    (hoveredEmployee.productivityPct || 0) > 0
+                      ? "text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800"
+                      : "text-slate-500 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+                  )}>
+                    {hoveredEmployee.productivityPct || 0}% productivity
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setHoveredEmployee(null)}
+                    title="Close"
+                    className="p-1 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
               </div>
 
               {/* Active Time */}
@@ -757,7 +820,11 @@ export function ActivitiesTimeline() {
                 </p>
                 <div className="flex items-baseline justify-between mt-1">
                   <p className="text-xl font-black text-slate-900 dark:text-white">{hoveredEmployee.activeHoursFormatted}</p>
-                  <p className="text-xs font-bold text-slate-400">{hoveredEmployee.startShift} → {hoveredEmployee.endShift}</p>
+                  <p className="text-xs font-bold text-slate-400">
+                    {hoveredEmployee.startShift && hoveredEmployee.startShift !== '--:--'
+                      ? `${hoveredEmployee.startShift} → ${hoveredEmployee.endShift}`
+                      : 'No activity'}
+                  </p>
                 </div>
               </div>
 
@@ -766,24 +833,28 @@ export function ActivitiesTimeline() {
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
                   Top 3 most used apps
                 </p>
-                <div className="space-y-1.5">
-                  {hoveredEmployee.topApps?.map((app, i) => (
-                    <div key={i} className="flex items-center justify-between text-[11px] font-bold p-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/60">
-                      <span className="truncate max-w-[110px] text-slate-700 dark:text-slate-200">{app.name}</span>
-                      <div className="flex items-center gap-2">
-                        <span className={cn(
-                          "text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter",
-                          app.productivity === 'Productive'
-                            ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300"
-                            : "bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-300"
-                        )}>
-                          {app.productivity}
-                        </span>
-                        <span className="text-slate-500 font-bold text-[10px]">{app.durationFormatted}</span>
+                {hoveredEmployee.topApps && hoveredEmployee.topApps.length > 0 ? (
+                  <div className="space-y-1.5">
+                    {hoveredEmployee.topApps.map((app, i) => (
+                      <div key={i} className="flex items-center justify-between text-[11px] font-bold p-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/60">
+                        <span className="truncate max-w-[110px] text-slate-700 dark:text-slate-200">{app.name}</span>
+                        <div className="flex items-center gap-2">
+                          <span className={cn(
+                            "text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter",
+                            app.productivity === 'Productive'
+                              ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300"
+                              : "bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-300"
+                          )}>
+                            {app.productivity}
+                          </span>
+                          <span className="text-slate-500 font-bold text-[10px]">{app.durationFormatted}</span>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-[11px] text-slate-400 italic py-1">No app activity recorded yet</p>
+                )}
               </div>
 
               {/* View Logs Button -> Switches to Logs View filtered by this employee */}

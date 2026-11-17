@@ -170,7 +170,7 @@ export function Teams() {
 
             {/* Summary Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                {contextTeams.slice(0, 4).map(team => {
+                {teamsData.slice(0, 4).map(team => {
                     return (
                         <div key={team.id} className="bg-white dark:bg-slate-900 p-5 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all group">
                             <div className="flex items-center justify-between mb-4">
