@@ -46,6 +46,46 @@ export function ActivitiesTimeline() {
   const [data, setData] = useState(null);
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [hoveredEmployee, setHoveredEmployee] = useState(null);
+  const hoverTimeoutRef = useRef(null);
+
+  const handleRowMouseEnter = (emp) => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+    setHoveredEmployee(emp);
+  };
+
+  const handleRowMouseLeave = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+    hoverTimeoutRef.current = setTimeout(() => {
+      setHoveredEmployee(null);
+    }, 200);
+  };
+
+  const handleCardMouseEnter = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+  };
+
+  const handleCardMouseLeave = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+    hoverTimeoutRef.current = setTimeout(() => {
+      setHoveredEmployee(null);
+    }, 150);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    };
+  }, []);
   const [hoveredHour, setHoveredHour] = useState(null);
   const [showProjectsCard, setShowProjectsCard] = useState(true);
   const [showMiniTracker, setShowMiniTracker] = useState(true);
@@ -631,7 +671,10 @@ export function ActivitiesTimeline() {
           </div>
 
           {/* Table Employee Rows */}
-          <div className="divide-y divide-slate-100 dark:divide-slate-800/60 relative">
+          <div 
+            onMouseLeave={handleRowMouseLeave}
+            className="divide-y divide-slate-100 dark:divide-slate-800/60 relative"
+          >
             {loading ? (
               <div className="py-20 flex flex-col items-center justify-center gap-3 text-slate-400">
                 <RefreshCw className="animate-spin text-primary-600" size={28} />
@@ -645,7 +688,8 @@ export function ActivitiesTimeline() {
               filteredEmployees.map((emp) => (
                 <div
                   key={emp.id}
-                  onMouseEnter={() => setHoveredEmployee(emp)}
+                  onMouseEnter={() => handleRowMouseEnter(emp)}
+                  onMouseLeave={handleRowMouseLeave}
                   className="flex items-center px-6 py-4 hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors relative group"
                 >
                   {/* Employee Name & Team */}
@@ -734,7 +778,11 @@ export function ActivitiesTimeline() {
 
           {/* Interactive Employee Profile Hover Card */}
           {hoveredEmployee && (
-            <div className="absolute right-8 top-28 w-72 bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 p-5 z-40 animate-in fade-in duration-200">
+            <div 
+              onMouseEnter={handleCardMouseEnter}
+              onMouseLeave={handleCardMouseLeave}
+              className="absolute right-8 top-28 w-72 bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 p-5 z-40 animate-in fade-in duration-200"
+            >
               <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
                 <div className="flex items-center gap-2.5">
                   <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 font-black text-xs flex items-center justify-center">
@@ -745,9 +793,19 @@ export function ActivitiesTimeline() {
                     <p className="text-[10px] font-bold text-slate-400">{hoveredEmployee.team}</p>
                   </div>
                 </div>
-                <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
-                  {hoveredEmployee.productivityPct}% productivity
-                </span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
+                    {hoveredEmployee.productivityPct}% productivity
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setHoveredEmployee(null)}
+                    title="Close"
+                    className="p-1 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
               </div>
 
               {/* Active Time */}
