@@ -225,6 +225,52 @@ const logActivity = async (employeeId, data) => {
             }
         }
 
+        // Auto Project Mapping from Window Title & Agent Metadata (Regex Matching)
+        let autoMappedProjectId = data.autoMappedProjectId || null;
+        let autoMappedProjectName = data.autoMappedProjectName || null;
+
+        if (activeWindow && activeWindow !== 'Unknown') {
+            try {
+                const orgProjects = await prisma.project.findMany({
+                    where: { organizationId: employee.organizationId },
+                    include: {
+                        tasks: {
+                            select: { id: true, name: true, status: true },
+                            take: 1
+                        }
+                    }
+                });
+
+                for (const proj of orgProjects) {
+                    if (!proj.name) continue;
+                    const projPattern = new RegExp(`\\b${proj.name.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&')}\\b`, 'i');
+                    if (projPattern.test(activeWindow) || projPattern.test(cleanAppName || '')) {
+                        autoMappedProjectId = proj.id;
+                        autoMappedProjectName = proj.name;
+
+                        if (!validTaskIdForDb && !activeTaskId && proj.tasks.length > 0) {
+                            validTaskIdForDb = proj.tasks[0].id;
+                        }
+                        break;
+                    }
+                }
+
+                // Automatically credit time to project if matched and active
+                if (autoMappedProjectId && finalActivityType === 'ACTIVE') {
+                    await prisma.projectTimeLog.create({
+                        data: {
+                            projectId: autoMappedProjectId,
+                            employeeId,
+                            duration: HEARTBEAT_SECONDS,
+                            type: 'CLOCKED'
+                        }
+                    }).catch(() => {});
+                }
+            } catch (projErr) {
+                console.error(`[AgentService:${employeeId}] Auto project mapping error:`, projErr.message);
+            }
+        }
+
         await prisma.activityLog.create({
             data: {
                 employeeId,

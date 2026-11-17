@@ -32,6 +32,20 @@ contextBridge.exposeInMainWorld('electronAPI', {
         return () => ipcRenderer.removeListener('idle:state-changed', handler);
     },
 
+    // ─── Auto Project Mapping ────────────────────────────────────────────
+    getAutoProject: () => ipcRenderer.invoke('project:get-auto-detected'),
+    onAutoProjectDetected: (callback) => {
+        const handler = (_event, proj) => callback(proj);
+        ipcRenderer.on('project:auto-detected', handler);
+        return () => ipcRenderer.removeListener('project:auto-detected', handler);
+    },
+
+    // ─── Stealth Mode, System Tray & Windows Startup Auto-Run ────────────
+    getStartupAutoRun: () => ipcRenderer.invoke('autostart:get-status'),
+    setStartupAutoRun: (enabled) => ipcRenderer.invoke('autostart:set-status', enabled),
+    toggleTrayVisibility: () => ipcRenderer.invoke('tray:toggle-visibility'),
+    hideToTray: () => ipcRenderer.send('close-window'),
+
     // ─── Event Listeners ──────────────────────────────────────────────────
     onViolationDetected: (callback) => {
         const handler = (_event, violation) => callback(violation);
