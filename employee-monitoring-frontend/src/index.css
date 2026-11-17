@@ -183,7 +183,7 @@ body {
   }
 
   body {
-    @apply bg-slate-50 text-slate-900 dark:bg-[#1A1F18] dark:text-[#F5F1E9] transition-colors duration-200;
+    @apply bg-[#F5F1E9] text-[#29291F] dark:bg-[#1A1F18] dark:text-[#F5F1E9] transition-colors duration-200;
   }
 
   /* Elegant serif styling for page titles and main headings */

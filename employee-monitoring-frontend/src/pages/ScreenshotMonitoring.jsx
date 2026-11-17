@@ -700,7 +700,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
     return (
       <div
         className={cn(
-          "group flex items-center bg-white dark:bg-slate-900 rounded-2xl border p-3 hover:shadow-lg transition-all duration-300 hover:-translate-x-1 cursor-pointer",
+          "group flex items-center bg-[#FBF9F5] dark:bg-[#252B20] rounded-xl sm:rounded-2xl border p-3 hover:shadow-warm-xs transition-all duration-200 cursor-pointer",
           isSelected ? "border-primary-500 bg-primary-50/30 dark:bg-primary-500/5 shadow-md shadow-primary-500/10" : "border-slate-200 dark:border-slate-800"
         )}
         onClick={isSelectionMode ? () => onToggleSelection(id) : handleView}
@@ -788,7 +788,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
   return (
     <div
       className={cn(
-        "group relative bg-white dark:bg-slate-900 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden cursor-pointer",
+        "group relative bg-[#FBF9F5] dark:bg-[#252B20] rounded-xl sm:rounded-2xl shadow-warm-xs hover:shadow-warm-sm transition-all duration-200 hover:-translate-y-0.5 overflow-hidden cursor-pointer",
         isSelected ? "border-primary-500 ring-2 ring-primary-500/20" : "",
         borderClass
       )}
@@ -806,7 +806,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
       )}
 
       {/* ── Top Header: App Name + Icon + 3-dots Menu (Insightful Image 3) ── */}
-      <div className="p-3 pb-2 flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-800/30">
+      <div className="p-2.5 px-3 flex items-center justify-between border-b border-[#E5DED2]/80 dark:border-[#384232]/80 bg-[#EEE8DD]/40 dark:bg-[#1E2419]/60">
         <div className="flex items-center gap-2 min-w-0">
           <span className="text-sm select-none">{getAppIcon(app || 'Desktop')}</span>
           <span className="text-xs font-black text-slate-800 dark:text-slate-200 truncate">
@@ -886,7 +886,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
         </div>
       </div>
       {/* ── Bottom Footer: Time, Project, Employee, Department (Insightful Image 3) ── */}
-      <div className="p-3 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800/80 text-[11px] flex flex-col gap-1.5">
+      <div className="p-2.5 px-3 bg-[#FBF9F5] dark:bg-[#252B20] border-t border-[#E5DED2]/80 dark:border-[#384232]/80 text-[11px] flex flex-col gap-1">
         <div className="flex items-center justify-between text-slate-400 dark:text-slate-500 font-bold">
           <span className="flex items-center gap-1">
             <Clock size={11} /> {time}
@@ -2004,7 +2004,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                       {role !== 'EMPLOYEE' && (
                         <button
                           onClick={handleCaptureRealScreen}
-                          className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-emerald-500/20 active:scale-95 transition-all flex items-center gap-2"
+                          className="px-4 py-2 bg-[#30382B] hover:bg-[#3C4536] text-[#FDFBF7] rounded-xl text-xs font-semibold shadow-warm-xs active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
                           title="Capture and upload your actual screen as a demo"
                         >
                           <Camera size={16} />
@@ -2030,7 +2030,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                         <div className="relative" ref={filterRef}>
                           <button
                             onClick={() => setShowAddFilterDropdown(!showAddFilterDropdown)}
-                            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-primary-600 dark:text-primary-400 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-primary-50 dark:hover:bg-primary-500/10 transition-all shadow-sm"
+                            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-[#29291F] dark:text-[#F5F1E9] bg-[#FBF9F5] dark:bg-[#252B20] border border-[#E5DED2] dark:border-[#384232] hover:border-[#B9955B] transition-all shadow-warm-xs cursor-pointer text-xs font-semibold"
                           >
                             <Plus size={16} />
                             <span>Add Filter</span>
@@ -2207,14 +2207,14 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                   <>
                     {/* Selection & Bulk Actions Bar */}
                     {role !== 'EMPLOYEE' && (
-                      <div className="flex flex-wrap items-center gap-4 bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-[1.5rem] border border-slate-200 dark:border-slate-800 shadow-sm animate-in slide-in-from-top duration-300">
+                      <div className="flex flex-wrap items-center gap-3 bg-[#FBF9F5] dark:bg-[#252B20] p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-[#E5DED2] dark:border-[#384232] shadow-warm-xs">
                         <button
                           onClick={toggleSelectionMode}
                           className={cn(
                             "px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 border",
                             isSelectionMode
                               ? "bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-500/20 shadow-inner"
-                              : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 shadow-sm"
+                              : "bg-[#EEE8DD] dark:bg-[#1E2419] text-[#29291F] dark:text-[#F5F1E9] border-[#E5DED2] dark:border-[#384232] hover:bg-[#E5DED2] shadow-warm-xs text-xs font-semibold"
                           )}
                         >
                           <CheckSquare size={18} />
@@ -2245,13 +2245,13 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                         )}
 
                         {role !== 'EMPLOYEE' && (
-                          <div className="ml-auto flex items-center gap-2 bg-slate-50 dark:bg-slate-800/50 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 min-h-[40px]">
+                          <div className="ml-auto flex items-center gap-2 bg-[#EEE8DD]/70 dark:bg-[#1E2419] px-3.5 py-1.5 rounded-xl border border-[#E5DED2] dark:border-[#384232]">
                             <span className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Global Blur</span>
                             <button
                               onClick={() => { setGlobalBlur(!globalBlur); updateSetting('globalBlur', !globalBlur); }}
                               className={cn(
                                 "relative h-5 w-9 flex-shrink-0 rounded-full transition-colors duration-300 focus:outline-none",
-                                globalBlur ? "bg-emerald-500" : "bg-slate-200 dark:bg-slate-700"
+                                globalBlur ? "bg-[#5E7D64]" : "bg-[#D6CDBC] dark:bg-[#384232]"
                               )}
                             >
                               <span
@@ -2374,7 +2374,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                         {activeMainTab === 'videos' && (
                           <div className="space-y-6 animate-in fade-in duration-300">
                             {/* Filter & Control Bar */}
-                            <div className="flex flex-wrap items-center justify-between gap-4 bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-[1.5rem] border border-slate-200 dark:border-slate-800 shadow-sm">
+                            <div className="flex flex-wrap items-center justify-between gap-3 bg-[#FBF9F5] dark:bg-[#252B20] p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-[#E5DED2] dark:border-[#384232] shadow-warm-xs">
                               <div className="flex flex-wrap items-center gap-3 flex-1 min-w-[280px]">
                                 {/* Search input */}
                                 <div className="relative flex-1 min-w-[200px] max-w-sm">
@@ -2470,7 +2470,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                                 <p className="text-sm font-bold text-slate-500 dark:text-slate-400">Loading video recordings...</p>
                               </div>
                             ) : filteredVideoRecordings.length === 0 ? (
-                              <div className="flex flex-col items-center justify-center py-24 px-4 bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200 dark:border-slate-800 text-center">
+                              <div className="flex flex-col items-center justify-center py-20 px-4 bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl border border-[#E5DED2] dark:border-[#384232] text-center shadow-warm-xs">
                                 <div className="h-20 w-20 rounded-3xl bg-primary-50 dark:bg-primary-500/10 flex items-center justify-center text-primary-600 dark:text-primary-400 mb-4 shadow-inner">
                                   <Video size={36} />
                                 </div>
@@ -2503,7 +2503,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                                   return (
                                     <div
                                       key={recording.id}
-                                      className="group bg-white dark:bg-slate-900 rounded-[1.75rem] border border-slate-200 dark:border-slate-800/80 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col hover:-translate-y-1"
+                                      className="group bg-[#FBF9F5] dark:bg-[#252B20] rounded-xl sm:rounded-2xl border border-[#E5DED2] dark:border-[#384232] shadow-warm-xs hover:border-[#B9955B]/60 transition-all duration-200 overflow-hidden flex flex-col hover:-translate-y-0.5"
                                     >
                                       {/* Video Thumbnail / Preview Area */}
                                       <div

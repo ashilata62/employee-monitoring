@@ -243,14 +243,14 @@ export function TimeAndAttendance() {
                                 placeholder="Search employee or team"
                                 value={generalSearch}
                                 onChange={(e) => setGeneralSearch(e.target.value)}
-                                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg pl-9 pr-4 py-2 text-xs font-medium dark:text-slate-200 focus:ring-2 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all placeholder:text-slate-400"
+                                className="w-full bg-[#FBF9F5] dark:bg-[#252B20] border border-[#E5DED2] dark:border-[#384232] rounded-xl pl-9 pr-4 py-2 text-xs font-medium text-[#29291F] dark:text-[#F5F1E9] focus:border-[#B9955B] outline-none transition-all placeholder-[#777367]"
                             />
                         </div>
                         {activeTab === 'Daily Attendance' && (
                             <button
                                 onClick={handleDownload}
                                 title="Download CSV"
-                                className="p-2 border border-slate-200 dark:border-slate-800 text-primary-600 dark:text-primary-400 rounded-lg hover:bg-primary-50 dark:hover:bg-slate-800/50 transition-colors shadow-sm"
+                                className="p-2 border border-[#E5DED2] dark:border-[#384232] text-[#B9955B] bg-[#FBF9F5] dark:bg-[#252B20] rounded-xl hover:border-[#B9955B] transition-colors shadow-warm-xs cursor-pointer"
                             >
                                 <Download size={18} strokeWidth={2.5} />
                             </button>
@@ -288,7 +288,7 @@ export function TimeAndAttendance() {
                                         <tr key={row.id || `${row.employeeId}-${row.date}`} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
                                             <td className="px-6 py-6">
                                                 <div className="flex items-center gap-4">
-                                                    <div className="h-10 w-10 rounded-full bg-rose-100 flex items-center justify-center text-xs font-black text-rose-600 border border-rose-200">
+                                                    <div className="h-9 w-9 rounded-xl bg-[#EEE8DD] text-[#30382B] border border-[#E5DED2] flex items-center justify-center text-xs font-bold tracking-wider shrink-0">
                                                         {(row.employee?.fullName || row.employee?.name || '??').split(' ').map(n => n[0]).join('').toUpperCase()}
                                                     </div>
                                                     <div>
@@ -318,9 +318,9 @@ export function TimeAndAttendance() {
                                             </td>
                                             <td className="px-6 py-6">
                                                 {row.clockIn && !row.clockOut ? (
-                                                    <span className="px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 text-[9px] font-black uppercase tracking-wider">Working</span>
+                                                    <span className="px-2.5 py-0.5 rounded-md bg-[#5E7D64]/10 text-[#5E7D64] text-[9px] font-bold uppercase tracking-wider">Working</span>
                                                 ) : (
-                                                    <span className="px-2 py-1 rounded-full bg-slate-100 text-slate-500 text-[9px] font-black uppercase tracking-wider">Completed</span>
+                                                    <span className="px-2.5 py-0.5 rounded-md bg-[#EEE8DD] text-[#777367] text-[9px] font-bold uppercase tracking-wider">Completed</span>
                                                 )}
                                             </td>
                                         </tr>
@@ -335,7 +335,7 @@ export function TimeAndAttendance() {
                         </div>
                     ) : (
                         /* Shift View Implementation */
-                        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden overflow-x-auto">
+                        <div className="bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl border border-[#E5DED2] dark:border-[#384232] shadow-warm-xs overflow-hidden overflow-x-auto">
                             <table className="w-full text-left min-w-[1000px]">
                                 <thead className="bg-[#fcfdfe] dark:bg-slate-950 text-slate-400 dark:text-slate-500 font-bold text-[10px] uppercase tracking-widest border-b border-slate-50 dark:border-slate-800">
                                     <tr>
@@ -479,7 +479,7 @@ export function TimeAndAttendance() {
                                         <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
                                             <td className="px-6 py-5">
                                                 <div className="flex items-center gap-3">
-                                                    <div className={`h-9 w-9 rounded-full flex items-center justify-center text-xs font-black border border-white bg-blue-100 text-blue-600`}>
+                                                    <div className={`h-9 w-9 rounded-xl flex items-center justify-center text-xs font-bold border border-[#E5DED2] bg-[#EEE8DD] text-[#30382B]`}>
                                                         {(emp.fullName || emp.name || '??').split(' ').map(n => n[0]).join('').toUpperCase()}
                                                     </div>
                                                     <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{emp.fullName || emp.name || 'Unknown'}</span>
@@ -490,7 +490,7 @@ export function TimeAndAttendance() {
                                                 const hasAttended = empTimesheets.some(t => format(new Date(t.date), 'yyyy-MM-dd') === dayStr);
                                                 return (
                                                     <td key={i} className="px-3 py-5 text-center">
-                                                        <div className={`h-5 w-5 rounded-full mx-auto ${hasAttended ? 'bg-primary-400 dark:bg-primary-500/60' : 'border border-slate-300 dark:border-slate-700'}`} />
+                                                        <div className={`h-5 w-5 rounded-full mx-auto ${hasAttended ? 'bg-[#5E7D64]' : 'border border-[#D6CDBC] dark:border-[#384232]'}`} />
                                                     </td>
                                                 );
                                             })}
@@ -530,7 +530,7 @@ export function TimeAndAttendance() {
                         </table>
                     </div>
                     {/* Shift Status Preview (Integrated from Alerts) */}
-                    <div className="mt-12 bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden">
+                    <div className="mt-8 bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl border border-[#E5DED2] dark:border-[#384232] shadow-warm-xs overflow-hidden">
                         <div className="p-8 border-b border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-800/20 flex items-center justify-between">
                             <div>
                                 <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Shift Compliance Preview</h3>
