@@ -45,7 +45,7 @@
   }
 
   .animate-shimmer {
-    background: linear-gradient(90deg, transparent 25%, rgba(185, 149, 91, 0.12) 50%, transparent 75%);
+    background: linear-gradient(90deg, transparent 25%, rgba(99, 102, 241, 0.1) 50%, transparent 75%);
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite linear;
   }
@@ -113,27 +113,13 @@
 }
 
 :root {
-  --bg-main: #F5F1E9;
-  --bg-secondary: #EEE8DD;
-  --bg-card: #FBF9F5;
-  --sidebar-primary: #30382B;
-  --sidebar-secondary: #3C4536;
-  --accent-primary: #B9955B;
-  --accent-secondary: #D3B98D;
-  --text-primary: #29291F;
-  --text-secondary: #777367;
-  --border-color: #E5DED2;
-  --success-color: #5E7D64;
-  --warning-color: #C98A3C;
-  --danger-color: #A84B4B;
-
-  font-family: 'DM Sans', Inter, system-ui, -apple-system, sans-serif;
+  font-family: 'Inter', 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
   color-scheme: light dark;
-  color: #29291F;
-  background-color: #F5F1E9;
+  color: #0f172a;
+  background-color: #f8fafc;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -142,14 +128,8 @@
 }
 
 .dark {
-  --bg-main: #1A1F18;
-  --bg-secondary: #22291F;
-  --bg-card: #283025;
-  --sidebar-primary: #1E2419;
-  --sidebar-secondary: #2B3425;
-  --text-primary: #F5F1E9;
-  --text-secondary: #B8B3A7;
-  --border-color: #384232;
+  color: #f8fafc;
+  background-color: #020617;
 }
 
 html,
@@ -158,14 +138,14 @@ body {
   padding: 0;
   height: 100%;
   width: 100%;
-  background-color: #F5F1E9;
-  color: #29291F;
+  background-color: #f8fafc;
+  color: #0f172a;
 }
 
 .dark html,
 .dark body {
-  background-color: #1A1F18;
-  color: #F5F1E9;
+  background-color: #020617;
+  color: #f8fafc;
 }
 
 body {
@@ -183,17 +163,11 @@ body {
   }
 
   body {
-    @apply bg-slate-50 text-slate-900 dark:bg-[#1A1F18] dark:text-[#F5F1E9] transition-colors duration-200;
-  }
-
-  /* Elegant serif styling for page titles and main headings */
-  h1, h2 {
-    font-family: 'Playfair Display', 'Cormorant Garamond', Georgia, serif;
-    letter-spacing: -0.015em;
+    @apply bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-50 transition-colors duration-200;
   }
 }
 
-/* Custom Luxury Scrollbar */
+/* Modern Clean Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -204,29 +178,29 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #D6CDBC;
+  background-color: #cbd5e1;
   border-radius: 9999px;
   transition: background-color 0.2s;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: #B9955B;
+  background-color: #94a3b8;
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background-color: #384232;
+  background-color: #334155;
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
-  background-color: #526A47;
+  background-color: #475569;
 }
 
 /* For Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #D6CDBC transparent;
+  scrollbar-color: #cbd5e1 transparent;
 }
 
 .dark * {
-  scrollbar-color: #384232 transparent;
+  scrollbar-color: #334155 transparent;
 }

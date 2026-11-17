@@ -27,13 +27,13 @@ const FormattedDisplayValue = ({ value }) => {
     const matchHMS = value.match(/^(\d{1,3})h\s*(\d{2})m\s*(\d{2})s$/);
     if (matchHMS) {
         return (
-            <div className="flex items-baseline font-sans font-bold tracking-tight text-[#29291F] dark:text-[#F5F1E9] tabular-nums leading-none">
+            <div className="flex items-baseline font-sans font-bold tracking-tight text-[#0f172a] dark:text-[#f8fafc] tabular-nums leading-none">
                 <span className="text-xl sm:text-2xl">{matchHMS[1]}</span>
-                <span className="text-[11px] sm:text-xs font-semibold text-[#777367] dark:text-[#9E988A] ml-0.5 mr-1.5">h</span>
+                <span className="text-[11px] sm:text-xs font-semibold text-[#64748b] dark:text-[#94a3b8] ml-0.5 mr-1.5">h</span>
                 <span className="text-xl sm:text-2xl">{matchHMS[2]}</span>
-                <span className="text-[11px] sm:text-xs font-semibold text-[#777367] dark:text-[#9E988A] ml-0.5 mr-1.5">m</span>
-                <span className="text-base sm:text-lg text-[#777367] dark:text-[#9E988A]">{matchHMS[3]}</span>
-                <span className="text-[10px] sm:text-[11px] font-semibold text-[#777367]/80 dark:text-[#9E988A]/80 ml-0.5">s</span>
+                <span className="text-[11px] sm:text-xs font-semibold text-[#64748b] dark:text-[#94a3b8] ml-0.5 mr-1.5">m</span>
+                <span className="text-base sm:text-lg text-[#64748b] dark:text-[#94a3b8]">{matchHMS[3]}</span>
+                <span className="text-[10px] sm:text-[11px] font-semibold text-[#64748b]/80 dark:text-[#94a3b8]/80 ml-0.5">s</span>
             </div>
         );
     }
@@ -42,16 +42,16 @@ const FormattedDisplayValue = ({ value }) => {
     const matchHM = value.match(/^(\d{1,3}):(\d{2})\s*h$/);
     if (matchHM) {
         return (
-            <div className="flex items-baseline font-sans font-bold tracking-tight text-[#29291F] dark:text-[#F5F1E9] tabular-nums leading-none">
+            <div className="flex items-baseline font-sans font-bold tracking-tight text-[#0f172a] dark:text-[#f8fafc] tabular-nums leading-none">
                 <span className="text-xl sm:text-2xl">{matchHM[1]}:{matchHM[2]}</span>
-                <span className="text-[11px] sm:text-xs font-semibold text-[#777367] dark:text-[#9E988A] ml-1">h</span>
+                <span className="text-[11px] sm:text-xs font-semibold text-[#64748b] dark:text-[#94a3b8] ml-1">h</span>
             </div>
         );
     }
 
     // Pattern 3: percentage like "75%" or other string
     return (
-        <span className="font-sans font-bold text-xl sm:text-2xl text-[#29291F] dark:text-[#F5F1E9] tracking-tight tabular-nums leading-none">
+        <span className="font-sans font-bold text-xl sm:text-2xl text-[#0f172a] dark:text-[#f8fafc] tracking-tight tabular-nums leading-none">
             {value}
         </span>
     );
@@ -83,21 +83,21 @@ const KpiCard = ({
     const isPositive = inverse ? !isUp : isUp;
     const isZero = activeDelta.percent === 0 && (!activeDelta.percentFormatted || activeDelta.percentFormatted === '0%' || activeDelta.percentFormatted === '+0%');
 
-    let deltaBadgeClass = 'bg-[#EEE8DD]/70 dark:bg-[#30382B] text-[#777367] dark:text-[#B8B3A7]';
+    let deltaBadgeClass = 'bg-[#f1f5f9]/70 dark:bg-[#1e293b] text-[#64748b] dark:text-[#94a3b8]';
     if (!isZero) {
         deltaBadgeClass = isPositive
-            ? 'bg-[#5E7D64]/10 dark:bg-[#5E7D64]/20 text-[#5E7D64] dark:text-[#A4C2A8]'
-            : 'bg-[#A84B4B]/10 dark:bg-[#A84B4B]/20 text-[#A84B4B] dark:text-[#E8A5A5]';
+            ? 'bg-[#10b981]/10 dark:bg-[#10b981]/20 text-[#10b981] dark:text-[#6ee7b7]'
+            : 'bg-[#f43f5e]/10 dark:bg-[#f43f5e]/20 text-[#f43f5e] dark:text-[#fda4af]';
     }
 
     return (
-        <div className="group bg-[#FBF9F5] dark:bg-[#252B20] rounded-xl sm:rounded-2xl border border-[#E5DED2] dark:border-[#384232] p-3.5 sm:p-4 shadow-[0_1px_3px_rgba(41,41,31,0.03)] hover:shadow-[0_4px_14px_rgba(41,41,31,0.06)] hover:border-[#B9955B]/60 dark:hover:border-[#B9955B]/50 transition-all duration-200 flex flex-col justify-between">
+        <div className="group bg-[#ffffff] dark:bg-[#0f172a] rounded-xl sm:rounded-2xl border border-[#e2e8f0] dark:border-[#1e293b] p-3.5 sm:p-4 shadow-[0_1px_3px_rgba(41,41,31,0.03)] hover:shadow-[0_4px_14px_rgba(41,41,31,0.06)] hover:border-[#6366f1]/60 dark:hover:border-[#6366f1]/50 transition-all duration-200 flex flex-col justify-between">
             {/* Top row: Title & Mini Icon */}
             <div className="flex items-center justify-between gap-2 mb-2">
-                <span className="text-[10px] sm:text-[11px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-[0.12em] truncate">
+                <span className="text-[10px] sm:text-[11px] font-bold text-[#64748b] dark:text-[#94a3b8] uppercase tracking-[0.12em] truncate">
                     {title}
                 </span>
-                <div className="h-7 w-7 rounded-lg bg-[#EEE8DD]/80 dark:bg-[#30382B] flex items-center justify-center text-[#B9955B] group-hover:bg-[#B9955B]/15 group-hover:text-[#A17D45] transition-colors shrink-0">
+                <div className="h-7 w-7 rounded-lg bg-[#f1f5f9]/80 dark:bg-[#1e293b] flex items-center justify-center text-[#6366f1] group-hover:bg-[#6366f1]/15 group-hover:text-[#A17D45] transition-colors shrink-0">
                     <Icon size={14} strokeWidth={2} />
                 </div>
             </div>
@@ -108,17 +108,17 @@ const KpiCard = ({
             </div>
 
             {/* Bottom row: Delta Pill & Diff */}
-            <div className="flex items-center justify-between gap-1.5 pt-2 border-t border-[#E5DED2]/70 dark:border-[#384232]/70 text-[11px] mt-1">
+            <div className="flex items-center justify-between gap-1.5 pt-2 border-t border-[#e2e8f0]/70 dark:border-[#1e293b]/70 text-[11px] mt-1">
                 <span className={`inline-flex items-center gap-0.5 font-bold px-1.5 py-0.5 rounded ${deltaBadgeClass}`}>
                     <span className="text-[9px]">{isUp ? '▲' : '▼'}</span>
                     <span>{activeDelta.percentFormatted || `${activeDelta.percent}%`}</span>
                 </span>
                 {activeDelta.diffHoursFormatted ? (
-                    <span className="text-[#777367] dark:text-[#B8B3A7] font-medium tabular-nums text-[10px] sm:text-[11px] truncate">
+                    <span className="text-[#64748b] dark:text-[#94a3b8] font-medium tabular-nums text-[10px] sm:text-[11px] truncate">
                         {activeDelta.diffHoursFormatted}
                     </span>
                 ) : (
-                    <span className="text-[#9E988A] dark:text-[#777367] text-[10px] font-medium">
+                    <span className="text-[#94a3b8] dark:text-[#64748b] text-[10px] font-medium">
                         vs prev
                     </span>
                 )}

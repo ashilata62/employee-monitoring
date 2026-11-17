@@ -20,27 +20,27 @@ const ProductivityTooltip = ({ active, payload, label }) => {
         : Number(((data.productive || 0) + (data.unproductive || 0) + (data.neutral || 0)).toFixed(2));
 
     return (
-        <div className="bg-[#30382B] text-[#F5F1E9] p-4 rounded-xl shadow-xl border border-[#3C4536] text-xs min-w-[190px]">
-            <div className="font-serif font-bold text-[#D3B98D] pb-2 mb-2 border-b border-[#3C4536] flex items-center justify-between">
+        <div className="bg-[#1e293b] text-[#f8fafc] p-4 rounded-xl shadow-xl border border-[#334155] text-xs min-w-[190px]">
+            <div className="font-sans font-bold text-[#818cf8] pb-2 mb-2 border-b border-[#334155] flex items-center justify-between">
                 <span>{label || data.name}</span>
                 <span className="font-sans font-bold text-white">{total} h total</span>
             </div>
             <div className="space-y-1.5 font-medium">
-                <div className="flex items-center justify-between gap-3 text-[#A4C2A8]">
+                <div className="flex items-center justify-between gap-3 text-[#6ee7b7]">
                     <span className="flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-[#5E7D64]" /> Productive:
+                        <span className="w-2 h-2 rounded-full bg-[#10b981]" /> Productive:
                     </span>
                     <span className="font-bold">{data.productive || 0} h</span>
                 </div>
-                <div className="flex items-center justify-between gap-3 text-[#E8A5A5]">
+                <div className="flex items-center justify-between gap-3 text-[#fda4af]">
                     <span className="flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-[#A84B4B]" /> Unproductive:
+                        <span className="w-2 h-2 rounded-full bg-[#f43f5e]" /> Unproductive:
                     </span>
                     <span className="font-bold">{data.unproductive || 0} h</span>
                 </div>
                 <div className="flex items-center justify-between gap-3 text-[#D5CDBC]">
                     <span className="flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-[#D3B98D]" /> Neutral:
+                        <span className="w-2 h-2 rounded-full bg-[#818cf8]" /> Neutral:
                     </span>
                     <span className="font-bold">{data.neutral || 0} h</span>
                 </div>
@@ -85,28 +85,28 @@ export function ProductivityStackedChart({
     const displayData = hasBreakdownData ? productivityBreakdown : [];
 
     return (
-        <div className="bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl border border-[#E5DED2] dark:border-[#384232] shadow-warm-xs mb-8 overflow-hidden">
+        <div className="bg-[#ffffff] dark:bg-[#0f172a] rounded-2xl border border-[#e2e8f0] dark:border-[#1e293b] shadow-warm-xs mb-8 overflow-hidden">
             {/* Header with Subtabs & Export button */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-[#E5DED2] dark:border-[#384232]">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[#e2e8f0] dark:border-[#1e293b]">
                 <button
                     onClick={() => setActiveTab('Timeline')}
-                    className={`font-serif text-sm font-semibold transition-colors cursor-pointer ${
+                    className={`font-sans text-sm font-semibold transition-colors cursor-pointer ${
                         activeTab === 'Timeline'
-                            ? 'text-[#29291F] dark:text-[#F5F1E9]'
-                            : 'text-[#777367] dark:text-[#B8B3A7] hover:text-[#29291F]'
+                            ? 'text-[#0f172a] dark:text-[#f8fafc]'
+                            : 'text-[#64748b] dark:text-[#94a3b8] hover:text-[#0f172a]'
                     }`}
                 >
                     Activity Timeline
                 </button>
 
                 {/* Centered Pill Subtabs: Activities | Productivity */}
-                <div className="flex items-center p-1 bg-[#EEE8DD] dark:bg-[#1E2419] rounded-xl border border-[#E5DED2] dark:border-[#384232]">
+                <div className="flex items-center p-1 bg-[#f1f5f9] dark:bg-[#1E2419] rounded-xl border border-[#e2e8f0] dark:border-[#1e293b]">
                     <button
                         onClick={() => setActiveTab('Activities')}
                         className={`px-3.5 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                             activeTab === 'Activities'
-                                ? 'bg-[#30382B] text-white shadow-xs'
-                                : 'text-[#777367] hover:text-[#29291F]'
+                                ? 'bg-[#1e293b] text-white shadow-xs'
+                                : 'text-[#64748b] hover:text-[#0f172a]'
                         }`}
                     >
                         Activities
@@ -115,8 +115,8 @@ export function ProductivityStackedChart({
                         onClick={() => setActiveTab('Productivity')}
                         className={`px-3.5 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                             activeTab === 'Productivity'
-                                ? 'bg-[#B9955B] text-white shadow-xs'
-                                : 'text-[#777367] hover:text-[#29291F]'
+                                ? 'bg-[#6366f1] text-white shadow-xs'
+                                : 'text-[#64748b] hover:text-[#0f172a]'
                         }`}
                     >
                         Productivity
@@ -125,7 +125,7 @@ export function ProductivityStackedChart({
 
                 <button
                     onClick={handleExport}
-                    className="text-xs font-semibold text-[#777367] dark:text-[#B8B3A7] hover:text-[#B9955B] flex items-center gap-1 cursor-pointer transition-colors"
+                    className="text-xs font-semibold text-[#64748b] dark:text-[#94a3b8] hover:text-[#6366f1] flex items-center gap-1 cursor-pointer transition-colors"
                 >
                     Export CSV
                 </button>
@@ -137,53 +137,53 @@ export function ProductivityStackedChart({
                     {activeTab === 'Productivity' ? (
                         displayData.length > 0 ? (
                             <BarChart data={displayData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5DED2" className="dark:stroke-[#384232]" opacity={0.6} />
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" className="dark:stroke-[#1e293b]" opacity={0.6} />
                                 <XAxis
                                     dataKey="name"
                                     axisLine={false}
                                     tickLine={false}
-                                    tick={{ fontSize: 11, fill: '#777367', fontWeight: 600 }}
+                                    tick={{ fontSize: 11, fill: '#64748b', fontWeight: 600 }}
                                     dy={10}
                                 />
                                 <YAxis
                                     axisLine={false}
                                     tickLine={false}
-                                    tick={{ fontSize: 11, fill: '#777367', fontWeight: 600 }}
+                                    tick={{ fontSize: 11, fill: '#64748b', fontWeight: 600 }}
                                     tickFormatter={(val) => `${val}h`}
                                 />
                                 <Tooltip content={<ProductivityTooltip />} />
-                                <Bar dataKey="productive" name="Productive Time" stackId="a" fill="#5E7D64" maxBarSize={28} />
-                                <Bar dataKey="unproductive" name="Unproductive Time" stackId="a" fill="#A84B4B" maxBarSize={28} />
-                                <Bar dataKey="neutral" name="Neutral Time" stackId="a" fill="#D3B98D" radius={[4, 4, 0, 0]} maxBarSize={28} />
+                                <Bar dataKey="productive" name="Productive Time" stackId="a" fill="#10b981" maxBarSize={28} />
+                                <Bar dataKey="unproductive" name="Unproductive Time" stackId="a" fill="#f43f5e" maxBarSize={28} />
+                                <Bar dataKey="neutral" name="Neutral Time" stackId="a" fill="#818cf8" radius={[4, 4, 0, 0]} maxBarSize={28} />
                             </BarChart>
                         ) : (
-                            <div className="h-full flex flex-col items-center justify-center text-[#777367]">
-                                <p className="text-sm font-serif font-medium">No productivity records found for this period</p>
-                                <p className="text-xs mt-1 text-[#9E988A]">Select a date range with recorded employee activity</p>
+                            <div className="h-full flex flex-col items-center justify-center text-[#64748b]">
+                                <p className="text-sm font-sans font-medium">No productivity records found for this period</p>
+                                <p className="text-xs mt-1 text-[#94a3b8]">Select a date range with recorded employee activity</p>
                             </div>
                         )
                     ) : (
                         <ComposedChart data={hasIntradayData ? intradayData : []} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5DED2" className="dark:stroke-[#384232]" opacity={0.6} />
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" className="dark:stroke-[#1e293b]" opacity={0.6} />
                             <XAxis
                                 dataKey="name"
                                 axisLine={false}
                                 tickLine={false}
-                                tick={{ fontSize: 11, fill: '#777367', fontWeight: 600 }}
+                                tick={{ fontSize: 11, fill: '#64748b', fontWeight: 600 }}
                                 dy={10}
                             />
                             <YAxis
                                 axisLine={false}
                                 tickLine={false}
-                                tick={{ fontSize: 11, fill: '#777367', fontWeight: 600 }}
+                                tick={{ fontSize: 11, fill: '#64748b', fontWeight: 600 }}
                                 tickFormatter={(val) => `${val}h`}
                             />
                             <Tooltip
                                 contentStyle={{
-                                    backgroundColor: '#30382B',
+                                    backgroundColor: '#1e293b',
                                     borderRadius: '12px',
-                                    border: '1px solid #3C4536',
-                                    color: '#F5F1E9',
+                                    border: '1px solid #334155',
+                                    color: '#f8fafc',
                                     fontWeight: 600,
                                     fontSize: '12px'
                                 }}
@@ -193,16 +193,16 @@ export function ProductivityStackedChart({
                                     type="monotone"
                                     dataKey="active"
                                     name="Active Hours"
-                                    stroke="#30382B"
+                                    stroke="#1e293b"
                                     fill="#D0DAC9"
                                     strokeWidth={2.5}
                                 />
                             ) : (
                                 <>
-                                    <Bar dataKey="active" name="Active Time" stackId="act" fill="#30382B" maxBarSize={18} />
-                                    <Bar dataKey="idle" name="Idle Time" stackId="act" fill="#D3B98D" maxBarSize={18} />
+                                    <Bar dataKey="active" name="Active Time" stackId="act" fill="#1e293b" maxBarSize={18} />
+                                    <Bar dataKey="idle" name="Idle Time" stackId="act" fill="#818cf8" maxBarSize={18} />
                                     <Bar dataKey="break" name="Break Time" stackId="act" fill="#C98A3C" maxBarSize={18} />
-                                    <Bar dataKey="manual" name="Manual Time" stackId="act" fill="#B9955B" radius={[2, 2, 0, 0]} maxBarSize={18} />
+                                    <Bar dataKey="manual" name="Manual Time" stackId="act" fill="#6366f1" radius={[2, 2, 0, 0]} maxBarSize={18} />
                                 </>
                             )}
                         </ComposedChart>
@@ -211,30 +211,30 @@ export function ProductivityStackedChart({
             </div>
 
             {/* Bottom Legend */}
-            <div className="flex items-center justify-start gap-8 py-3.5 px-6 border-t border-[#E5DED2] dark:border-[#384232] text-xs font-semibold text-[#777367] dark:text-[#B8B3A7]">
+            <div className="flex items-center justify-start gap-8 py-3.5 px-6 border-t border-[#e2e8f0] dark:border-[#1e293b] text-xs font-semibold text-[#64748b] dark:text-[#94a3b8]">
                 {activeTab === 'Productivity' ? (
                     <>
                         <span className="flex items-center gap-2">
-                            <span className="w-2.5 h-2.5 rounded-full bg-[#5E7D64]" />
+                            <span className="w-2.5 h-2.5 rounded-full bg-[#10b981]" />
                             <span>Productive Time</span>
                         </span>
                         <span className="flex items-center gap-2">
-                            <span className="w-2.5 h-2.5 rounded-full bg-[#A84B4B]" />
+                            <span className="w-2.5 h-2.5 rounded-full bg-[#f43f5e]" />
                             <span>Unproductive Time</span>
                         </span>
                         <span className="flex items-center gap-2">
-                            <span className="w-2.5 h-2.5 rounded-full bg-[#D3B98D]" />
+                            <span className="w-2.5 h-2.5 rounded-full bg-[#818cf8]" />
                             <span>Neutral Time</span>
                         </span>
                     </>
                 ) : (
                     <>
                         <span className="flex items-center gap-2">
-                            <span className="w-2.5 h-2.5 rounded-full bg-[#30382B]" />
+                            <span className="w-2.5 h-2.5 rounded-full bg-[#1e293b]" />
                             <span>Active Time</span>
                         </span>
                         <span className="flex items-center gap-2">
-                            <span className="w-2.5 h-2.5 rounded-full bg-[#D3B98D]" />
+                            <span className="w-2.5 h-2.5 rounded-full bg-[#818cf8]" />
                             <span>Idle Time</span>
                         </span>
                         <span className="flex items-center gap-2">

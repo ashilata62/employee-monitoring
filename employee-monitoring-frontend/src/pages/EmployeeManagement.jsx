@@ -51,21 +51,21 @@ const Modal = ({ isOpen, onClose, title, subtitle, children, maxWidth = "max-w-m
             <div className="absolute inset-0" onClick={onClose}></div>
             <div
                 className={cn(
-                    "w-full bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl p-8 shadow-2xl border border-[#E5DED2] dark:border-[#384232] animate-in zoom-in-95 duration-200 relative z-10",
+                    "w-full bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 shadow-2xl border border-white/50 dark:border-slate-800 animate-in zoom-in-95 duration-300 relative z-10",
                     maxWidth
                 )}
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="flex items-center justify-between mb-8">
                     <div>
-                        <h3 className="font-serif text-2xl font-bold text-[#29291F] dark:text-[#F5F1E9] leading-none">{title}</h3>
-                        {subtitle && <p className="text-xs font-semibold text-[#777367] mt-1.5 uppercase tracking-wider">{subtitle}</p>}
+                        <h3 className="text-2xl font-black text-slate-900 dark:text-white leading-none">{title}</h3>
+                        {subtitle && <p className="text-xs font-bold text-slate-400 mt-1 uppercase tracking-wide">{subtitle}</p>}
                     </div>
                     <button
                         onClick={onClose}
-                        className="h-9 w-9 rounded-xl bg-[#EEE8DD] hover:bg-[#E5DED2] text-[#777367] hover:text-[#29291F] dark:bg-[#1E2419] dark:hover:bg-[#2E362A] flex items-center justify-center transition-all cursor-pointer"
+                        className="h-10 w-10 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-400 hover:text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 flex items-center justify-center transition-all"
                     >
-                        <X size={18} />
+                        <X size={20} />
                     </button>
                 </div>
                 {children}
@@ -1011,23 +1011,22 @@ export function EmployeeManagement() {
             {/* Merge Modal removed */}
 
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
-                    <h1 className="font-serif text-3xl font-normal text-[#29291F] dark:text-[#F5F1E9] tracking-tight">Employees</h1>
-                    <p className="text-xs font-medium text-[#777367] dark:text-[#B8B3A7] mt-0.5">Manage team members, roles and monitoring status</p>
+                    <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Employees</h1>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 md:gap-3">
                     {(role === 'ADMIN' || role === 'MANAGER') && (
-                        <div className="flex items-center gap-2.5">
+                        <div className="flex items-center gap-2">
                             {/* 1. Add Employee Manually Button */}
                             <button
                                 onClick={() => {
                                     setAddModalTab('single');
                                     setShowAddModal(true);
                                 }}
-                                className="flex items-center justify-center gap-2 rounded-xl bg-[#30382B] hover:bg-[#3C4536] px-5 py-2.5 text-xs font-semibold text-[#FDFBF7] transition-all shadow-warm-sm active:scale-95 cursor-pointer"
+                                className="flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-5 py-3 text-xs font-black uppercase tracking-wider text-white transition-all shadow-xl shadow-emerald-600/20 hover:scale-[1.02] active:scale-95"
                             >
-                                <UserPlus size={15} className="text-[#D3B98D]" />
+                                <UserPlus size={16} strokeWidth={2.5} />
                                 <span>+ Add Employee Manually</span>
                             </button>
 
@@ -1037,9 +1036,9 @@ export function EmployeeManagement() {
                                     setAddModalTab('batch');
                                     setShowAddModal(true);
                                 }}
-                                className="flex items-center justify-center gap-2 rounded-xl border border-[#E5DED2] dark:border-[#384232] bg-[#FBF9F5] dark:bg-[#252B20] px-4 py-2.5 text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] hover:bg-[#EEE8DD] transition-all shadow-warm-xs active:scale-95 cursor-pointer"
+                                className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm hover:scale-[1.02] active:scale-95"
                             >
-                                <Users size={15} className="text-[#777367]" />
+                                <Users size={16} />
                                 <span>Invite / Batch</span>
                             </button>
                         </div>
@@ -1049,36 +1048,38 @@ export function EmployeeManagement() {
 
 
             {/* Table Container */}
-            <div className="rounded-2xl border border-[#E5DED2] dark:border-[#384232] bg-[#FBF9F5] dark:bg-[#252B20] shadow-warm-xs overflow-hidden mb-8">
+            <div className="rounded-[2.5rem] border border-slate-200 dark:border-slate-900 bg-white dark:bg-slate-950 shadow-xl overflow-hidden">
 
                 {/* Filter Bar */}
-                <div className="p-4 md:p-5 border-b border-[#E5DED2] dark:border-[#384232] bg-[#FBF9F5] dark:bg-[#252B20]">
+                <div className="p-4 md:p-6 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950">
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                         {/* Status Filter Dropdown */}
-                        <div className="relative min-w-[150px] group">
+                        <div className="relative min-w-[160px] group">
                             <select
                                 value={activeTab}
                                 onChange={(e) => { setActiveTab(e.target.value); setCurrentPage(1); }}
-                                className="w-full h-10 pl-3.5 pr-9 rounded-xl border border-[#E5DED2] dark:border-[#384232] bg-[#F5F1E9] dark:bg-[#1E2419] text-[10px] font-bold uppercase tracking-widest text-[#29291F] dark:text-[#F5F1E9] appearance-none focus:border-[#B9955B] focus:outline-none transition-all cursor-pointer"
+                                className="w-full h-11 pl-4 pr-10 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-[10px] font-black uppercase tracking-widest text-slate-700 dark:text-slate-200 appearance-none focus:border-primary-500 focus:bg-white dark:focus:bg-slate-800 focus:outline-none transition-all cursor-pointer shadow-sm"
                             >
                                 <option value="All">All Status</option>
                                 <option value="Active">Active</option>
                                 <option value="Pending">Pending</option>
                                 <option value="Deactivated">Deactive</option>
                             </select>
-                            <ChevronDown size={14} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#777367] pointer-events-none" />
+                            <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-500 transition-colors pointer-events-none" />
                         </div>
 
                         <div className="relative flex-1 group">
-                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#777367]" size={15} />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-500 transition-colors" size={16} />
                             <input
                                 type="text"
                                 placeholder="Search employees..."
                                 value={searchQuery}
                                 onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-                                className="w-full rounded-xl border border-[#E5DED2] dark:border-[#384232] bg-[#F5F1E9] dark:bg-[#1E2419] pl-9 pr-4 py-2 text-xs font-medium text-[#29291F] dark:text-[#F5F1E9] focus:border-[#B9955B] focus:outline-none transition-all"
+                                className="w-full rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 pl-9 pr-4 py-2.5 text-xs font-bold dark:text-slate-200 focus:border-primary-500 focus:bg-white dark:focus:bg-slate-800 focus:outline-none transition-all"
                             />
                         </div>
+
+                        {/* Filter and Column Toggle removed */}
                     </div>
                 </div>
 

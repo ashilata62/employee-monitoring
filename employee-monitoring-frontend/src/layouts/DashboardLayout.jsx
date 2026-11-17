@@ -18,12 +18,12 @@ export function DashboardLayout({ children }) {
     }, [mobileOpen]);
 
     return (
-        <div className="h-screen overflow-hidden overflow-x-hidden bg-[#F5F1E9] dark:bg-[#1A1F18] text-[#29291F] dark:text-[#F5F1E9]">
+        <div className="h-screen overflow-hidden overflow-x-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-50">
             <LocationTracker />
             
             {/* Mobile Overlay */}
             <div
-                className={`fixed inset-0 z-40 bg-black/40 backdrop-blur-xs transition-opacity lg:hidden ${
+                className={`fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-xs transition-opacity lg:hidden ${
                     mobileOpen ? "opacity-100" : "pointer-events-none opacity-0"
                 }`}
                 onClick={() => setMobileOpen(false)}
@@ -49,7 +49,7 @@ export function DashboardLayout({ children }) {
                 }`}
             >
                 <Header onMenuClick={() => setMobileOpen(true)} />
-                <main className="flex-1 p-4 md:p-8 overflow-y-auto scrollbar-thin bg-[#F5F1E9] dark:bg-[#1A1F18]">
+                <main className="flex-1 p-4 md:p-8 overflow-y-auto scrollbar-thin bg-slate-50 dark:bg-slate-950">
                     <div className="mx-auto max-w-7xl pb-12">
                         {children}
                     </div>

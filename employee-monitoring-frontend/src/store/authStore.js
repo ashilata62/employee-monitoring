@@ -137,7 +137,7 @@ export const useAuthStore = create(
                         "tasks", "agents", "reports"
                     ],
                     EMPLOYEE: [
-                        "dashboard", "timeAttendance", "tasks", "projects", "activity", "screenshots"
+                        "dashboard", "timeAttendance", "tasks", "projects", "activity"
                     ]
                 };
                 if (!role) return false;

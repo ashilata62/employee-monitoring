@@ -92,10 +92,10 @@ export function PeriodComparisonBar({
             {/* Top Header Row with Serif Heading */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h1 className="font-serif text-3xl sm:text-4xl font-normal text-[#29291F] dark:text-[#F5F1E9] tracking-tight">
+                    <h1 className="font-sans text-3xl sm:text-4xl font-normal text-[#0f172a] dark:text-[#f8fafc] tracking-tight">
                         Overview
                     </h1>
-                    <p className="text-xs font-medium text-[#777367] dark:text-[#B8B3A7] mt-0.5">
+                    <p className="text-xs font-medium text-[#64748b] dark:text-[#94a3b8] mt-0.5">
                         Workforce performance & productivity intelligence
                     </p>
                 </div>
@@ -103,19 +103,19 @@ export function PeriodComparisonBar({
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => navigate(`${rolePrefix}/employees`)}
-                        className="flex items-center gap-2 px-5 py-2.5 bg-[#30382B] hover:bg-[#3C4536] text-[#FDFBF7] rounded-xl text-xs font-semibold shadow-warm-sm active:scale-95 transition-all cursor-pointer"
+                        className="flex items-center gap-2 px-5 py-2.5 bg-[#1e293b] hover:bg-[#334155] text-[#FDFBF7] rounded-xl text-xs font-semibold shadow-warm-sm active:scale-95 transition-all cursor-pointer"
                     >
-                        <Plus size={14} className="text-[#D3B98D]" />
+                        <Plus size={14} className="text-[#818cf8]" />
                         <span>Add New Employee</span>
                     </button>
 
                     <button
                         onClick={() => navigate(`${rolePrefix}/alerts`)}
-                        className="relative w-10 h-10 rounded-xl bg-[#EEE8DD] dark:bg-[#252B20] border border-[#E5DED2] dark:border-[#384232] flex items-center justify-center text-[#29291F] dark:text-[#F5F1E9] hover:bg-[#E5DED2] transition-colors cursor-pointer"
+                        className="relative w-10 h-10 rounded-xl bg-[#f1f5f9] dark:bg-[#0f172a] border border-[#e2e8f0] dark:border-[#1e293b] flex items-center justify-center text-[#0f172a] dark:text-[#f8fafc] hover:bg-[#e2e8f0] transition-colors cursor-pointer"
                         title="Alerts & Notifications"
                     >
-                        <Bell size={17} className="text-[#777367]" />
-                        <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#A84B4B] text-white text-[9px] font-bold rounded-full flex items-center justify-center border-2 border-[#F5F1E9] dark:border-[#1A1F18]">
+                        <Bell size={17} className="text-[#64748b]" />
+                        <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#f43f5e] text-white text-[9px] font-bold rounded-full flex items-center justify-center border-2 border-[#f8fafc] dark:border-[#1A1F18]">
                             2
                         </span>
                     </button>
@@ -127,20 +127,20 @@ export function PeriodComparisonBar({
                 <div className="flex flex-wrap items-center gap-3">
                     {/* 1. Reference Period Selector */}
                     <div className="relative" ref={refRef}>
-                        <p className="text-[10px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-[0.14em] mb-1">
+                        <p className="text-[10px] font-bold text-[#64748b] dark:text-[#94a3b8] uppercase tracking-[0.14em] mb-1">
                             Reference Period
                         </p>
                         <button
                             onClick={() => setShowRefDropdown(!showRefDropdown)}
-                            className="flex items-center gap-2.5 px-4 py-2 bg-[#FBF9F5] dark:bg-[#252B20] rounded-xl border border-[#E5DED2] dark:border-[#384232] text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] hover:border-[#B9955B] transition-all shadow-warm-xs cursor-pointer"
+                            className="flex items-center gap-2.5 px-4 py-2 bg-[#ffffff] dark:bg-[#0f172a] rounded-xl border border-[#e2e8f0] dark:border-[#1e293b] text-xs font-semibold text-[#0f172a] dark:text-[#f8fafc] hover:border-[#6366f1] transition-all shadow-warm-xs cursor-pointer"
                         >
-                            <Calendar size={13} className="text-[#B9955B]" />
+                            <Calendar size={13} className="text-[#6366f1]" />
                             <span>{refStartStr} → {refEndStr}</span>
                         </button>
 
                         {showRefDropdown && (
-                            <div className="absolute top-full left-0 mt-2 w-64 bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl shadow-xl border border-[#E5DED2] dark:border-[#384232] p-2 z-50 animate-in fade-in duration-150">
-                                <p className="px-3 py-1.5 text-[9px] font-bold text-[#777367] uppercase tracking-[0.15em]">Select Range</p>
+                            <div className="absolute top-full left-0 mt-2 w-64 bg-[#ffffff] dark:bg-[#0f172a] rounded-2xl shadow-xl border border-[#e2e8f0] dark:border-[#1e293b] p-2 z-50 animate-in fade-in duration-150">
+                                <p className="px-3 py-1.5 text-[9px] font-bold text-[#64748b] uppercase tracking-[0.15em]">Select Range</p>
                                 {[
                                     { label: 'Today', start: new Date().toISOString().slice(0, 10), end: new Date().toISOString().slice(0, 10) },
                                     { label: 'Last 7 Days', start: new Date(Date.now() - 6 * 86400000).toISOString().slice(0, 10), end: new Date().toISOString().slice(0, 10) },
@@ -153,7 +153,7 @@ export function PeriodComparisonBar({
                                             if (onDateRangeChange) onDateRangeChange(p.start, p.end);
                                             setShowRefDropdown(false);
                                         }}
-                                        className="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-[#29291F] dark:text-[#E2E8DE] hover:bg-[#EEE8DD] dark:hover:bg-[#2E362A] transition-colors"
+                                        className="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-[#0f172a] dark:text-[#E2E8DE] hover:bg-[#f1f5f9] dark:hover:bg-[#2E362A] transition-colors"
                                     >
                                         {p.label}
                                     </button>
@@ -163,26 +163,26 @@ export function PeriodComparisonBar({
                     </div>
 
                     {/* Swap / Compare Icon ⇄ */}
-                    <div className="mt-5 text-[#B9955B] px-1">
+                    <div className="mt-5 text-[#6366f1] px-1">
                         <ArrowRightLeft size={15} />
                     </div>
 
                     {/* 2. Compared Period Selector */}
                     <div className="relative" ref={compRef}>
-                        <p className="text-[10px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-[0.14em] mb-1">
+                        <p className="text-[10px] font-bold text-[#64748b] dark:text-[#94a3b8] uppercase tracking-[0.14em] mb-1">
                             Compared Period
                         </p>
                         <button
                             onClick={() => setShowCompDropdown(!showCompDropdown)}
-                            className="flex items-center gap-2.5 px-4 py-2 bg-[#FBF9F5] dark:bg-[#252B20] rounded-xl border border-[#E5DED2] dark:border-[#384232] text-xs font-semibold text-[#777367] dark:text-[#B8B3A7] hover:border-[#B9955B] transition-all shadow-warm-xs cursor-pointer"
+                            className="flex items-center gap-2.5 px-4 py-2 bg-[#ffffff] dark:bg-[#0f172a] rounded-xl border border-[#e2e8f0] dark:border-[#1e293b] text-xs font-semibold text-[#64748b] dark:text-[#94a3b8] hover:border-[#6366f1] transition-all shadow-warm-xs cursor-pointer"
                         >
-                            <Calendar size={13} className="text-[#777367]" />
+                            <Calendar size={13} className="text-[#64748b]" />
                             <span>{compStartStr} → {compEndStr}</span>
                         </button>
 
                         {showCompDropdown && (
-                            <div className="absolute top-full left-0 mt-2 w-64 bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl shadow-xl border border-[#E5DED2] dark:border-[#384232] p-2 z-50 animate-in fade-in duration-150">
-                                <p className="px-3 py-1.5 text-[9px] font-bold text-[#777367] uppercase tracking-[0.15em]">Select Comparison Range</p>
+                            <div className="absolute top-full left-0 mt-2 w-64 bg-[#ffffff] dark:bg-[#0f172a] rounded-2xl shadow-xl border border-[#e2e8f0] dark:border-[#1e293b] p-2 z-50 animate-in fade-in duration-150">
+                                <p className="px-3 py-1.5 text-[9px] font-bold text-[#64748b] uppercase tracking-[0.15em]">Select Comparison Range</p>
                                 {[
                                     { label: 'Prior Period (Equal Duration)', start: null, end: null },
                                     { label: 'Yesterday', start: new Date(Date.now() - 86400000).toISOString().slice(0, 10), end: new Date(Date.now() - 86400000).toISOString().slice(0, 10) },
@@ -194,7 +194,7 @@ export function PeriodComparisonBar({
                                             if (onCompareRangeChange) onCompareRangeChange(p.start, p.end);
                                             setShowCompDropdown(false);
                                         }}
-                                        className="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-[#29291F] dark:text-[#E2E8DE] hover:bg-[#EEE8DD] dark:hover:bg-[#2E362A] transition-colors"
+                                        className="w-full text-left px-3 py-2 rounded-xl text-xs font-medium text-[#0f172a] dark:text-[#E2E8DE] hover:bg-[#f1f5f9] dark:hover:bg-[#2E362A] transition-colors"
                                     >
                                         {p.label}
                                     </button>
@@ -209,34 +209,34 @@ export function PeriodComparisonBar({
                             onClick={() => setShowFilterPopover(!showFilterPopover)}
                             className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all shadow-warm-xs cursor-pointer ${
                                 isFilterActive
-                                    ? 'bg-[#B9955B] text-white shadow-sm'
-                                    : 'bg-[#FBF9F5] dark:bg-[#252B20] border border-[#E5DED2] dark:border-[#384232] text-[#29291F] dark:text-[#F5F1E9] hover:bg-[#EEE8DD]'
+                                    ? 'bg-[#6366f1] text-white shadow-sm'
+                                    : 'bg-[#ffffff] dark:bg-[#0f172a] border border-[#e2e8f0] dark:border-[#1e293b] text-[#0f172a] dark:text-[#f8fafc] hover:bg-[#f1f5f9]'
                             }`}
                         >
-                            <Plus size={13} strokeWidth={2.5} className={isFilterActive ? 'text-white' : 'text-[#B9955B]'} />
+                            <Plus size={13} strokeWidth={2.5} className={isFilterActive ? 'text-white' : 'text-[#6366f1]'} />
                             <span>Filters</span>
                             {isFilterActive && <span className="w-1.5 h-1.5 rounded-full bg-white ml-1" />}
                         </button>
 
                         {showFilterPopover && (
-                            <div className="absolute top-full left-0 mt-2 w-72 bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl shadow-2xl border border-[#E5DED2] dark:border-[#384232] p-4 z-50 animate-in fade-in duration-150 space-y-3">
-                                <div className="flex items-center justify-between pb-2 border-b border-[#E5DED2] dark:border-[#384232]">
-                                    <span className="text-xs font-bold text-[#29291F] dark:text-[#F5F1E9] flex items-center gap-1.5">
-                                        <Filter size={13} className="text-[#B9955B]" /> Filter Analytics
+                            <div className="absolute top-full left-0 mt-2 w-72 bg-[#ffffff] dark:bg-[#0f172a] rounded-2xl shadow-2xl border border-[#e2e8f0] dark:border-[#1e293b] p-4 z-50 animate-in fade-in duration-150 space-y-3">
+                                <div className="flex items-center justify-between pb-2 border-b border-[#e2e8f0] dark:border-[#1e293b]">
+                                    <span className="text-xs font-bold text-[#0f172a] dark:text-[#f8fafc] flex items-center gap-1.5">
+                                        <Filter size={13} className="text-[#6366f1]" /> Filter Analytics
                                     </span>
                                     {isFilterActive && (
-                                        <button onClick={handleClearFilter} className="text-[10px] font-bold text-[#A84B4B] hover:underline">
+                                        <button onClick={handleClearFilter} className="text-[10px] font-bold text-[#f43f5e] hover:underline">
                                             Clear All
                                         </button>
                                     )}
                                 </div>
 
                                 <div>
-                                    <label className="text-[10px] font-bold text-[#777367] uppercase tracking-wider">Department / Team</label>
+                                    <label className="text-[10px] font-bold text-[#64748b] uppercase tracking-wider">Department / Team</label>
                                     <select
                                         value={selectedTeam}
                                         onChange={(e) => setSelectedTeam(e.target.value)}
-                                        className="w-full mt-1 p-2 rounded-xl bg-[#EEE8DD]/60 dark:bg-[#1E2419] border border-[#E5DED2] dark:border-[#384232] text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9]"
+                                        className="w-full mt-1 p-2 rounded-xl bg-[#f1f5f9]/60 dark:bg-[#1E2419] border border-[#e2e8f0] dark:border-[#1e293b] text-xs font-semibold text-[#0f172a] dark:text-[#f8fafc]"
                                     >
                                         <option value="">All Departments</option>
                                         {teams.map(t => (
@@ -246,11 +246,11 @@ export function PeriodComparisonBar({
                                 </div>
 
                                 <div>
-                                    <label className="text-[10px] font-bold text-[#777367] uppercase tracking-wider">Employee</label>
+                                    <label className="text-[10px] font-bold text-[#64748b] uppercase tracking-wider">Employee</label>
                                     <select
                                         value={selectedEmployee}
                                         onChange={(e) => setSelectedEmployee(e.target.value)}
-                                        className="w-full mt-1 p-2 rounded-xl bg-[#EEE8DD]/60 dark:bg-[#1E2419] border border-[#E5DED2] dark:border-[#384232] text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9]"
+                                        className="w-full mt-1 p-2 rounded-xl bg-[#f1f5f9]/60 dark:bg-[#1E2419] border border-[#e2e8f0] dark:border-[#1e293b] text-xs font-semibold text-[#0f172a] dark:text-[#f8fafc]"
                                     >
                                         <option value="">All Employees</option>
                                         {employees.map(e => (
@@ -260,11 +260,11 @@ export function PeriodComparisonBar({
                                 </div>
 
                                 <div>
-                                    <label className="text-[10px] font-bold text-[#777367] uppercase tracking-wider">Role</label>
+                                    <label className="text-[10px] font-bold text-[#64748b] uppercase tracking-wider">Role</label>
                                     <select
                                         value={selectedRole}
                                         onChange={(e) => setSelectedRole(e.target.value)}
-                                        className="w-full mt-1 p-2 rounded-xl bg-[#EEE8DD]/60 dark:bg-[#1E2419] border border-[#E5DED2] dark:border-[#384232] text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9]"
+                                        className="w-full mt-1 p-2 rounded-xl bg-[#f1f5f9]/60 dark:bg-[#1E2419] border border-[#e2e8f0] dark:border-[#1e293b] text-xs font-semibold text-[#0f172a] dark:text-[#f8fafc]"
                                     >
                                         <option value="">All Roles</option>
                                         <option value="ADMIN">Admin</option>
@@ -276,13 +276,13 @@ export function PeriodComparisonBar({
                                 <div className="pt-2 flex items-center justify-end gap-2">
                                     <button
                                         onClick={handleClearFilter}
-                                        className="px-3 py-1.5 text-xs font-semibold text-[#777367] hover:text-[#29291F]"
+                                        className="px-3 py-1.5 text-xs font-semibold text-[#64748b] hover:text-[#0f172a]"
                                     >
                                         Reset
                                     </button>
                                     <button
                                         onClick={handleApplyFilter}
-                                        className="px-4 py-1.5 bg-[#B9955B] text-white rounded-xl text-xs font-semibold hover:bg-[#A17D45] shadow-xs cursor-pointer"
+                                        className="px-4 py-1.5 bg-[#6366f1] text-white rounded-xl text-xs font-semibold hover:bg-[#A17D45] shadow-xs cursor-pointer"
                                     >
                                         Apply
                                     </button>
@@ -296,22 +296,22 @@ export function PeriodComparisonBar({
                 <div className="relative mt-5" ref={exportRef}>
                     <button
                         onClick={() => setShowExportMenu(!showExportMenu)}
-                        className="p-2.5 bg-[#FBF9F5] dark:bg-[#252B20] border border-[#E5DED2] dark:border-[#384232] text-[#777367] hover:text-[#29291F] dark:hover:text-[#F5F1E9] rounded-xl transition-all shadow-warm-xs active:scale-95 cursor-pointer"
+                        className="p-2.5 bg-[#ffffff] dark:bg-[#0f172a] border border-[#e2e8f0] dark:border-[#1e293b] text-[#64748b] hover:text-[#0f172a] dark:hover:text-[#f8fafc] rounded-xl transition-all shadow-warm-xs active:scale-95 cursor-pointer"
                         title="Download / Export Report"
                     >
                         <Download size={15} />
                     </button>
 
                     {showExportMenu && (
-                        <div className="absolute top-full right-0 mt-2 w-48 bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl shadow-xl border border-[#E5DED2] dark:border-[#384232] p-2 z-50 animate-in fade-in duration-150">
+                        <div className="absolute top-full right-0 mt-2 w-48 bg-[#ffffff] dark:bg-[#0f172a] rounded-2xl shadow-xl border border-[#e2e8f0] dark:border-[#1e293b] p-2 z-50 animate-in fade-in duration-150">
                             <button
                                 onClick={() => {
                                     if (onExport) onExport('csv');
                                     setShowExportMenu(false);
                                 }}
-                                className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-[#29291F] dark:text-[#E2E8DE] hover:bg-[#EEE8DD] dark:hover:bg-[#2E362A] rounded-xl cursor-pointer"
+                                className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-[#0f172a] dark:text-[#E2E8DE] hover:bg-[#f1f5f9] dark:hover:bg-[#2E362A] rounded-xl cursor-pointer"
                             >
-                                <FileSpreadsheet size={14} className="text-[#5E7D64]" />
+                                <FileSpreadsheet size={14} className="text-[#10b981]" />
                                 <span>Export as CSV</span>
                             </button>
                             <button
@@ -319,9 +319,9 @@ export function PeriodComparisonBar({
                                     if (onExport) onExport('pdf');
                                     setShowExportMenu(false);
                                 }}
-                                className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-[#29291F] dark:text-[#E2E8DE] hover:bg-[#EEE8DD] dark:hover:bg-[#2E362A] rounded-xl cursor-pointer"
+                                className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-[#0f172a] dark:text-[#E2E8DE] hover:bg-[#f1f5f9] dark:hover:bg-[#2E362A] rounded-xl cursor-pointer"
                             >
-                                <FileText size={14} className="text-[#A84B4B]" />
+                                <FileText size={14} className="text-[#f43f5e]" />
                                 <span>Export as PDF</span>
                             </button>
                         </div>

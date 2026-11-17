@@ -74,13 +74,13 @@ export function CreateAlertModal({ isOpen, onClose, onSuccess }) {
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/40 backdrop-blur-xs transition-opacity" onClick={onClose}></div>
-            <div className="relative w-full max-w-2xl bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl shadow-2xl animate-scale-in overflow-hidden border border-[#E5DED2] dark:border-[#384232]">
+            <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
+            <div className="relative w-full max-w-2xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl animate-scale-in overflow-hidden border border-slate-100 dark:border-slate-800">
                 {/* Header */}
-                <div className="px-8 py-5 border-b border-[#E5DED2] dark:border-[#384232] flex items-center justify-between">
-                    <h2 className="font-serif text-xl font-bold text-[#29291F] dark:text-[#F5F1E9]">Create New Alert</h2>
-                    <button onClick={onClose} className="text-[#777367] hover:text-[#29291F] dark:hover:text-[#F5F1E9] transition-colors cursor-pointer">
-                        <X size={18} />
+                <div className="px-8 py-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                    <h2 className="text-xl font-bold text-slate-800 dark:text-white">Create New Alert</h2>
+                    <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                        <X size={20} />
                     </button>
                 </div>
 
@@ -234,12 +234,12 @@ export function CreateAlertModal({ isOpen, onClose, onSuccess }) {
                 </div>
 
                 {/* Footer */}
-                <div className="p-6 border-t border-[#E5DED2] dark:border-[#384232] flex justify-end gap-3 bg-[#EEE8DD]/30 dark:bg-[#1E2419]">
+                <div className="p-8 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-3">
                     <button
                         type="button"
                         onClick={onClose}
                         disabled={isSaving}
-                        className="px-6 py-2.5 border border-[#E5DED2] dark:border-[#384232] bg-[#FBF9F5] dark:bg-[#252B20] text-[#777367] hover:text-[#29291F] dark:text-[#B8B3A7] rounded-xl text-xs font-semibold uppercase tracking-wider hover:bg-[#EEE8DD] transition-colors disabled:opacity-50 cursor-pointer"
+                        className="px-8 py-2.5 border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 rounded-lg text-xs font-black uppercase tracking-tight hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors disabled:opacity-50"
                     >
                         Cancel
                     </button>
@@ -247,15 +247,15 @@ export function CreateAlertModal({ isOpen, onClose, onSuccess }) {
                         type="button"
                         onClick={handleSave}
                         disabled={isSaving || !name.trim()}
-                        className="px-7 py-2.5 bg-[#30382B] hover:bg-[#3C4536] text-[#FDFBF7] rounded-xl text-xs font-bold uppercase tracking-wider shadow-warm-sm transition-colors disabled:opacity-50 flex items-center gap-2 cursor-pointer"
+                        className="px-8 py-2.5 bg-indigo-600 text-white rounded-lg text-xs font-black uppercase tracking-tight shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2"
                     >
                         {isSaving ? (
                             <>
-                                <Loader2 size={14} className="animate-spin text-[#D3B98D]" />
+                                <Loader2 size={14} className="animate-spin" />
                                 Saving...
                             </>
                         ) : (
-                            'Save Alert'
+                            'Save'
                         )}
                     </button>
                 </div>

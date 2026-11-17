@@ -257,14 +257,14 @@ export function GlobalCalendar({ label, className }) {
                 type="button"
                 onClick={() => setOpen((o) => !o)}
                 className={clsx(
-                    'flex items-center gap-2 px-3.5 py-2 text-xs font-semibold uppercase tracking-wider rounded-xl border transition-all shadow-warm-xs cursor-pointer',
+                    'flex items-center gap-2 px-3 py-2 text-xs font-black uppercase tracking-tight rounded-lg border transition-all',
                     open || isModified
-                        ? 'bg-[#EEE8DD] border-[#B9955B] text-[#B9955B]'
-                        : 'bg-[#FBF9F5] dark:bg-[#252B20] border-[#E5DED2] dark:border-[#384232] text-[#29291F] dark:text-[#F5F1E9] hover:border-[#B9955B]',
+                        ? 'bg-primary-50 dark:bg-primary-900/20 border-primary-200 dark:border-primary-800 text-primary-700 dark:text-primary-300'
+                        : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800',
                     className
                 )}
             >
-                <Calendar size={14} strokeWidth={2.2} className={isModified ? 'text-[#B9955B]' : 'text-[#777367]'} />
+                <Calendar size={14} strokeWidth={2.5} className={isModified ? 'text-primary-600' : 'text-slate-400'} />
                 <span>{displayLabel}</span>
                 {isModified && (
                     <span
@@ -275,7 +275,7 @@ export function GlobalCalendar({ label, className }) {
                             resetFilters();
                         }}
                         onKeyDown={(e) => e.key === 'Enter' && resetFilters()}
-                        className="ml-1 flex items-center justify-center h-4 w-4 rounded-full hover:bg-[#E5DED2] dark:hover:bg-[#384232]"
+                        className="ml-1 flex items-center justify-center h-4 w-4 rounded-full hover:bg-primary-200 dark:hover:bg-primary-800"
                     >
                         <X size={10} />
                     </span>

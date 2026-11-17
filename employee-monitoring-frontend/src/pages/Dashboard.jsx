@@ -80,14 +80,14 @@ const SummaryCard = ({ title, value, trend, subValue, icon: Icon, color = 'prima
         <div className={`group bg-white dark:bg-slate-900 p-5 rounded-[1.5rem] border ${activeColor.split(' ')[2]} shadow-lg ${activeColor.split(' ')[3]} transition-all hover:-translate-y-1 hover:shadow-xl dark:shadow-none relative overflow-hidden h-full flex flex-col justify-between`}>
             {/* Subtle Gradient Background */}
             <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${activeColor.split(' ')[0]} ${activeColor.split(' ')[1]} rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-110 duration-500`} />
-            
+
             <div className="relative z-10">
                 <div className="flex items-center justify-between mb-4">
                     <div className={`h-10 w-10 rounded-xl bg-gradient-to-br ${activeColor.split(' ')[0]} ${activeColor.split(' ')[1]} flex items-center justify-center ${activeColor.split(' ')[2]}`}>
                         <Icon size={20} className={activeColor.split(' ')[2]} />
                     </div>
                 </div>
-                
+
                 <div className="space-y-1">
                     <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.15em] leading-none">
                         {title}
@@ -275,7 +275,7 @@ export function Dashboard() {
     };
 
     const isToday = !startDate || new Date(startDate).toISOString().split('T')[0] === new Date().toISOString().split('T')[0];
-    
+
     // Merge API data with Real-time stats
     const stats = useMemo(() => {
         const base = dashboardData || realTimeStats;
@@ -296,8 +296,8 @@ export function Dashboard() {
             ...base,
             summary: raw,
             summarySeconds,
-            screenshots: (isToday && realTimeStats.screenshots?.length > 0) 
-                ? realTimeStats.screenshots 
+            screenshots: (isToday && realTimeStats.screenshots?.length > 0)
+                ? realTimeStats.screenshots
                 : (base.screenshots || []),
             empMetrics: (isToday && realTimeStats.empMetrics?.length > 0)
                 ? realTimeStats.empMetrics
@@ -357,35 +357,35 @@ export function Dashboard() {
             {role === 'EMPLOYEE' && <WorkSessionBanner />}
 
             {/* Insightful Module Quick Switcher */}
-            <div className="flex items-center gap-2.5 mb-6 overflow-x-auto pb-1 scrollbar-none">
+            <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-1 scrollbar-none">
                 <button
                     onClick={() => navigate(role === 'EMPLOYEE' ? '/employee' : '/admin')}
-                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-[#30382B] text-white shadow-warm-xs whitespace-nowrap cursor-pointer"
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 text-white shadow-md shadow-indigo-500/20 whitespace-nowrap cursor-pointer"
                 >
-                    <Zap size={14} className="text-[#D3B98D]" />
+                    <Zap size={14} />
                     <span>Productivity Trends</span>
                 </button>
                 <button
                     onClick={() => navigate(`${role === 'EMPLOYEE' ? '/employee' : '/admin'}/activities`)}
-                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium bg-[#FBF9F5] dark:bg-[#252B20] text-[#29291F] dark:text-[#F5F1E9] border border-[#E5DED2] dark:border-[#384232] hover:bg-[#EEE8DD] transition-all shadow-warm-xs whitespace-nowrap cursor-pointer"
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-xs whitespace-nowrap cursor-pointer"
                 >
-                    <Activity size={14} className="text-[#B9955B]" />
+                    <Activity size={14} className="text-purple-500" />
                     <span>Activities Timeline</span>
                 </button>
                 {role !== 'EMPLOYEE' && (
                     <>
                         <button
                             onClick={() => navigate(`${role === 'EMPLOYEE' ? '/employee' : '/admin'}/reports/location-insights`)}
-                            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium bg-[#FBF9F5] dark:bg-[#252B20] text-[#29291F] dark:text-[#F5F1E9] border border-[#E5DED2] dark:border-[#384232] hover:bg-[#EEE8DD] transition-all shadow-warm-xs whitespace-nowrap cursor-pointer"
+                            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-xs whitespace-nowrap cursor-pointer"
                         >
-                            <Globe size={14} className="text-[#5E7D64]" />
+                            <Globe size={14} className="text-sky-500" />
                             <span>Office vs Remote</span>
                         </button>
                         <button
                             onClick={() => navigate(`${role === 'EMPLOYEE' ? '/employee' : '/admin'}/reports/apps-websites`)}
-                            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium bg-[#FBF9F5] dark:bg-[#252B20] text-[#29291F] dark:text-[#F5F1E9] border border-[#E5DED2] dark:border-[#384232] hover:bg-[#EEE8DD] transition-all shadow-warm-xs whitespace-nowrap cursor-pointer"
+                            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-xs whitespace-nowrap cursor-pointer"
                         >
-                            <Monitor size={14} className="text-[#30382B] dark:text-[#D3B98D]" />
+                            <Monitor size={14} className="text-emerald-500" />
                             <span>Apps & Websites Usage</span>
                         </button>
                     </>
