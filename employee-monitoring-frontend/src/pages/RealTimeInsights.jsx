@@ -182,21 +182,19 @@ export function RealTimeInsights() {
                     <div className="bg-[#EEE8DD] dark:bg-[#252B20] p-1 rounded-xl border border-[#E5DED2] dark:border-[#384232] flex items-center shadow-warm-xs">
                         <button
                             onClick={() => setActiveTab('overview')}
-                            className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                                activeTab === 'overview'
-                                    ? 'bg-[#30382B] text-white shadow-xs'
-                                    : 'text-[#777367] hover:text-[#29291F] dark:text-[#B8B3A7]'
-                            }`}
+                            className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${activeTab === 'overview'
+                                ? 'bg-[#30382B] text-white shadow-xs'
+                                : 'text-[#777367] hover:text-[#29291F] dark:text-[#B8B3A7]'
+                                }`}
                         >
                             Overview
                         </button>
                         <button
                             onClick={() => setActiveTab('map')}
-                            className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer ${
-                                activeTab === 'map'
-                                    ? 'bg-[#30382B] text-white shadow-xs'
-                                    : 'text-[#777367] hover:text-[#29291F] dark:text-[#B8B3A7]'
-                            }`}
+                            className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer ${activeTab === 'map'
+                                ? 'bg-[#30382B] text-white shadow-xs'
+                                : 'text-[#777367] hover:text-[#29291F] dark:text-[#B8B3A7]'
+                                }`}
                         >
                             <MapPin size={13} className={activeTab === 'map' ? 'text-[#D3B98D]' : ''} />
                             Live Map
@@ -254,11 +252,10 @@ export function RealTimeInsights() {
                             <button
                                 onClick={() => setViewMode(v => v === 'list' ? 'grid' : 'list')}
                                 title={viewMode === 'list' ? 'Switch to Grid View' : 'Switch to List View'}
-                                className={`p-2 border rounded-xl transition-all shadow-warm-xs cursor-pointer ${
-                                    viewMode === 'grid'
-                                        ? 'border-[#B9955B] bg-[#EEE8DD] text-[#30382B]'
-                                        : 'border-[#E5DED2] dark:border-[#384232] bg-[#FBF9F5] dark:bg-[#252B20] text-[#777367] hover:bg-[#EEE8DD]'
-                                }`}
+                                className={`p-2 border rounded-xl transition-all shadow-warm-xs cursor-pointer ${viewMode === 'grid'
+                                    ? 'border-[#B9955B] bg-[#EEE8DD] text-[#30382B]'
+                                    : 'border-[#E5DED2] dark:border-[#384232] bg-[#FBF9F5] dark:bg-[#252B20] text-[#777367] hover:bg-[#EEE8DD]'
+                                    }`}
                             >
                                 {viewMode === 'list' ? <LayoutGrid size={15} /> : <List size={15} />}
                             </button>
@@ -321,12 +318,11 @@ export function RealTimeInsights() {
                                                         </span>
                                                     </td>
                                                     <td className="px-6 py-4">
-                                                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${
-                                                            emp.status === 'online' ? 'bg-[#5E7D64]/10 text-[#5E7D64]' :
+                                                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${emp.status === 'online' ? 'bg-[#5E7D64]/10 text-[#5E7D64]' :
                                                             emp.status === 'idle' ? 'bg-[#C98A3C]/10 text-[#C98A3C]' :
-                                                            emp.status === 'break' ? 'bg-[#B9955B]/15 text-[#A17D45]' :
-                                                            'bg-[#777367]/10 text-[#777367]'
-                                                        }`}>
+                                                                emp.status === 'break' ? 'bg-[#B9955B]/15 text-[#A17D45]' :
+                                                                    'bg-[#777367]/10 text-[#777367]'
+                                                            }`}>
                                                             <span className={`h-1.5 w-1.5 rounded-full ${statusColors[emp.status] || statusColors.offline}`} />
                                                             {emp.status}
                                                         </span>
@@ -379,12 +375,11 @@ export function RealTimeInsights() {
                                             <p className="font-semibold text-xs sm:text-sm text-[#29291F] dark:text-[#F5F1E9] truncate">{emp.name}</p>
                                             <p className="text-[11px] font-medium text-[#777367] truncate">{emp.team || 'No Team'}</p>
                                         </div>
-                                        <span className={`shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${
-                                            emp.status === 'online' ? 'bg-[#5E7D64]/10 text-[#5E7D64]' :
+                                        <span className={`shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${emp.status === 'online' ? 'bg-[#5E7D64]/10 text-[#5E7D64]' :
                                             emp.status === 'idle' ? 'bg-[#C98A3C]/10 text-[#C98A3C]' :
-                                            emp.status === 'break' ? 'bg-[#B9955B]/15 text-[#A17D45]' :
-                                            'bg-[#777367]/10 text-[#777367]'
-                                        }`}>
+                                                emp.status === 'break' ? 'bg-[#B9955B]/15 text-[#A17D45]' :
+                                                    'bg-[#777367]/10 text-[#777367]'
+                                            }`}>
                                             <span className={`h-1.5 w-1.5 rounded-full ${statusColors[emp.status] || statusColors.offline}`} />
                                             {emp.status}
                                         </span>

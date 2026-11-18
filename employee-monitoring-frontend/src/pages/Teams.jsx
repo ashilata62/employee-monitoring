@@ -58,8 +58,8 @@ export function Teams() {
 
     const teamsData = useMemo(() => contextTeams.map(team => {
         const initials = team.name.substring(0, 2).toUpperCase();
-        const teamEmployees = (team.employees && team.employees.length > 0) 
-            ? team.employees 
+        const teamEmployees = (team.employees && team.employees.length > 0)
+            ? team.employees
             : employees.filter(emp => emp.teamId === team.id || (typeof emp.team === 'object' && emp.team?.id === team.id));
 
         const summary = teamSummaries[team.id] || {
@@ -140,7 +140,7 @@ export function Teams() {
                         <span>{employees.length} employees · {contextTeams.length} teams</span>
                     </div>
                 </div>
-                {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
+                {user?.role === 'ADMIN' && (
                     <button
                         onClick={() => { setEditingTeam(null); setIsModalOpen(true); }}
                         className="flex items-center justify-center gap-2 bg-[#30382B] hover:bg-[#3C4536] text-[#FDFBF7] px-5 py-2.5 rounded-xl text-xs font-semibold shadow-warm-sm transition-all active:scale-95 cursor-pointer"
@@ -190,12 +190,12 @@ export function Teams() {
             <div className="flex items-center justify-between gap-4">
                 <div className="relative flex-1 max-w-md">
                     <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#777367]" />
-                    <input 
-                        type="text" 
-                        placeholder="Search teams by name..." 
-                        value={search} 
+                    <input
+                        type="text"
+                        placeholder="Search teams by name..."
+                        value={search}
                         onChange={e => setSearch(e.target.value)}
-                        className="w-full bg-[#FBF9F5] dark:bg-[#252B20] border border-[#E5DED2] dark:border-[#384232] rounded-xl pl-9 pr-4 py-2 text-xs font-medium text-[#29291F] dark:text-[#F5F1E9] placeholder-[#777367] focus:border-[#B9955B] outline-none transition-all shadow-warm-xs" 
+                        className="w-full bg-[#FBF9F5] dark:bg-[#252B20] border border-[#E5DED2] dark:border-[#384232] rounded-xl pl-9 pr-4 py-2 text-xs font-medium text-[#29291F] dark:text-[#F5F1E9] placeholder-[#777367] focus:border-[#B9955B] outline-none transition-all shadow-warm-xs"
                     />
                 </div>
             </div>
@@ -243,7 +243,7 @@ export function Teams() {
                                     </td>
                                     <td className="px-6 py-4 text-right">
                                         <div className="flex items-center justify-end gap-1.5">
-                                            <button 
+                                            <button
                                                 onClick={() => setSelectedTeam(team)}
                                                 className="h-8 w-8 flex items-center justify-center rounded-lg bg-[#EEE8DD]/60 text-[#777367] hover:text-[#30382B] hover:bg-[#EEE8DD] transition-all shadow-warm-xs cursor-pointer"
                                                 title="View Details"
@@ -251,22 +251,22 @@ export function Teams() {
                                                 <Eye size={15} />
                                             </button>
                                             {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
-                                                <>
-                                                    <button 
-                                                        onClick={() => handleEditClick(team)}
-                                                        className="h-8 w-8 flex items-center justify-center rounded-lg bg-[#EEE8DD]/60 text-[#777367] hover:text-[#B9955B] hover:bg-[#EEE8DD] transition-all shadow-warm-xs cursor-pointer"
-                                                        title="Edit Team"
-                                                    >
-                                                        <Edit size={15} />
-                                                    </button>
-                                                    <button 
-                                                        onClick={() => { if(window.confirm(`Are you sure you want to delete ${team.name}?`)) deleteTeam(team.id); }}
-                                                        className="h-8 w-8 flex items-center justify-center rounded-lg bg-[#EEE8DD]/60 text-[#777367] hover:text-[#A84B4B] hover:bg-[#FAF3F2] transition-all shadow-warm-xs cursor-pointer"
-                                                        title="Delete Team"
-                                                    >
-                                                        <Trash2 size={15} />
-                                                    </button>
-                                                </>
+                                                <button
+                                                    onClick={() => handleEditClick(team)}
+                                                    className="h-8 w-8 flex items-center justify-center rounded-lg bg-[#EEE8DD]/60 text-[#777367] hover:text-[#B9955B] hover:bg-[#EEE8DD] transition-all shadow-warm-xs cursor-pointer"
+                                                    title="Edit Team"
+                                                >
+                                                    <Edit size={15} />
+                                                </button>
+                                            )}
+                                            {user?.role === 'ADMIN' && (
+                                                <button
+                                                    onClick={() => { if (window.confirm(`Are you sure you want to delete ${team.name}?`)) deleteTeam(team.id); }}
+                                                    className="h-8 w-8 flex items-center justify-center rounded-lg bg-[#EEE8DD]/60 text-[#777367] hover:text-[#A84B4B] hover:bg-[#FAF3F2] transition-all shadow-warm-xs cursor-pointer"
+                                                    title="Delete Team"
+                                                >
+                                                    <Trash2 size={15} />
+                                                </button>
                                             )}
                                         </div>
                                     </td>
@@ -316,27 +316,27 @@ export function Teams() {
                             </div>
 
                             <div className="flex items-center justify-end gap-2 pt-1">
-                                <button 
+                                <button
                                     onClick={() => setSelectedTeam(team)}
                                     className="px-2.5 py-1 text-xs rounded-lg bg-[#EEE8DD] text-[#30382B] font-semibold flex items-center gap-1"
                                 >
                                     <Eye size={13} /> View
                                 </button>
                                 {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
-                                    <>
-                                        <button 
-                                            onClick={() => handleEditClick(team)}
-                                            className="px-2.5 py-1 text-xs rounded-lg bg-[#EEE8DD] text-[#B9955B] font-semibold flex items-center gap-1"
-                                        >
-                                            <Edit size={13} /> Edit
-                                        </button>
-                                        <button 
-                                            onClick={() => { if(window.confirm(`Are you sure you want to delete ${team.name}?`)) deleteTeam(team.id); }}
-                                            className="px-2.5 py-1 text-xs rounded-lg bg-[#FAF3F2] text-[#A84B4B] font-semibold flex items-center gap-1"
-                                        >
-                                            <Trash2 size={13} /> Delete
-                                        </button>
-                                    </>
+                                    <button
+                                        onClick={() => handleEditClick(team)}
+                                        className="px-2.5 py-1 text-xs rounded-lg bg-[#EEE8DD] text-[#B9955B] font-semibold flex items-center gap-1"
+                                    >
+                                        <Edit size={13} /> Edit
+                                    </button>
+                                )}
+                                {user?.role === 'ADMIN' && (
+                                    <button
+                                        onClick={() => { if (window.confirm(`Are you sure you want to delete ${team.name}?`)) deleteTeam(team.id); }}
+                                        className="px-2.5 py-1 text-xs rounded-lg bg-[#FAF3F2] text-[#A84B4B] font-semibold flex items-center gap-1"
+                                    >
+                                        <Trash2 size={13} /> Delete
+                                    </button>
                                 )}
                             </div>
                         </div>
@@ -373,12 +373,12 @@ const TeamDetailModal = ({ isOpen, onClose, team }) => {
             isOpen ? "visible" : "invisible"
         )}>
             {/* Backdrop */}
-            <div 
+            <div
                 className={cn(
                     "absolute inset-0 bg-black/40 backdrop-blur-xs transition-opacity duration-300",
                     isOpen ? "opacity-100" : "opacity-0"
-                )} 
-                onClick={onClose} 
+                )}
+                onClick={onClose}
             />
 
             {/* Modal */}
@@ -397,7 +397,7 @@ const TeamDetailModal = ({ isOpen, onClose, team }) => {
                             <p className="text-[10px] font-bold text-[#777367] uppercase tracking-wider mt-0.5">{team.memberCount || 0} Team Members</p>
                         </div>
                     </div>
-                    <button 
+                    <button
                         onClick={onClose}
                         className="h-8 w-8 rounded-lg bg-[#EEE8DD]/70 hover:bg-[#EEE8DD] flex items-center justify-center text-[#777367] hover:text-[#29291F] transition-all cursor-pointer"
                     >
@@ -480,7 +480,7 @@ const TeamDetailModal = ({ isOpen, onClose, team }) => {
 
                 {/* Footer */}
                 <div className="p-4 sm:p-5 border-t border-[#E5DED2] dark:border-[#384232] bg-[#FBF9F5] dark:bg-[#252B20] flex justify-end">
-                    <button 
+                    <button
                         onClick={onClose}
                         className="px-6 py-2 bg-[#30382B] hover:bg-[#3C4536] text-[#FDFBF7] rounded-xl text-xs font-semibold shadow-warm-xs transition-all active:scale-95 cursor-pointer"
                     >

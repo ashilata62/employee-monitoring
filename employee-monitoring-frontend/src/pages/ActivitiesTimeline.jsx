@@ -26,7 +26,8 @@ import {
   FileText,
   Check,
   ChevronDown,
-  X
+  X,
+  Activity
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -119,17 +120,30 @@ export function ActivitiesTimeline() {
   // Sync elapsed seconds from real persistent attendance session
   useEffect(() => {
     let timer;
-    if (isClockedIn && activeAttendance?.clockIn && !isOnBreak) {
-      const startTime = new Date(activeAttendance.clockIn).getTime();
-      setTrackerSeconds(Math.max(0, Math.floor((Date.now() - startTime) / 1000)));
-      timer = setInterval(() => {
-        setTrackerSeconds(Math.max(0, Math.floor((Date.now() - startTime) / 1000)));
-      }, 1000);
+    if (isClockedIn && activeAttendance?.clockIn) {
+      const clockInMs = new Date(activeAttendance.clockIn).getTime();
+      const breakSec = activeAttendance.totalBreakSeconds || 0;
+
+      const calculateWorkSeconds = () => {
+        if (isOnBreak && activeAttendance.openBreak) {
+          const breakStartMs = new Date(activeAttendance.openBreak).getTime();
+          return Math.max(0, Math.floor((breakStartMs - clockInMs) / 1000) - breakSec);
+        }
+        return Math.max(0, Math.floor((Date.now() - clockInMs) / 1000) - breakSec);
+      };
+
+      setTrackerSeconds(calculateWorkSeconds());
+
+      if (!isOnBreak) {
+        timer = setInterval(() => {
+          setTrackerSeconds(calculateWorkSeconds());
+        }, 1000);
+      }
     } else if (!isClockedIn) {
       setTrackerSeconds(0);
     }
     return () => clearInterval(timer);
-  }, [isClockedIn, activeAttendance?.clockIn, isOnBreak]);
+  }, [isClockedIn, activeAttendance?.clockIn, activeAttendance?.openBreak, activeAttendance?.totalBreakSeconds, isOnBreak]);
 
   const handleToggleClock = async () => {
     try {
@@ -139,7 +153,11 @@ export function ActivitiesTimeline() {
         await clockOut();
       } else {
         await clockIn();
+        if (!useAuthStore.getState().isTrackerActive) {
+          window.dispatchEvent(new Event('start-web-tracker'));
+        }
       }
+      fetchTimeline();
     } catch (err) {
       console.error('Attendance action failed:', err);
     } finally {
@@ -152,6 +170,7 @@ export function ActivitiesTimeline() {
     try {
       setIsActionLoading(true);
       await toggleBreak();
+      fetchTimeline();
     } catch (err) {
       console.error('Break action failed:', err);
     } finally {
@@ -637,11 +656,24 @@ export function ActivitiesTimeline() {
           <div className="overflow-x-auto">
             <div className="min-w-[850px]">
               {/* Top Hourly Workforce Activity Density Histogram */}
-          <div className="pt-4 px-6 pb-2 border-b border-[#D6CDBC] dark:border-[#384232] bg-[#E5DDCF]/50 dark:bg-[#1E2419]">
-            <div className="flex items-end h-10 w-full pl-[260px] pr-6 gap-1 relative">
+          <div className="pt-3.5 px-6 pb-2.5 border-b border-[#D6CDBC] dark:border-[#384232] bg-[#E5DDCF]/55 dark:bg-[#1E2419]">
+            <div className="flex items-end h-11 w-full pl-[260px] pr-6 gap-1.5 relative">
+              {/* Left Indicator Label in the 260px space */}
+              <div className="absolute left-0 bottom-0.5 flex flex-col justify-end pointer-events-none">
+                <div className="flex items-center gap-1.5 text-[10px] font-bold text-[#29291F] dark:text-[#F5F1E9] uppercase tracking-wider">
+                  <Activity size={13} className="text-[#B9955B]" />
+                  <span>Hourly Density</span>
+                </div>
+                <span className="text-[10px] font-medium text-[#777367] dark:text-[#9E988A] pl-[19px]">
+                  24h Active Workforce
+                </span>
+              </div>
+
               {data?.hourlyDistribution?.map((bucket, idx) => {
                 const maxEmployees = Math.max(1, bucket.totalEmployees || 4);
-                const heightPct = Math.min(100, Math.max(8, (bucket.activeCount / maxEmployees) * 100));
+                const heightPct = bucket.activeCount > 0
+                  ? Math.min(100, Math.max(30, (bucket.activeCount / maxEmployees) * 100))
+                  : 22;
                 const isHovered = hoveredHour?.hour === bucket.hour;
 
                 return (
@@ -649,35 +681,43 @@ export function ActivitiesTimeline() {
                     key={idx}
                     onMouseEnter={() => setHoveredHour(bucket)}
                     onMouseLeave={() => setHoveredHour(null)}
-                    className="flex-1 h-full flex items-end justify-center group cursor-pointer relative"
+                    className={cn(
+                      "flex-1 h-full flex items-end justify-center group cursor-pointer relative rounded-t-md transition-colors duration-200",
+                      isHovered
+                        ? "bg-[#B9955B]/20 dark:bg-[#B9955B]/20"
+                        : "bg-[#DDD4C3]/55 dark:bg-[#2A3125]/60"
+                    )}
                   >
                     <div
                       style={{ height: `${heightPct}%` }}
                       className={cn(
-                        "w-full rounded-t-sm transition-all duration-300",
+                        "w-full rounded-t-sm transition-all duration-200",
                         bucket.activeCount > 0
-                          ? "bg-purple-300 dark:bg-purple-600/60 group-hover:bg-purple-500"
-                          : "bg-slate-200/50 dark:bg-slate-800/40"
+                          ? "bg-indigo-500 dark:bg-indigo-400 group-hover:bg-indigo-600 shadow-xs"
+                          : "bg-[#BFB5A0] dark:bg-[#495442] group-hover:bg-[#B9955B]"
                       )}
                     />
 
-                    {/* Hourly Popover on Hover */}
+                    {/* Hourly Popover on Hover (opens downwards to avoid container overflow clipping) */}
                     {isHovered && (
-                      <div className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 w-64 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-3.5 z-50 animate-in fade-in zoom-in duration-200 pointer-events-none">
-                        <div className="flex items-center justify-between text-xs font-black pb-2 border-b border-slate-100 dark:border-slate-800">
-                          <span className="text-slate-400">Total Count</span>
-                          <span className="text-slate-700 dark:text-slate-200">{bucket.hourLabel} → {String((bucket.hour + 1) % 24).padStart(2, '0')}:00</span>
+                      <div className={cn(
+                        "absolute top-full mt-2 w-64 bg-[#FBF9F5] dark:bg-[#1E2419] rounded-xl shadow-warm-lg border border-[#D6CDBC] dark:border-[#384232] p-3.5 z-[100] animate-in fade-in duration-150 pointer-events-none",
+                        idx < 3 ? "left-0" : idx > 20 ? "right-0" : "left-1/2 -translate-x-1/2"
+                      )}>
+                        <div className="flex items-center justify-between text-xs font-bold pb-2 border-b border-[#D6CDBC] dark:border-[#384232]">
+                          <span className="text-[#777367] dark:text-[#B8B3A7] uppercase tracking-wider text-[10px]">Hourly Distribution</span>
+                          <span className="text-[#29291F] dark:text-[#F5F1E9]">{bucket.hourLabel} → {String((bucket.hour + 1) % 24).padStart(2, '0')}:00</span>
                         </div>
-                        <div className="space-y-1.5 pt-2 text-[11px] font-bold">
-                          <div className="flex items-center justify-between text-slate-700 dark:text-slate-300">
+                        <div className="space-y-1.5 pt-2 text-[11px] font-medium">
+                          <div className="flex items-center justify-between text-[#29291F] dark:text-[#F5F1E9]">
                             <span className="flex items-center gap-1.5">
-                              <Users size={12} className="text-primary-600" /> Active Employees
+                              <Users size={12} className="text-[#B9955B]" /> Active Employees
                             </span>
-                            <span className="font-black text-slate-900 dark:text-white">{bucket.activeCount} of {bucket.totalEmployees}</span>
+                            <span className="font-bold text-[#29291F] dark:text-[#F5F1E9]">{bucket.activeCount} of {bucket.totalEmployees}</span>
                           </div>
-                          <div className="flex items-center justify-between text-slate-500">
-                            <span>☕ on break: {bucket.onBreakCount}</span>
-                            <span>⏱️ overages: {bucket.breakOverageCount}</span>
+                          <div className="flex items-center justify-between text-[#777367] dark:text-[#9E988A] text-[10px]">
+                            <span>☕ On break: {bucket.onBreakCount}</span>
+                            <span>⏱️ Overages: {bucket.breakOverageCount}</span>
                           </div>
                         </div>
                       </div>

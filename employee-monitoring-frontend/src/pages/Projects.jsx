@@ -188,7 +188,7 @@ export function Projects() {
                                                 <span><span className="text-slate-900 dark:text-slate-300">{card.tickets}</span> Tickets</span>
                                             </div>
                                             {isConnected && (
-                                                <button 
+                                                <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         alert('Syncing ' + card.name + ' projects...');
@@ -223,28 +223,28 @@ export function Projects() {
                 </div>
             ) : (
                 <div className="space-y-6">
-                        {/* Table Layout (Hidden on Mobile) */}
-                        <div className="hidden lg:block">
-                            <div className="grid grid-cols-12 px-6 py-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center border-b border-slate-100 dark:border-slate-800">
-                                <div className="text-left col-span-4">Project Name</div>
-                                <div className="col-span-2">Assignees</div>
-                                <div className="col-span-2">Tasks</div>
-                                {role !== 'EMPLOYEE' ? (
-                                    <>
-                                        <div className="col-span-1">Rate</div>
-                                        <div className="col-span-1">Costs</div>
-                                        <div className="col-span-2 text-center">Actions</div>
-                                    </>
-                                ) : (
-                                    <div className="col-span-4 text-center">Status</div>
-                                )}
-                            </div>
+                    {/* Table Layout (Hidden on Mobile) */}
+                    <div className="hidden lg:block">
+                        <div className="grid grid-cols-12 px-6 py-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center border-b border-slate-100 dark:border-slate-800">
+                            <div className="text-left col-span-4">Project Name</div>
+                            <div className="col-span-2">Assignees</div>
+                            <div className="col-span-2">Tasks</div>
+                            {role !== 'EMPLOYEE' ? (
+                                <>
+                                    <div className="col-span-1">Rate</div>
+                                    <div className="col-span-1">Costs</div>
+                                    <div className="col-span-2 text-center">Actions</div>
+                                </>
+                            ) : (
+                                <div className="col-span-4 text-center">Status</div>
+                            )}
                         </div>
+                    </div>
 
-                        {/* Product Rows / Mobile Cards */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 md:gap-6 lg:gap-0 lg:space-y-3">
-                            {(() => {
-                                if (loading) return <div className="text-center py-20 font-bold text-slate-400 animate-pulse">Fetching project data...</div>;
+                    {/* Product Rows / Mobile Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 md:gap-6 lg:gap-0 lg:space-y-3">
+                        {(() => {
+                            if (loading) return <div className="text-center py-20 font-bold text-slate-400 animate-pulse">Fetching project data...</div>;
 
                                 const filtered = projects.filter(p => (p.projectName || p.name || '').toLowerCase().includes(projectSearch.toLowerCase()));
                                 if (filtered.length === 0) {
@@ -283,52 +283,53 @@ export function Projects() {
                                             </div>
                                         </div>
 
-                                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-8 gap-4 lg:gap-0 lg:col-span-8 items-center">
-                                            {/* Assignees */}
-                                            <div className="flex flex-col lg:items-center gap-1 lg:col-span-2">
-                                                <span className="lg:hidden text-[9px] font-black text-slate-400 uppercase tracking-widest">Assignees</span>
-                                                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{project.assignees}</span>
-                                            </div>
-                                            {/* Tasks */}
-                                            <div className="hidden lg:flex flex-col lg:items-center gap-1 lg:col-span-2">
-                                                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{project.tasks}</span>
-                                            </div>
-                                            {role !== 'EMPLOYEE' ? (
-                                                <>
-                                                    {/* Bill Rate */}
-                                                    <div className="flex flex-col lg:items-center gap-1 lg:col-span-1">
-                                                        <span className="lg:hidden text-[9px] font-black text-emerald-500/70 uppercase tracking-widest">Rate</span>
-                                                        <span className="text-xs font-black text-emerald-600 dark:text-emerald-400">${project.billRate}</span>
-                                                    </div>
-                                                    {/* Total Costs */}
-                                                    <div className="flex flex-col lg:items-center gap-1 lg:col-span-1">
-                                                        <span className="lg:hidden text-[9px] font-black text-primary-500/70 uppercase tracking-widest">Costs</span>
-                                                        <span className="text-sm lg:text-xs font-black text-primary-600 dark:text-primary-400">${project.totalCosts}</span>
-                                                    </div>
+                                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-8 gap-4 lg:gap-0 lg:col-span-8 items-center">
+                                        {/* Assignees */}
+                                        <div className="flex flex-col lg:items-center gap-1 lg:col-span-2">
+                                            <span className="lg:hidden text-[9px] font-black text-slate-400 uppercase tracking-widest">Assignees</span>
+                                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{project.assignees}</span>
+                                        </div>
+                                        {/* Tasks */}
+                                        <div className="hidden lg:flex flex-col lg:items-center gap-1 lg:col-span-2">
+                                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{project.tasks}</span>
+                                        </div>
+                                        {role !== 'EMPLOYEE' ? (
+                                            <>
+                                                {/* Bill Rate */}
+                                                <div className="flex flex-col lg:items-center gap-1 lg:col-span-1">
+                                                    <span className="lg:hidden text-[9px] font-black text-emerald-500/70 uppercase tracking-widest">Rate</span>
+                                                    <span className="text-xs font-black text-emerald-600 dark:text-emerald-400">${project.billRate}</span>
+                                                </div>
+                                                {/* Total Costs */}
+                                                <div className="flex flex-col lg:items-center gap-1 lg:col-span-1">
+                                                    <span className="lg:hidden text-[9px] font-black text-primary-500/70 uppercase tracking-widest">Costs</span>
+                                                    <span className="text-sm lg:text-xs font-black text-primary-600 dark:text-primary-400">${project.totalCosts}</span>
+                                                </div>
 
-                                                    {/* Actions */}
-                                                    <div className="flex items-center justify-center gap-2 lg:col-span-2">
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                setViewingProject(project);
-                                                            }}
-                                                            className="h-8 w-8 flex items-center justify-center rounded-lg bg-slate-50 dark:bg-slate-800 text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all shadow-sm"
-                                                            title="View Project Details"
-                                                        >
-                                                            <Eye size={16} />
-                                                        </button>
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                setEditingProject(project);
-                                                                setIsModalOpen(true);
-                                                            }}
-                                                            className="h-8 w-8 flex items-center justify-center rounded-lg bg-slate-50 dark:bg-slate-800 text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-all shadow-sm"
-                                                            title="Edit Project"
-                                                        >
-                                                            <Edit3 size={16} />
-                                                        </button>
+                                                {/* Actions */}
+                                                <div className="flex items-center justify-center gap-2 lg:col-span-2">
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setViewingProject(project);
+                                                        }}
+                                                        className="h-8 w-8 flex items-center justify-center rounded-lg bg-slate-50 dark:bg-slate-800 text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all shadow-sm"
+                                                        title="View Project Details"
+                                                    >
+                                                        <Eye size={16} />
+                                                    </button>
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setEditingProject(project);
+                                                            setIsModalOpen(true);
+                                                        }}
+                                                        className="h-8 w-8 flex items-center justify-center rounded-lg bg-slate-50 dark:bg-slate-800 text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-all shadow-sm"
+                                                        title="Edit Project"
+                                                    >
+                                                        <Edit3 size={16} />
+                                                    </button>
+                                                    {role === 'ADMIN' && (
                                                         <button
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
@@ -341,7 +342,8 @@ export function Projects() {
                                                         >
                                                             <Trash2 size={16} />
                                                         </button>
-                                                    </div>
+                                                    )}
+                                                </div>
                                                 </>
                                             ) : (
                                                 <div className="flex items-center justify-center gap-2 lg:col-span-4">
@@ -381,7 +383,7 @@ export function Projects() {
                 teams={teams}
             />
 
-            <ProjectDetailModal 
+            <ProjectDetailModal
                 isOpen={!!viewingProject}
                 onClose={() => setViewingProject(null)}
                 project={viewingProject}

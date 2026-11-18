@@ -10,6 +10,8 @@ import { toast } from '../../utils/toastManager';
 export function WebTrackerAgent() {
     const { user, role, clockIn, clockOut, isClockedIn, isTrackerActive, setTrackerActive } = useAuthStore();
     const [isTracking, setIsTracking] = useState(false);
+    const isTrackingRef = useRef(false);
+    isTrackingRef.current = isTracking;
     const [error, setError] = useState('');
     const [settings, setSettings] = useState({ frequency: 10, globalBlur: false });
 
@@ -99,7 +101,8 @@ export function WebTrackerAgent() {
 
             const formData = new FormData();
             formData.append('video', blob, `recording-${Date.now()}.webm`);
-            formData.append('employeeId', user?.employeeId || '');
+            const resolvedEmpId = user?.employeeId || user?.employee?.id || user?.id || '';
+            formData.append('employeeId', resolvedEmpId);
 
             // Upload with exponential backoff (3 attempts)
             for (let attempt = 1; attempt <= 3; attempt++) {
@@ -184,7 +187,15 @@ export function WebTrackerAgent() {
 
     // ─── Start tracking ────────────────────────────────────────────────────────
     const startTracking = async () => {
-        if (isStartingRef.current || isTracking) return;
+        if (isStartingRef.current) return;
+        if (isTrackingRef.current || (streamRef.current?.active && streamRef.current.getVideoTracks().some(t => t.readyState === 'live'))) {
+            console.log('[WebTrackerAgent] Stream is already active. Skipping duplicate prompt.');
+            setIsTracking(true);
+            isTrackingRef.current = true;
+            setTrackerActive(true);
+            return;
+        }
+
         try {
             isStartingRef.current = true;
             setError('');
@@ -202,6 +213,7 @@ export function WebTrackerAgent() {
                 track.stop();
                 setError('You MUST share your ENTIRE SCREEN. Window or Tab sharing is not allowed.');
                 setIsTracking(false);
+                isTrackingRef.current = false;
                 setTrackerActive(false);
                 return;
             }
@@ -221,6 +233,7 @@ export function WebTrackerAgent() {
             }
 
             setIsTracking(true);
+            isTrackingRef.current = true;
             setTrackerActive(true);
             setError('');
 
@@ -237,15 +250,16 @@ export function WebTrackerAgent() {
 
         } catch (err) {
             console.error('[WebTrackerAgent] Failed to start tracking:', err);
-            setError('Permission denied. Please click "Start Work" and allow screen sharing.');
+            setError('Permission denied. Please allow screen sharing to start tracking.');
             setIsTracking(false);
+            isTrackingRef.current = false;
+            setTrackerActive(false);
         } finally {
             isStartingRef.current = false;
         }
     };
 
     const stopTracking = async () => {
-
         // ─── Stop video recording first (uploads final chunk) ─────────────────
         stopVideoRecording();
 
@@ -259,6 +273,7 @@ export function WebTrackerAgent() {
         }
 
         setIsTracking(false);
+        isTrackingRef.current = false;
         setTrackerActive(false);
     };
 

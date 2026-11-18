@@ -762,7 +762,7 @@ const EmployeeRow = ({ employee, onEdit, onDelete, onTransparencyClick, visibleC
                 <td className="p-4" colSpan={99}>
                     <div
                         className="bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs p-5 flex flex-col gap-4 active:scale-[0.98] transition-transform cursor-pointer relative"
-                        onClick={() => navigate(`/admin/employees/${employee.id}`)}
+                        onClick={() => navigate(`${rolePath}/employees/${employee.id}`)}
                     >
                         {/* Status Badge (Top Right) */}
                         <div className="absolute top-5 right-5 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shrink-0">
@@ -818,7 +818,7 @@ const EmployeeRow = ({ employee, onEdit, onDelete, onTransparencyClick, visibleC
                                 <Eye size={16} /> Profile
                             </button>
                             {/* Privacy button removed */}
-                            {(userRole === 'ADMIN' || userRole === 'MANAGER') && (
+                            {userRole === 'ADMIN' && (
                                 <button
                                     onClick={(e) => { e.stopPropagation(); onEdit(employee); }}
                                     className="h-11 w-11 shrink-0 rounded-2xl bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-amber-500 transition-all flex items-center justify-center border border-slate-100 dark:border-slate-700 shadow-sm"
@@ -826,7 +826,7 @@ const EmployeeRow = ({ employee, onEdit, onDelete, onTransparencyClick, visibleC
                                     <Edit size={16} />
                                 </button>
                             )}
-                            {(userRole === 'ADMIN' || userRole === 'MANAGER') && (
+                            {userRole === 'ADMIN' && (
                                 <button
                                     onClick={(e) => { e.stopPropagation(); onDelete(employee); }}
                                     className="h-11 w-11 shrink-0 rounded-2xl bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-rose-500 transition-all flex items-center justify-center border border-slate-100 dark:border-slate-700 shadow-sm"
@@ -909,7 +909,7 @@ const EmployeeRow = ({ employee, onEdit, onDelete, onTransparencyClick, visibleC
                             <Eye size={15} />
                         </button>
 
-                        {(userRole === 'ADMIN' || userRole === 'MANAGER') && (
+                        {userRole === 'ADMIN' && (
                             <>
                                 <button
                                     onClick={(e) => { e.stopPropagation(); onEdit(employee); }}
@@ -1042,7 +1042,7 @@ export function EmployeeManagement() {
                     <p className="text-xs font-medium text-[#777367] dark:text-[#B8B3A7] mt-0.5">Manage team members, roles and monitoring status</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 md:gap-3">
-                    {(role === 'ADMIN' || role === 'MANAGER') && (
+                    {role === 'ADMIN' && (
                         <div className="flex items-center gap-2.5">
                             {/* 1. Add Employee Manually Button */}
                             <button

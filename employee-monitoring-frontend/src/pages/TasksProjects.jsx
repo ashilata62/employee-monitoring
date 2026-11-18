@@ -636,26 +636,33 @@ const GoalStreamModal = ({ goal, onClose }) => {
 
 const KPICard = ({ title, value, subValue, trend, icon: Icon, color, delay }) => (
     <div
-        className="group relative rounded-2xl border border-slate-200/80 bg-white p-4 sm:p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 transition-all hover:shadow-md hover:-translate-y-0.5 animate-slide-up"
+        className="group relative rounded-2xl border border-[#D6CDBC] dark:border-[#384232] bg-[#EEE8DD] dark:bg-[#252B20] p-4 sm:p-5 shadow-warm-xs transition-all hover:border-[#B9955B]/60 flex flex-col justify-between hover:-translate-y-0.5 animate-slide-up"
         style={{ animationDelay: delay }}
     >
         <div className="flex items-center justify-between mb-3">
-            <div className={cn("h-10 w-10 sm:h-11 sm:w-11 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105 shadow-sm text-white shrink-0", color)}>
-                <Icon size={18} className="text-white" />
+            <div className={cn(
+                "h-10 w-10 sm:h-11 sm:w-11 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105 shadow-xs shrink-0",
+                color ? cn(color, "text-white") : "bg-[#F5F1E9] dark:bg-[#1E2419] border border-[#D6CDBC] dark:border-[#384232] text-[#B9955B] dark:text-[#D3B98D]"
+            )}>
+                <Icon size={18} className={color ? "text-white" : "currentColor"} />
             </div>
             {trend !== undefined && trend !== null && (
                 <div className={cn(
-                    "flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider",
-                    trend >= 0 ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30" : "bg-rose-50 text-rose-600 dark:bg-rose-950/30"
+                    "flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold tracking-wider",
+                    Number(trend) >= 0 
+                        ? "bg-[#3C4536]/10 text-[#30382B] dark:text-[#D3B98D] border border-[#3C4536]/20" 
+                        : "bg-[#8C4A38]/10 text-[#8C4A38] dark:text-[#E07A5F] border border-[#8C4A38]/20"
                 )}>
-                    {trend >= 0 ? <TrendingUp size={11} /> : <TrendingUp size={11} className="rotate-180" />}
-                    {trend > 0 ? `+${trend}` : trend}%
+                    {Number(trend) >= 0 ? <TrendingUp size={11} /> : <TrendingUp size={11} className="rotate-180" />}
+                    <span>{Number(trend) > 0 ? `+${trend}` : trend}%</span>
                 </div>
             )}
         </div>
-        <h3 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5 truncate">{title}</h3>
-        <p className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white leading-tight mb-1">{value}</p>
-        <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 truncate tracking-tight">{subValue}</p>
+        <div>
+            <h3 className="text-[10px] sm:text-[11px] font-semibold text-[#777367] dark:text-[#A8A295] uppercase tracking-wider mb-0.5 truncate">{title}</h3>
+            <p className="font-serif text-2xl sm:text-3xl font-normal text-[#29291F] dark:text-[#F5F1E9] leading-tight mb-1">{value}</p>
+            <p className="text-[11px] text-[#777367] dark:text-[#A8A295] truncate tracking-tight">{subValue}</p>
+        </div>
     </div>
 );
 
@@ -669,7 +676,7 @@ const KanbanColumn = ({ title, tasks, status, color, onAdd, updateTaskStatus, on
     };
 
     return (
-        <div className="flex-1 w-full min-w-[260px] bg-slate-50/70 dark:bg-slate-900/40 backdrop-blur-md rounded-2xl p-3.5 sm:p-4 flex flex-col h-[580px] border border-slate-200/70 dark:border-slate-800/80 shadow-sm transition-all duration-300 group/col relative overflow-hidden">
+        <div className="flex-1 w-full min-w-[260px] bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl p-3.5 sm:p-4 flex flex-col h-[600px] border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs transition-all duration-300 ease-out group/col relative overflow-hidden">
             {/* Soft Header Gradient Underline */}
             <div className={cn("absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r opacity-30 group-hover/col:opacity-100 transition-opacity duration-500", getGradient())} />
 
@@ -681,14 +688,14 @@ const KanbanColumn = ({ title, tasks, status, color, onAdd, updateTaskStatus, on
                         <div className={cn("w-2 h-2 rounded-full shadow-xs relative z-10", color)} />
                     </div>
 
-                    <h4 className="text-xs font-black text-slate-900 dark:text-slate-100 uppercase tracking-wider">{title}</h4>
-                    <div className="h-5 min-w-[1.25rem] px-1.5 rounded-md bg-white dark:bg-slate-800 flex items-center justify-center text-[9px] font-black border border-slate-200 dark:border-slate-700/60 shadow-xs text-slate-500">
+                    <h4 className="text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] uppercase tracking-wider">{title}</h4>
+                    <div className="h-5 min-w-[1.25rem] px-1.5 rounded-md bg-[#F5F1E9] dark:bg-[#1E2419] flex items-center justify-center text-[10px] font-bold border border-[#D6CDBC] dark:border-[#384232] text-[#777367]">
                         {tasks.length}
                     </div>
                 </div>
                 {onAdd && (
-                    <button onClick={onAdd} className="h-6 w-6 rounded-md text-slate-400 hover:text-indigo-600 dark:hover:text-white transition-all hover:bg-white dark:hover:bg-slate-800 flex items-center justify-center cursor-pointer">
-                        <Plus size={14} strokeWidth={2.5} />
+                    <button onClick={onAdd} className="h-6 w-6 sm:h-7 sm:w-7 rounded-lg text-[#777367] hover:text-[#29291F] dark:hover:text-[#F5F1E9] transition-all hover:bg-[#E5DDCF] dark:hover:bg-[#1E2419] flex items-center justify-center cursor-pointer">
+                        <Plus size={15} />
                     </button>
                 )}
             </div>
@@ -712,16 +719,16 @@ const KanbanColumn = ({ title, tasks, status, color, onAdd, updateTaskStatus, on
                     })();
 
                     const getCardStyle = (status) => {
-                        const baseStyle = "border rounded-xl transition-all duration-200";
+                        const baseStyle = "border rounded-xl transition-all duration-200 bg-[#FBF9F5] dark:bg-[#1E2419] shadow-warm-xs";
                         switch (status) {
                             case 'IN_OPERATIONS':
-                                return `${baseStyle} border-blue-400/80 shadow-xs hover:border-blue-500 hover:shadow-sm`;
+                                return `${baseStyle} border-blue-400/80 hover:border-blue-500`;
                             case 'FINALIZED':
-                                return `${baseStyle} border-emerald-400/80 shadow-xs hover:border-emerald-500 hover:shadow-sm`;
+                                return `${baseStyle} border-emerald-400/80 hover:border-emerald-500`;
                             case 'QUALITY_ASSURANCE':
-                                return `${baseStyle} border-amber-400/80 shadow-xs hover:border-amber-500 hover:shadow-sm`;
+                                return `${baseStyle} border-amber-400/80 hover:border-amber-500`;
                             default:
-                                return `${baseStyle} border-slate-200/90 dark:border-slate-800 shadow-xs hover:border-slate-300`;
+                                return `${baseStyle} border-[#D6CDBC] dark:border-[#384232] hover:border-[#B9955B]`;
                         }
                     };
 
@@ -742,7 +749,7 @@ const KanbanColumn = ({ title, tasks, status, color, onAdd, updateTaskStatus, on
                         <div
                             key={task.id}
                             className={cn(
-                                "bg-white dark:bg-slate-900 p-3.5 cursor-grab active:cursor-grabbing group animate-in slide-in-from-bottom-2 fade-in fill-mode-both hover:-translate-y-0.5 hover:shadow-md overflow-hidden",
+                                "p-3.5 cursor-grab active:cursor-grabbing group animate-in slide-in-from-bottom-2 fade-in fill-mode-both hover:-translate-y-0.5 hover:shadow-md transition-all overflow-hidden",
                                 getCardStyle(status)
                             )}
                             style={{ animationDelay: `${index * 50}ms`, animationDuration: '300ms' }}
@@ -1432,40 +1439,38 @@ export function TasksProjects() {
     return (
         <div className="space-y-5 sm:space-y-6 pb-24 animate-fade-in px-3 sm:px-4 md:px-0 max-w-full overflow-x-hidden box-border">
             {/* Elegant Header */}
-            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-4">
+            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-5 sm:mb-6">
                 <div className="min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                        <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">Enterprise Hub</h1>
-                        <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[9px] sm:text-[10px] font-black uppercase tracking-widest whitespace-nowrap">Live Status</span>
+                    <div className="flex items-center gap-2.5 flex-wrap">
+                        <h1 className="font-serif text-2xl sm:text-3xl font-normal text-[#29291F] dark:text-[#F5F1E9] tracking-tight">Enterprise Hub</h1>
+                        <span className="px-2.5 py-0.5 rounded-full bg-[#3C4536]/10 dark:bg-[#3C4536]/30 border border-[#3C4536]/20 text-[#30382B] dark:text-[#D3B98D] text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider whitespace-nowrap">Live Status</span>
                     </div>
-                    <p className="text-xs sm:text-sm text-slate-400 font-semibold tracking-tight mt-0.5">Requirement-driven task management & business intelligence.</p>
+                    <p className="text-xs sm:text-sm text-[#777367] dark:text-[#A8A295] font-medium tracking-tight mt-1">Requirement-driven task management & business intelligence.</p>
                 </div>
 
-                {/* Right: Tabs (Sleek Compact Segmented Chips) */}
-                <div className="w-full lg:w-auto overflow-x-auto no-scrollbar">
-                    <div className="inline-flex items-center p-1 bg-slate-100 dark:bg-slate-800/80 rounded-xl border border-slate-200/60 dark:border-slate-700/60 gap-1 min-w-max">
-                        {[
-                            { id: 'board', name: 'Board', icon: Kanban },
-                            { id: 'cycle-time', name: 'Cycle Time', icon: Clock },
-                            { id: 'projects', name: 'Projects', icon: Layout },
-                            { id: 'performance', name: 'Performance', icon: Trophy },
-                            { id: 'goals', name: 'Goals', icon: Target }
-                        ].map(tab => (
-                            <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
-                                className={cn(
-                                    "flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 text-[10px] sm:text-[11px] font-bold rounded-lg transition-all duration-200 uppercase tracking-wider relative group outline-none whitespace-nowrap cursor-pointer",
-                                    activeTab === tab.id
-                                        ? "text-white bg-slate-900 dark:bg-white dark:text-slate-900 shadow-sm"
-                                        : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/60 dark:hover:bg-slate-700/50"
-                                )}
-                            >
-                                <tab.icon size={13} className={cn("transition-transform duration-200", activeTab === tab.id ? "scale-105" : "group-hover:scale-105")} />
-                                <span>{tab.name}</span>
-                            </button>
-                        ))}
-                    </div>
+                {/* Right: Tabs (Single Line Segmented Bar) */}
+                <div className="flex items-center gap-1 p-1 bg-[#EEE8DD] dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] rounded-2xl flex-nowrap shrink-0 overflow-x-auto max-w-full">
+                    {[
+                        { id: 'board', name: 'Board', icon: Kanban },
+                        { id: 'cycle-time', name: 'Cycle Time', icon: Clock },
+                        { id: 'projects', name: 'Projects', icon: Layout },
+                        { id: 'performance', name: 'Performance', icon: Trophy },
+                        { id: 'goals', name: 'Goals', icon: Target }
+                    ].map(tab => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id)}
+                            className={cn(
+                                "flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl transition-all duration-200 uppercase tracking-wider whitespace-nowrap shrink-0 cursor-pointer",
+                                activeTab === tab.id
+                                    ? "bg-[#30382B] text-[#FDFBF7] shadow-warm-xs"
+                                    : "text-[#777367] hover:text-[#29291F] dark:hover:text-[#F5F1E9] hover:bg-[#E5DDCF]/60 dark:hover:bg-[#1E2419]"
+                            )}
+                        >
+                            <tab.icon size={13} className={activeTab === tab.id ? "text-[#D3B98D]" : "text-[#777367]"} />
+                            <span>{tab.name}</span>
+                        </button>
+                    ))}
                 </div>
             </div>
 
@@ -1515,21 +1520,21 @@ export function TasksProjects() {
                 {activeTab === 'board' && (
                     <div className="space-y-4 sm:space-y-6 animate-fade-in">
                         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 justify-between">
-                            <div className="relative flex-1 group">
-                                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-500 transition-colors" size={16} />
+                            <div className="relative flex-1 max-w-md">
+                                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#777367] pointer-events-none" size={15} />
                                 <input
                                     type="text"
                                     placeholder="Search tasks, stakeholders..."
-                                    className="w-full h-10 sm:h-11 pl-10 pr-4 rounded-xl border border-slate-200 bg-white shadow-xs focus:border-indigo-500 focus:bg-white dark:border-slate-800 dark:bg-slate-900/60 font-semibold transition-all outline-none text-xs sm:text-sm text-slate-900 dark:text-white"
+                                    className="w-full h-10 sm:h-11 pl-9 pr-4 rounded-xl border border-[#D6CDBC] dark:border-[#384232] bg-[#EEE8DD] dark:bg-[#252B20] text-xs font-medium text-[#29291F] dark:text-[#F5F1E9] placeholder-[#777367] focus:outline-none focus:border-[#B9955B]"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                 />
                             </div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 shrink-0">
                                 <FilterDropdown />
                                 {(role === 'ADMIN' || role === 'MANAGER') && (
-                                    <button onClick={() => openTaskModal('Working on it')} className="h-10 sm:h-11 px-4 sm:px-5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs uppercase tracking-wider shadow-sm hover:shadow active:scale-95 transition-all flex items-center justify-center gap-2 shrink-0 cursor-pointer whitespace-nowrap">
-                                        <Plus size={16} strokeWidth={2.5} />
+                                    <button onClick={() => openTaskModal('Working on it')} className="h-10 sm:h-11 px-4 sm:px-5 bg-[#30382B] hover:bg-[#3C4536] text-[#FDFBF7] rounded-xl font-semibold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-warm-xs active:scale-95 whitespace-nowrap">
+                                        <Plus size={15} strokeWidth={2.5} />
                                         <span>Assign Task</span>
                                     </button>
                                 )}
@@ -1539,19 +1544,21 @@ export function TasksProjects() {
                         {/* Loading State */}
                         {isLoading && tasks.length === 0 && (
                             <div className="py-12 flex flex-col items-center justify-center gap-3 text-slate-400">
-                                <Clock className="h-8 w-8 animate-spin text-primary-500" />
-                                <span className="text-xs font-bold uppercase tracking-wider">Loading tasks...</span>
+                                <Clock className="h-8 w-8 animate-spin text-[#B9955B]" />
+                                <span className="text-xs font-semibold uppercase tracking-wider text-[#777367]">Loading tasks...</span>
                             </div>
                         )}
 
                         {/* Employee Empty State Banner */}
                         {role === 'EMPLOYEE' && !isLoading && filteredTasks.length === 0 && (
-                            <div className="bg-slate-50/80 dark:bg-slate-900/40 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl p-6 text-center animate-fade-in">
-                                <CheckSquare className="mx-auto h-8 w-8 text-slate-400 dark:text-slate-500 mb-2" strokeWidth={1.5} />
-                                <h4 className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                            <div className="bg-[#EEE8DD] dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] rounded-2xl p-8 text-center shadow-warm-xs">
+                                <div className="w-12 h-12 mx-auto rounded-full bg-[#F5F1E9] dark:bg-[#1E2419] border border-[#D6CDBC] dark:border-[#384232] flex items-center justify-center text-[#B9955B] mb-3">
+                                    <CheckSquare size={20} />
+                                </div>
+                                <h4 className="font-serif text-lg font-normal text-[#29291F] dark:text-[#F5F1E9]">
                                     {searchQuery ? "No Matching Tasks Found" : "No Assigned Tasks"}
                                 </h4>
-                                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
+                                <p className="text-xs text-[#777367] dark:text-[#A8A295] mt-1 max-w-md mx-auto">
                                     {searchQuery ? "Try refining your search keyword." : "You currently have no tasks assigned to you. Once a manager assigns you a task, it will appear here on your board."}
                                 </p>
                             </div>
@@ -1662,17 +1669,17 @@ export function TasksProjects() {
 
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                             {/* Intelligence by Client/Project */}
-                            <div className="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
-                                <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white mb-4">Intelligence By Client</h3>
-                                <div className="h-[280px] sm:h-[320px]">
+                            <div className="bg-[#FBF9F5] dark:bg-[#252B20] p-4 sm:p-6 rounded-2xl border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs">
+                                <h3 className="text-base sm:text-lg font-bold text-[#29291F] dark:text-[#F5F1E9] mb-4">Intelligence By Client</h3>
+                                <div className="h-[280px] sm:h-[340px]">
                                     <ResponsiveContainer width="100%" height="100%">
                                         <BarChart data={dynamicProjectProductivity} margin={{ top: 10, right: 20, left: 10, bottom: 10 }}>
-                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', fill: '#94a3b8' }} dy={10} />
+                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#D6CDBC" opacity={0.3} />
+                                            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', fill: '#777367' }} dy={10} />
                                             <YAxis hide />
                                             <Tooltip
-                                                cursor={{ fill: '#f8fafc' }}
-                                                contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', padding: '12px' }}
+                                                cursor={{ fill: 'rgba(0,0,0,0.03)' }}
+                                                contentStyle={{ borderRadius: '16px', border: '1px solid #D6CDBC', background: '#FBF9F5', boxShadow: '0 10px 25px rgba(0,0,0,0.08)', padding: '12px' }}
                                                 formatter={(value) => [`${value}%`, 'Score Index']}
                                             />
                                             <Bar dataKey="productivityScore" name="Score Index" radius={[8, 8, 0, 0]} barSize={32}>
@@ -1683,13 +1690,13 @@ export function TasksProjects() {
                                         </BarChart>
                                     </ResponsiveContainer>
                                 </div>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-6 pt-4 border-t border-[#D6CDBC]/50 dark:border-[#384232]">
                                     {dynamicProjectProductivity.map((p, idx) => (
                                         <div key={p.name} className="flex flex-col gap-1">
-                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">{p.name}</span>
-                                            <div className="flex items-end gap-1.5 text-lg sm:text-xl font-black text-slate-900 dark:text-white">
+                                            <span className="text-[10px] font-bold text-[#777367] dark:text-[#A8A295] uppercase tracking-wider truncate">{p.name}</span>
+                                            <div className="flex items-end gap-1.5 text-lg sm:text-xl font-bold text-[#29291F] dark:text-[#F5F1E9]">
                                                 {p.productivityScore}%
-                                                <span className="text-[10px] text-emerald-500 font-bold mb-0.5">{p.trend}</span>
+                                                <span className="text-[10px] text-emerald-600 font-bold mb-0.5">{p.trend}</span>
                                             </div>
                                         </div>
                                     ))}
@@ -1697,19 +1704,19 @@ export function TasksProjects() {
                             </div>
 
                             {/* Resource Exposure / Time Spent */}
-                            <div className="bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+                            <div className="bg-[#FBF9F5] dark:bg-[#252B20] p-4 sm:p-6 rounded-2xl border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs flex flex-col justify-between">
                                 <div>
-                                    <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white mb-1">Resource Exposure</h3>
-                                    <p className="text-xs text-slate-400 font-semibold mb-3">Allocated effort & tracked duration per project</p>
-                                    <div className="h-[240px] sm:h-[260px]">
+                                    <h3 className="text-base sm:text-lg font-bold text-[#29291F] dark:text-[#F5F1E9] mb-1">Resource Exposure</h3>
+                                    <p className="text-xs text-[#777367] dark:text-[#A8A295] font-medium mb-3">Allocated effort & tracked duration per project</p>
+                                    <div className="h-[250px] sm:h-[280px]">
                                         <ResponsiveContainer width="100%" height="100%">
                                             <PieChart>
                                                 <Pie
                                                     data={dynamicProjectProductivity}
                                                     cx="50%" cy="50%"
-                                                    innerRadius={55}
-                                                    outerRadius={95}
-                                                    paddingAngle={5}
+                                                    innerRadius={60}
+                                                    outerRadius={105}
+                                                    paddingAngle={6}
                                                     dataKey="allocationWeight"
                                                     nameKey="name"
                                                 >
@@ -1722,10 +1729,10 @@ export function TasksProjects() {
                                                         if (active && payload && payload.length) {
                                                             const d = payload[0].payload;
                                                             return (
-                                                                <div className="bg-slate-900 text-white p-2.5 rounded-xl text-xs font-bold shadow-xl border border-slate-800">
-                                                                    <p className="text-indigo-400 font-black">{d.name}</p>
+                                                                <div className="bg-[#29291F] dark:bg-[#1E2419] text-[#FDFBF7] p-2.5 rounded-xl text-xs font-semibold shadow-xl border border-[#384232]">
+                                                                    <p className="text-[#D3B98D] font-bold">{d.name}</p>
                                                                     <p className="mt-1">{d.timeSpent}h logged</p>
-                                                                    <p className="text-[10px] text-slate-400">{d.progress}% completed ({d.activeMilestones} tasks)</p>
+                                                                    <p className="text-[10px] text-[#A8A295]">{d.progress}% completed ({d.activeMilestones} tasks)</p>
                                                                 </div>
                                                             );
                                                         }
@@ -1736,12 +1743,12 @@ export function TasksProjects() {
                                         </ResponsiveContainer>
                                     </div>
                                 </div>
-                                <div className="flex justify-center gap-4 mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 flex-wrap">
+                                <div className="flex justify-center gap-4 mt-3 pt-3 border-t border-[#D6CDBC]/50 dark:border-[#384232] flex-wrap">
                                     {dynamicProjectProductivity.map((item, idx) => (
                                         <div key={item.name} className="flex items-center gap-1.5">
                                             <div className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: ['#6366f1', '#f59e0b', '#10b981', '#ec4899', '#8b5cf6'][idx % 5] }} />
-                                            <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300 tracking-wider truncate max-w-[130px]" title={item.name}>
-                                                {item.name}: <strong className="text-slate-900 dark:text-white">{item.timeSpent}h</strong>
+                                            <span className="text-[11px] font-semibold text-[#777367] dark:text-[#A8A295] tracking-wider truncate max-w-[130px]" title={item.name}>
+                                                {item.name}: <strong className="text-[#29291F] dark:text-[#F5F1E9]">{item.timeSpent}h</strong>
                                             </span>
                                         </div>
                                     ))}
@@ -1890,7 +1897,7 @@ export function TasksProjects() {
                                 <p className="text-xs text-slate-400 font-semibold tracking-tight">Requirement-based milestone tracking across the organization.</p>
                             </div>
                             {role !== 'EMPLOYEE' && (
-                                <button onClick={() => setIsGoalModalOpen(true)} className="h-10 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs uppercase tracking-wider shadow-sm flex items-center justify-center gap-2 cursor-pointer active:scale-95 whitespace-nowrap">
+                                <button onClick={() => setIsGoalModalOpen(true)} className="w-full sm:w-auto h-10 px-4 bg-[#30382B] hover:bg-[#3D4736] text-[#FDFBF7] dark:bg-[#F5F1E9] dark:text-[#29291F] rounded-xl font-bold text-xs uppercase tracking-wider shadow-warm-xs active:scale-95 transition-all flex items-center justify-center gap-2 shrink-0 cursor-pointer">
                                     <Plus size={15} strokeWidth={2.5} /> <span>Define Objective</span>
                                 </button>
                             )}
@@ -1899,10 +1906,10 @@ export function TasksProjects() {
                         {/* Milestones Cards Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                             {goals.map(goal => (
-                                <div key={goal.id} className="bg-white dark:bg-slate-900 rounded-2xl p-5 sm:p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm relative overflow-hidden group hover:shadow-md transition-all">
+                                <div key={goal.id} className="bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl p-5 border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs relative overflow-hidden group hover:shadow-md transition-all">
                                     <div className="flex items-center justify-between mb-4">
-                                        <div className={cn("h-11 w-11 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105 shadow-xs", goal.color || "text-indigo-600 bg-indigo-50")}>
-                                            <Target size={22} />
+                                        <div className={cn("h-10 w-10 sm:h-11 sm:w-11 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105 shadow-xs", goal.color || "text-[#B9955B] bg-[#EEE8DD] dark:bg-[#30382B]")}>
+                                            <Target size={20} />
                                         </div>
                                         {role !== 'EMPLOYEE' && (
                                             <div className="absolute top-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
