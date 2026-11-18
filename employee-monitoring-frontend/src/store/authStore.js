@@ -73,8 +73,18 @@ export const useAuthStore = create(
                 try {
                     const response = await attendanceService.clockIn();
                     if (response.success) {
-                        set({ activeAttendance: response.data, isClockedIn: true });
+                        set({
+                            activeAttendance: response.data,
+                            isClockedIn: true,
+                            isOnBreak: false
+                        });
                         toast.success('Work session started');
+                        try {
+                            const meRes = await authService.getCurrentUser();
+                            if (meRes.success && meRes.data) {
+                                get().setSession(meRes.data);
+                            }
+                        } catch (e) {}
                     }
                     return response;
                 } catch (error) {
@@ -90,6 +100,12 @@ export const useAuthStore = create(
                     if (response.success) {
                         set({ activeAttendance: null, isClockedIn: false, isOnBreak: false });
                         toast.success('Work session ended');
+                        try {
+                            const meRes = await authService.getCurrentUser();
+                            if (meRes.success && meRes.data) {
+                                get().setSession(meRes.data);
+                            }
+                        } catch (e) {}
                     }
                     return response;
                 } catch (error) {
@@ -101,21 +117,44 @@ export const useAuthStore = create(
             toggleBreak: async () => {
                 const { default: attendanceService } = await import('../services/attendanceService');
                 const isOnBreak = get().isOnBreak;
+                const activeAttendance = get().activeAttendance;
                 try {
                     let response;
                     if (!isOnBreak) {
                         response = await attendanceService.startBreak();
                         if (response.success) {
-                            set({ isOnBreak: true });
+                            const breakStart = response.data?.openBreak || response.data?.timestamp || new Date().toISOString();
+                            set({
+                                isOnBreak: true,
+                                activeAttendance: activeAttendance ? {
+                                    ...activeAttendance,
+                                    openBreak: breakStart
+                                } : null
+                            });
                             toast.success('Break started');
                         }
                     } else {
                         response = await attendanceService.endBreak();
                         if (response.success) {
-                            set({ isOnBreak: false });
+                            const breakDuration = response.data?.duration || 0;
+                            const prevBreakSec = activeAttendance?.totalBreakSeconds || 0;
+                            set({
+                                isOnBreak: false,
+                                activeAttendance: activeAttendance ? {
+                                    ...activeAttendance,
+                                    openBreak: null,
+                                    totalBreakSeconds: prevBreakSec + breakDuration
+                                } : null
+                            });
                             toast.success('Break ended');
                         }
                     }
+                    try {
+                        const meRes = await authService.getCurrentUser();
+                        if (meRes.success && meRes.data) {
+                            get().setSession(meRes.data);
+                        }
+                    } catch (e) {}
                     return response;
                 } catch (error) {
                     toast.error(error.response?.data?.message || 'Failed to toggle break');

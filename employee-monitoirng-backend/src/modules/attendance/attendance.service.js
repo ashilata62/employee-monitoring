@@ -134,7 +134,7 @@ const attendanceService = {
             console.error('[AttendanceService] Could not trigger late alert:', e.message);
         }
 
-        return attendance;
+        return { ...attendance, openBreak: null, totalBreakSeconds: 0 };
     },
 
     clockOut: async (employeeId) => {
@@ -616,7 +616,7 @@ const attendanceService = {
                 io.to(`org_${organizationId}`).emit('attendance:update', { employeeId, type: 'break-start' });
             }
 
-            return log;
+            return { ...log, openBreak: log.timestamp };
         } catch (error) {
             console.error('[AttendanceService] startBreak Error:', error);
             // Hint for common enum error
@@ -665,9 +665,10 @@ const attendanceService = {
                 orderBy: { timestamp: 'desc' }
             });
 
+            let duration = 0;
             if (lastBreak) {
                 const now = new Date();
-                const duration = Math.floor((now - lastBreak.timestamp) / 1000);
+                duration = Math.max(1, Math.floor((now - lastBreak.timestamp) / 1000));
                 await prisma.activityLog.update({
                     where: { id: lastBreak.id },
                     data: { duration }
@@ -700,7 +701,7 @@ const attendanceService = {
                 io.to(`org_${employee.organizationId}`).emit('attendance:update', { employeeId, type: 'break-end' });
             }
 
-            return { success: true };
+            return { success: true, duration };
         } catch (error) {
             console.error('[AttendanceService] endBreak Error:', error);
             throw error;

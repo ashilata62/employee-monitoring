@@ -127,7 +127,40 @@ const login = async (email, password) => {
             where: { employeeId: user.employeeId, clockOut: null },
             orderBy: { clockIn: 'desc' }
         });
-        user.activeAttendance = activeAttendance;
+        if (activeAttendance) {
+            let openBreak = null;
+            const empStatus = user.employee?.status || user.status;
+            if (empStatus === 'BREAK') {
+                const openBreakLog = await prisma.activityLog.findFirst({
+                    where: {
+                        employeeId: user.employeeId,
+                        activityType: 'BREAK',
+                        duration: 0
+                    },
+                    orderBy: { timestamp: 'desc' }
+                });
+                openBreak = openBreakLog ? openBreakLog.timestamp : null;
+            }
+
+            const completedBreaks = await prisma.activityLog.findMany({
+                where: {
+                    employeeId: user.employeeId,
+                    activityType: 'BREAK',
+                    duration: { gt: 0 },
+                    timestamp: { gte: activeAttendance.clockIn }
+                },
+                select: { duration: true }
+            });
+            const totalBreakSeconds = completedBreaks.reduce((sum, b) => sum + (b.duration || 0), 0);
+
+            user.activeAttendance = {
+                ...activeAttendance,
+                openBreak,
+                totalBreakSeconds
+            };
+        } else {
+            user.activeAttendance = null;
+        }
     }
 
     return {
@@ -136,6 +169,7 @@ const login = async (email, password) => {
             id: user.id,
             email: user.email,
             role: user.role,
+            status: user.employee?.status || user.status,
             fullName: user.name || user.employee?.fullName || user.email.split('@')[0],
             name: user.name || user.employee?.fullName || user.email.split('@')[0], 
             avatar: user.avatar || user.employee?.avatar || null,
@@ -194,10 +228,44 @@ const getMe = async (userId) => {
             user.agentStatus = await getAgentStatus(user.employeeId);
             
             // Add active attendance (any open session)
-            user.activeAttendance = await prisma.attendance.findFirst({
+            const activeAttendance = await prisma.attendance.findFirst({
                 where: { employeeId: user.employeeId, clockOut: null },
                 orderBy: { clockIn: 'desc' }
             });
+
+            if (activeAttendance) {
+                let openBreak = null;
+                if (user.employee.status === 'BREAK') {
+                    const openBreakLog = await prisma.activityLog.findFirst({
+                        where: {
+                            employeeId: user.employeeId,
+                            activityType: 'BREAK',
+                            duration: 0
+                        },
+                        orderBy: { timestamp: 'desc' }
+                    });
+                    openBreak = openBreakLog ? openBreakLog.timestamp : null;
+                }
+
+                const completedBreaks = await prisma.activityLog.findMany({
+                    where: {
+                        employeeId: user.employeeId,
+                        activityType: 'BREAK',
+                        duration: { gt: 0 },
+                        timestamp: { gte: activeAttendance.clockIn }
+                    },
+                    select: { duration: true }
+                });
+                const totalBreakSeconds = completedBreaks.reduce((sum, b) => sum + (b.duration || 0), 0);
+
+                user.activeAttendance = {
+                    ...activeAttendance,
+                    openBreak,
+                    totalBreakSeconds
+                };
+            } else {
+                user.activeAttendance = null;
+            }
         }
     } else {
         // Provide fallbacks for users without employee record (like seeded admins)
