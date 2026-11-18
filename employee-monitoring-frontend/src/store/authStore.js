@@ -17,6 +17,7 @@ export const useAuthStore = create(
 
             setSession: (userData) => {
                 const user = userData.user || userData;
+                const empStatus = user.status || user.employee?.status;
                 set({
                     user: user,
                     role: user.role?.toUpperCase(),
@@ -25,7 +26,7 @@ export const useAuthStore = create(
                     agentStatus: user.agentStatus,
                     activeAttendance: user.activeAttendance || null,
                     isClockedIn: !!user.activeAttendance,
-                    isOnBreak: user.status === 'BREAK'
+                    isOnBreak: empStatus === 'BREAK'
                 });
             },
 

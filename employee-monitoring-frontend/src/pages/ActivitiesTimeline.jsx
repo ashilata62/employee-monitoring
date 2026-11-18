@@ -119,12 +119,17 @@ export function ActivitiesTimeline() {
   // Sync elapsed seconds from real persistent attendance session
   useEffect(() => {
     let timer;
-    if (isClockedIn && activeAttendance?.clockIn && !isOnBreak) {
+    if (isClockedIn && activeAttendance?.clockIn) {
       const startTime = new Date(activeAttendance.clockIn).getTime();
-      setTrackerSeconds(Math.max(0, Math.floor((Date.now() - startTime) / 1000)));
-      timer = setInterval(() => {
-        setTrackerSeconds(Math.max(0, Math.floor((Date.now() - startTime) / 1000)));
-      }, 1000);
+      const calculateElapsed = () => Math.max(0, Math.floor((Date.now() - startTime) / 1000));
+      
+      setTrackerSeconds(calculateElapsed());
+
+      if (!isOnBreak) {
+        timer = setInterval(() => {
+          setTrackerSeconds(calculateElapsed());
+        }, 1000);
+      }
     } else if (!isClockedIn) {
       setTrackerSeconds(0);
     }
