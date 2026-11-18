@@ -59,6 +59,30 @@ async function calculateMetrics(organizationId, employeeId = null, teamId = null
     // manualTime is typically productive or neutral. We'll count it towards productive
     productiveTime += manualTime;
 
+    // Include attendance session durations (especially for web-based Clock In/Out)
+    const attWhere = { organizationId, clockIn: dateFilter };
+    if (employeeId) attWhere.employeeId = employeeId;
+    if (teamId) attWhere.employee = { teamId };
+
+    const attLogs = await prisma.attendance.findMany({ where: attWhere });
+    let attendanceTime = 0;
+    const now = Date.now();
+    attLogs.forEach(att => {
+        let dur = att.duration || 0;
+        if (!att.clockOut && att.clockIn) {
+            dur = Math.max(0, Math.floor((now - new Date(att.clockIn).getTime()) / 1000));
+        } else if (dur === 0 && att.clockIn && att.clockOut) {
+            dur = Math.max(0, Math.floor((new Date(att.clockOut).getTime() - new Date(att.clockIn).getTime()) / 1000));
+        }
+        attendanceTime += dur;
+    });
+
+    if (attendanceTime > activeTime) {
+        const diff = attendanceTime - activeTime;
+        activeTime = attendanceTime;
+        productiveTime += diff;
+    }
+
     const workTime = activeTime + manualTime + idleTime;
     
     const utilization = workTime > 0 ? Math.round((productiveTime / workTime) * 100) : 0;
@@ -300,6 +324,32 @@ async function getEmployeeRankings(organizationId, teamId = null, startDate = nu
         initEmp(log.employee);
         empStats[log.employee.id].manual += log.duration;
         empStats[log.employee.id].productive += log.duration; // manual assumed productive
+    });
+
+    // Also include attendance records for rankings
+    const attWhere = { organizationId, clockIn: dateFilter };
+    if (teamId) attWhere.employee = { teamId };
+
+    const attLogs = await prisma.attendance.findMany({
+        where: attWhere,
+        include: { employee: { include: { team: true } } }
+    });
+
+    const now = Date.now();
+    attLogs.forEach(att => {
+        if (!att.employee) return;
+        initEmp(att.employee);
+        let dur = att.duration || 0;
+        if (!att.clockOut && att.clockIn) {
+            dur = Math.max(0, Math.floor((now - new Date(att.clockIn).getTime()) / 1000));
+        } else if (dur === 0 && att.clockIn && att.clockOut) {
+            dur = Math.max(0, Math.floor((new Date(att.clockOut).getTime() - new Date(att.clockIn).getTime()) / 1000));
+        }
+        if (empStats[att.employee.id].active < dur) {
+            const diff = dur - empStats[att.employee.id].active;
+            empStats[att.employee.id].active = dur;
+            empStats[att.employee.id].productive += diff;
+        }
     });
 
     const rankings = Object.values(empStats).map(e => {
