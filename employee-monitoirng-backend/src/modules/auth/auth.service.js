@@ -64,7 +64,9 @@ const login = async (email, password) => {
             OR: [
                 { email: normalizedEmail },
                 ...(normalizedEmail === 'demo@gmail.com' ? [{ email: 'demo1@gmail.com' }] : []),
-                ...(normalizedEmail === 'demo1@gmail.com' ? [{ email: 'demo@gmail.com' }] : [])
+                ...(normalizedEmail === 'demo1@gmail.com' ? [{ email: 'demo@gmail.com' }] : []),
+                ...(normalizedEmail === 'employee@example.com' || normalizedEmail === 'employee@gmail.com' ? [{ email: 'demo1@gmail.com' }] : []),
+                ...(normalizedEmail === 'manager@gmail.com' ? [{ email: 'manager@example.com' }] : [])
             ]
         },
         include: { employee: true },
