@@ -76,7 +76,7 @@ export function Login() {
                         Employee Performance
                     </h1>
                     <p className="text-[10px] font-bold tracking-[0.25em] text-[#B9955B] uppercase mt-1">
-                        Workforce Command Center
+                        Workforce Monitoring Center
                     </p>
                 </div>
 

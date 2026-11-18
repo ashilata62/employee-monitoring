@@ -207,6 +207,7 @@ export function AgentManagement() {
                                 <th className="px-6 py-4 text-[10px] font-bold text-[#777367] uppercase tracking-[0.14em]">Status</th>
                                 <th className="px-6 py-4 text-[10px] font-bold text-[#777367] uppercase tracking-[0.14em]">System Info</th>
                                 <th className="px-6 py-4 text-[10px] font-bold text-[#777367] uppercase tracking-[0.14em]">Last Seen</th>
+                                <th className="px-6 py-4 text-[10px] font-bold text-[#777367] uppercase tracking-[0.14em]">Registered</th>
                                 <th className="px-6 py-4 text-[10px] font-bold text-[#777367] uppercase tracking-[0.14em] text-right">Actions</th>
                             </tr>
                         </thead>
@@ -214,7 +215,7 @@ export function AgentManagement() {
                             {loading ? (
                                 Array(3).fill(0).map((_, i) => (
                                     <tr key={i} className="animate-pulse">
-                                        {Array(6).fill(0).map((_, j) => (
+                                        {Array(8).fill(0).map((_, j) => (
                                             <td key={j} className="px-6 py-6"><div className="h-4 bg-slate-100 dark:bg-slate-800 rounded w-full"></div></td>
                                         ))}
                                     </tr>
@@ -343,7 +344,7 @@ export function AgentManagement() {
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan="6" className="px-6 py-12 text-center">
+                                    <td colSpan="8" className="px-6 py-12 text-center">
                                         <div className="flex flex-col items-center gap-2 text-slate-400">
                                             <Info size={40} strokeWidth={1} />
                                             <p className="text-sm font-medium">No monitoring agents found.</p>
