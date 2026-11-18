@@ -153,7 +153,9 @@ export function ActivitiesTimeline() {
         await clockOut();
       } else {
         await clockIn();
-        window.dispatchEvent(new Event('start-web-tracker'));
+        if (!useAuthStore.getState().isTrackerActive) {
+          window.dispatchEvent(new Event('start-web-tracker'));
+        }
       }
       fetchTimeline();
     } catch (err) {

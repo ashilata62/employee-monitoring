@@ -96,9 +96,12 @@ export const useAuthStore = create(
             clockOut: async () => {
                 const { default: attendanceService } = await import('../services/attendanceService');
                 try {
+                    if (typeof window !== 'undefined') {
+                        window.dispatchEvent(new Event('stop-web-tracker'));
+                    }
                     const response = await attendanceService.clockOut();
                     if (response.success) {
-                        set({ activeAttendance: null, isClockedIn: false, isOnBreak: false });
+                        set({ activeAttendance: null, isClockedIn: false, isOnBreak: false, isTrackerActive: false });
                         toast.success('Work session ended');
                         try {
                             const meRes = await authService.getCurrentUser();

@@ -50,9 +50,14 @@ export function WorkSessionBanner() {
         setIsLoading(true);
         try {
             await clockIn();
-            // Automatically start screen tracking & recording upon clock in
-            window.dispatchEvent(new Event('start-web-tracker'));
-            toast.success('Clocked in successfully. Screen tracking started.');
+            // Automatically start screen tracking upon clock in only if not already active
+            const isAlreadyTracking = isTrackerActive || (user?.agentStatus === 'active');
+            if (!isAlreadyTracking) {
+                window.dispatchEvent(new Event('start-web-tracker'));
+                toast.success('Clocked in successfully. Screen tracking started.');
+            } else {
+                toast.success('Clocked in successfully. Active tracking linked.');
+            }
         } catch (err) {
             console.error('Clock in failed', err);
         } finally {
@@ -72,6 +77,10 @@ export function WorkSessionBanner() {
 
     // ── Tracker Start / Stop ───────────────────────────────────────────────────
     const handleStartTracker = () => {
+        if (isTrackerActive || isAgentActive) {
+            toast.info('Screen tracking is already running.');
+            return;
+        }
         window.dispatchEvent(new Event('start-web-tracker'));
         toast.success('Screen tracker starting… Allow screen sharing when prompted.');
     };
