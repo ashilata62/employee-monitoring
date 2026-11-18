@@ -636,26 +636,28 @@ const GoalStreamModal = ({ goal, onClose }) => {
 
 const KPICard = ({ title, value, subValue, trend, icon: Icon, color, delay }) => (
     <div
-        className="group relative rounded-[2.5rem] border border-slate-100 bg-white p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:border-slate-800 dark:bg-slate-900 transition-all hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] hover:-translate-y-1 animate-slide-up"
+        className="group relative rounded-xl border border-[#D6CDBC] dark:border-[#384232] bg-[#FBF9F5] dark:bg-[#252B20] p-3.5 sm:p-4 shadow-warm-xs hover:border-[#B9955B]/60 transition-all hover:-translate-y-0.5 animate-slide-up flex flex-col justify-between"
         style={{ animationDelay: delay }}
     >
-        <div className="flex items-center justify-between mb-6">
-            <div className={cn("h-14 w-14 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-lgp-3 rounded-xl transition-transform group-hover:scale-110 bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20", color)}>
-                <Icon size={24} className="text-white" />
+        <div className="flex items-center justify-between mb-2.5">
+            <div className={cn("h-9 w-9 rounded-lg flex items-center justify-center transition-transform group-hover:scale-105 shadow-xs text-white", color)}>
+                <Icon size={17} />
             </div>
             {trend !== undefined && (
                 <div className={cn(
-                    "flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest",
-                    trend >= 0 ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30" : "bg-rose-50 text-rose-600 dark:bg-rose-950/30"
+                    "flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider",
+                    trend >= 0 ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20" : "bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/20"
                 )}>
-                    {trend >= 0 ? <TrendingUp size={12} /> : <TrendingUp size={12} className="rotate-180" />}
+                    {trend >= 0 ? <TrendingUp size={11} /> : <TrendingUp size={11} className="rotate-180" />}
                     {Math.abs(trend)}%
                 </div>
             )}
         </div>
-        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">{title}</h3>
-        <p className="text-4xl font-black text-slate-900 dark:text-white mb-2 leading-none">{value}</p>
-        <p className="text-xs font-bold text-slate-500 tracking-tight">{subValue}</p>
+        <div>
+            <h3 className="text-[10px] sm:text-[11px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-[0.12em] mb-0.5">{title}</h3>
+            <p className="text-xl sm:text-2xl font-black text-[#29291F] dark:text-[#F5F1E9] leading-tight tracking-tight">{value}</p>
+            <p className="text-[11px] font-medium text-[#777367] dark:text-[#9E988A] truncate mt-0.5">{subValue}</p>
+        </div>
     </div>
 );
 
@@ -1272,15 +1274,13 @@ export function TasksProjects() {
                         <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Enterprise Hub</h1>
                         <span className="px-2 py-0.5 md:px-3 md:py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[9px] md:text-[10px] font-black uppercase tracking-widest whitespace-nowrap">Live Status</span>
                     </div>
-                    <p className="text-xs md:text-lg text-slate-400 font-bold tracking-tight mt-1 leading-relaxed">Requirement-driven task management & business intelligence.</p>
+                    <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 font-medium mt-1 leading-relaxed">Requirement-driven task management & business intelligence.</p>
                 </div>
-                {/* </div> */}
 
-                {/* Right: Tabs (Separated Chips) */}
-                <div className="w-full lg:flex-1 flex flex-wrap items-center justify-center gap-2 md:gap-3">
+                {/* Right: Tabs (Systematic Segmented Bar) */}
+                <div className="flex flex-wrap items-center justify-start lg:justify-end gap-1.5 p-1 bg-[#EEE8DD]/70 dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] rounded-xl">
                     {[
                         { id: 'board', name: 'Board', icon: Kanban },
-                        // { id: 'logs', name: 'Work Logs', icon: Clock },
                         { id: 'cycle-time', name: 'Cycle Time', icon: Clock },
                         { id: 'projects', name: 'Projects', icon: Layout },
                         { id: 'performance', name: 'Performance', icon: Trophy },
@@ -1290,21 +1290,21 @@ export function TasksProjects() {
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={cn(
-                                "flex items-center justify-center gap-1.5 px-4 py-2.5 md:px-5 md:py-3 text-[9px] md:text-[10px] font-black rounded-xl md:rounded-full transition-all duration-300 uppercase tracking-widest relative group outline-none",
+                                "flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all uppercase tracking-wider",
                                 activeTab === tab.id
-                                    ? "text-white bg-slate-900 dark:bg-white dark:text-slate-900 shadow-xl scale-105"
-                                    : "text-slate-500 bg-white dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800 shadow-sm"
+                                    ? "bg-[#30382B] text-[#FDFBF7] dark:bg-[#F5F1E9] dark:text-[#29291F] shadow-warm-xs"
+                                    : "text-[#777367] dark:text-[#B8B3A7] hover:text-[#29291F] dark:hover:text-[#F5F1E9] hover:bg-[#E5DDCF]/50"
                             )}
                         >
-                            <tab.icon size={12} className={cn("md:w-3.5 md:h-3.5 transition-transform duration-300", activeTab === tab.id ? "scale-110" : "group-hover:scale-110")} />
-                            <span className="font-black">{tab.name}</span>
+                            <tab.icon size={13} className="shrink-0" />
+                            <span>{tab.name}</span>
                         </button>
                     ))}
                 </div>
             </div>
 
             {/* Global Context Stats */}
-            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-3.5 sm:gap-4 lg:gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-6">
                 <KPICard title="Tasks Completed" value={derivedStats.completedTasks} subValue={role === 'EMPLOYEE' ? `Across ${filteredTasks.length} Assigned Tasks` : `Across ${tasks.length} Active Tasks`} trend={14} icon={CheckSquare} color="bg-indigo-600 shadow-indigo-200" delay="0ms" />
                 <KPICard title="Productivity Index" value={`${derivedStats.avgProductivity}%`} subValue="Global Average Score" trend={4.2} icon={Zap} color="bg-amber-500 shadow-amber-200" delay="100ms" />
                 <KPICard title="Billable Resources" value={`${derivedStats.totalBillableHours}h`} subValue="Logged Hours today" trend={-2} icon={Clock} color="bg-blue-600 shadow-blue-200" delay="200ms" />
@@ -1315,26 +1315,27 @@ export function TasksProjects() {
             <div className="relative">
                 {/* 1. KANBAN BOARD VIEW */}
                 {activeTab === 'board' && (
-                    <div className="space-y-8 animate-fade-in">
-                        <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-4 md:gap-6 justify-between">
+                    <div className="space-y-6 animate-fade-in">
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 justify-between">
                             <div className="relative flex-1 group">
-                                <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-500 transition-colors" size={20} />
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#777367] group-focus-within:text-[#B9955B] transition-colors" size={16} />
                                 <input
                                     type="text"
                                     placeholder="Search tasks, stakeholders..."
-                                    className="w-full h-14 md:h-16 pl-16 pr-8 rounded-[1.25rem] md:rounded-[1.75rem] border-2 border-slate-50 bg-white shadow-sm focus:border-primary-500 focus:bg-white dark:border-slate-800 dark:bg-slate-900/50 font-bold transition-all outline-none text-sm md:text-base"
+                                    className="w-full h-10 pl-9 pr-4 rounded-xl border border-[#D6CDBC] dark:border-[#384232] bg-[#FBF9F5] dark:bg-[#1E2419] font-medium text-xs text-[#29291F] dark:text-[#F5F1E9] focus:border-[#B9955B] outline-none transition-all shadow-warm-xs placeholder-[#777367]"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                 />
                             </div>
-                            <FilterDropdown />
-                            {(role === 'ADMIN' || role === 'MANAGER') && (
-                                <button onClick={() => openTaskModal('Working on it')} className="h-14 md:h-16 px-6 md:px-10 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-[1.25rem] md:rounded-[1.75rem] font-black text-[10px] md:text-xs uppercase tracking-widest shadow-xl hover:scale-102 active:scale-95 transition-all flex items-center justify-center gap-3">
-                                    <Plus size={18} strokeWidth={3} />
-                                    <span>Assign Task</span>
-                                </button>
-                            )}
-
+                            <div className="flex items-center gap-2">
+                                <FilterDropdown />
+                                {(role === 'ADMIN' || role === 'MANAGER') && (
+                                    <button onClick={() => openTaskModal('Working on it')} className="h-10 px-4 bg-[#30382B] hover:bg-[#3D4736] text-[#FDFBF7] dark:bg-[#F5F1E9] dark:text-[#29291F] dark:hover:bg-white rounded-xl font-bold text-xs uppercase tracking-wider shadow-warm-xs hover:shadow-warm-md active:scale-95 transition-all flex items-center justify-center gap-2 shrink-0">
+                                        <Plus size={15} strokeWidth={2.5} />
+                                        <span>Assign Task</span>
+                                    </button>
+                                )}
+                            </div>
                         </div>
 
                         {/* Loading State */}
@@ -1466,8 +1467,8 @@ export function TasksProjects() {
 
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
                             {/* Intelligence by Client/Project */}
-                            <div className="bg-white dark:bg-slate-900 p-6 md:p-10 rounded-[2rem] md:rounded-[3rem] border border-slate-100 dark:border-slate-800 shadow-2xl">
-                                <h3 className="text-xl md:text-2xl font-black text-slate-900 dark:text-white mb-6 md:mb-8">Intelligence By Client</h3>
+                            <div className="bg-[#FBF9F5] dark:bg-[#252B20] p-5 md:p-6 rounded-2xl border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs">
+                                <h3 className="text-base md:text-lg font-bold text-[#29291F] dark:text-[#F5F1E9] mb-4">Intelligence By Client</h3>
                                 <div className="h-[400px]">
                                     <ResponsiveContainer width="100%" height="100%">
                                         <BarChart data={dynamicProjectProductivity} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
@@ -1500,8 +1501,8 @@ export function TasksProjects() {
                             </div>
 
                             {/* Resource Exposure / Time Spent */}
-                            <div className="bg-white dark:bg-slate-900 p-6 md:p-10 rounded-[2rem] md:rounded-[3rem] border border-slate-100 dark:border-slate-800 shadow-2xl">
-                                <h3 className="text-xl md:text-2xl font-black text-slate-900 dark:text-white mb-6 md:mb-8">Resource Exposure</h3>
+                            <div className="bg-[#FBF9F5] dark:bg-[#252B20] p-5 md:p-6 rounded-2xl border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs">
+                                <h3 className="text-base md:text-lg font-bold text-[#29291F] dark:text-[#F5F1E9] mb-4">Resource Exposure</h3>
                                 <div className="h-[400px]">
                                     <ResponsiveContainer width="100%" height="100%">
                                         <PieChart>
@@ -1668,19 +1669,19 @@ export function TasksProjects() {
                                 <p className="text-xs md:text-sm text-slate-400 font-bold tracking-tight">Requirement-based milestone tracking across the organization.</p>
                             </div>
                             {role !== 'EMPLOYEE' && (
-                                <button onClick={() => setIsGoalModalOpen(true)} className="w-full sm:w-auto h-14 px-8 bg-indigo-600 text-white rounded-[1.25rem] font-black text-[10px] md:text-xs uppercase tracking-widest shadow-xl hover:scale-105 transition-all flex items-center justify-center gap-2">
-                                    <Plus size={18} /> <span>Define Objective</span>
+                                <button onClick={() => setIsGoalModalOpen(true)} className="w-full sm:w-auto h-10 px-4 bg-[#30382B] hover:bg-[#3D4736] text-[#FDFBF7] dark:bg-[#F5F1E9] dark:text-[#29291F] rounded-xl font-bold text-xs uppercase tracking-wider shadow-warm-xs active:scale-95 transition-all flex items-center justify-center gap-2 shrink-0">
+                                    <Plus size={15} strokeWidth={2.5} /> <span>Define Objective</span>
                                 </button>
                             )}
                         </div>
 
                         {/* Milestones Cards Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                             {goals.map(goal => (
-                                <div key={goal.id} className="bg-white dark:bg-slate-900 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 border border-slate-100 dark:border-slate-800 shadow-2xl relative overflow-hidden group">
-                                    <div className="flex items-center justify-between mb-8">
-                                        <div className={cn("h-16 w-16 rounded-3xl flex items-center justify-center transition-transform group-hover:rotate-12", goal.color || "text-indigo-600 bg-indigo-50")}>
-                                            <Target size={28} />
+                                <div key={goal.id} className="bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl p-5 border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs relative overflow-hidden group">
+                                    <div className="flex items-center justify-between mb-5">
+                                        <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105", goal.color || "text-[#B9955B] bg-[#EEE8DD] dark:bg-[#30382B]")}>
+                                            <Target size={20} />
                                         </div>
                                         {role !== 'EMPLOYEE' && (
                                             <div className="absolute top-6 right-6 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">

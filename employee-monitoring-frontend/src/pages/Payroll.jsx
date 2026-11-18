@@ -334,18 +334,27 @@ const CloudPayrollModal = ({ service, isOpen, onClose, onConnected }) => {
 };
 
 const StatCard = ({ title, value, subValue, icon: Icon, color, trend }) => (
-    <div className="rounded-2xl border border-[#D6CDBC] bg-[#EEE8DD] p-6 shadow-warm-xs dark:border-[#384232] dark:bg-[#252B20] transition-all hover:border-[#B9955B]/60 group">
-        <div className="flex items-center justify-between mb-4">
-            <div className={cn("p-3 rounded-xl transition-transform group-hover:scale-110", color)}>
-                <Icon size={22} />
+    <div className="rounded-xl border border-[#D6CDBC] dark:border-[#384232] bg-[#FBF9F5] dark:bg-[#252B20] p-3.5 sm:p-4 shadow-warm-xs transition-all hover:border-[#B9955B]/60 hover:shadow-warm-md group flex flex-col justify-between">
+        <div className="flex items-center justify-between mb-2.5">
+            <div className={cn("h-9 w-9 rounded-lg flex items-center justify-center transition-transform group-hover:scale-105 shadow-xs text-white", color)}>
+                <Icon size={17} />
             </div>
-            <div className={cn("text-xs font-bold px-2 py-1 rounded-lg", trend >= 0 ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20" : "bg-red-50 text-red-600 dark:bg-red-900/20")}>
-                {trend >= 0 ? '+' : ''}{trend}%
-            </div>
+            {trend !== undefined && (
+                <div className={cn(
+                    "flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider",
+                    trend >= 0 
+                        ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20" 
+                        : "bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/20"
+                )}>
+                    {trend >= 0 ? '+' : ''}{trend}%
+                </div>
+            )}
         </div>
-        <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{title}</h3>
-        <p className="mt-1 text-3xl font-black text-slate-900 dark:text-white">{value}</p>
-        <p className="mt-1 text-xs font-bold text-slate-400 truncate">{subValue}</p>
+        <div>
+            <h3 className="text-[10px] sm:text-[11px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-[0.14em] mb-0.5">{title}</h3>
+            <p className="text-xl sm:text-2xl font-black text-[#29291F] dark:text-[#F5F1E9] leading-tight tracking-tight">{value}</p>
+            <p className="text-[11px] font-medium text-[#777367] dark:text-[#9E988A] truncate mt-0.5">{subValue}</p>
+        </div>
     </div>
 );
 
@@ -597,27 +606,27 @@ export function Payroll() {
                         <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Financials</h1>
                         <span className="hidden xs:inline-block px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-700 text-[10px] md:text-xs font-bold border border-emerald-200">System Healthy</span>
                     </div>
-                    <p className="text-sm md:text-lg text-slate-500 dark:text-slate-400 font-medium">Payroll processing & invoice management.</p>
+                    <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 font-medium">Payroll processing & invoice management.</p>
                 </div>
-                <div className="flex flex-wrap items-center gap-3">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                     <GlobalCalendar />
                     <button
                         onClick={handleDownloadReports}
-                        className="h-10 px-4 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 rounded-xl bg-white dark:bg-slate-900 flex items-center justify-center gap-2 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:border-primary-200 dark:hover:border-primary-900/30 transition-all hover:text-primary-600 dark:hover:text-primary-400 active:scale-95 shadow-sm text-sm font-bold"
+                        className="h-9 px-3.5 border border-[#D6CDBC] dark:border-[#384232] text-[#29291F] dark:text-[#F5F1E9] rounded-xl bg-[#F5F1E9] dark:bg-[#1E2419] flex items-center justify-center gap-2 hover:border-[#B9955B] hover:text-[#B9955B] transition-all active:scale-95 shadow-warm-xs text-xs font-bold"
                         title="Download payroll consolidated report as CSV"
                     >
-                        <Download size={16} strokeWidth={2.5} />
+                        <Download size={14} strokeWidth={2.2} />
                         <span>Reports</span>
                     </button>
                 </div>
             </div>
 
             {/* Stats Overview */}
-            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 animate-slide-up">
-                <StatCard title="Total Payroll" value={stats.totalPayroll} subValue="Next run: Feb 28" trend={summary?.trend || 5.2} icon={DollarSign} color="bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20" />
-                <StatCard title="Avg Hourly Rate" value={stats.avgHourly} subValue={`Across ${employees.length} Staff`} trend={summary?.avgRateTrend || 1.2} icon={Clock} color="bg-blue-50 text-blue-600 dark:bg-blue-900/20" />
-                <StatCard title="Outstanding Invoices" value={stats.outstanding} subValue={`${storeInvoices.filter(i => i.status !== 'PAID').length} Clients Pending`} trend={-8} icon={Receipt} color="bg-amber-50 text-amber-600 dark:bg-amber-900/20" />
-                <StatCard title="Net Profit est." value={stats.profit} subValue="Based on 60% Margin" trend={12} icon={TrendingUp} color="bg-purple-50 text-purple-600 dark:bg-purple-900/20" />
+            <div className="grid gap-3.5 sm:gap-4 lg:gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 animate-slide-up mb-6">
+                <StatCard title="Total Payroll" value={stats.totalPayroll} subValue="Next run: Feb 28" trend={summary?.trend || 5.2} icon={DollarSign} color="bg-emerald-600 shadow-sm" />
+                <StatCard title="Avg Hourly Rate" value={stats.avgHourly} subValue={`Across ${employees.length} Staff`} trend={summary?.avgRateTrend || 1.2} icon={Clock} color="bg-blue-600 shadow-sm" />
+                <StatCard title="Outstanding Invoices" value={stats.outstanding} subValue={`${storeInvoices.filter(i => i.status !== 'PAID').length} Clients Pending`} trend={-8} icon={Receipt} color="bg-amber-500 shadow-sm" />
+                <StatCard title="Net Profit est." value={stats.profit} subValue="Based on 60% Margin" trend={12} icon={TrendingUp} color="bg-purple-600 shadow-sm" />
             </div>
 
             {/* Main Content Area */}
@@ -625,8 +634,8 @@ export function Payroll() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in">
                     {/* Charts & Graphs */}
                     <div className="lg:col-span-3">
-                        <div className="rounded-[2rem] border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900 shadow-sm">
-                            <h3 className="text-lg font-bold mb-6">Payroll Cost vs Hours</h3>
+                        <div className="rounded-2xl border border-[#D6CDBC] bg-[#FBF9F5] p-5 dark:border-[#384232] dark:bg-[#252B20] shadow-warm-xs">
+                            <h3 className="text-sm font-bold text-[#29291F] dark:text-[#F5F1E9] mb-4">Payroll Cost vs Hours</h3>
                             <div className="h-[250px] w-full">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <AreaChart data={earningsData}>
