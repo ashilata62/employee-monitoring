@@ -339,7 +339,6 @@ export function AddEmployeeModal({ isOpen, onClose, initialTab = 'single' }) {
                                     >
                                         <option value="EMPLOYEE">Employee</option>
                                         <option value="MANAGER">Manager</option>
-                                        <option value="ADMIN">Admin</option>
                                     </select>
                                 </div>
 

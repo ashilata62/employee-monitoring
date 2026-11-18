@@ -1465,8 +1465,8 @@ export function TasksProjects() {
 
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
                             {/* Intelligence by Client/Project */}
-                            <div className="bg-white dark:bg-slate-900 p-6 md:p-10 rounded-[2rem] md:rounded-[3rem] border border-slate-100 dark:border-slate-800 shadow-2xl">
-                                <h3 className="text-xl md:text-2xl font-black text-slate-900 dark:text-white mb-6 md:mb-8">Intelligence By Client</h3>
+                            <div className="bg-[#FBF9F5] dark:bg-[#252B20] p-5 md:p-6 rounded-2xl border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs">
+                                <h3 className="text-base md:text-lg font-bold text-[#29291F] dark:text-[#F5F1E9] mb-4">Intelligence By Client</h3>
                                 <div className="h-[400px]">
                                     <ResponsiveContainer width="100%" height="100%">
                                         <BarChart data={dynamicProjectProductivity} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
@@ -1499,8 +1499,8 @@ export function TasksProjects() {
                             </div>
 
                             {/* Resource Exposure / Time Spent */}
-                            <div className="bg-white dark:bg-slate-900 p-6 md:p-10 rounded-[2rem] md:rounded-[3rem] border border-slate-100 dark:border-slate-800 shadow-2xl">
-                                <h3 className="text-xl md:text-2xl font-black text-slate-900 dark:text-white mb-6 md:mb-8">Resource Exposure</h3>
+                            <div className="bg-[#FBF9F5] dark:bg-[#252B20] p-5 md:p-6 rounded-2xl border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs">
+                                <h3 className="text-base md:text-lg font-bold text-[#29291F] dark:text-[#F5F1E9] mb-4">Resource Exposure</h3>
                                 <div className="h-[400px]">
                                     <ResponsiveContainer width="100%" height="100%">
                                         <PieChart>
@@ -1667,19 +1667,19 @@ export function TasksProjects() {
                                 <p className="text-xs md:text-sm text-slate-400 font-bold tracking-tight">Requirement-based milestone tracking across the organization.</p>
                             </div>
                             {role !== 'EMPLOYEE' && (
-                                <button onClick={() => setIsGoalModalOpen(true)} className="w-full sm:w-auto h-14 px-8 bg-indigo-600 text-white rounded-[1.25rem] font-black text-[10px] md:text-xs uppercase tracking-widest shadow-xl hover:scale-105 transition-all flex items-center justify-center gap-2">
-                                    <Plus size={18} /> <span>Define Objective</span>
+                                <button onClick={() => setIsGoalModalOpen(true)} className="w-full sm:w-auto h-10 px-4 bg-[#30382B] hover:bg-[#3D4736] text-[#FDFBF7] dark:bg-[#F5F1E9] dark:text-[#29291F] rounded-xl font-bold text-xs uppercase tracking-wider shadow-warm-xs active:scale-95 transition-all flex items-center justify-center gap-2 shrink-0">
+                                    <Plus size={15} strokeWidth={2.5} /> <span>Define Objective</span>
                                 </button>
                             )}
                         </div>
 
                         {/* Milestones Cards Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                             {goals.map(goal => (
-                                <div key={goal.id} className="bg-white dark:bg-slate-900 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 border border-slate-100 dark:border-slate-800 shadow-2xl relative overflow-hidden group">
-                                    <div className="flex items-center justify-between mb-8">
-                                        <div className={cn("h-16 w-16 rounded-3xl flex items-center justify-center transition-transform group-hover:rotate-12", goal.color || "text-indigo-600 bg-indigo-50")}>
-                                            <Target size={28} />
+                                <div key={goal.id} className="bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl p-5 border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs relative overflow-hidden group">
+                                    <div className="flex items-center justify-between mb-5">
+                                        <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105", goal.color || "text-[#B9955B] bg-[#EEE8DD] dark:bg-[#30382B]")}>
+                                            <Target size={20} />
                                         </div>
                                         {role !== 'EMPLOYEE' && (
                                             <div className="absolute top-6 right-6 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">

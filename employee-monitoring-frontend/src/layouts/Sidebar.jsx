@@ -93,10 +93,10 @@ export function Sidebar({ collapsed, setCollapsed, onMobileClose }) {
                         </div>
                         <div className="flex flex-col">
                             <span className="font-serif text-[18px] font-semibold text-[#FBF9F5] tracking-tight leading-tight">
-                                Performance
+                                Employee
                             </span>
                             <span className="text-[9px] font-bold tracking-[0.22em] text-[#D3B98D] uppercase leading-tight mt-0.5">
-                                Command Center
+                                Monitoring Center
                             </span>
                         </div>
                     </div>
