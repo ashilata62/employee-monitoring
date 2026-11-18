@@ -95,7 +95,8 @@ const activityController = {
                 return successResponse(res, [], 'No organization activity found');
             }
 
-            const summary = await activityService.getOrganizationSummary(organizationId, startDate, endDate, { teamId, employeeId });
+            const targetEmployeeId = req.user.role === 'EMPLOYEE' ? (req.user.employeeId || employeeId) : employeeId;
+            const summary = await activityService.getOrganizationSummary(organizationId, startDate, endDate, { teamId, employeeId: targetEmployeeId });
             return successResponse(res, summary, 'Organization summary fetched successfully');
         } catch (error) {
             console.error('[ActivityController] Summary Error:', error);

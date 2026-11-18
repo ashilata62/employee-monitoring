@@ -14,6 +14,6 @@ router.get('/team/:teamId/summary', activityController.getTeamSummary);
 router.get('/employee/:employeeId/summary', activityController.getEmployeeSummary);
 router.get('/timeline', activityController.getTimelineReport);
 router.get('/organization', authorize(['ADMIN', 'MANAGER']), activityController.getOrganizationActivity);
-router.get('/summary', authorize(['ADMIN', 'MANAGER']), activityController.getOrganizationSummary);
+router.get('/summary', authorize(['ADMIN', 'MANAGER', 'EMPLOYEE']), activityController.getOrganizationSummary);
 
 module.exports = router;

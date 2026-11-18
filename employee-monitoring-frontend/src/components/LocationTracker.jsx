@@ -22,7 +22,10 @@ export function LocationTracker() {
                         });
                     },
                     (error) => {
-                        console.error("Geolocation error:", error);
+                        // User denied geolocation or unavailable on desktop — silently ignore
+                        if (error?.code !== 1) {
+                            console.warn("Geolocation notice:", error?.message);
+                        }
                     },
                     { enableHighAccuracy: true }
                 );
