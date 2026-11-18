@@ -159,6 +159,27 @@ export function ActivitiesTimeline() {
     }
   };
 
+  // Tasks play/pause states (dynamically loaded from database)
+  const [tasksList, setTasksList] = useState([]);
+
+  // Dropdown & Popover Refs
+  const datePickerRef = useRef(null);
+  const exportRef = useRef(null);
+  const columnsRef = useRef(null);
+  const filterRef = useRef(null);
+
+  // Close popovers on click outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (datePickerRef.current && !datePickerRef.current.contains(e.target)) setShowDatePicker(false);
+      if (exportRef.current && !exportRef.current.contains(e.target)) setShowExportMenu(false);
+      if (columnsRef.current && !columnsRef.current.contains(e.target)) setShowColumnsMenu(false);
+      if (filterRef.current && !filterRef.current.contains(e.target)) setShowFilterPopover(false);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const formatTrackerTime = (totalSecs) => {
     const h = String(Math.floor(totalSecs / 3600)).padStart(2, '0');
     const m = String(Math.floor((totalSecs % 3600) / 60)).padStart(2, '0');
