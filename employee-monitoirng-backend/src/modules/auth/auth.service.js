@@ -127,12 +127,27 @@ const login = async (email, password) => {
         status: 'Success'
     });
 
-    // Update employee status to ACTIVE on login
+    // Update employee status to ACTIVE on login (preserve BREAK if currently on break)
     if (user.employeeId) {
-        await prisma.employee.update({
-            where: { id: user.employeeId },
-            data: { status: 'ACTIVE' },
-        });
+        const nextStatus = user.employee?.status === 'BREAK' ? 'BREAK' : 'ACTIVE';
+        if (user.employee?.status !== nextStatus) {
+            await prisma.employee.update({
+                where: { id: user.employeeId },
+                data: { status: nextStatus },
+            });
+        }
+        try {
+            const { getIO } = require('../../socket/server');
+            const io = getIO();
+            if (io && user.employee?.organizationId) {
+                io.to(`org_${user.employee.organizationId}`).emit('employee:status', {
+                    employeeId: user.employeeId,
+                    status: nextStatus
+                });
+            }
+        } catch (socketErr) {
+            // Non-blocking socket emit
+        }
     }
 
     // Get agent status for employees
@@ -369,10 +384,24 @@ const forgotPassword = async (email) => {
 const logout = async (employeeId) => {
     if (!employeeId) return;
     
-    await prisma.employee.update({
+    const updated = await prisma.employee.update({
         where: { id: employeeId },
         data: { status: 'OFFLINE' },
+        select: { id: true, organizationId: true },
     });
+
+    try {
+        const { getIO } = require('../../socket/server');
+        const io = getIO();
+        if (io && updated?.organizationId) {
+            io.to(`org_${updated.organizationId}`).emit('employee:status', {
+                employeeId: updated.id,
+                status: 'OFFLINE'
+            });
+        }
+    } catch (socketErr) {
+        // Non-blocking socket emit
+    }
 };
 
 /**

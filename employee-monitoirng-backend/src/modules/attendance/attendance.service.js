@@ -614,6 +614,7 @@ const attendanceService = {
             if (io) {
                 // We still emit these for backward compatibility or direct listeners
                 io.to(`org_${organizationId}`).emit('attendance:update', { employeeId, type: 'break-start' });
+                io.to(`org_${organizationId}`).emit('employee:status', { employeeId, status: 'BREAK' });
             }
 
             return { ...log, openBreak: log.timestamp };
@@ -699,6 +700,7 @@ const attendanceService = {
             const io = getIO();
             if (io) {
                 io.to(`org_${employee.organizationId}`).emit('attendance:update', { employeeId, type: 'break-end' });
+                io.to(`org_${employee.organizationId}`).emit('employee:status', { employeeId, status: 'ACTIVE' });
             }
 
             return { success: true, duration };

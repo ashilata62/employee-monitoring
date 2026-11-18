@@ -13,6 +13,7 @@ import { logAction } from '../utils/logAction';
 import { useToast } from '../context/ToastContext';
 import { useAuthStore } from '../store/authStore';
 import { useTeamStore } from '../store/teamStore';
+import { useEmployeeStore } from '../store/employeeStore';
 import { useFilterStore } from '../store/filterStore';
 import employeeService from '../services/employeeService';
 import activityService from '../services/activityService';
@@ -207,11 +208,13 @@ export function RealTimeProvider({ children }) {
                     const backendEmployees = res.data.map(emp => {
                         const name = emp.fullName || emp.name || 'Unknown User';
                         const st = emp.status?.toLowerCase() || 'offline';
+                        const normalizedStatus = st === 'active' ? 'online' : st;
                         return {
                             ...emp,
                             name: name,
                             initials: name.split(' ').map(n => n[0]).join('').toUpperCase(),
                             team: emp.team?.name || emp.team || 'General',
+                            status: normalizedStatus,
                             accountStatus: st,
                         };
                     });
@@ -459,12 +462,22 @@ export function RealTimeProvider({ children }) {
         socket.on('connect', handleConnect);
 
         const handleEmployeeStatus = ({ employeeId, status }) => {
+            const raw = (status || 'offline').toLowerCase();
+            const normalized = raw === 'active' ? 'online' : raw;
             setState(prev => ({
                 ...prev,
                 employees: prev.employees.map(e =>
-                    e.id === employeeId ? { ...e, status: status.toLowerCase() === 'active' ? 'online' : status.toLowerCase() } : e
+                    String(e.id) === String(employeeId)
+                        ? {
+                            ...e,
+                            status: normalized,
+                            accountStatus: raw,
+                            ...(normalized === 'online' ? { lastSeen: new Date().toISOString() } : {})
+                        }
+                        : e
                 )
             }));
+            useEmployeeStore.getState().updateEmployeeStatus(employeeId, raw);
         };
 
         const handleActivityUpdate = (data) => {
@@ -726,19 +739,24 @@ export function RealTimeProvider({ children }) {
             const log = todayLogs.find(l => String(l.employeeId) === String(emp.id));
             const fullName = emp.fullName || emp.name || 'Unknown User';
 
-            // Determine status based on real-time heartbeat (lastSeen)
-            let status = 'offline';
-            const isOnline = emp.lastSeen ? (new Date() - new Date(emp.lastSeen)) < 10 * 60 * 1000 : false;
+            // Determine status from live DB/socket status + real-time heartbeat (lastSeen)
+            const rawStatus = (emp.status || emp.accountStatus || '').toLowerCase();
+            const hasRecentHeartbeat = emp.lastSeen ? (new Date() - new Date(emp.lastSeen)) < 10 * 60 * 1000 : false;
 
-            if (isOnline) {
+            let status = 'offline';
+            if (rawStatus === 'break') {
+                status = 'break';
+            } else if (rawStatus === 'idle') {
+                status = 'idle';
+            } else if (rawStatus === 'online' || rawStatus === 'active') {
                 status = 'online';
-                // Refine based on currentActivity or log if needed
-                if (emp.currentActivity?.toLowerCase() === 'idle' || (log && log.idleHours > 0 && log.activeHours === 0)) {
-                    status = 'idle';
-                }
                 if (emp.currentActivity?.toLowerCase() === 'break') {
                     status = 'break';
+                } else if (hasRecentHeartbeat && (emp.currentActivity?.toLowerCase() === 'idle' || (log && log.idleHours > 0 && log.activeHours === 0))) {
+                    status = 'idle';
                 }
+            } else if (rawStatus !== 'offline' && rawStatus !== 'deactivated' && hasRecentHeartbeat) {
+                status = 'online';
             }
 
             // Find latest break start time if on break
