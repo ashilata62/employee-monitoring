@@ -31,6 +31,24 @@ export function WeeklyTimesheetsView({ employees = [] }) {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(false);
     const [submitting, setSubmitting] = useState(false);
+    const [activeDayModal, setActiveDayModal] = useState(null);
+
+    const fmtTimeShort = (dateStr) => {
+        if (!dateStr) return '--';
+        return new Date(dateStr).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    };
+
+    const fmtDurShort = (sess) => {
+        if (sess.isLive) return 'Live';
+        if (sess.minutes >= 60) {
+            const h = Math.floor(sess.minutes / 60);
+            const m = sess.minutes % 60;
+            return m > 0 ? `${h}h ${m}m` : `${h}h`;
+        }
+        if (sess.minutes > 0) return `${sess.minutes}m`;
+        if (sess.durationSeconds > 0) return `${sess.durationSeconds}s`;
+        return '<1m';
+    };
 
     // Initial load and filter change
     const loadTimesheet = async () => {
@@ -254,7 +272,10 @@ export function WeeklyTimesheetsView({ employees = [] }) {
                                 return (
                                     <div
                                         key={day.date}
+                                        onClick={() => day.sessions.length > 0 && setActiveDayModal(day)}
                                         className={`rounded-xl border p-3 flex flex-col justify-between min-h-[140px] transition-all ${
+                                            day.sessions.length > 0 ? 'cursor-pointer hover:border-[#B9955B] hover:shadow-warm-xs' : ''
+                                        } ${
                                             isHeavy
                                                 ? 'bg-[#FAF0E1] border-[#E8D4B8]'
                                                 : day.minutes > 0
@@ -283,18 +304,28 @@ export function WeeklyTimesheetsView({ employees = [] }) {
                                             {day.sessions.slice(0, 3).map((sess, idx) => (
                                                 <div
                                                     key={idx}
-                                                    className="text-[9px] font-medium text-[#777367] truncate flex items-center gap-1 bg-[#EEE8DD] dark:bg-[#252B20] px-1.5 py-0.5 rounded border border-[#D6CDBC]/70 dark:border-[#384232]"
-                                                    title={sess.type === 'attendance' ? `Clocked: ${new Date(sess.clockIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : `Manual: ${sess.note}`}
+                                                    onClick={(e) => { e.stopPropagation(); setActiveDayModal(day); }}
+                                                    className="text-[9px] font-medium text-[#777367] truncate flex items-center justify-between gap-1 bg-[#EEE8DD] dark:bg-[#252B20] px-1.5 py-0.5 rounded border border-[#D6CDBC]/70 dark:border-[#384232] hover:border-[#B9955B] transition cursor-pointer"
+                                                    title={sess.type === 'attendance' ? `Clocked: ${fmtTimeShort(sess.clockIn)} - ${sess.clockOut ? fmtTimeShort(sess.clockOut) : 'Now'} (${fmtDurShort(sess)})` : `Manual: ${sess.note}`}
                                                 >
-                                                    <span className={`w-1.5 h-1.5 rounded-full ${sess.type === 'attendance' ? 'bg-[#5E7D64]' : 'bg-[#B9955B]'}`} />
-                                                    {sess.type === 'attendance'
-                                                        ? `${new Date(sess.clockIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
-                                                        : (sess.note || 'Manual')}
+                                                    <div className="flex items-center gap-1 truncate">
+                                                        <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${sess.type === 'attendance' ? 'bg-[#5E7D64]' : 'bg-[#B9955B]'}`} />
+                                                        <span className="truncate">
+                                                            {fmtTimeShort(sess.clockIn || sess.startTime)}
+                                                            {sess.clockOut ? ` - ${fmtTimeShort(sess.clockOut)}` : (sess.isLive ? ' - Now' : '')}
+                                                        </span>
+                                                    </div>
+                                                    <span className="font-bold text-[#B9955B] shrink-0 text-[8px] tabular-nums">
+                                                        {fmtDurShort(sess)}
+                                                    </span>
                                                 </div>
                                             ))}
                                             {day.sessions.length > 3 && (
-                                                <div className="text-[8px] text-[#777367] font-bold text-center">
-                                                    +{day.sessions.length - 3} more
+                                                <div
+                                                    onClick={(e) => { e.stopPropagation(); setActiveDayModal(day); }}
+                                                    className="text-[8px] text-[#B9955B] hover:text-[#A17D45] font-bold text-center cursor-pointer pt-0.5"
+                                                >
+                                                    +{day.sessions.length - 3} more (View all)
                                                 </div>
                                             )}
                                         </div>
@@ -303,6 +334,83 @@ export function WeeklyTimesheetsView({ employees = [] }) {
                             })}
                         </div>
                     </div>
+
+                    {/* Day Attendance Breakdown Modal */}
+                    {activeDayModal && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                            <div className="bg-[#F5F1E9] dark:bg-[#1E2419] rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-[#D6CDBC] dark:border-[#384232] space-y-4 max-h-[85vh] flex flex-col">
+                                <div className="flex items-center justify-between pb-3 border-b border-[#D6CDBC]/70 dark:border-[#384232]">
+                                    <div>
+                                        <h3 className="font-serif text-lg font-bold text-[#29291F] dark:text-[#F5F1E9]">
+                                            Real Database Sessions Breakdown
+                                        </h3>
+                                        <p className="text-xs text-[#777367] mt-0.5">
+                                            {new Date(activeDayModal.date + 'T00:00:00Z').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}
+                                            {' · '}
+                                            <span className="font-bold text-[#29291F] dark:text-[#F5F1E9]">Total: {fmtH(activeDayModal.minutes)}</span>
+                                            {' · '}
+                                            <span className="font-semibold text-[#5E7D64]">{activeDayModal.sessions.length} Recorded Sessions</span>
+                                        </p>
+                                    </div>
+                                    <button
+                                        onClick={() => setActiveDayModal(null)}
+                                        className="w-8 h-8 rounded-full hover:bg-[#E5DDCF] dark:hover:bg-[#252B20] flex items-center justify-center text-[#777367] font-bold cursor-pointer transition"
+                                    >
+                                        ✕
+                                    </button>
+                                </div>
+
+                                <div className="overflow-y-auto flex-1 pr-1">
+                                    <table className="w-full text-left text-xs">
+                                        <thead className="bg-[#EEE8DD] dark:bg-[#252B20] text-[#777367] text-[10px] uppercase tracking-wider font-bold border-b border-[#D6CDBC]/70 dark:border-[#384232]">
+                                            <tr>
+                                                <th className="p-2.5 rounded-l-lg">#</th>
+                                                <th className="p-2.5">Type</th>
+                                                <th className="p-2.5">Clock In</th>
+                                                <th className="p-2.5">Clock Out</th>
+                                                <th className="p-2.5">Duration</th>
+                                                <th className="p-2.5 rounded-r-lg">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-[#D6CDBC]/50 dark:divide-[#384232]">
+                                            {activeDayModal.sessions.map((sess, idx) => {
+                                                const inTime = sess.clockIn ? new Date(sess.clockIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : (sess.startTime ? new Date(sess.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--');
+                                                const outTime = sess.clockOut ? new Date(sess.clockOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : (sess.endTime ? new Date(sess.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (sess.isLive ? 'Active' : '--'));
+                                                const durationStr = sess.isLive ? 'In Progress' : (sess.minutes >= 60 ? `${Math.floor(sess.minutes / 60)}h ${sess.minutes % 60}m` : (sess.minutes > 0 ? `${sess.minutes}m` : (sess.durationSeconds ? `${sess.durationSeconds}s` : '<1m')));
+                                                return (
+                                                    <tr key={sess.id || idx} className="hover:bg-[#EEE8DD]/50 dark:hover:bg-[#252B20]/50 transition">
+                                                        <td className="p-2.5 font-bold text-[#777367]">{idx + 1}</td>
+                                                        <td className="p-2.5">
+                                                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-bold uppercase ${sess.type === 'attendance' ? 'bg-[#EAEFEA] text-[#5E7D64]' : 'bg-[#FAF0E1] text-[#C98A3C]'}`}>
+                                                                {sess.type === 'attendance' ? 'Attendance' : (sess.note || 'Manual')}
+                                                            </span>
+                                                        </td>
+                                                        <td className="p-2.5 font-semibold text-[#29291F] dark:text-[#F5F1E9] tabular-nums">{inTime}</td>
+                                                        <td className="p-2.5 font-semibold text-[#29291F] dark:text-[#F5F1E9] tabular-nums">{outTime}</td>
+                                                        <td className="p-2.5 font-bold text-[#B9955B] tabular-nums">{durationStr}</td>
+                                                        <td className="p-2.5">
+                                                            <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${sess.isLive ? 'bg-emerald-100 text-emerald-800' : 'bg-[#EEE8DD] text-[#777367]'}`}>
+                                                                {sess.isLive ? 'Working' : 'Completed'}
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div className="pt-3 border-t border-[#D6CDBC]/70 dark:border-[#384232] flex justify-end">
+                                    <button
+                                        onClick={() => setActiveDayModal(null)}
+                                        className="px-4 py-2 rounded-xl bg-[#30382B] text-white text-xs font-semibold hover:bg-[#3C4536] transition cursor-pointer"
+                                    >
+                                        Close
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Audit History Timeline */}
                     {data.approvals && data.approvals.length > 0 && (
