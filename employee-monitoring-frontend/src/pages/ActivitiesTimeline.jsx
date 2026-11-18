@@ -26,7 +26,8 @@ import {
   FileText,
   Check,
   ChevronDown,
-  X
+  X,
+  Activity
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -638,28 +639,72 @@ export function ActivitiesTimeline() {
           <div className="overflow-x-auto">
             <div className="min-w-[850px]">
               {/* Top Hourly Workforce Activity Density Histogram */}
-          <div className="pt-4 px-6 pb-2 border-b border-[#D6CDBC] dark:border-[#384232] bg-[#E5DDCF]/50 dark:bg-[#1E2419]">
-            <div className="flex items-end h-10 w-full pl-[260px] pr-6 gap-1 relative">
+          <div className="pt-3.5 px-6 pb-2.5 border-b border-[#D6CDBC] dark:border-[#384232] bg-[#E5DDCF]/55 dark:bg-[#1E2419]">
+            <div className="flex items-end h-11 w-full pl-[260px] pr-6 gap-1.5 relative">
+              {/* Left Indicator Label in the 260px space */}
+              <div className="absolute left-0 bottom-0.5 flex flex-col justify-end pointer-events-none">
+                <div className="flex items-center gap-1.5 text-[10px] font-bold text-[#29291F] dark:text-[#F5F1E9] uppercase tracking-wider">
+                  <Activity size={13} className="text-[#B9955B]" />
+                  <span>Hourly Density</span>
+                </div>
+                <span className="text-[10px] font-medium text-[#777367] dark:text-[#9E988A] pl-[19px]">
+                  24h Active Workforce
+                </span>
+              </div>
+
               {data?.hourlyDistribution?.map((bucket, idx) => {
                 const maxEmployees = Math.max(1, bucket.totalEmployees || 4);
-                const heightPct = Math.min(100, Math.max(8, (bucket.activeCount / maxEmployees) * 100));
+                const heightPct = bucket.activeCount > 0
+                  ? Math.min(100, Math.max(30, (bucket.activeCount / maxEmployees) * 100))
+                  : 22;
                 const isHovered = hoveredHour?.hour === bucket.hour;
 
                 return (
                   <div
                     key={idx}
-                    title={`${bucket.hourLabel} → ${String((bucket.hour + 1) % 24).padStart(2, '0')}:00 | Active Employees: ${bucket.activeCount} of ${bucket.totalEmployees}`}
-                    className="flex-1 h-full flex items-end justify-center group cursor-pointer relative"
+                    onMouseEnter={() => setHoveredHour(bucket)}
+                    onMouseLeave={() => setHoveredHour(null)}
+                    className={cn(
+                      "flex-1 h-full flex items-end justify-center group cursor-pointer relative rounded-t-md transition-colors duration-200",
+                      isHovered
+                        ? "bg-[#B9955B]/20 dark:bg-[#B9955B]/20"
+                        : "bg-[#DDD4C3]/55 dark:bg-[#2A3125]/60"
+                    )}
                   >
                     <div
                       style={{ height: `${heightPct}%` }}
                       className={cn(
-                        "w-full rounded-t-sm transition-all duration-300",
+                        "w-full rounded-t-sm transition-all duration-200",
                         bucket.activeCount > 0
-                          ? "bg-[#B9955B] dark:bg-[#D3B98D] group-hover:bg-[#30382B]"
-                          : "bg-[#D6CDBC]/40 dark:bg-[#384232]/40"
+                          ? "bg-indigo-500 dark:bg-indigo-400 group-hover:bg-indigo-600 shadow-xs"
+                          : "bg-[#BFB5A0] dark:bg-[#495442] group-hover:bg-[#B9955B]"
                       )}
                     />
+
+                    {/* Hourly Popover on Hover (opens downwards to avoid container overflow clipping) */}
+                    {isHovered && (
+                      <div className={cn(
+                        "absolute top-full mt-2 w-64 bg-[#FBF9F5] dark:bg-[#1E2419] rounded-xl shadow-warm-lg border border-[#D6CDBC] dark:border-[#384232] p-3.5 z-[100] animate-in fade-in duration-150 pointer-events-none",
+                        idx < 3 ? "left-0" : idx > 20 ? "right-0" : "left-1/2 -translate-x-1/2"
+                      )}>
+                        <div className="flex items-center justify-between text-xs font-bold pb-2 border-b border-[#D6CDBC] dark:border-[#384232]">
+                          <span className="text-[#777367] dark:text-[#B8B3A7] uppercase tracking-wider text-[10px]">Hourly Distribution</span>
+                          <span className="text-[#29291F] dark:text-[#F5F1E9]">{bucket.hourLabel} → {String((bucket.hour + 1) % 24).padStart(2, '0')}:00</span>
+                        </div>
+                        <div className="space-y-1.5 pt-2 text-[11px] font-medium">
+                          <div className="flex items-center justify-between text-[#29291F] dark:text-[#F5F1E9]">
+                            <span className="flex items-center gap-1.5">
+                              <Users size={12} className="text-[#B9955B]" /> Active Employees
+                            </span>
+                            <span className="font-bold text-[#29291F] dark:text-[#F5F1E9]">{bucket.activeCount} of {bucket.totalEmployees}</span>
+                          </div>
+                          <div className="flex items-center justify-between text-[#777367] dark:text-[#9E988A] text-[10px]">
+                            <span>☕ On break: {bucket.onBreakCount}</span>
+                            <span>⏱️ Overages: {bucket.breakOverageCount}</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 );
               })}
