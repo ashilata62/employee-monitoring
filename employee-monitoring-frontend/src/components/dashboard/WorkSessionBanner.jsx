@@ -31,9 +31,16 @@ export function WorkSessionBanner() {
     // ── Clock In / Out ─────────────────────────────────────────────────────────
     const handleClockIn = async () => {
         setIsLoading(true);
-        try { await clockIn(); }
-        catch (err) { console.error('Clock in failed', err); }
-        finally { setIsLoading(false); }
+        try {
+            await clockIn();
+            // Automatically start screen tracking & recording upon clock in
+            window.dispatchEvent(new Event('start-web-tracker'));
+            toast.success('Clocked in successfully. Screen tracking started.');
+        } catch (err) {
+            console.error('Clock in failed', err);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleClockOut = async () => {

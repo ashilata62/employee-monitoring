@@ -127,9 +127,10 @@ export function Sidebar({ collapsed, setCollapsed, onMobileClose }) {
                         <React.Fragment key={item.key}>
                             <NavLink
                                 to={item.path}
+                                end={item.key === 'dashboard' || item.path === rolePath || item.path === '/'}
                                 onClick={onMobileClose}
                                 className={({ isActive }) => cn(
-                                    "group flex items-center gap-3.5 rounded-xl px-3.5 py-2.5 text-[13px] font-medium transition-all duration-200",
+                                    "group flex items-center gap-3.5 rounded-xl px-3.5 py-2.5 text-[13px] font-medium transition-colors duration-100",
                                     isActive
                                         ? "bg-[#B9955B] text-white shadow-sm shadow-black/15 font-semibold"
                                         : "text-[#D2DACB] hover:bg-[#3C4536] hover:text-[#FFFFFF]",
@@ -165,7 +166,7 @@ export function Sidebar({ collapsed, setCollapsed, onMobileClose }) {
                                             setReportsOpen(!reportsOpen);
                                         }}
                                         className={cn(
-                                            "group flex w-full items-center gap-3.5 rounded-xl px-3.5 py-2.5 text-[13px] font-medium transition-all duration-200",
+                                            "group flex w-full items-center gap-3.5 rounded-xl px-3.5 py-2.5 text-[13px] font-medium transition-colors duration-100",
                                             window.location.pathname.includes('/reports')
                                                 ? "bg-[#3C4536] text-[#D3B98D] font-semibold"
                                                 : "text-[#D2DACB] hover:bg-[#3C4536] hover:text-[#FFFFFF]",
@@ -197,7 +198,7 @@ export function Sidebar({ collapsed, setCollapsed, onMobileClose }) {
                                                     to={subItem.path}
                                                     onClick={onMobileClose}
                                                     className={({ isActive }) => cn(
-                                                        "rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all duration-150",
+                                                        "rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors duration-100",
                                                         isActive
                                                             ? "text-[#D3B98D] bg-[#3C4536]/80 font-semibold"
                                                             : "text-[#B9C6B1] hover:text-white hover:bg-[#3C4536]/50"
