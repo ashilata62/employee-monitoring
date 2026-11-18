@@ -91,21 +91,19 @@ function App() {
                 return;
             }
 
-            // If we have a token but missing profile data, fetch it
-            if (savedToken && (!isAuthenticated || !role)) {
-                console.log('Initializing auth session...');
+            // Sync active user session & live attendance from server
+            if (savedToken) {
                 try {
                     const response = await authService.getCurrentUser();
-                    if (response.success) {
-                        console.log('Auth session restored:', response.data.role);
+                    if (response.success && response.data) {
                         setSession(response.data);
-                    } else {
-                        throw new Error(response.message || 'Session fetch failed');
                     }
                 } catch (error) {
-                    console.error('Auth refresh failed:', error.message);
-                    localStorage.removeItem('token');
-                    useAuthStore.getState().logout();
+                    console.error('Auth refresh check:', error.message);
+                    if (error.response?.status === 401) {
+                        localStorage.removeItem('token');
+                        useAuthStore.getState().logout();
+                    }
                 }
             }
         };
@@ -145,7 +143,11 @@ function App() {
                                         <Route path="time-attendance" element={<TimeAndAttendance />} />
                                         <Route path="activities" element={<ActivitiesTimeline />} />
                                         <Route path="monitoring" element={<ActivityMonitoring />} />
-                                        <Route path="screenshots" element={<ScreenshotMonitoring />} />
+                                        <Route path="screenshots" element={
+                                            <RoleRoute allowedRoles={['ADMIN', 'MANAGER']}>
+                                                <ScreenshotMonitoring />
+                                            </RoleRoute>
+                                        } />
                                         <Route path="location" element={<LocationTracking />} />
                                         <Route path="tasks" element={<TasksProjects />} />
 

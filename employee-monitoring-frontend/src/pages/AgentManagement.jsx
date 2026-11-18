@@ -158,7 +158,7 @@ export function AgentManagement() {
 
             {/* Stats Overview */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                <div className="p-5 bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl border border-[#E5DED2] dark:border-[#384232] shadow-warm-xs">
+                <div className="p-5 bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs">
                     <div className="flex items-center gap-3.5">
                         <div className="p-2.5 bg-[#EEE8DD] text-[#30382B] rounded-xl">
                             <Monitor size={20} />
@@ -169,7 +169,7 @@ export function AgentManagement() {
                         </div>
                     </div>
                 </div>
-                <div className="p-5 bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl border border-[#E5DED2] dark:border-[#384232] shadow-warm-xs">
+                <div className="p-5 bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs">
                     <div className="flex items-center gap-3.5">
                         <div className="p-2.5 bg-[#F4F7F4] text-[#5E7D64] rounded-xl">
                             <CheckCircle2 size={20} />
@@ -182,7 +182,7 @@ export function AgentManagement() {
                         </div>
                     </div>
                 </div>
-                <div className="p-5 bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl border border-[#E5DED2] dark:border-[#384232] shadow-warm-xs">
+                <div className="p-5 bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs">
                     <div className="flex items-center gap-3.5">
                         <div className="p-2.5 bg-[#FDF8F0] text-[#C98A3C] rounded-xl">
                             <Shield size={20} />
@@ -196,11 +196,11 @@ export function AgentManagement() {
             </div>
 
             {/* Table */}
-            <div className="bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl border border-[#E5DED2] dark:border-[#384232] shadow-warm-xs overflow-hidden">
+            <div className="bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="bg-[#EEE8DD]/70 dark:bg-[#1E2419] border-b border-[#E5DED2] dark:border-[#384232]">
+                            <tr className="bg-[#E5DDCF]/70 dark:bg-[#1E2419] border-b border-[#D6CDBC] dark:border-[#384232]">
                                 <th className="px-6 py-4 text-[10px] font-bold text-[#777367] uppercase tracking-[0.14em]">Agent ID</th>
                                 <th className="px-6 py-4 text-[10px] font-bold text-[#777367] uppercase tracking-[0.14em]">Employee & ID</th>
                                 <th className="px-6 py-4 text-[10px] font-bold text-[#777367] uppercase tracking-[0.14em]">Device ID</th>
@@ -211,7 +211,7 @@ export function AgentManagement() {
                                 <th className="px-6 py-4 text-[10px] font-bold text-[#777367] uppercase tracking-[0.14em] text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                        <tbody className="divide-y divide-[#D6CDBC]/60 dark:divide-[#384232]">
                             {loading ? (
                                 Array(3).fill(0).map((_, i) => (
                                     <tr key={i} className="animate-pulse">
@@ -222,13 +222,13 @@ export function AgentManagement() {
                                 ))
                             ) : filteredAgents.length > 0 ? (
                                 filteredAgents.map((agent) => (
-                                    <tr key={agent.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                                    <tr key={agent.id} className="bg-[#F5F1E9] dark:bg-[#1E2419] hover:bg-[#EAE2D3] dark:hover:bg-[#252B20] transition-colors border-b border-[#D6CDBC]/50">
                                         <td className="px-6 py-4">
                                             <span className="text-[10px] font-mono font-bold text-slate-400">{agent.id}</span>
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
-                                                <div className="h-9 w-9 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-primary-600 font-bold">
+                                                <div className="h-9 w-9 rounded-xl bg-[#EEE8DD] text-[#30382B] border border-[#D6CDBC] flex items-center justify-center font-bold text-xs">
                                                     {agent.employee?.fullName?.charAt(0)}
                                                 </div>
                                                 <div>
@@ -360,8 +360,8 @@ export function AgentManagement() {
             {/* Edit Modal */}
             {editingAgent && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-                    <div className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-                        <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                    <div className="bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl w-full max-w-md shadow-warm-lg border border-[#D6CDBC] dark:border-[#384232] overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="p-6 border-b border-[#D6CDBC] dark:border-[#384232] flex items-center justify-between bg-[#E5DDCF]/40">
                             <h3 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
                                 <Edit3 className="text-primary-600" size={20} />
                                 Edit Monitoring Member
@@ -376,7 +376,7 @@ export function AgentManagement() {
                                 <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1.5 ml-1">Full Name</label>
                                 <input 
                                     type="text" 
-                                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold focus:ring-2 focus:ring-primary-500 outline-none transition-all dark:text-white"
+                                    className="w-full px-4 py-2.5 bg-[#F5F1E9] dark:bg-[#1E2419] border border-[#D6CDBC] dark:border-[#384232] rounded-xl text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] focus:border-[#B9955B] outline-none transition-all"
                                     value={editForm.name}
                                     onChange={(e) => setEditForm({...editForm, name: e.target.value})}
                                     required
@@ -387,7 +387,7 @@ export function AgentManagement() {
                                 <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1.5 ml-1">Email Address</label>
                                 <input 
                                     type="email" 
-                                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold focus:ring-2 focus:ring-primary-500 outline-none transition-all dark:text-white"
+                                    className="w-full px-4 py-2.5 bg-[#F5F1E9] dark:bg-[#1E2419] border border-[#D6CDBC] dark:border-[#384232] rounded-xl text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] focus:border-[#B9955B] outline-none transition-all"
                                     value={editForm.email}
                                     onChange={(e) => setEditForm({...editForm, email: e.target.value})}
                                     required
@@ -400,7 +400,7 @@ export function AgentManagement() {
                                     <input 
                                         type={showPassword ? "text" : "password"} 
                                         placeholder="Enter new password to reset"
-                                        className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold focus:ring-2 focus:ring-primary-500 outline-none transition-all dark:text-white pr-10"
+                                        className="w-full px-4 py-2.5 bg-[#F5F1E9] dark:bg-[#1E2419] border border-[#D6CDBC] dark:border-[#384232] rounded-xl text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] focus:border-[#B9955B] outline-none transition-all pr-10"
                                         value={editForm.password}
                                         onChange={(e) => setEditForm({...editForm, password: e.target.value})}
                                     />

@@ -67,19 +67,19 @@ export function Notifications() {
                     <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white uppercase">Notifications</h1>
                     <p className="text-slate-500 dark:text-slate-400 font-medium">Manage and track all system alerts and updates.</p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                     <button
                         onClick={handleMarkAllRead}
-                        className="flex items-center gap-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-4 py-2.5 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm"
+                        className="flex items-center gap-1.5 sm:gap-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm"
                     >
-                        <CheckCheck size={18} />
+                        <CheckCheck size={16} className="sm:w-[18px] sm:h-[18px]" />
                         Mark all as read
                     </button>
                     <button
                         onClick={handleDeleteAll}
-                        className="flex items-center gap-2 rounded-xl bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/20 px-4 py-2.5 text-sm font-bold text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/20 transition-all shadow-sm"
+                        className="flex items-center gap-1.5 sm:gap-2 rounded-xl bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/20 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/20 transition-all shadow-sm"
                     >
-                        <Trash2 size={18} />
+                        <Trash2 size={16} className="sm:w-[18px] sm:h-[18px]" />
                         Clear All
                     </button>
                 </div>

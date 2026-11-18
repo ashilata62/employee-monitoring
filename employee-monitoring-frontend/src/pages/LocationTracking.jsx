@@ -105,25 +105,25 @@ export const LocationTracking = () => {
                 <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between shrink-0 gap-4 lg:gap-0 px-4 lg:px-0 pt-4 lg:pt-0">
                     <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4 lg:gap-6 w-full lg:w-auto">
                         <div className="flex items-center gap-3 w-full lg:w-auto">
-                            <div className="h-10 w-10 bg-slate-900 dark:bg-white rounded-2xl flex items-center justify-center text-white dark:text-slate-900 shadow-xl shrink-0">
+                            <div className="h-10 w-10 bg-[#30382B] text-[#D3B98D] rounded-xl flex items-center justify-center shadow-warm-xs shrink-0">
                                 <Navigation size={20} />
                             </div>
                             <div className="flex-1 lg:flex-none">
-                                <h1 className="text-xl lg:text-2xl font-black tracking-tight text-slate-900 dark:text-white leading-none">Location Tracking</h1>
+                                <h1 className="font-serif text-2xl lg:text-3xl font-normal tracking-tight text-[#29291F] dark:text-[#F5F1E9] leading-none">Location Tracking</h1>
                                 <div className="flex items-center gap-1.5 mt-1">
                                     <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                                     <span className="text-[9px] font-black uppercase text-emerald-600 tracking-wider">Active Stream</span>
                                 </div>
                             </div>
                             {/* Mobile System Load Indicator */}
-                            <div className="lg:hidden px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl shadow-sm text-right">
+                            <div className="lg:hidden px-3 py-1.5 bg-[#EEE8DD] dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] rounded-xl shadow-warm-xs text-right">
                                 <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none">Load</p>
                                 <p className="text-[10px] font-black text-emerald-500 mt-0.5">Normal</p>
                             </div>
                         </div>
 
                         {/* Navigation Tabs */}
-                        <div className="w-full lg:w-auto flex items-center gap-1 bg-slate-100 dark:bg-slate-900/50 p-1 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-inner overflow-x-auto custom-scrollbar">
+                        <div className="w-full lg:w-auto flex items-center gap-1 bg-[#EEE8DD] dark:bg-[#252B20] p-1 rounded-xl border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs overflow-x-auto">
                             {['live', 'history', 'geofencing'].map(tab => (
                                 <button
                                     key={tab}
@@ -145,7 +145,7 @@ export const LocationTracking = () => {
                     </div>
 
                     <div className="hidden lg:flex items-center gap-3">
-                        <div className="px-4 py-2 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl shadow-sm text-right">
+                        <div className="px-4 py-2 bg-[#EEE8DD] dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] rounded-xl shadow-warm-xs text-right">
                             <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none">System Load</p>
                             <p className="text-xs font-black text-emerald-500 mt-1">Normal</p>
                         </div>
@@ -217,28 +217,28 @@ export const LocationTracking = () => {
                                                 </div>
                                             </div>
 
-                                            <div className="absolute bottom-8 left-8 right-8 z-40 flex justify-center">
-                                                <div className="w-full max-w-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border border-white dark:border-white/10 p-4 rounded-[2.5rem] shadow-[0_40px_80px_-20px_rgba(0,0,0,0.35)] flex items-center gap-6">
+                                            <div className="absolute bottom-3 sm:bottom-8 left-2 sm:left-8 right-2 sm:right-8 z-40 flex justify-center">
+                                                <div className="w-full max-w-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border border-white dark:border-white/10 p-2.5 sm:p-4 rounded-2xl sm:rounded-[2.5rem] shadow-[0_40px_80px_-20px_rgba(0,0,0,0.35)] flex items-center gap-2.5 sm:gap-6">
                                                     <button
                                                         onClick={() => setIsPlaying(!isPlaying)}
-                                                        className="h-14 w-14 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center hover:scale-110 active:scale-95 transition-all shadow-xl"
+                                                        className="h-10 w-10 sm:h-14 sm:w-14 rounded-xl sm:rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center hover:scale-110 active:scale-95 transition-all shadow-xl shrink-0"
                                                     >
-                                                        {isPlaying ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" className="ml-1" />}
+                                                        {isPlaying ? <Pause size={18} fill="currentColor" className="sm:w-6 sm:h-6" /> : <Play size={18} fill="currentColor" className="ml-0.5 sm:w-6 sm:h-6" />}
                                                     </button>
-                                                    <div className="flex-1 space-y-2">
+                                                    <div className="flex-1 space-y-1 sm:space-y-2 min-w-0">
                                                         <div className="flex items-center justify-between px-1">
-                                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Time Scrub</span>
-                                                            <span className="text-[10px] font-black text-primary-500 tracking-tighter tabular-nums">12:00 PM — 04:30 PM</span>
+                                                            <span className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">Time Scrub</span>
+                                                            <span className="text-[9px] sm:text-[10px] font-black text-primary-500 tracking-tighter tabular-nums truncate ml-2">12:00 PM — 04:30 PM</span>
                                                         </div>
                                                         <input
                                                             type="range"
                                                             min="0" max="100" step="0.1"
                                                             value={playbackTime}
                                                             onChange={(e) => setPlaybackTime(parseFloat(e.target.value))}
-                                                            className="w-full h-3 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-primary-500 border border-slate-200 dark:border-white/5"
+                                                            className="w-full h-2.5 sm:h-3 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-primary-500 border border-slate-200 dark:border-white/5"
                                                         />
                                                     </div>
-                                                    <button onClick={() => setPlaybackTime(0)} className="h-10 px-4 rounded-xl text-[10px] font-black uppercase text-slate-400 hover:text-primary-500 transition-all">Reset</button>
+                                                    <button onClick={() => setPlaybackTime(0)} className="h-8 sm:h-10 px-2 sm:px-4 rounded-xl text-[9px] sm:text-[10px] font-black uppercase text-slate-400 hover:text-primary-500 transition-all shrink-0">Reset</button>
                                                 </div>
                                             </div>
                                         </>

@@ -75,14 +75,13 @@ export function RoleRoute({ children, allowedRoles }) {
         return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
-    if (allowedRoles && !allowedRoles.includes(role)) {
-        // Redirect to their respective dashboard if they don't have access
-        const dashboardMap = {
-            Admin: '/',
-            Manager: '/real-time', // or a specific manager dashboard if exists
-            Employee: '/tasks'
-        };
-        return <Navigate to={dashboardMap[role] || '/'} replace />;
+    if (allowedRoles) {
+        const userRole = role?.toUpperCase();
+        const allowed = allowedRoles.map(r => r.toUpperCase());
+        if (!allowed.includes(userRole)) {
+            const rolePath = role?.toLowerCase() || 'employee';
+            return <Navigate to={`/${rolePath}`} replace />;
+        }
     }
 
     return children;

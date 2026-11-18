@@ -191,7 +191,7 @@ export function GlobalCalendar({ label, className }) {
     const popover = open ? (
         <div
             style={popoverStyle}
-            className="global-calendar-popover rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200 max-h-[85vh] overflow-y-auto"
+            className="global-calendar-popover rounded-2xl border border-[#D6CDBC] dark:border-[#384232] bg-[#EEE8DD] dark:bg-[#252B20] shadow-warm-lg animate-in fade-in slide-in-from-top-2 duration-200 max-h-[85vh] overflow-y-auto"
         >
             <div className="p-3 border-b border-slate-100 dark:border-slate-800">
                 <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Quick Select</p>
@@ -203,9 +203,7 @@ export function GlobalCalendar({ label, className }) {
                             onClick={() => handlePreset(p.value)}
                             className={clsx(
                                 'px-2 py-1.5 text-[10px] font-black rounded-lg transition-all',
-                                quickFilter === p.value
-                                    ? 'bg-primary-600 text-white shadow-sm'
-                                    : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:text-primary-600'
+                                quickFilter === p.value ? 'bg-[#30382B] text-[#FDFBF7] shadow-warm-xs' : 'bg-[#F5F1E9] dark:bg-[#1E2419] text-[#29291F] dark:text-[#F5F1E9] hover:bg-[#E5DDCF] border border-[#D6CDBC] dark:border-[#384232]'
                             )}
                         >
                             {p.label}
@@ -243,7 +241,7 @@ export function GlobalCalendar({ label, className }) {
                 <button
                     type="button"
                     onClick={() => setOpen(false)}
-                    className="text-[10px] font-black text-primary-600 hover:text-primary-700"
+                    className="text-[10px] font-bold text-[#B9955B] hover:text-[#A17D45] uppercase tracking-wider"
                 >
                     Done
                 </button>
@@ -260,7 +258,7 @@ export function GlobalCalendar({ label, className }) {
                     'flex items-center gap-2 px-3.5 py-2 text-xs font-semibold uppercase tracking-wider rounded-xl border transition-all shadow-warm-xs cursor-pointer',
                     open || isModified
                         ? 'bg-[#EEE8DD] border-[#B9955B] text-[#B9955B]'
-                        : 'bg-[#FBF9F5] dark:bg-[#252B20] border-[#E5DED2] dark:border-[#384232] text-[#29291F] dark:text-[#F5F1E9] hover:border-[#B9955B]',
+                        : 'bg-[#EEE8DD] dark:bg-[#252B20] border-[#D6CDBC] dark:border-[#384232] text-[#29291F] dark:text-[#F5F1E9] hover:border-[#B9955B]',
                     className
                 )}
             >

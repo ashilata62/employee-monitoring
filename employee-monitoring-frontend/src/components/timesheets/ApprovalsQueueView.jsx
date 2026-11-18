@@ -2,17 +2,13 @@ import React, { useState, useEffect } from 'react';
 import {
     Check,
     X,
-    CheckSquare,
     AlertTriangle,
     Download,
-    Clock,
-    User,
     Loader2,
     Calendar,
-    MessageSquare,
     ShieldAlert
 } from 'lucide-react';
-import { timesheetService, fmtMoney, fmtH, mondayOf } from '../../services/timesheetService';
+import { timesheetService, fmtMoney, fmtH } from '../../services/timesheetService';
 import { toast } from '../../utils/toastManager';
 
 export function ApprovalsQueueView() {
@@ -98,7 +94,7 @@ export function ApprovalsQueueView() {
 
         setActionLoading(true);
         try {
-            const res = await timesheetService.reject(rejectModal.timesheet.timesheetId, rejectModal.comment);
+            const res = await timesheetService.reject(rejectModal.timesheet.timesheetId, rejectModal.comment.trim());
             if (res.success) {
                 toast.success(`Timesheet for ${rejectModal.timesheet.employeeName} rejected.`);
                 setRejectModal({ open: false, timesheet: null, comment: '' });
@@ -114,8 +110,8 @@ export function ApprovalsQueueView() {
 
     const handleDownloadPayroll = async () => {
         try {
-            await timesheetService.exportPayrollCsv(mondayOf());
-            toast.success('Current week payroll CSV downloaded');
+            await timesheetService.exportPayrollCsv();
+            toast.success('Payroll CSV downloaded');
         } catch (err) {
             toast.error('Failed to export payroll CSV');
         }
@@ -124,11 +120,11 @@ export function ApprovalsQueueView() {
     return (
         <div className="space-y-6">
             {/* Header & Bulk Action Bar */}
-            <div className="flex flex-wrap items-center justify-between gap-4 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-4 bg-[#EEE8DD] dark:bg-[#252B20] p-4 rounded-2xl border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs">
                 <div className="flex items-center gap-3">
-                    <h2 className="text-sm font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-2">
+                    <h2 className="font-serif text-base font-bold text-[#29291F] dark:text-[#F5F1E9] uppercase tracking-wider flex items-center gap-2.5">
                         <span>Approval Queue</span>
-                        <span className="px-2 py-0.5 rounded-full text-xs bg-amber-500/10 text-amber-500 font-bold border border-amber-500/20">
+                        <span className="px-2.5 py-0.5 rounded-md text-xs bg-[#FAF0E1] text-[#C98A3C] font-bold border border-[#E8D4B8]">
                             {queue.length} Pending
                         </span>
                     </h2>
@@ -139,18 +135,18 @@ export function ApprovalsQueueView() {
                         <button
                             onClick={handleBulkApprove}
                             disabled={actionLoading}
-                            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black uppercase tracking-wider transition shadow-sm shadow-emerald-600/30 disabled:opacity-50"
+                            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#30382B] hover:bg-[#3C4536] text-[#FDFBF7] text-xs font-semibold uppercase tracking-wider transition shadow-warm-xs disabled:opacity-50 cursor-pointer active:scale-95"
                         >
-                            <Check size={14} />
+                            <Check size={14} className="text-[#D3B98D]" />
                             Approve {selected.length} Selected
                         </button>
                     )}
 
                     <button
                         onClick={handleDownloadPayroll}
-                        className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition border border-slate-200 dark:border-slate-700"
+                        className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold bg-[#F5F1E9] dark:bg-[#1E2419] text-[#29291F] dark:text-[#F5F1E9] hover:bg-[#E5DDCF] rounded-xl transition border border-[#D6CDBC] dark:border-[#384232] cursor-pointer shadow-warm-xs"
                     >
-                        <Download size={13} />
+                        <Download size={13} className="text-[#B9955B]" />
                         Payroll CSV
                     </button>
                 </div>
@@ -158,31 +154,31 @@ export function ApprovalsQueueView() {
 
             {/* Queue Table */}
             {loading ? (
-                <div className="p-16 flex flex-col items-center justify-center text-slate-400 gap-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
-                    <Loader2 size={28} className="animate-spin text-primary-600" />
+                <div className="p-16 flex flex-col items-center justify-center text-[#777367] gap-2 bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl border border-[#D6CDBC] dark:border-[#384232]">
+                    <Loader2 size={28} className="animate-spin text-[#B9955B]" />
                     <span className="text-xs font-bold">Loading approval queue...</span>
                 </div>
             ) : queue.length === 0 ? (
-                <div className="p-16 text-center bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
+                <div className="p-16 text-center bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs">
                     <div className="text-3xl mb-2">🎉</div>
-                    <h3 className="text-sm font-black text-slate-800 dark:text-slate-200">
+                    <h3 className="font-serif text-xl font-normal text-[#29291F] dark:text-[#F5F1E9]">
                         Queue is Clear
                     </h3>
-                    <p className="text-xs text-slate-400 mt-1">
+                    <p className="text-xs text-[#777367] mt-1">
                         There are currently no timesheets awaiting approval.
                     </p>
                 </div>
             ) : (
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+                <div className="bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs overflow-hidden">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/20 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                            <tr className="border-b border-[#D6CDBC]/70 dark:border-[#384232] bg-[#E5DDCF]/60 dark:bg-[#1E2419] text-[10px] font-bold uppercase tracking-[0.14em] text-[#777367]">
                                 <th className="p-4 w-10">
                                     <input
                                         type="checkbox"
                                         checked={selected.length === queue.length && queue.length > 0}
                                         onChange={handleSelectAll}
-                                        className="rounded border-slate-300 text-primary-600 focus:ring-primary-500"
+                                        className="rounded border-[#D6CDBC] text-[#30382B] focus:ring-[#B9955B]"
                                     />
                                 </th>
                                 <th className="p-4">Employee</th>
@@ -194,15 +190,15 @@ export function ApprovalsQueueView() {
                                 <th className="p-4 text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
+                        <tbody className="divide-y divide-[#D6CDBC]/50 dark:divide-[#384232] text-xs">
                             {queue.map((ts) => {
                                 const isChecked = selected.includes(ts.timesheetId);
 
                                 return (
                                     <tr
                                         key={ts.timesheetId}
-                                        className={`hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition ${
-                                            isChecked ? 'bg-primary-50/30 dark:bg-primary-500/5' : ''
+                                        className={`hover:bg-[#F5F1E9]/60 dark:hover:bg-[#1E2419]/60 transition ${
+                                            isChecked ? 'bg-[#FAF0E1]/50 dark:bg-[#30382B]/30' : ''
                                         }`}
                                     >
                                         <td className="p-4">
@@ -210,38 +206,38 @@ export function ApprovalsQueueView() {
                                                 type="checkbox"
                                                 checked={isChecked}
                                                 onChange={() => handleToggleSelect(ts.timesheetId)}
-                                                className="rounded border-slate-300 text-primary-600 focus:ring-primary-500"
+                                                className="rounded border-[#D6CDBC] text-[#30382B] focus:ring-[#B9955B]"
                                             />
                                         </td>
-                                        <td className="p-4 font-bold text-slate-800 dark:text-slate-200">
+                                        <td className="p-4 font-bold text-[#29291F] dark:text-[#F5F1E9]">
                                             <div>{ts.employeeName}</div>
-                                            <div className="text-[10px] text-slate-400 font-normal">{ts.employeeEmail}</div>
+                                            <div className="text-[10px] text-[#777367] font-normal">{ts.employeeEmail}</div>
                                         </td>
-                                        <td className="p-4 text-slate-600 dark:text-slate-400 font-medium">
+                                        <td className="p-4 text-[#777367] font-medium">
                                             {ts.teamName || 'General'}
                                         </td>
-                                        <td className="p-4 text-slate-600 dark:text-slate-400 font-medium">
-                                            <div className="flex items-center gap-1">
-                                                <Calendar size={12} className="text-slate-400" />
+                                        <td className="p-4 text-[#777367] font-medium">
+                                            <div className="flex items-center gap-1.5">
+                                                <Calendar size={12} className="text-[#B9955B]" />
                                                 <span>{ts.weekStart}</span>
                                             </div>
-                                            <div className="text-[10px] text-slate-400">
+                                            <div className="text-[10px] text-[#777367]">
                                                 Submitted {new Date(ts.submittedAt).toLocaleDateString()}
                                             </div>
                                         </td>
-                                        <td className="p-4 font-semibold text-slate-700 dark:text-slate-300">
+                                        <td className="p-4 font-semibold text-[#29291F] dark:text-[#F5F1E9] tabular-nums">
                                             {fmtH(ts.regularMinutes)}
                                         </td>
                                         <td className="p-4 font-semibold">
                                             {ts.overtimeMinutes > 0 ? (
-                                                <span className="text-amber-500 font-bold flex items-center gap-1">
+                                                <span className="text-[#C98A3C] font-bold flex items-center gap-1 tabular-nums">
                                                     <AlertTriangle size={11} /> +{fmtH(ts.overtimeMinutes)}
                                                 </span>
                                             ) : (
-                                                <span className="text-slate-400">0h</span>
+                                                <span className="text-[#777367]">0h</span>
                                             )}
                                         </td>
-                                        <td className="p-4 font-black text-emerald-600 dark:text-emerald-400">
+                                        <td className="p-4 font-bold text-[#5E7D64] tabular-nums">
                                             {fmtMoney(ts.totalPay)}
                                         </td>
                                         <td className="p-4 text-right">
@@ -249,16 +245,16 @@ export function ApprovalsQueueView() {
                                                 <button
                                                     onClick={() => handleApproveSingle(ts)}
                                                     disabled={actionLoading}
-                                                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition disabled:opacity-50"
+                                                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#30382B] hover:bg-[#3C4536] text-[#FDFBF7] font-semibold text-xs transition disabled:opacity-50 cursor-pointer shadow-warm-xs"
                                                     title="Approve Timesheet"
                                                 >
-                                                    <Check size={13} />
+                                                    <Check size={13} className="text-[#D3B98D]" />
                                                     Approve
                                                 </button>
                                                 <button
                                                     onClick={() => setRejectModal({ open: true, timesheet: ts, comment: '' })}
                                                     disabled={actionLoading}
-                                                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs transition disabled:opacity-50"
+                                                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#FAF3F2] hover:bg-[#F5E4E2] text-[#A84B4B] border border-[#F2D6D3] font-semibold text-xs transition disabled:opacity-50 cursor-pointer"
                                                     title="Reject Timesheet"
                                                 >
                                                     <X size={13} />
@@ -276,25 +272,25 @@ export function ApprovalsQueueView() {
 
             {/* Reject Modal Dialog */}
             {rejectModal.open && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl p-6 space-y-4">
-                        <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
-                            <div className="p-2.5 rounded-xl bg-rose-100 dark:bg-rose-500/20">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
+                    <div className="w-full max-w-md bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl border border-[#D6CDBC] dark:border-[#384232] shadow-warm-lg p-6 space-y-4">
+                        <div className="flex items-center gap-3 text-[#A84B4B]">
+                            <div className="p-2.5 rounded-xl bg-[#FAF3F2] border border-[#F2D6D3]">
                                 <ShieldAlert size={20} />
                             </div>
                             <div>
-                                <h3 className="text-base font-black text-slate-900 dark:text-white">
+                                <h3 className="font-serif text-lg font-bold text-[#29291F] dark:text-[#F5F1E9]">
                                     Reject Timesheet
                                 </h3>
-                                <p className="text-xs text-slate-400">
+                                <p className="text-xs text-[#777367]">
                                     {rejectModal.timesheet?.employeeName} · Week of {rejectModal.timesheet?.weekStart}
                                 </p>
                             </div>
                         </div>
 
                         <div>
-                            <label className="block text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
-                                Rejection Reason / Audit Note <span className="text-rose-500">*</span>
+                            <label className="block text-[10px] font-bold uppercase tracking-[0.14em] text-[#777367] mb-1.5">
+                                Rejection Reason / Audit Note <span className="text-[#A84B4B]">*</span>
                             </label>
                             <textarea
                                 rows={3}
@@ -302,21 +298,21 @@ export function ApprovalsQueueView() {
                                 placeholder="Explain why this timesheet is being rejected (e.g. Missing punch on Wednesday, Overtime needs pre-approval)..."
                                 value={rejectModal.comment}
                                 onChange={(e) => setRejectModal(prev => ({ ...prev, comment: e.target.value }))}
-                                className="w-full text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 text-slate-800 dark:text-slate-200 outline-none focus:border-rose-500 resize-none"
+                                className="w-full text-xs rounded-xl bg-[#F5F1E9] dark:bg-[#1E2419] border border-[#D6CDBC] dark:border-[#384232] p-3 text-[#29291F] dark:text-[#F5F1E9] outline-none focus:border-[#B9955B] resize-none"
                             />
                         </div>
 
                         <div className="flex items-center justify-end gap-2 pt-2">
                             <button
                                 onClick={() => setRejectModal({ open: false, timesheet: null, comment: '' })}
-                                className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                                className="px-4 py-2 rounded-xl text-xs font-semibold text-[#777367] hover:text-[#29291F] transition cursor-pointer"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleConfirmReject}
                                 disabled={actionLoading || !rejectModal.comment.trim()}
-                                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs uppercase tracking-wider transition disabled:opacity-50"
+                                className="px-4 py-2 rounded-xl bg-[#A84B4B] hover:bg-[#913D3D] text-[#FDFBF7] font-semibold text-xs uppercase tracking-wider transition disabled:opacity-50 cursor-pointer shadow-warm-xs"
                             >
                                 {actionLoading ? 'Rejecting...' : 'Confirm Rejection'}
                             </button>

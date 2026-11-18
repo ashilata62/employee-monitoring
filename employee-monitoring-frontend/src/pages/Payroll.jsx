@@ -62,7 +62,7 @@ const IntegrationCard = ({ item, status, lastSync, onConnect, onSync, isSyncing 
     const isConnected = status === 'Connected';
 
     return (
-        <div className="group relative overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-6 md:p-8 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900 flex flex-col justify-between">
+        <div className="group relative overflow-hidden rounded-2xl border border-[#D6CDBC] bg-[#EEE8DD] p-6 md:p-8 shadow-warm-xs transition-all dark:border-[#384232] dark:bg-[#252B20] flex flex-col justify-between">
             <div className={cn("absolute top-0 right-0 h-32 w-32 blur-3xl opacity-5 rounded-full -mr-10 -mt-10", item.color)} />
 
             <div>
@@ -183,7 +183,7 @@ const CloudPayrollModal = ({ service, isOpen, onClose, onConnected }) => {
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md animate-in fade-in duration-300">
-            <div className="w-full max-w-lg bg-white dark:bg-slate-900 rounded-[2rem] p-8 shadow-2xl border border-slate-200 dark:border-slate-800 text-left">
+            <div className="w-full max-w-lg bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl p-8 shadow-warm-lg border border-[#D6CDBC] dark:border-[#384232] text-left">
                 <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100 dark:border-slate-800">
                     <div className="flex items-center gap-3">
                         <div className="h-10 w-10 rounded-xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 flex items-center justify-center font-black">
@@ -334,7 +334,7 @@ const CloudPayrollModal = ({ service, isOpen, onClose, onConnected }) => {
 };
 
 const StatCard = ({ title, value, subValue, icon: Icon, color, trend }) => (
-    <div className="rounded-[1.5rem] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 transition-all hover:shadow-md group">
+    <div className="rounded-2xl border border-[#D6CDBC] bg-[#EEE8DD] p-6 shadow-warm-xs dark:border-[#384232] dark:bg-[#252B20] transition-all hover:border-[#B9955B]/60 group">
         <div className="flex items-center justify-between mb-4">
             <div className={cn("p-3 rounded-xl transition-transform group-hover:scale-110", color)}>
                 <Icon size={22} />
@@ -652,15 +652,15 @@ export function Payroll() {
                     </div>
 
                     {/* Employee Payroll List */}
-                    <div className="lg:col-span-3 rounded-[2rem] border border-slate-200 bg-white overflow-hidden dark:border-slate-800 dark:bg-slate-900 shadow-sm">
-                        <div className="p-4 md:p-6 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div className="lg:col-span-3 rounded-2xl border border-[#D6CDBC] bg-[#EEE8DD] overflow-hidden dark:border-[#384232] dark:bg-[#252B20] shadow-warm-xs">
+                        <div className="p-4 md:p-6 border-b border-[#D6CDBC] dark:border-[#384232] bg-[#E5DDCF]/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                             <h3 className="text-base md:text-lg font-bold">Employee Timesheets & Payslips</h3>
                             <div className="relative w-full sm:w-64">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                                 <input
                                     type="text"
                                     placeholder="Search by employee..."
-                                    className="w-full h-11 md:h-10 pl-10 pr-4 rounded-xl border border-slate-200 bg-slate-50 dark:bg-slate-800/50 focus:border-indigo-500 focus:outline-none font-bold text-[11px] md:text-xs"
+                                    className="w-full h-11 md:h-10 pl-10 pr-4 rounded-xl border border-[#D6CDBC] bg-[#F5F1E9] dark:bg-[#1E2419] dark:border-[#384232] focus:border-[#B9955B] focus:outline-none font-medium text-[11px] md:text-xs text-[#29291F] dark:text-[#F5F1E9]"
                                     value={searchQuery}
                                     onChange={(e) => {
                                         setSearchQuery(e.target.value);
@@ -672,7 +672,7 @@ export function Payroll() {
                         </div>
                         <div className="overflow-x-hidden md:overflow-x-auto">
                             <table className="w-full text-left block md:table">
-                                <thead className="bg-slate-50 dark:bg-slate-800/50 hidden md:table-header-group">
+                                <thead className="bg-[#E5DDCF]/70 dark:bg-[#1E2419] border-b border-[#D6CDBC] dark:border-[#384232] hidden md:table-header-group">
                                     <tr>
                                         <th className="px-6 py-4 text-xs font-black uppercase tracking-wider text-slate-400">Employee</th>
                                         <th className="px-6 py-4 text-xs font-black uppercase tracking-wider text-slate-400">Period</th>
@@ -682,9 +682,9 @@ export function Payroll() {
                                         <th className="px-6 py-4 text-xs font-black uppercase tracking-wider text-slate-400 text-right">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-slate-100 dark:divide-slate-800 block md:table-row-group">
+                                <tbody className="divide-y divide-[#D6CDBC]/60 dark:divide-[#384232] block md:table-row-group">
                                     {paginatedPayroll.map((row) => (
-                                        <tr key={row.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors group flex flex-col md:table-row p-4 md:p-0">
+                                        <tr key={row.id} className="bg-[#F5F1E9] dark:bg-[#1E2419] hover:bg-[#EAE2D3] dark:hover:bg-[#252B20] transition-colors border-b border-[#D6CDBC]/50 group flex flex-col md:table-row p-4 md:p-0">
                                             <td className="px-0 py-2 md:px-6 md:py-4 block md:table-cell">
                                                 <div className="flex items-center gap-3">
                                                     <div className="h-10 w-10 md:h-8 md:w-8 rounded-full bg-slate-100 overflow-hidden ring-2 ring-white dark:ring-slate-800">
@@ -723,7 +723,7 @@ export function Payroll() {
                                             <td className="px-0 py-3 md:px-6 md:py-4 text-right block md:table-cell">
                                                 <button
                                                     onClick={() => setSelectedPayslip(row)}
-                                                    className="w-full md:w-auto px-4 py-2.5 md:px-3 md:py-1.5 rounded-xl md:rounded-lg bg-slate-900 md:bg-slate-100 text-white md:text-slate-600 text-[10px] md:text-xs font-black md:font-bold hover:bg-primary-600 md:hover:bg-primary-50 hover:text-white md:hover:text-primary-600 transition-all shadow-lg shadow-slate-900/10 md:shadow-none uppercase tracking-widest"
+                                                    className="w-full md:w-auto px-4 py-2.5 md:px-3 md:py-1.5 rounded-xl md:rounded-lg bg-[#30382B] text-[#FDFBF7] text-[10px] md:text-xs font-semibold hover:bg-[#3C4536] transition-all shadow-warm-xs uppercase tracking-wider cursor-pointer"
                                                 >
                                                     View Slip
                                                 </button>

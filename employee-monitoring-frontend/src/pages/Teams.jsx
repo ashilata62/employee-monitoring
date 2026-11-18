@@ -25,7 +25,6 @@ export function Teams() {
     const [editingTeam, setEditingTeam] = useState(null);
     const [search, setSearch] = useState('');
     const { toast } = useToast();
-    const [openMenu, setOpenMenu] = useState(null);
     const [selectedTeam, setSelectedTeam] = useState(null);
 
     useEffect(() => {
@@ -57,14 +56,8 @@ export function Teams() {
         return () => clearInterval(interval);
     }, [contextTeams]);
 
-    const findOnlineCount = (team) => {
-        if (!team.employees) return 0;
-        return team.employees.filter(e => e.status === 'ACTIVE').length;
-    };
-
     const teamsData = useMemo(() => contextTeams.map(team => {
         const initials = team.name.substring(0, 2).toUpperCase();
-        // Manually link employees from the store if team.employees is missing or empty
         const teamEmployees = (team.employees && team.employees.length > 0) 
             ? team.employees 
             : employees.filter(emp => emp.teamId === team.id || (typeof emp.team === 'object' && emp.team?.id === team.id));
@@ -105,40 +98,26 @@ export function Teams() {
         if (editingTeam) {
             try {
                 await updateTeam(editingTeam.id, teamData);
+                toast('Team updated successfully', 'success');
                 setIsModalOpen(false);
                 setEditingTeam(null);
-            } catch (error) {
-                // Error handled by apiClient
+            } catch (err) {
+                toast('Failed to update team', 'error');
             }
-            return;
-        }
-
-        // Priority: authenticated user session, employee record, then store fallback
-        const orgId = user?.organizationId ||
-            employees?.[0]?.organizationId ||
-            organization?.id;
-
-        if (!orgId) {
-            toast.error("No organization found. Please contact support.");
-            return;
-        }
-
-        try {
-            await addTeam({
-                ...teamData,
-                organizationId: orgId
-            });
-            await fetchTeams();
-            setIsModalOpen(false);
-        } catch (error) {
-            // Error handled by apiClient
+        } else {
+            try {
+                await addTeam(teamData);
+                toast('Team created successfully', 'success');
+                setIsModalOpen(false);
+            } catch (err) {
+                toast('Failed to create team', 'error');
+            }
         }
     };
 
     const handleEditClick = (team) => {
         setEditingTeam(team);
         setIsModalOpen(true);
-        setOpenMenu(null);
     };
 
     const handleCloseModal = () => {
@@ -147,162 +126,227 @@ export function Teams() {
     };
 
     if (isLoading && contextTeams.length === 0) {
-        return <div className="min-h-screen flex items-center justify-center">Loading teams...</div>;
+        return <div className="py-20 text-center text-[#777367] font-medium">Loading teams...</div>;
     }
 
     return (
-        <div className="min-h-screen bg-[#fcfdfe] dark:bg-slate-950 pb-12 px-2 sm:px-4 lg:px-8">
+        <div className="w-full space-y-6">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 py-8">
-                <div className="space-y-1">
-                    <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Teams</h1>
-                    <div className="flex items-center gap-2 text-xs font-bold text-slate-400">
-                        <Users size={13} />
-                        {employees.length} employees · {contextTeams.length} teams
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h1 className="font-serif text-3xl font-normal text-[#29291F] dark:text-[#F5F1E9] tracking-tight">Teams</h1>
+                    <div className="flex items-center gap-2 mt-1 text-xs font-medium text-[#777367]">
+                        <Users size={13} className="text-[#B9955B]" />
+                        <span>{employees.length} employees · {contextTeams.length} teams</span>
                     </div>
                 </div>
                 {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
-                    <button onClick={() => { setEditingTeam(null); setIsModalOpen(true); }}
-                        className="w-full md:w-auto bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-xl text-xs font-black transition-all shadow-xl uppercase tracking-wider flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-95">
-                        <Plus size={16} strokeWidth={3} /> Create New Team
+                    <button
+                        onClick={() => { setEditingTeam(null); setIsModalOpen(true); }}
+                        className="flex items-center justify-center gap-2 bg-[#30382B] hover:bg-[#3C4536] text-[#FDFBF7] px-5 py-2.5 rounded-xl text-xs font-semibold shadow-warm-sm transition-all active:scale-95 cursor-pointer"
+                    >
+                        <Plus size={15} className="text-[#D3B98D]" />
+                        <span>Create New Team</span>
                     </button>
                 )}
             </div>
 
-            {/* Summary Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                {teamsData.slice(0, 4).map(team => {
-                    return (
-                        <div key={team.id} className="bg-white dark:bg-slate-900 p-5 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all group">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="flex items-center gap-3">
-                                    <div className={`h-10 w-10 rounded-2xl ${team.color || 'bg-blue-500'} flex items-center justify-center text-[10px] font-black text-white shadow-lg`}>
-                                        {team.name.substring(0, 2).toUpperCase()}
-                                    </div>
-                                    <span className="text-sm font-black text-slate-700 dark:text-white truncate max-w-[100px]">{team.name}</span>
-                                </div>
-                                <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                            </div>
-                            <div className="flex items-end justify-between">
-                                <div>
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{team.memberCount || 0} Members</p>
-                                    <p className="text-xs font-black text-slate-700 dark:text-slate-300 mt-1">{team.onlineCount || 0} Online</p>
-                                </div>
-                                <div className="text-right">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Productivity</p>
-                                    <p className="text-xs font-black text-violet-600 mt-1">{team.productivity || 0}%</p>
-                                </div>
-                            </div>
-                            <div className="mt-3 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                                <div className="h-full bg-violet-500 rounded-full transition-all duration-1000" style={{ width: `${team.productivity || 0}%` }} />
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
-
-            {/* Toolbar */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mb-8">
-                <div className="relative group flex-1 max-w-md">
-                    <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-500 transition-colors" />
-                    <input 
-                        type="text" 
-                        placeholder="Search teams by name..." 
-                        value={search} 
-                        onChange={e => setSearch(e.target.value)}
-                        className="w-full bg-white dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-800 rounded-2xl pl-11 pr-4 py-3 text-xs font-bold outline-none focus:border-primary-500 focus:bg-white transition-all dark:text-white shadow-sm" 
-                    />
-                </div>
-                {/* Extra icons removed */}
-            </div>
-
-            {/* Team List Header (Desktop Only) */}
-            <div className="hidden lg:grid lg:grid-cols-12 px-8 mb-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">
-                <div className="col-span-3 text-left">Team Architecture</div>
-                <div className="col-span-1">Work</div>
-                <div className="col-span-1">Comp.</div>
-                <div className="col-span-1">Manual</div>
-                <div className="col-span-1">Prod.</div>
-                <div className="col-span-1">Unprod.</div>
-                <div className="col-span-2">Health</div>
-                <div className="col-span-2 text-center px-4">Action</div>
-            </div>
-
-            {/* Team Rows / Cards */}
-            <div className="grid grid-cols-1 gap-4">
-                {teamsData.map((team, idx) => (
-                    <div key={idx} className="bg-white dark:bg-slate-900 border-2 border-slate-50 dark:border-slate-800/50 rounded-[2.5rem] p-4 lg:p-6 shadow-sm hover:shadow-xl hover:border-primary-100 dark:hover:border-primary-900/30 transition-all group relative">
-                        {/* Mobile & Desktop Flexible Layout */}
-                        <div className="flex flex-col lg:grid lg:grid-cols-12 lg:items-center gap-6 lg:gap-0">
-                            
-                            {/* Team Identity */}
-                            <div className="col-span-3 flex items-center gap-5">
-                                <div className={`h-14 w-14 rounded-[1.5rem] flex items-center justify-center text-sm font-black text-white ${team.color || 'bg-blue-500'} shadow-xl shadow-${team.color?.split('-')[1] || 'blue'}-200 dark:shadow-none transition-transform group-hover:scale-110 group-hover:rotate-3`}>
+            {/* Top Summary Cards (Compact & Luxury) */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5 sm:gap-4">
+                {teamsData.slice(0, 4).map(team => (
+                    <div
+                        key={team.id}
+                        className="bg-[#FBF9F5] dark:bg-[#252B20] p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-[#E5DED2] dark:border-[#384232] shadow-warm-xs hover:border-[#B9955B]/60 transition-all flex flex-col justify-between"
+                    >
+                        <div className="flex items-center justify-between gap-2 mb-2">
+                            <div className="flex items-center gap-2.5 min-w-0">
+                                <div className="h-7 w-7 rounded-lg bg-[#EEE8DD] text-[#30382B] border border-[#E5DED2] flex items-center justify-center text-[10px] font-bold shrink-0">
                                     {team.initials}
                                 </div>
-                                <div className="min-w-0">
-                                    <h3 className="font-black text-slate-900 dark:text-white leading-tight text-lg truncate">{team.name}</h3>
-                                    <p className="text-[11px] text-slate-400 font-bold uppercase tracking-wider mt-1">{team.memberCount} Members  </p>
-                                </div>
+                                <span className="font-serif text-sm font-semibold text-[#29291F] dark:text-[#F5F1E9] truncate">{team.name}</span>
                             </div>
+                            <div className="h-2 w-2 rounded-full bg-[#5E7D64] shrink-0" />
+                        </div>
 
-                            {/* Stats Section (Desktop Grid / Mobile Flex Wrap) */}
-                            <div className="col-span-5 grid grid-cols-5 lg:grid-cols-5 gap-3 lg:gap-0">
-                                {[
-                                    { label: 'Work', val: team.stats.work, color: 'text-slate-700 dark:text-slate-300' },
-                                    { label: 'Comp', val: team.stats.comp, color: 'text-slate-700 dark:text-slate-300' },
-                                    { label: 'Manual', val: team.stats.manual, color: 'text-slate-700 dark:text-slate-300' },
-                                    { label: 'Prod', val: team.stats.prod, color: 'text-emerald-500' },
-                                    { label: 'Unpr', val: team.stats.unprod, color: 'text-rose-500' }
-                                ].map((s, i) => (
-                                    <div key={i} className="flex flex-col items-center justify-center lg:border-l border-slate-100 dark:border-slate-800 py-1">
-                                        <span className="lg:hidden text-[8px] font-black text-slate-400 uppercase tracking-tighter mb-1">{s.label}</span>
-                                        <span className={`font-black ${s.color} text-xs tracking-tight`}>{s.val}</span>
-                                    </div>
-                                ))}
+                        <div className="flex items-end justify-between my-1">
+                            <div>
+                                <p className="text-[10px] font-bold text-[#777367] uppercase tracking-wider">{team.memberCount || 0} Members</p>
+                                <p className="text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] mt-0.5">{team.onlineCount || 0} Online</p>
                             </div>
+                            <div className="text-right">
+                                <p className="text-[10px] font-bold text-[#777367] uppercase tracking-wider">Prod.</p>
+                                <p className="text-xs font-bold text-[#B9955B] mt-0.5 tabular-nums">{team.productivity || 0}%</p>
+                            </div>
+                        </div>
 
-                            {/* Productivity (Health) */}
-                            <div className="col-span-2 flex items-center justify-center font-black text-slate-600 dark:text-slate-300 text-sm">
-                                {team.productivity || 0}%
-                            </div>
-
-                            {/* Actions */}
-                            <div className="col-span-2 flex items-center justify-center gap-2">
-                                {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
-                                    <>
-                                        <button 
-                                            onClick={() => setSelectedTeam(team)}
-                                            className="h-8 w-8 flex items-center justify-center rounded-lg bg-slate-50 dark:bg-slate-800 text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all shadow-sm"
-                                            title="View Details"
-                                        >
-                                            <Eye size={16} />
-                                        </button>
-                                        <button 
-                                            onClick={() => handleEditClick(team)}
-                                            className="h-8 w-8 flex items-center justify-center rounded-lg bg-slate-50 dark:bg-slate-800 text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-all shadow-sm"
-                                            title="Edit Team"
-                                        >
-                                            <Edit size={16} />
-                                        </button>
-                                        <button 
-                                            onClick={() => { if(window.confirm('Are you sure?')) deleteTeam(team.id); }}
-                                            className="h-8 w-8 flex items-center justify-center rounded-lg bg-slate-50 dark:bg-slate-800 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all shadow-sm"
-                                            title="Delete Team"
-                                        >
-                                            <Trash2 size={16} />
-                                        </button>
-                                    </>
-                                )}
-                            </div>
+                        <div className="mt-2 h-1.5 bg-[#EEE8DD] dark:bg-[#1E2419] rounded-full overflow-hidden">
+                            <div className="h-full bg-[#B9955B] rounded-full transition-all duration-700" style={{ width: `${team.productivity || 0}%` }} />
                         </div>
                     </div>
                 ))}
             </div>
 
-            {contextTeams.length === 0 && (
-                <div className="py-16 text-center text-slate-400 font-bold text-sm">No teams found.</div>
-            )}
+            {/* Search Bar */}
+            <div className="flex items-center justify-between gap-4">
+                <div className="relative flex-1 max-w-md">
+                    <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#777367]" />
+                    <input 
+                        type="text" 
+                        placeholder="Search teams by name..." 
+                        value={search} 
+                        onChange={e => setSearch(e.target.value)}
+                        className="w-full bg-[#FBF9F5] dark:bg-[#252B20] border border-[#E5DED2] dark:border-[#384232] rounded-xl pl-9 pr-4 py-2 text-xs font-medium text-[#29291F] dark:text-[#F5F1E9] placeholder-[#777367] focus:border-[#B9955B] outline-none transition-all shadow-warm-xs" 
+                    />
+                </div>
+            </div>
+
+            {/* Teams List (Clean Table / Card Container) */}
+            <div className="bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl border border-[#E5DED2] dark:border-[#384232] shadow-warm-xs overflow-hidden mb-8">
+                {/* Desktop & Tablet Table */}
+                <div className="hidden sm:block overflow-x-auto">
+                    <table className="w-full text-left text-xs">
+                        <thead className="bg-[#EEE8DD]/40 dark:bg-[#1E2419] border-b border-[#E5DED2] dark:border-[#384232] text-[#777367] dark:text-[#B8B3A7]">
+                            <tr>
+                                <th className="px-6 py-3.5 text-[10px] font-bold uppercase tracking-wider">Team Architecture</th>
+                                <th className="px-3 py-3.5 text-center text-[10px] font-bold uppercase tracking-wider">Work</th>
+                                <th className="px-3 py-3.5 text-center text-[10px] font-bold uppercase tracking-wider">Comp</th>
+                                <th className="px-3 py-3.5 text-center text-[10px] font-bold uppercase tracking-wider">Manual</th>
+                                <th className="px-3 py-3.5 text-center text-[10px] font-bold uppercase tracking-wider">Prod</th>
+                                <th className="px-3 py-3.5 text-center text-[10px] font-bold uppercase tracking-wider">Unprod</th>
+                                <th className="px-4 py-3.5 text-center text-[10px] font-bold uppercase tracking-wider">Productivity</th>
+                                <th className="px-6 py-3.5 text-right text-[10px] font-bold uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-[#E5DED2]/60 dark:divide-[#384232]/60">
+                            {teamsData.map((team) => (
+                                <tr key={team.id} className="hover:bg-[#EEE8DD]/30 dark:hover:bg-[#1E2419] transition-colors">
+                                    <td className="px-6 py-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-9 w-9 rounded-xl bg-[#EEE8DD] text-[#30382B] border border-[#E5DED2] flex items-center justify-center font-bold text-xs tracking-wider shrink-0">
+                                                {team.initials}
+                                            </div>
+                                            <div className="min-w-0">
+                                                <h3 className="font-serif text-sm font-semibold text-[#29291F] dark:text-[#F5F1E9] truncate">{team.name}</h3>
+                                                <p className="text-[11px] font-medium text-[#777367]">{team.memberCount} Members · {team.onlineCount} Online</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="px-3 py-4 text-center font-sans font-medium text-xs text-[#29291F] dark:text-[#F5F1E9] tabular-nums">{team.stats.work}</td>
+                                    <td className="px-3 py-4 text-center font-sans font-medium text-xs text-[#29291F] dark:text-[#F5F1E9] tabular-nums">{team.stats.comp}</td>
+                                    <td className="px-3 py-4 text-center font-sans font-medium text-xs text-[#29291F] dark:text-[#F5F1E9] tabular-nums">{team.stats.manual}</td>
+                                    <td className="px-3 py-4 text-center font-sans font-semibold text-xs text-[#5E7D64] tabular-nums">{team.stats.prod}</td>
+                                    <td className="px-3 py-4 text-center font-sans font-semibold text-xs text-[#A84B4B] tabular-nums">{team.stats.unprod}</td>
+                                    <td className="px-4 py-4 text-center">
+                                        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold bg-[#B9955B]/15 text-[#A17D45]">
+                                            {team.productivity || 0}%
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4 text-right">
+                                        <div className="flex items-center justify-end gap-1.5">
+                                            <button 
+                                                onClick={() => setSelectedTeam(team)}
+                                                className="h-8 w-8 flex items-center justify-center rounded-lg bg-[#EEE8DD]/60 text-[#777367] hover:text-[#30382B] hover:bg-[#EEE8DD] transition-all shadow-warm-xs cursor-pointer"
+                                                title="View Details"
+                                            >
+                                                <Eye size={15} />
+                                            </button>
+                                            {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
+                                                <>
+                                                    <button 
+                                                        onClick={() => handleEditClick(team)}
+                                                        className="h-8 w-8 flex items-center justify-center rounded-lg bg-[#EEE8DD]/60 text-[#777367] hover:text-[#B9955B] hover:bg-[#EEE8DD] transition-all shadow-warm-xs cursor-pointer"
+                                                        title="Edit Team"
+                                                    >
+                                                        <Edit size={15} />
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => { if(window.confirm(`Are you sure you want to delete ${team.name}?`)) deleteTeam(team.id); }}
+                                                        className="h-8 w-8 flex items-center justify-center rounded-lg bg-[#EEE8DD]/60 text-[#777367] hover:text-[#A84B4B] hover:bg-[#FAF3F2] transition-all shadow-warm-xs cursor-pointer"
+                                                        title="Delete Team"
+                                                    >
+                                                        <Trash2 size={15} />
+                                                    </button>
+                                                </>
+                                            )}
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+
+                {/* Mobile Cards View (<640px) - Compact & Elegant */}
+                <div className="sm:hidden divide-y divide-[#E5DED2]/60 dark:divide-[#384232]/60">
+                    {teamsData.map((team) => (
+                        <div key={team.id} className="p-4 flex flex-col gap-3">
+                            <div className="flex items-center justify-between gap-3">
+                                <div className="flex items-center gap-3 min-w-0">
+                                    <div className="h-9 w-9 rounded-xl bg-[#EEE8DD] text-[#30382B] border border-[#E5DED2] flex items-center justify-center font-bold text-xs shrink-0">
+                                        {team.initials}
+                                    </div>
+                                    <div className="min-w-0">
+                                        <h3 className="font-serif text-sm font-semibold text-[#29291F] dark:text-[#F5F1E9] truncate">{team.name}</h3>
+                                        <p className="text-[11px] text-[#777367]">{team.memberCount} Members · {team.onlineCount} Online</p>
+                                    </div>
+                                </div>
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold bg-[#B9955B]/15 text-[#A17D45]">
+                                    {team.productivity || 0}%
+                                </span>
+                            </div>
+
+                            {/* Mini stats pills */}
+                            <div className="grid grid-cols-4 gap-1.5 bg-[#EEE8DD]/40 rounded-xl p-2 text-center text-[10px]">
+                                <div>
+                                    <span className="text-[#777367] block">Work</span>
+                                    <span className="font-bold text-[#29291F]">{team.stats.work}</span>
+                                </div>
+                                <div>
+                                    <span className="text-[#777367] block">Comp</span>
+                                    <span className="font-bold text-[#29291F]">{team.stats.comp}</span>
+                                </div>
+                                <div>
+                                    <span className="text-[#777367] block">Prod</span>
+                                    <span className="font-bold text-[#5E7D64]">{team.stats.prod}</span>
+                                </div>
+                                <div>
+                                    <span className="text-[#777367] block">Unprod</span>
+                                    <span className="font-bold text-[#A84B4B]">{team.stats.unprod}</span>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center justify-end gap-2 pt-1">
+                                <button 
+                                    onClick={() => setSelectedTeam(team)}
+                                    className="px-2.5 py-1 text-xs rounded-lg bg-[#EEE8DD] text-[#30382B] font-semibold flex items-center gap-1"
+                                >
+                                    <Eye size={13} /> View
+                                </button>
+                                {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
+                                    <>
+                                        <button 
+                                            onClick={() => handleEditClick(team)}
+                                            className="px-2.5 py-1 text-xs rounded-lg bg-[#EEE8DD] text-[#B9955B] font-semibold flex items-center gap-1"
+                                        >
+                                            <Edit size={13} /> Edit
+                                        </button>
+                                        <button 
+                                            onClick={() => { if(window.confirm(`Are you sure you want to delete ${team.name}?`)) deleteTeam(team.id); }}
+                                            className="px-2.5 py-1 text-xs rounded-lg bg-[#FAF3F2] text-[#A84B4B] font-semibold flex items-center gap-1"
+                                        >
+                                            <Trash2 size={13} /> Delete
+                                        </button>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {teamsData.length === 0 && (
+                    <div className="py-16 text-center text-[#777367] font-medium text-sm">No teams found.</div>
+                )}
+            </div>
 
             <CreateTeamModal
                 isOpen={isModalOpen}
@@ -331,7 +375,7 @@ const TeamDetailModal = ({ isOpen, onClose, team }) => {
             {/* Backdrop */}
             <div 
                 className={cn(
-                    "absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300",
+                    "absolute inset-0 bg-black/40 backdrop-blur-xs transition-opacity duration-300",
                     isOpen ? "opacity-100" : "opacity-0"
                 )} 
                 onClick={onClose} 
@@ -339,106 +383,95 @@ const TeamDetailModal = ({ isOpen, onClose, team }) => {
 
             {/* Modal */}
             <div className={cn(
-                "relative w-full max-w-2xl bg-white dark:bg-slate-950 rounded-[2.5rem] shadow-2xl transition-all duration-300 ease-out flex flex-col max-h-[85vh] overflow-hidden border border-slate-100 dark:border-slate-800",
+                "relative w-full max-w-2xl bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl shadow-xl transition-all duration-300 ease-out flex flex-col max-h-[85vh] overflow-hidden border border-[#E5DED2] dark:border-[#384232]",
                 isOpen ? "scale-100 opacity-100" : "scale-95 opacity-0"
             )}>
                 {/* Header */}
-                <div className="px-8 py-6 border-b border-slate-50 dark:border-slate-800/50 flex items-center justify-between bg-white dark:bg-slate-950 sticky top-0 z-10">
-                    <div className="flex items-center gap-4">
-                        <div className={`h-12 w-12 rounded-2xl flex items-center justify-center text-sm font-black text-white ${team.color || 'bg-blue-500'} shadow-lg`}>
+                <div className="px-6 py-5 border-b border-[#E5DED2] dark:border-[#384232] flex items-center justify-between bg-[#FBF9F5] dark:bg-[#252B20] sticky top-0 z-10">
+                    <div className="flex items-center gap-3.5">
+                        <div className="h-10 w-10 rounded-xl bg-[#EEE8DD] text-[#30382B] border border-[#E5DED2] flex items-center justify-center text-xs font-bold">
                             {team.initials}
                         </div>
                         <div>
-                            <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">{team.name}</h2>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{team.memberCount || 0} Professional Members</p>
+                            <h2 className="font-serif text-xl font-semibold text-[#29291F] dark:text-[#F5F1E9] tracking-tight">{team.name}</h2>
+                            <p className="text-[10px] font-bold text-[#777367] uppercase tracking-wider mt-0.5">{team.memberCount || 0} Team Members</p>
                         </div>
                     </div>
                     <button 
                         onClick={onClose}
-                        className="h-10 w-10 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all shadow-sm"
+                        className="h-8 w-8 rounded-lg bg-[#EEE8DD]/70 hover:bg-[#EEE8DD] flex items-center justify-center text-[#777367] hover:text-[#29291F] transition-all cursor-pointer"
                     >
-                        <X size={18} />
+                        <X size={16} />
                     </button>
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 overflow-y-auto p-8 space-y-10 custom-scrollbar">
+                <div className="flex-1 overflow-y-auto p-6 space-y-6">
                     {/* Performance Summary & Description */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
                         {/* Productivity Card */}
-                        <div className="bg-white dark:bg-slate-900 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col items-center justify-center text-center group hover:border-violet-100 transition-all">
-                            <div className="h-10 w-10 rounded-full bg-violet-50 dark:bg-violet-900/20 flex items-center justify-center text-violet-500 mb-3">
-                                <TrendingUp size={18} />
+                        <div className="bg-[#EEE8DD]/40 dark:bg-[#1E2419] p-4 rounded-xl border border-[#E5DED2] dark:border-[#384232] flex flex-col items-center justify-center text-center">
+                            <div className="h-8 w-8 rounded-lg bg-[#EEE8DD] text-[#B9955B] flex items-center justify-center mb-2">
+                                <TrendingUp size={16} />
                             </div>
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-1">Productivity</span>
-                            <span className="text-3xl font-black text-violet-600 tracking-tighter">{team.productivity || 0}%</span>
-                            <div className="mt-4 w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                                <div className="h-full bg-violet-500 rounded-full shadow-[0_0_8px_rgba(139,92,246,0.5)]" style={{ width: `${team.productivity || 0}%` }} />
+                            <span className="text-[10px] font-bold text-[#777367] uppercase tracking-wider mb-1">Productivity</span>
+                            <span className="text-2xl font-bold font-sans text-[#B9955B] tabular-nums">{team.productivity || 0}%</span>
+                            <div className="mt-2.5 w-full h-1.5 bg-[#E5DED2] dark:bg-[#252B20] rounded-full overflow-hidden">
+                                <div className="h-full bg-[#B9955B] rounded-full" style={{ width: `${team.productivity || 0}%` }} />
                             </div>
                         </div>
 
                         {/* Status Card */}
-                        <div className="bg-white dark:bg-slate-900 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col items-center justify-center text-center group hover:border-emerald-100 transition-all">
-                            <div className="h-10 w-10 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-500 mb-3">
-                                <Users size={18} />
+                        <div className="bg-[#EEE8DD]/40 dark:bg-[#1E2419] p-4 rounded-xl border border-[#E5DED2] dark:border-[#384232] flex flex-col items-center justify-center text-center">
+                            <div className="h-8 w-8 rounded-lg bg-[#EEE8DD] text-[#5E7D64] flex items-center justify-center mb-2">
+                                <Users size={16} />
                             </div>
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-1">Live Status</span>
-                            <div className="flex flex-col items-center gap-1">
-                                <span className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter">{team.onlineCount || 0}</span>
-                                <div className="flex items-center gap-2">
-                                    <div className={cn(
-                                        "h-2 w-2 rounded-full",
-                                        team.onlineCount > 0 ? "bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" : "bg-slate-300"
-                                    )} />
-                                    <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Online Now</span>
-                                </div>
+                            <span className="text-[10px] font-bold text-[#777367] uppercase tracking-wider mb-1">Live Online</span>
+                            <span className="text-2xl font-bold font-sans text-[#29291F] dark:text-[#F5F1E9] tabular-nums">{team.onlineCount || 0}</span>
+                            <div className="flex items-center gap-1.5 mt-2 text-[10px] font-bold text-[#5E7D64]">
+                                <span className="h-1.5 w-1.5 rounded-full bg-[#5E7D64]" />
+                                <span>Online Now</span>
                             </div>
                         </div>
 
                         {/* Description Card */}
-                        <div className="bg-white dark:bg-slate-900 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col items-center justify-center text-center group hover:border-blue-100 transition-all">
-                            <div className="h-10 w-10 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-500 mb-3">
-                                <Users size={18} className="rotate-12" />
-                            </div>
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-1">Description</span>
-                            <p className="text-[12px] font-bold text-slate-600 dark:text-slate-400 leading-relaxed line-clamp-3">
+                        <div className="bg-[#EEE8DD]/40 dark:bg-[#1E2419] p-4 rounded-xl border border-[#E5DED2] dark:border-[#384232] flex flex-col justify-center text-left">
+                            <span className="text-[10px] font-bold text-[#777367] uppercase tracking-wider mb-1">Description</span>
+                            <p className="text-xs text-[#29291F] dark:text-[#F5F1E9] leading-relaxed line-clamp-3">
                                 {team.description || "No specific description defined for this team unit."}
                             </p>
                         </div>
                     </div>
 
                     {/* Members List */}
-                    <div className="space-y-5">
-                        <div className="flex items-center justify-between px-2">
-                            <div className="flex items-center gap-3">
-                                <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-widest">Team Roster</h3>
-                                <div className="h-1 w-1 rounded-full bg-slate-300" />
-                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em]">{team.memberCount || 0} Total</span>
-                            </div>
+                    <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-xs font-bold text-[#29291F] dark:text-[#F5F1E9] uppercase tracking-wider">Team Roster</h3>
+                            <span className="text-[10px] font-bold text-[#777367] uppercase tracking-wider">{team.memberCount || 0} Total</span>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             {(team.employees || []).map((emp, i) => {
                                 const isOnline = emp.status?.toLowerCase() === 'active' || emp.status?.toLowerCase() === 'online';
                                 return (
-                                    <div key={emp.id || i} className="flex items-center gap-4 bg-slate-50/50 dark:bg-slate-900/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 group hover:bg-white dark:hover:bg-slate-900 hover:border-primary-100 hover:shadow-lg hover:shadow-primary-500/5 transition-all">
-                                        <div className="h-12 w-12 shrink-0 rounded-[1.2rem] bg-white dark:bg-slate-800 flex items-center justify-center text-sm font-black text-slate-500 group-hover:scale-110 transition-transform overflow-hidden shadow-sm border border-slate-100 dark:border-slate-800">
-                                            {emp.avatar ? <img src={emp.avatar} className="h-full w-full object-cover" alt="" /> : (emp.name?.substring(0, 2).toUpperCase() || 'EM')}
+                                    <div key={emp.id || i} className="flex items-center gap-3 bg-[#EEE8DD]/30 dark:bg-[#1E2419] p-3 rounded-xl border border-[#E5DED2]/60 dark:border-[#384232]/60">
+                                        <div className="h-9 w-9 shrink-0 rounded-lg bg-[#EEE8DD] text-[#30382B] flex items-center justify-center text-xs font-bold border border-[#E5DED2]">
+                                            {emp.name?.substring(0, 2).toUpperCase() || 'EM'}
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-black text-slate-900 dark:text-white truncate">{emp.name}</p>
-                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest truncate mt-0.5">{emp.email}</p>
+                                            <p className="text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] truncate">{emp.name}</p>
+                                            <p className="text-[10px] text-[#777367] truncate">{emp.email}</p>
                                         </div>
                                         <div className={cn(
-                                            "h-2.5 w-2.5 rounded-full border-2 border-white dark:border-slate-900 shrink-0",
-                                            isOnline ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]' : 'bg-slate-300'
-                                        )} title={emp.status} />
+                                            "h-2 w-2 rounded-full shrink-0",
+                                            isOnline ? 'bg-[#5E7D64]' : 'bg-[#9E988A]'
+                                        )} />
                                     </div>
                                 );
                             })}
                             {(team.employees || []).length === 0 && (
-                                <div className="col-span-full text-center py-12 bg-slate-50/50 dark:bg-slate-900/30 rounded-[2.5rem] border-2 border-dashed border-slate-100 dark:border-slate-800">
-                                    <Users className="mx-auto text-slate-300 mb-3" size={32} />
-                                    <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">No members currently assigned</p>
+                                <div className="col-span-full text-center py-8 bg-[#EEE8DD]/20 rounded-xl border border-dashed border-[#E5DED2]">
+                                    <Users className="mx-auto text-[#777367] mb-2" size={24} />
+                                    <p className="text-xs font-medium text-[#777367]">No members assigned to this team.</p>
                                 </div>
                             )}
                         </div>
@@ -446,12 +479,12 @@ const TeamDetailModal = ({ isOpen, onClose, team }) => {
                 </div>
 
                 {/* Footer */}
-                <div className="p-8 border-t border-slate-50 dark:border-slate-800/50 bg-white dark:bg-slate-950 flex justify-end">
+                <div className="p-4 sm:p-5 border-t border-[#E5DED2] dark:border-[#384232] bg-[#FBF9F5] dark:bg-[#252B20] flex justify-end">
                     <button 
                         onClick={onClose}
-                        className="px-10 py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-slate-900/10 dark:shadow-none"
+                        className="px-6 py-2 bg-[#30382B] hover:bg-[#3C4536] text-[#FDFBF7] rounded-xl text-xs font-semibold shadow-warm-xs transition-all active:scale-95 cursor-pointer"
                     >
-                        Close Details
+                        Close
                     </button>
                 </div>
             </div>

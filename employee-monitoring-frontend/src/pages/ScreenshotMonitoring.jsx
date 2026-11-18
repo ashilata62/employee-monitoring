@@ -37,6 +37,7 @@ import {
   PieChart,
   Video,
   FileVideo,
+  Square,
   HardDrive,
   Maximize,
   Volume2,
@@ -700,7 +701,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
     return (
       <div
         className={cn(
-          "group flex items-center bg-white dark:bg-slate-900 rounded-2xl border p-3 hover:shadow-lg transition-all duration-300 hover:-translate-x-1 cursor-pointer",
+          "group flex items-center bg-[#FBF9F5] dark:bg-[#252B20] rounded-xl sm:rounded-2xl border p-3 hover:shadow-warm-xs transition-all duration-200 cursor-pointer",
           isSelected ? "border-primary-500 bg-primary-50/30 dark:bg-primary-500/5 shadow-md shadow-primary-500/10" : "border-slate-200 dark:border-slate-800"
         )}
         onClick={isSelectionMode ? () => onToggleSelection(id) : handleView}
@@ -788,7 +789,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
   return (
     <div
       className={cn(
-        "group relative bg-white dark:bg-slate-900 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden cursor-pointer",
+        "group relative bg-[#FBF9F5] dark:bg-[#252B20] rounded-xl sm:rounded-2xl shadow-warm-xs hover:shadow-warm-sm transition-all duration-200 hover:-translate-y-0.5 overflow-hidden cursor-pointer",
         isSelected ? "border-primary-500 ring-2 ring-primary-500/20" : "",
         borderClass
       )}
@@ -806,7 +807,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
       )}
 
       {/* ── Top Header: App Name + Icon + 3-dots Menu (Insightful Image 3) ── */}
-      <div className="p-3 pb-2 flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-800/30">
+      <div className="p-2.5 px-3 flex items-center justify-between border-b border-[#E5DED2]/80 dark:border-[#384232]/80 bg-[#EEE8DD]/40 dark:bg-[#1E2419]/60">
         <div className="flex items-center gap-2 min-w-0">
           <span className="text-sm select-none">{getAppIcon(app || 'Desktop')}</span>
           <span className="text-xs font-black text-slate-800 dark:text-slate-200 truncate">
@@ -886,7 +887,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
         </div>
       </div>
       {/* ── Bottom Footer: Time, Project, Employee, Department (Insightful Image 3) ── */}
-      <div className="p-3 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800/80 text-[11px] flex flex-col gap-1.5">
+      <div className="p-2.5 px-3 bg-[#FBF9F5] dark:bg-[#252B20] border-t border-[#E5DED2]/80 dark:border-[#384232]/80 text-[11px] flex flex-col gap-1">
         <div className="flex items-center justify-between text-slate-400 dark:text-slate-500 font-bold">
           <span className="flex items-center gap-1">
             <Clock size={11} /> {time}
@@ -1243,6 +1244,145 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
             toast.error(err.response?.data?.message || 'Failed to delete video');
         }
     }, [isVideoModalOpen, activePlaybackVideo]);
+
+    // Live Screen Recording State & Handlers
+    const [isRecordingVideo, setIsRecordingVideo] = useState(false);
+    const [recordingSeconds, setRecordingSeconds] = useState(0);
+    const [isUploadingVideo, setIsUploadingVideo] = useState(false);
+    const screenStreamRef = useRef(null);
+    const mediaRecorderRef = useRef(null);
+    const recordingTimerRef = useRef(null);
+    const recordedChunksRef = useRef([]);
+
+    const formatRecordingTimer = (totalSeconds) => {
+        const mins = Math.floor(totalSeconds / 60);
+        const secs = totalSeconds % 60;
+        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    };
+
+    const handleStartScreenRecording = async () => {
+        try {
+            let stream = null;
+            try {
+                stream = await navigator.mediaDevices.getDisplayMedia({
+                    video: { cursor: 'always' },
+                    audio: true
+                });
+            } catch (mediaErr) {
+                stream = await navigator.mediaDevices.getDisplayMedia({
+                    video: { cursor: 'always' }
+                });
+            }
+
+            if (!stream) return;
+
+            screenStreamRef.current = stream;
+            recordedChunksRef.current = [];
+
+            const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp8')
+                ? 'video/webm;codecs=vp8'
+                : (MediaRecorder.isTypeSupported('video/webm') ? 'video/webm' : 'video/mp4');
+
+            const recorder = new MediaRecorder(stream, { mimeType });
+            mediaRecorderRef.current = recorder;
+
+            recorder.ondataavailable = (e) => {
+                if (e.data && e.data.size > 0) {
+                    recordedChunksRef.current.push(e.data);
+                }
+            };
+
+            recorder.onstop = async () => {
+                if (screenStreamRef.current) {
+                    screenStreamRef.current.getTracks().forEach(t => t.stop());
+                    screenStreamRef.current = null;
+                }
+                if (recordingTimerRef.current) {
+                    clearInterval(recordingTimerRef.current);
+                    recordingTimerRef.current = null;
+                }
+                setIsRecordingVideo(false);
+
+                const chunks = recordedChunksRef.current;
+                if (!chunks || chunks.length === 0) {
+                    toast.error('No video data recorded');
+                    return;
+                }
+
+                const blob = new Blob(chunks, { type: mimeType });
+                const validEmployeeId = (videoEmployeeFilter && videoEmployeeFilter !== 'All')
+                    ? videoEmployeeFilter
+                    : (employeesList.length > 0 ? employeesList[0].id : (contextEmployees.length > 0 ? contextEmployees[0].id : null));
+
+                if (!validEmployeeId) {
+                    toast.error('No employee found to attach this recording to');
+                    return;
+                }
+
+                try {
+                    setIsUploadingVideo(true);
+                    const toastId = toast.loading('Uploading and saving screen recording...');
+                    const formData = new FormData();
+                    formData.append('video', blob, `screen-recording-${Date.now()}.webm`);
+                    formData.append('employeeId', validEmployeeId);
+
+                    const res = await videoService.uploadVideo(formData);
+                    toast.dismiss(toastId);
+                    if (res && res.success) {
+                        toast.success('Screen video recorded and saved successfully!');
+                        fetchVideos();
+                    } else {
+                        toast.error(res?.message || 'Failed to save recording');
+                    }
+                } catch (err) {
+                    console.error('Failed to upload video recording:', err);
+                    toast.error(err.response?.data?.message || err.message || 'Failed to upload video');
+                } finally {
+                    setIsUploadingVideo(false);
+                    setRecordingSeconds(0);
+                }
+            };
+
+            const videoTrack = stream.getVideoTracks()[0];
+            if (videoTrack) {
+                videoTrack.onended = () => {
+                    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+                        mediaRecorderRef.current.stop();
+                    }
+                };
+            }
+
+            recorder.start(1000);
+            setIsRecordingVideo(true);
+            setRecordingSeconds(0);
+
+            recordingTimerRef.current = setInterval(() => {
+                setRecordingSeconds(prev => prev + 1);
+            }, 1000);
+
+            toast.info('Screen recording started. Click Stop when finished.');
+        } catch (err) {
+            if (err.name !== 'NotAllowedError') {
+                console.error('Failed to start screen recording:', err);
+                toast.error('Could not start recording: ' + err.message);
+            }
+        }
+    };
+
+    const handleStopScreenRecording = () => {
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+            mediaRecorderRef.current.stop();
+        }
+    };
+
+    useEffect(() => {
+        return () => {
+            if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
+            if (screenStreamRef.current) {
+                screenStreamRef.current.getTracks().forEach(t => t.stop());
+            }
+        };
+    }, []);
 
   // Sync context screenshots (newly arrived via socket) to local state
   useEffect(() => {
@@ -2200,6 +2340,46 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                       </div>
                     </div>
                   )}
+
+                  {/* Top Controls (Videos Tab) */}
+                  {activeMainTab === 'videos' && (
+                    <div className="flex flex-wrap items-center gap-3">
+                      {role !== 'EMPLOYEE' && (
+                        <>
+                          {!isRecordingVideo ? (
+                            <button
+                              onClick={handleStartScreenRecording}
+                              disabled={isUploadingVideo}
+                              className="px-4 py-2 bg-rose-500 hover:bg-rose-600 disabled:opacity-50 text-white rounded-xl text-sm font-bold shadow-lg shadow-rose-500/20 active:scale-95 transition-all flex items-center gap-2 animate-in fade-in"
+                              title="Start screen recording to capture and save video session"
+                            >
+                              <Video size={16} />
+                              <span>Record Screen Video</span>
+                            </button>
+                          ) : (
+                            <button
+                              onClick={handleStopScreenRecording}
+                              className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-rose-600/30 active:scale-95 transition-all flex items-center gap-2 animate-pulse"
+                              title="Stop recording and save video"
+                            >
+                              <span className="h-2 w-2 rounded-full bg-white animate-ping" />
+                              <Square size={14} className="fill-current" />
+                              <span>Stop Recording ({formatRecordingTimer(recordingSeconds)})</span>
+                            </button>
+                          )}
+                        </>
+                      )}
+
+                      <button
+                        onClick={fetchVideos}
+                        disabled={loadingVideos}
+                        className="p-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl transition-all shadow-sm"
+                        title="Refresh video list"
+                      >
+                        <RefreshCw size={16} className={cn(loadingVideos && "animate-spin text-primary-500")} />
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {/* ── Screenshots Tab View ────────────────────────────────────────── */}
@@ -2476,20 +2656,44 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                                 </div>
                                 <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">No Video Recordings Found</h3>
                                 <p className="text-sm font-medium text-slate-500 dark:text-slate-400 max-w-md mb-6 leading-relaxed">
-                                  Screen video recordings are captured in 5-minute chunks when employees run the Screen Tracker. Start the tracker to record screen sessions.
+                                  Screen video recordings are captured in 5-minute chunks when employees run the Screen Tracker, or you can record a real screen session right now.
                                 </p>
-                                {(videoEmployeeFilter !== 'All' || videoDateFilter || videoSearchQuery) && (
-                                  <button
-                                    onClick={() => {
-                                      setVideoEmployeeFilter('All');
-                                      setVideoDateFilter('');
-                                      setVideoSearchQuery('');
-                                    }}
-                                    className="px-5 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-xs font-bold transition-all shadow-md active:scale-95"
-                                  >
-                                    Clear All Filters
-                                  </button>
-                                )}
+                                <div className="flex flex-wrap items-center justify-center gap-3">
+                                  {role !== 'EMPLOYEE' && (
+                                    <>
+                                      {!isRecordingVideo ? (
+                                        <button
+                                          onClick={handleStartScreenRecording}
+                                          disabled={isUploadingVideo}
+                                          className="px-5 py-2.5 bg-rose-500 hover:bg-rose-600 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition-all shadow-md active:scale-95 flex items-center gap-2"
+                                        >
+                                          <Video size={16} />
+                                          <span>Record Screen Video Now</span>
+                                        </button>
+                                      ) : (
+                                        <button
+                                          onClick={handleStopScreenRecording}
+                                          className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition-all shadow-md active:scale-95 flex items-center gap-2 animate-pulse"
+                                        >
+                                          <Square size={14} className="fill-current" />
+                                          <span>Stop & Save Recording ({formatRecordingTimer(recordingSeconds)})</span>
+                                        </button>
+                                      )}
+                                    </>
+                                  )}
+                                  {(videoEmployeeFilter !== 'All' || videoDateFilter || videoSearchQuery) && (
+                                    <button
+                                      onClick={() => {
+                                        setVideoEmployeeFilter('All');
+                                        setVideoDateFilter('');
+                                        setVideoSearchQuery('');
+                                      }}
+                                      className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95"
+                                    >
+                                      Clear All Filters
+                                    </button>
+                                  )}
+                                </div>
                               </div>
                             ) : (
                               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">

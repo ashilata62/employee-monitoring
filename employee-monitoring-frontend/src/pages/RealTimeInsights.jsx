@@ -1,78 +1,83 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Users, Video, Zap, TrendingDown, Search, Download, LayoutGrid, List, Clock, Activity, MapPin, Monitor, X, Maximize } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import {
+    Activity,
+    Clock,
+    Zap,
+    Users,
+    TrendingDown,
+    Search,
+    MapPin,
+    Eye,
+    ChevronRight,
+    LayoutGrid,
+    List,
+    Download,
+    Video,
+    ShieldAlert
+} from 'lucide-react';
+import { useRealTime } from '../hooks/RealTimeContext';
+import { AddEmployeeModal } from '../components/AddEmployeeModal';
+import { LiveMapView } from '../components/location/LiveMapView';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
-import { AddEmployeeModal } from '../components/AddEmployeeModal';
-import { useRealTime } from '../hooks/RealTimeContext';
-import { LiveMapView } from '../components/location/LiveMapView';
-import { clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-
-const cn = (...inputs) => twMerge(clsx(inputs));
 
 const statusColors = {
-    online: 'bg-emerald-400',
-    idle: 'bg-amber-400',
-    break: 'bg-indigo-400',
-    offline: 'bg-slate-300 dark:bg-slate-600',
+    online: 'bg-[#5E7D64]',
+    idle: 'bg-[#C98A3C]',
+    break: 'bg-[#B9955B]',
+    offline: 'bg-[#9E988A]'
 };
 
-const BreakTimeDisplay = ({ breakHours, breakStartedAt, status }) => {
+const LiveTimer = ({ startTime, status }) => {
     const [elapsed, setElapsed] = useState(0);
 
     useEffect(() => {
-        if (status !== 'break' || !breakStartedAt) {
-            setElapsed(0);
-            return;
-        }
-
-        const calculate = () => {
-            const start = new Date(breakStartedAt).getTime();
-            const now = new Date().getTime();
+        if (!startTime) return;
+        const update = () => {
+            const now = new Date();
+            const start = new Date(startTime);
             const diff = Math.max(0, Math.floor((now - start) / 1000));
             setElapsed(diff);
         };
+        update();
+        const interval = setInterval(update, 1000);
+        return () => clearInterval(interval);
+    }, [startTime]);
 
-        calculate();
-        const timer = setInterval(calculate, 1000);
-        return () => clearInterval(timer);
-    }, [breakStartedAt, status]);
+    const h = Math.floor(elapsed / 3600);
+    const m = Math.floor((elapsed % 3600) / 60);
+    const s = elapsed % 60;
 
-    const totalSeconds = Math.floor((breakHours || 0) * 3600) + elapsed;
-    
-    const h = Math.floor(totalSeconds / 3600);
-    const m = Math.floor((totalSeconds % 3600) / 60);
-    const s = totalSeconds % 60;
-    
     return (
-        <div className="flex items-center gap-1.5">
-            <span className="font-black text-slate-700 dark:text-slate-300">
+        <div className="flex items-center gap-1.5 font-sans font-bold tabular-nums">
+            <span className="text-[#29291F] dark:text-[#F5F1E9]">
                 {h}h {m}m {s}s
             </span>
             {status === 'break' && (
-                <div className="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-pulse" title="Active Break" />
+                <div className="h-1.5 w-1.5 rounded-full bg-[#B9955B] animate-pulse" title="Active Break" />
             )}
         </div>
     );
 };
 
-
-const InsightStatCard = ({ title, value, total, icon: Icon, color, subLabel }) => (
-    <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col gap-1 flex-1">
-        <div className="flex justify-between items-start">
-            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-tight">{title}</span>
-            <Icon size={16} className={color} />
+const InsightStatCard = ({ title, value, total, icon: Icon, subLabel }) => (
+    <div className="bg-[#FBF9F5] dark:bg-[#252B20] p-4 rounded-xl sm:rounded-2xl border border-[#E5DED2] dark:border-[#384232] shadow-warm-xs flex flex-col justify-between flex-1 min-w-[170px] hover:border-[#B9955B]/60 transition-all">
+        <div className="flex justify-between items-center mb-2">
+            <span className="text-[10px] sm:text-[11px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-[0.12em]">{title}</span>
+            <div className="h-7 w-7 rounded-lg bg-[#EEE8DD]/70 dark:bg-[#30382B] flex items-center justify-center text-[#B9955B]">
+                <Icon size={14} strokeWidth={2} />
+            </div>
         </div>
-        <div className="flex items-baseline gap-1 mt-auto">
-            <h3 className="text-2xl font-black text-slate-900 dark:text-white">{value}</h3>
-            {total && <span className="text-xs font-bold text-slate-400">/ {total}</span>}
+        <div className="my-1 flex items-baseline gap-1">
+            <h3 className="font-sans text-xl sm:text-2xl font-bold text-[#29291F] dark:text-[#F5F1E9] tabular-nums tracking-tight">{value}</h3>
+            {total && <span className="text-xs font-semibold text-[#777367] dark:text-[#9E988A]">/ {total}</span>}
         </div>
-        {subLabel && <p className="text-[10px] text-slate-400 font-medium">{subLabel}</p>}
+        {subLabel && <p className="text-[10px] text-[#777367] dark:text-[#B8B3A7] font-medium pt-1.5 border-t border-[#E5DED2]/60 dark:border-[#384232]/60 mt-1">{subLabel}</p>}
     </div>
 );
- 
+
 export function RealTimeInsights() {
-    const { stats, addEmployee, socket } = useRealTime();
+    const { stats, addEmployee } = useRealTime();
     const { role } = useAuthStore();
     const navigate = useNavigate();
     const rolePath = role ? `/${role.toLowerCase()}` : '';
@@ -80,17 +85,15 @@ export function RealTimeInsights() {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const [search, setSearch] = useState('');
-    const [statusFilter, setStatusFilter] = useState('ALL'); // 'ALL' | 'ONLINE' | 'IDLE' | 'OFFLINE'
-    const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'map'
-    const [viewMode, setViewMode] = useState('grid'); // 'list' | 'grid'
+    const [statusFilter, setStatusFilter] = useState('ALL');
+    const [activeTab, setActiveTab] = useState('overview');
+    const [viewMode, setViewMode] = useState('grid');
     const [secAgo, setSecAgo] = useState(0);
 
-    // Update "last refreshed" counter every second
     useEffect(() => {
         const t = setInterval(() => setSecAgo(s => s + 1), 1000);
         return () => clearInterval(t);
     }, []);
-    // Reset on data change
     useEffect(() => { setSecAgo(0); }, [employees]);
 
     const filtered = useMemo(() => {
@@ -121,16 +124,22 @@ export function RealTimeInsights() {
         const m = Math.round((hours - h) * 60);
         return (
             <div className="flex flex-col items-center">
-                <span className="font-black text-slate-700 dark:text-slate-300">{h}h</span>
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">{m.toString().padStart(2, '0')}m</span>
+                <span className="font-bold text-[#29291F] dark:text-[#F5F1E9] tabular-nums">{h}h</span>
+                <span className="text-[10px] font-medium text-[#777367] uppercase tabular-nums">{m.toString().padStart(2, '0')}m</span>
             </div>
         );
     };
 
     const handleDownload = () => {
-        const headers = ['Name', 'Work Time [h]', 'Manual Time [h]', 'Computer Act. [h]', 'Team', 'Status', 'Break Time', 'Productivity (%)', 'Utilization (%)'];
+        const headers = ['Employee Name', 'Total Work Hours', 'Manual Hours', 'Activity Hours', 'Team', 'Status', 'Total Break Time', 'Productivity Score', 'Utilization Score'];
         const rows = filtered.map(e => {
-            const totalBreakSecs = Math.floor((e.breakHours || 0) * 3600);
+            const breaks = Array.isArray(e.breaks) ? e.breaks : [];
+            const totalBreakSecs = breaks.reduce((acc, b) => {
+                if (b.startTime && b.endTime) {
+                    return acc + Math.floor((new Date(b.endTime) - new Date(b.startTime)) / 1000);
+                }
+                return acc;
+            }, 0);
             const formatH = (hrs) => {
                 const h = Math.floor(hrs);
                 const m = Math.round((hrs - h) * 60);
@@ -159,29 +168,37 @@ export function RealTimeInsights() {
     };
 
     return (
-        <div className="min-h-screen bg-[#fcfdfe] dark:bg-slate-950 pb-12 px-2 sm:px-4 lg:px-8">
+        <div className="w-full space-y-6">
             {/* Top Bar */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 py-8 mb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Real-Time Insights</h1>
-                    <div className="flex items-center gap-2 mt-1 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                        <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    <h1 className="font-serif text-3xl font-normal text-[#29291F] dark:text-[#F5F1E9] tracking-tight">Real-Time Insights</h1>
+                    <div className="flex items-center gap-2 mt-1 text-[10px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-widest">
+                        <div className="h-2 w-2 rounded-full bg-[#5E7D64] animate-pulse" />
                         Live — refreshed {secAgo < 5 ? 'just now' : `${secAgo}s ago`}
                     </div>
                 </div>
-                <div className="flex items-center gap-4">
-                    <div className="bg-slate-100 dark:bg-slate-800 p-1 rounded-lg flex items-center">
+                <div className="flex items-center gap-3">
+                    <div className="bg-[#EEE8DD] dark:bg-[#252B20] p-1 rounded-xl border border-[#E5DED2] dark:border-[#384232] flex items-center shadow-warm-xs">
                         <button
                             onClick={() => setActiveTab('overview')}
-                            className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all ${activeTab === 'overview' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
+                            className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                                activeTab === 'overview'
+                                    ? 'bg-[#30382B] text-white shadow-xs'
+                                    : 'text-[#777367] hover:text-[#29291F] dark:text-[#B8B3A7]'
+                            }`}
                         >
                             Overview
                         </button>
                         <button
                             onClick={() => setActiveTab('map')}
-                            className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-2 ${activeTab === 'map' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
+                            className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer ${
+                                activeTab === 'map'
+                                    ? 'bg-[#30382B] text-white shadow-xs'
+                                    : 'text-[#777367] hover:text-[#29291F] dark:text-[#B8B3A7]'
+                            }`}
                         >
-                            <MapPin size={14} className={activeTab === 'map' ? 'text-emerald-500' : ''} />
+                            <MapPin size={13} className={activeTab === 'map' ? 'text-[#D3B98D]' : ''} />
                             Live Map
                         </button>
                     </div>
@@ -189,23 +206,23 @@ export function RealTimeInsights() {
             </div>
 
             {/* Stat Cards */}
-            <div className="flex flex-wrap gap-4 mb-8">
-                <InsightStatCard title="Present Today" value={presentToday} total={employees.length} icon={Users} color="text-slate-400" subLabel={`${employees.length} total employees`} />
-                <InsightStatCard title="Currently Active" value={onlineEmps.length} icon={Zap} color="text-emerald-500" subLabel={`${stats.online} online`} />
-                <InsightStatCard title="Idle" value={idleEmps.length} icon={Clock} color="text-amber-500" subLabel="Inactive employees" />
-                <InsightStatCard title="Offline" value={stats.offline} icon={TrendingDown} color="text-rose-500" subLabel="Not tracked today" />
-                <InsightStatCard title="Productivity Today" value={`${stats.summary?.productivity ?? 0}%`} icon={Activity} color="text-violet-500" subLabel="vs. active time" />
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5 sm:gap-4">
+                <InsightStatCard title="Present Today" value={presentToday} total={employees.length} icon={Users} subLabel={`${employees.length} total team`} />
+                <InsightStatCard title="Currently Active" value={onlineEmps.length} icon={Zap} subLabel={`${stats.online} online`} />
+                <InsightStatCard title="Idle" value={idleEmps.length} icon={Clock} subLabel="Inactive now" />
+                <InsightStatCard title="Offline" value={stats.offline} icon={TrendingDown} subLabel="Not tracked today" />
+                <InsightStatCard title="Productivity Today" value={`${stats.summary?.productivity ?? 0}%`} icon={Activity} subLabel="vs. active time" />
             </div>
 
             {activeTab === 'overview' ? (
                 <>
                     {/* Filters */}
-                    <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
                         <div className="flex flex-wrap items-center gap-3">
                             <select
                                 value={statusFilter}
                                 onChange={(e) => setStatusFilter(e.target.value)}
-                                className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 outline-none shadow-sm cursor-pointer hover:border-slate-300 dark:hover:border-slate-700 transition-colors"
+                                className="bg-[#FBF9F5] dark:bg-[#252B20] border border-[#E5DED2] dark:border-[#384232] rounded-xl px-3.5 py-2 text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] outline-none shadow-warm-xs cursor-pointer hover:border-[#B9955B] transition-colors"
                             >
                                 <option value="ALL">All Status</option>
                                 <option value="ONLINE">Online</option>
@@ -214,167 +231,159 @@ export function RealTimeInsights() {
                                 <option value="OFFLINE">Offline</option>
                             </select>
 
-                            <div className="relative w-full md:w-64 group">
-                                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                                <input type="text" placeholder="Search employee or team"
-                                    value={search} onChange={e => setSearch(e.target.value)}
-                                    className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg pl-9 pr-4 py-2 text-xs font-medium outline-none shadow-sm dark:text-white" />
+                            <div className="relative w-full sm:w-64 group">
+                                <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#777367]" />
+                                <input
+                                    type="text"
+                                    placeholder="Search employee or team"
+                                    value={search}
+                                    onChange={e => setSearch(e.target.value)}
+                                    className="w-full bg-[#FBF9F5] dark:bg-[#252B20] border border-[#E5DED2] dark:border-[#384232] rounded-xl pl-9 pr-4 py-2 text-xs font-medium outline-none shadow-warm-xs text-[#29291F] dark:text-[#F5F1E9] placeholder-[#777367] focus:border-[#B9955B] transition-all"
+                                />
                             </div>
                         </div>
+
                         <div className="flex items-center gap-2">
                             <button
                                 onClick={handleDownload}
                                 title="Download CSV"
-                                className="p-2 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-400 hover:bg-slate-50 hover:text-violet-600 dark:hover:bg-slate-800 transition-all"
+                                className="p-2 border border-[#E5DED2] dark:border-[#384232] bg-[#FBF9F5] dark:bg-[#252B20] rounded-xl text-[#777367] hover:text-[#B9955B] hover:bg-[#EEE8DD] transition-all shadow-warm-xs cursor-pointer"
                             >
-                                <Download size={16} />
+                                <Download size={15} />
                             </button>
                             <button
                                 onClick={() => setViewMode(v => v === 'list' ? 'grid' : 'list')}
                                 title={viewMode === 'list' ? 'Switch to Grid View' : 'Switch to List View'}
-                                className={`p-2 border rounded-lg transition-all ${viewMode === 'grid' ? 'border-violet-400 bg-violet-50 dark:bg-violet-900/20 text-violet-600' : 'border-slate-200 dark:border-slate-800 text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
+                                className={`p-2 border rounded-xl transition-all shadow-warm-xs cursor-pointer ${
+                                    viewMode === 'grid'
+                                        ? 'border-[#B9955B] bg-[#EEE8DD] text-[#30382B]'
+                                        : 'border-[#E5DED2] dark:border-[#384232] bg-[#FBF9F5] dark:bg-[#252B20] text-[#777367] hover:bg-[#EEE8DD]'
+                                }`}
                             >
-                                {viewMode === 'list' ? <LayoutGrid size={16} /> : <List size={16} />}
+                                {viewMode === 'list' ? <LayoutGrid size={15} /> : <List size={15} />}
                             </button>
                         </div>
                     </div>
 
                     {/* Employee List/Grid */}
                     {viewMode === 'list' ? (
-                        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+                        <div className="bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl border border-[#E5DED2] dark:border-[#384232] shadow-warm-xs overflow-hidden">
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left text-xs">
-                                    <thead className="text-slate-500 dark:text-slate-400 font-bold border-b border-slate-100 dark:border-slate-800 bg-[#fcfdfe] dark:bg-slate-800/50">
+                                    <thead className="text-[#777367] dark:text-[#B8B3A7] font-semibold border-b border-[#E5DED2] dark:border-[#384232] bg-[#EEE8DD]/40 dark:bg-[#1E2419]">
                                         <tr>
-                                            <th className="px-6 py-4">Employee Name</th>
-                                            <th className="px-6 py-4 text-center">Work Time [h]</th>
-                                            <th className="px-6 py-4 text-center">Manual Time [h]</th>
-                                            <th className="px-6 py-4 text-center">Computer Act. [h]</th>
-                                            <th className="px-6 py-4">Current Activity</th>
-                                            <th className="px-6 py-4">Location</th>
-                                            <th className="px-6 py-4">Team</th>
-                                            <th className="px-6 py-4">Status</th>
-                                            <th className="px-6 py-4">Productivity</th>
-                                            <th className="px-6 py-4">Utilization</th>
-                                            <th className="px-6 py-4 text-center">Action</th>
+                                            <th className="px-6 py-3.5 text-[10px] font-bold uppercase tracking-wider">Employee Name</th>
+                                            <th className="px-6 py-3.5 text-center text-[10px] font-bold uppercase tracking-wider">Work Time</th>
+                                            <th className="px-6 py-3.5 text-center text-[10px] font-bold uppercase tracking-wider">Manual</th>
+                                            <th className="px-6 py-3.5 text-center text-[10px] font-bold uppercase tracking-wider">Computer</th>
+                                            <th className="px-6 py-3.5 text-[10px] font-bold uppercase tracking-wider">Team</th>
+                                            <th className="px-6 py-3.5 text-[10px] font-bold uppercase tracking-wider">Status</th>
+                                            <th className="px-6 py-3.5 text-center text-[10px] font-bold uppercase tracking-wider">Breaks</th>
+                                            <th className="px-6 py-3.5 text-center text-[10px] font-bold uppercase tracking-wider">Productivity</th>
+                                            <th className="px-6 py-3.5 text-center text-[10px] font-bold uppercase tracking-wider">Utilization</th>
+                                            <th className="px-6 py-3.5 text-right text-[10px] font-bold uppercase tracking-wider">Actions</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-slate-50 dark:divide-slate-800/60">
-                                        {filtered.map((emp) => (
-                                            <tr key={emp.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
-                                                <td className="px-6 py-4">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className={`h-2 w-2 rounded-full shrink-0 ${statusColors[emp.status] || statusColors.offline}`} />
-                                                        <div className="h-9 w-9 rounded-full overflow-hidden border border-slate-200 dark:border-slate-700 shrink-0 bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
-                                                            {emp.avatar ? (
-                                                                <img src={emp.avatar} alt={emp.name} className="w-full h-full object-cover"
-                                                                    onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }}
-                                                                />
-                                                            ) : null}
-                                                            <span className={`text-[10px] font-black text-violet-700 dark:text-violet-300 ${emp.avatar ? 'hidden' : 'flex'}`}>
-                                                                {emp.initials || (emp.name || '?').split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2)}
-                                                            </span>
-                                                        </div>
-                                                        <span className="font-bold text-slate-800 dark:text-white">{emp.name}</span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4">{formatHours(emp.totalWorkHours || 0)}</td>
-                                                <td className="px-6 py-4">{formatHours(emp.manualHours || 0)}</td>
-                                                <td className="px-6 py-4">{formatHours(emp.computerActivityHours || 0)}</td>
-                                                <td className="px-6 py-4">
-                                                    <div className="flex flex-col">
-                                                        <span className="font-bold text-slate-700 dark:text-slate-200 truncate max-w-[150px]" title={emp.status === 'offline' ? 'Offline' : emp.activeWindow}>
-                                                            {emp.status === 'offline' ? 'Offline' : (emp.activeApp || 'Active')}
-                                                        </span>
-                                                        <span className="text-[10px] text-slate-400 truncate max-w-[150px]">
-                                                            {emp.status === 'offline' ? 'No recent activity' : (emp.activeWindow || 'In progress...')}
-                                                        </span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
-                                                        <MapPin size={12} className="text-rose-400" />
-                                                        <span className="font-medium">{emp.location || 'Remote'}</span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4 font-bold text-slate-600 dark:text-slate-300">{emp.team || '—'}</td>
-                                                <td className="px-6 py-4">
-                                                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                                                        emp.status === 'online' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400' :
-                                                        emp.status === 'idle' ? 'bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400' :
-                                                        emp.status === 'break' ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-400' :
-                                                        'bg-slate-100 text-slate-500 dark:bg-slate-800'
-                                                    }`}>
-                                                        <span className={`h-1.5 w-1.5 rounded-full ${statusColors[emp.status] || statusColors.offline}`} />
-                                                        {emp.status}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="flex-1 max-w-[80px] h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                                                            <div className="h-full bg-violet-500 rounded-full transition-all" style={{ width: `${emp.productivityScore || 0}%` }} />
-                                                        </div>
-                                                        <span className="font-black text-slate-700 dark:text-slate-300 min-w-[32px]">{emp.productivityScore || 0}%</span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="flex-1 max-w-[80px] h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                                                            <div className="h-full bg-indigo-400 rounded-full transition-all" style={{ width: `${emp.utilizationScore || 0}%` }} />
-                                                        </div>
-                                                        <span className="font-black text-slate-700 dark:text-slate-300 min-w-[32px]">{emp.utilizationScore || 0}%</span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4 text-center">
-                                                     <div className="flex justify-center gap-2">
-                                                        <button 
-                                                            onClick={() => navigate(`${rolePath}/screenshots?employee=${emp.id}`)}
-                                                            className="p-2 bg-emerald-500 text-white rounded-lg hover:scale-110 transition-transform shadow-md"
-                                                            title="View Screenshots"
-                                                        >
-                                                            <Video size={14} />
-                                                        </button>
-                                                     </div>
-                                                 </td>
+                                    <tbody className="divide-y divide-[#E5DED2]/60 dark:divide-[#384232]/60">
+                                        {filtered.length === 0 ? (
+                                            <tr>
+                                                <td colSpan="10" className="py-12 text-center text-[#777367] font-medium">No employees match your filter.</td>
                                             </tr>
-                                        ))}
+                                        ) : filtered.map((emp) => {
+                                            const breaks = Array.isArray(emp.breaks) ? emp.breaks : [];
+                                            const totalBreakSecs = breaks.reduce((acc, b) => {
+                                                if (b.startTime && b.endTime) {
+                                                    return acc + Math.floor((new Date(b.endTime) - new Date(b.startTime)) / 1000);
+                                                }
+                                                return acc;
+                                            }, 0);
+                                            const isOnline = emp.status === 'online';
+
+                                            return (
+                                                <tr key={emp.id} className="hover:bg-[#EEE8DD]/30 dark:hover:bg-[#1E2419] transition-colors">
+                                                    <td className="px-6 py-4">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="h-9 w-9 rounded-xl bg-[#EEE8DD] text-[#30382B] flex items-center justify-center font-bold text-xs border border-[#E5DED2]">
+                                                                {emp.initials || (emp.name || '?').split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                                                            </div>
+                                                            <div>
+                                                                <p className="font-semibold text-xs text-[#29291F] dark:text-[#F5F1E9]">{emp.name}</p>
+                                                                <p className="text-[10px] text-[#777367]">{emp.email || '—'}</p>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-center">{formatHours(emp.totalWorkHours || 0)}</td>
+                                                    <td className="px-6 py-4 text-center">{formatHours(emp.manualHours || 0)}</td>
+                                                    <td className="px-6 py-4 text-center">{formatHours(emp.computerActivityHours || 0)}</td>
+                                                    <td className="px-6 py-4">
+                                                        <span className="px-2.5 py-1 rounded-lg bg-[#EEE8DD]/60 text-[11px] font-medium text-[#29291F]">
+                                                            {emp.team || '—'}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${
+                                                            emp.status === 'online' ? 'bg-[#5E7D64]/10 text-[#5E7D64]' :
+                                                            emp.status === 'idle' ? 'bg-[#C98A3C]/10 text-[#C98A3C]' :
+                                                            emp.status === 'break' ? 'bg-[#B9955B]/15 text-[#A17D45]' :
+                                                            'bg-[#777367]/10 text-[#777367]'
+                                                        }`}>
+                                                            <span className={`h-1.5 w-1.5 rounded-full ${statusColors[emp.status] || statusColors.offline}`} />
+                                                            {emp.status}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-center text-[11px] font-medium text-[#777367]">
+                                                        {formatSecs(totalBreakSecs)}
+                                                    </td>
+                                                    <td className="px-6 py-4 text-center">
+                                                        <span className="font-bold text-[#B9955B]">{emp.productivityScore || 0}%</span>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-center">
+                                                        <span className="font-bold text-[#5E7D64]">{emp.utilizationScore || 0}%</span>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-right">
+                                                        <button
+                                                            onClick={() => navigate(`${rolePath}/screenshots?employee=${emp.id}`)}
+                                                            className="px-3 py-1.5 bg-[#30382B] hover:bg-[#3C4536] text-[#FDFBF7] rounded-lg text-[11px] font-semibold transition-all inline-flex items-center gap-1.5 shadow-warm-xs cursor-pointer"
+                                                        >
+                                                            <Video size={12} className="text-[#D3B98D]" /> View
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
                                     </tbody>
                                 </table>
-                                {filtered.length === 0 && (
-                                    <div className="py-16 text-center text-slate-400 font-bold text-sm">No employees match your search.</div>
-                                )}
                             </div>
                         </div>
                     ) : (
-                        /* Grid View */
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                             {filtered.length === 0 ? (
-                                <div className="col-span-full py-16 text-center text-slate-400 font-bold text-sm">No employees match your search.</div>
+                                <div className="col-span-full py-16 text-center text-[#777367] font-medium text-sm">No employees match your search.</div>
                             ) : filtered.map((emp) => (
-                                <div key={emp.id} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 flex flex-col gap-4 hover:shadow-md transition-shadow">
+                                <div key={emp.id} className="bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl border border-[#E5DED2] dark:border-[#384232] shadow-warm-xs p-4 sm:p-5 flex flex-col gap-3.5 hover:shadow-warm-md hover:border-[#B9955B]/60 transition-all">
                                     <div className="flex items-center gap-3">
                                         <div className="relative">
-                                            <div className="h-12 w-12 rounded-full overflow-hidden border-2 border-slate-200 dark:border-slate-700 bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
+                                            <div className="h-11 w-11 rounded-xl bg-[#EEE8DD] text-[#30382B] border border-[#E5DED2] flex items-center justify-center font-bold text-xs">
                                                 {emp.avatar ? (
-                                                    <img src={emp.avatar} alt={emp.name} className="w-full h-full object-cover"
-                                                        onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }}
+                                                    <img src={emp.avatar} alt={emp.name} className="w-full h-full object-cover rounded-xl"
+                                                        onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
                                                     />
                                                 ) : null}
-                                                <span className={`text-[10px] font-black text-violet-700 dark:text-violet-300 ${emp.avatar ? 'hidden' : 'flex'}`}>
-                                                    {emp.initials || (emp.name || '?').split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2)}
+                                                <span className={`${emp.avatar ? 'hidden' : 'flex'}`}>
+                                                    {emp.initials || (emp.name || '?').split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
                                                 </span>
                                             </div>
-                                            <span className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white dark:border-slate-900 ${statusColors[emp.status] || statusColors.offline}`} />
+                                            <span className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-[#FBF9F5] dark:border-[#252B20] ${statusColors[emp.status] || statusColors.offline}`} />
                                         </div>
-                                        <div className="min-w-0">
-                                            <p className="font-black text-sm text-slate-900 dark:text-white truncate">{emp.name}</p>
-                                            <p className="text-[11px] font-semibold text-slate-400 truncate">{emp.team || '—'}</p>
+                                        <div className="min-w-0 flex-1">
+                                            <p className="font-semibold text-xs sm:text-sm text-[#29291F] dark:text-[#F5F1E9] truncate">{emp.name}</p>
+                                            <p className="text-[11px] font-medium text-[#777367] truncate">{emp.team || 'No Team'}</p>
                                         </div>
-                                        <span className={`ml-auto shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase ${
-                                            emp.status === 'online' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400' :
-                                            emp.status === 'idle' ? 'bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400' :
-                                            emp.status === 'break' ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-400' :
-                                            'bg-slate-100 text-slate-500 dark:bg-slate-800'
+                                        <span className={`shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${
+                                            emp.status === 'online' ? 'bg-[#5E7D64]/10 text-[#5E7D64]' :
+                                            emp.status === 'idle' ? 'bg-[#C98A3C]/10 text-[#C98A3C]' :
+                                            emp.status === 'break' ? 'bg-[#B9955B]/15 text-[#A17D45]' :
+                                            'bg-[#777367]/10 text-[#777367]'
                                         }`}>
                                             <span className={`h-1.5 w-1.5 rounded-full ${statusColors[emp.status] || statusColors.offline}`} />
                                             {emp.status}
@@ -382,44 +391,46 @@ export function RealTimeInsights() {
                                     </div>
 
                                     {/* Activity and Location */}
-                                    <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-2 flex flex-col gap-1.5 border border-slate-100 dark:border-slate-800">
-                                        <div className="flex items-center gap-2 text-[10px] font-bold text-slate-500 uppercase tracking-tight">
-                                            <Activity size={10} className="text-violet-500" />
+                                    <div className="bg-[#EEE8DD]/40 dark:bg-[#1E2419] rounded-xl p-2.5 flex flex-col gap-1 border border-[#E5DED2]/60 dark:border-[#384232]/60">
+                                        <div className="flex items-center gap-2 text-[10px] font-bold text-[#777367] uppercase tracking-wider">
+                                            <Activity size={11} className="text-[#B9955B]" />
                                             <span className="truncate max-w-[100px]">{emp.status === 'offline' ? 'Offline' : (emp.activeApp || 'Idle')}</span>
-                                            <span className="text-slate-300 dark:text-slate-700">|</span>
-                                            <MapPin size={10} className="text-rose-400" />
+                                            <span className="text-[#E5DED2]">|</span>
+                                            <MapPin size={11} className="text-[#777367]" />
                                             <span className="truncate max-w-[70px]">{emp.location || 'Remote'}</span>
                                         </div>
-                                        <p className="text-[10px] text-slate-400 truncate italic px-1">
+                                        <p className="text-[10px] text-[#777367] truncate italic px-0.5">
                                             {emp.status === 'offline' ? 'No recent activity' : (emp.activeWindow || 'Waiting for activity...')}
                                         </p>
                                     </div>
 
-
-                                    <div className="space-y-2">
+                                    {/* Progress Bars */}
+                                    <div className="space-y-2 pt-1">
                                         <div>
-                                            <div className="flex justify-between text-[10px] font-bold text-slate-500 mb-1">
-                                                <span>Productivity</span><span className="text-violet-600">{emp.productivityScore || 0}%</span>
+                                            <div className="flex justify-between text-[10px] font-bold text-[#777367] mb-1">
+                                                <span>Productivity</span><span className="text-[#B9955B] font-bold">{emp.productivityScore || 0}%</span>
                                             </div>
-                                            <div className="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                                                <div className="h-full bg-violet-500 rounded-full transition-all" style={{ width: `${emp.productivityScore || 0}%` }} />
+                                            <div className="h-1.5 bg-[#EEE8DD] dark:bg-[#1E2419] rounded-full overflow-hidden">
+                                                <div className="h-full bg-[#B9955B] rounded-full transition-all" style={{ width: `${emp.productivityScore || 0}%` }} />
                                             </div>
                                         </div>
                                         <div>
-                                            <div className="flex justify-between text-[10px] font-bold text-slate-500 mb-1">
-                                                <span>Utilization</span><span className="text-indigo-500">{emp.utilizationScore || 0}%</span>
+                                            <div className="flex justify-between text-[10px] font-bold text-[#777367] mb-1">
+                                                <span>Utilization</span><span className="text-[#5E7D64] font-bold">{emp.utilizationScore || 0}%</span>
                                             </div>
-                                            <div className="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                                                <div className="h-full bg-indigo-400 rounded-full transition-all" style={{ width: `${emp.utilizationScore || 0}%` }} />
+                                            <div className="h-1.5 bg-[#EEE8DD] dark:bg-[#1E2419] rounded-full overflow-hidden">
+                                                <div className="h-full bg-[#5E7D64] rounded-full transition-all" style={{ width: `${emp.utilizationScore || 0}%` }} />
                                             </div>
                                         </div>
                                     </div>
+
                                     <div className="flex gap-2 mt-auto pt-2">
-                                        <button 
+                                        <button
                                             onClick={() => navigate(`${rolePath}/screenshots?employee=${emp.id}`)}
-                                            className="flex-1 flex items-center justify-center gap-2 py-2 bg-emerald-500 text-white rounded-lg text-xs font-black shadow-md hover:bg-emerald-600 transition-colors"
+                                            className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-[#30382B] hover:bg-[#3C4536] text-[#FDFBF7] rounded-xl text-xs font-semibold shadow-warm-xs transition-all active:scale-95 cursor-pointer"
                                         >
-                                            <Video size={14} /> VIEW SCREENSHOTS
+                                            <Video size={13} className="text-[#D3B98D]" />
+                                            <span>View Screenshots</span>
                                         </button>
                                     </div>
                                 </div>

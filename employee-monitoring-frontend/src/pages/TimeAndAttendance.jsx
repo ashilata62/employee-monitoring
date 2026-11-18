@@ -243,14 +243,14 @@ export function TimeAndAttendance() {
                                 placeholder="Search employee or team"
                                 value={generalSearch}
                                 onChange={(e) => setGeneralSearch(e.target.value)}
-                                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg pl-9 pr-4 py-2 text-xs font-medium dark:text-slate-200 focus:ring-2 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all placeholder:text-slate-400"
+                                className="w-full bg-[#F5F1E9] dark:bg-[#1E2419] border border-[#D6CDBC] dark:border-[#384232] rounded-xl pl-9 pr-4 py-2 text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] focus:border-[#B9955B] outline-none transition-all placeholder-[#777367]"
                             />
                         </div>
                         {activeTab === 'Daily Attendance' && (
                             <button
                                 onClick={handleDownload}
                                 title="Download CSV"
-                                className="p-2 border border-slate-200 dark:border-slate-800 text-primary-600 dark:text-primary-400 rounded-lg hover:bg-primary-50 dark:hover:bg-slate-800/50 transition-colors shadow-sm"
+                                className="p-2 border border-[#E5DED2] dark:border-[#384232] text-[#B9955B] bg-[#FBF9F5] dark:bg-[#252B20] rounded-xl hover:border-[#B9955B] transition-colors shadow-warm-xs cursor-pointer"
                             >
                                 <Download size={18} strokeWidth={2.5} />
                             </button>
@@ -263,9 +263,9 @@ export function TimeAndAttendance() {
             {activeTab === 'Daily Attendance' && (
                 <div className="space-y-6">
                     {viewMode === 'Day View' ? (
-                        <div className="bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl border border-[#E5DED2] dark:border-[#384232] shadow-warm-xs overflow-hidden overflow-x-auto">
+                        <div className="bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs overflow-hidden overflow-x-auto">
                             <table className="w-full text-left min-w-[1000px]">
-                                <thead className="bg-[#EEE8DD]/70 dark:bg-[#1E2419] text-[#777367] dark:text-[#B8B3A7] font-bold text-[10px] uppercase tracking-[0.14em] border-b border-[#E5DED2] dark:border-[#384232]">
+                                <thead className="bg-[#E5DDCF]/70 dark:bg-[#1E2419] text-[#777367] dark:text-[#B8B3A7] font-bold text-[10px] uppercase tracking-[0.14em] border-b border-[#D6CDBC] dark:border-[#384232]">
                                     <tr>
                                         <th className="px-6 py-4">Employee Name</th>
                                         <th className="px-6 py-4">Location</th>
@@ -277,7 +277,7 @@ export function TimeAndAttendance() {
                                         <th className="px-6 py-4">Status</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
+                                <tbody className="divide-y divide-[#D6CDBC]/60 dark:divide-[#384232]">
                                     {timesheets.filter(row => {
                                         const matchesSearch = (row.employee?.fullName?.toLowerCase() ?? '').includes(generalSearch.toLowerCase()) ||
                                             (row.employee?.team?.name?.toLowerCase() ?? '').includes(generalSearch.toLowerCase());
@@ -285,10 +285,10 @@ export function TimeAndAttendance() {
                                         const matchesEmp = !selectedEmployee || row.employeeId === selectedEmployee;
                                         return matchesSearch && matchesTeam && matchesEmp;
                                     }).map((row) => (
-                                        <tr key={row.id || `${row.employeeId}-${row.date}`} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
+                                        <tr key={row.id || `${row.employeeId}-${row.date}`} className="bg-[#F5F1E9] dark:bg-[#1E2419] hover:bg-[#EAE2D3] dark:hover:bg-[#252B20] transition-colors border-b border-[#D6CDBC]/50">
                                             <td className="px-6 py-6">
                                                 <div className="flex items-center gap-4">
-                                                    <div className="h-10 w-10 rounded-full bg-rose-100 flex items-center justify-center text-xs font-black text-rose-600 border border-rose-200">
+                                                    <div className="h-9 w-9 rounded-xl bg-[#EEE8DD] text-[#30382B] border border-[#E5DED2] flex items-center justify-center text-xs font-bold tracking-wider shrink-0">
                                                         {(row.employee?.fullName || row.employee?.name || '??').split(' ').map(n => n[0]).join('').toUpperCase()}
                                                     </div>
                                                     <div>
@@ -318,9 +318,9 @@ export function TimeAndAttendance() {
                                             </td>
                                             <td className="px-6 py-6">
                                                 {row.clockIn && !row.clockOut ? (
-                                                    <span className="px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 text-[9px] font-black uppercase tracking-wider">Working</span>
+                                                    <span className="px-2.5 py-0.5 rounded-md bg-[#5E7D64]/10 text-[#5E7D64] text-[9px] font-bold uppercase tracking-wider">Working</span>
                                                 ) : (
-                                                    <span className="px-2 py-1 rounded-full bg-slate-100 text-slate-500 text-[9px] font-black uppercase tracking-wider">Completed</span>
+                                                    <span className="px-2.5 py-0.5 rounded-md bg-[#EEE8DD] text-[#777367] text-[9px] font-bold uppercase tracking-wider">Completed</span>
                                                 )}
                                             </td>
                                         </tr>
@@ -335,9 +335,9 @@ export function TimeAndAttendance() {
                         </div>
                     ) : (
                         /* Shift View Implementation */
-                        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden overflow-x-auto">
+                        <div className="bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl border border-[#E5DED2] dark:border-[#384232] shadow-warm-xs overflow-hidden overflow-x-auto">
                             <table className="w-full text-left min-w-[1000px]">
-                                <thead className="bg-[#fcfdfe] dark:bg-slate-950 text-slate-400 dark:text-slate-500 font-bold text-[10px] uppercase tracking-widest border-b border-slate-50 dark:border-slate-800">
+                                <thead className="bg-[#E5DDCF]/60 dark:bg-[#1E2419] text-[#777367] font-bold text-[10px] uppercase tracking-[0.14em] border-b border-[#D6CDBC] dark:border-[#384232]">
                                     <tr>
                                         <th className="px-8 py-4">Employee</th>
                                         <th className="px-8 py-4">Team</th>
@@ -346,7 +346,7 @@ export function TimeAndAttendance() {
                                         <th className="px-8 py-4">Shift Compliance</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
+                                <tbody className="divide-y divide-[#D6CDBC]/60 dark:divide-[#384232]">
                                     {filteredEmployees.map((emp) => {
                                         // Find shift for this specific employee today
                                         const shift = shifts.find(s => 
@@ -407,7 +407,7 @@ export function TimeAndAttendance() {
                                                     <div className="flex flex-wrap gap-2">
                                                         {!shift ? (
                                                             actualStart ? (
-                                                                <span className="px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase tracking-widest border border-blue-100 dark:border-blue-500/20 flex items-center gap-1">
+                                                                <span className="px-3 py-1 rounded-full bg-[#FAF0E1] text-[#C98A3C] text-[10px] font-bold uppercase tracking-wider border border-[#E8D4B8] flex items-center gap-1">
                                                                     <Zap size={12} /> Unsched. Work
                                                                 </span>
                                                             ) : (
@@ -459,9 +459,9 @@ export function TimeAndAttendance() {
                 <div className="space-y-6">
                     {/* Legend and Threshold block removed */}
 
-                    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden overflow-x-auto">
+                    <div className="bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs overflow-hidden overflow-x-auto">
                         <table className="w-full text-left min-w-[700px]">
-                            <thead className="bg-slate-50/50 dark:bg-slate-800/30 border-b border-slate-100 dark:border-slate-800">
+                            <thead className="bg-[#E5DDCF]/70 dark:bg-[#1E2419] border-b border-[#D6CDBC] dark:border-[#384232]">
                                 <tr>
                                     <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 w-48">Employee Name</th>
                                     {gridDays.map((date, i) => (
@@ -476,10 +476,10 @@ export function TimeAndAttendance() {
                                 {filteredEmployees.map((emp, idx) => {
                                     const empTimesheets = timesheets.filter(t => t.employeeId === emp.id);
                                     return (
-                                        <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                                        <tr key={idx} className="bg-[#F5F1E9] dark:bg-[#1E2419] hover:bg-[#EAE2D3] dark:hover:bg-[#252B20] transition-colors border-b border-[#D6CDBC]/50">
                                             <td className="px-6 py-5">
                                                 <div className="flex items-center gap-3">
-                                                    <div className={`h-9 w-9 rounded-full flex items-center justify-center text-xs font-black border border-white bg-blue-100 text-blue-600`}>
+                                                    <div className={`h-9 w-9 rounded-xl flex items-center justify-center text-xs font-bold border border-[#E5DED2] bg-[#EEE8DD] text-[#30382B]`}>
                                                         {(emp.fullName || emp.name || '??').split(' ').map(n => n[0]).join('').toUpperCase()}
                                                     </div>
                                                     <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{emp.fullName || emp.name || 'Unknown'}</span>
@@ -490,7 +490,7 @@ export function TimeAndAttendance() {
                                                 const hasAttended = empTimesheets.some(t => format(new Date(t.date), 'yyyy-MM-dd') === dayStr);
                                                 return (
                                                     <td key={i} className="px-3 py-5 text-center">
-                                                        <div className={`h-5 w-5 rounded-full mx-auto ${hasAttended ? 'bg-primary-400 dark:bg-primary-500/60' : 'border border-slate-300 dark:border-slate-700'}`} />
+                                                        <div className={`h-5 w-5 rounded-full mx-auto ${hasAttended ? 'bg-[#5E7D64]' : 'border border-[#D6CDBC] dark:border-[#384232]'}`} />
                                                     </td>
                                                 );
                                             })}
@@ -505,7 +505,7 @@ export function TimeAndAttendance() {
                                         </tr>
                                     );
                                 })}
-                                <tr className="bg-slate-50/30 dark:bg-slate-800/20 border-t border-slate-100 dark:border-slate-800">
+                                <tr className="bg-[#E5DDCF]/50 dark:bg-[#1E2419]/50 border-t border-[#D6CDBC] dark:border-[#384232]">
                                     <td className="px-6 py-4"><span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Count</span></td>
                                     {gridDays.map((date, i) => {
                                         const dayStr = format(date, 'yyyy-MM-dd');
@@ -530,13 +530,13 @@ export function TimeAndAttendance() {
                         </table>
                     </div>
                     {/* Shift Status Preview (Integrated from Alerts) */}
-                    <div className="mt-12 bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden">
-                        <div className="p-8 border-b border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-800/20 flex items-center justify-between">
+                    <div className="mt-8 bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs overflow-hidden">
+                        <div className="p-6 border-b border-[#D6CDBC] dark:border-[#384232] bg-[#E5DDCF]/50 dark:bg-[#1E2419] flex items-center justify-between">
                             <div>
                                 <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Shift Compliance Preview</h3>
                                 <p className="text-xs font-bold text-slate-400">Real-time status based on Alerts & Scheduling settings</p>
                             </div>
-                            <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 font-black text-[10px] uppercase tracking-widest">
+                            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EAEFEA] text-[#5E7D64] border border-[#C5D7C7] font-bold text-[10px] uppercase tracking-wider">
                                 <Zap size={14} /> Live
                             </div>
                         </div>

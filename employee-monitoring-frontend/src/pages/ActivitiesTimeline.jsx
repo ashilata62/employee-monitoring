@@ -39,7 +39,7 @@ import { InsightfulModuleSwitcher } from '../components/common/InsightfulModuleS
 const cn = (...inputs) => twMerge(clsx(inputs));
 
 export function ActivitiesTimeline() {
-  const { role, user } = useAuthStore();
+  const { role, user, isClockedIn, isOnBreak, activeAttendance, clockIn, clockOut, toggleBreak } = useAuthStore();
   const [activeTab, setActiveTab] = useState('Timeline'); // 'Timeline' | 'Logs'
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
@@ -112,19 +112,63 @@ export function ActivitiesTimeline() {
   // Productivity Review Apps state (dynamically loaded from database)
   const [unreviewedApps, setUnreviewedApps] = useState([]);
 
-  // Mini live tracker state (dynamically calculated from real session)
+  // Mini live tracker state (dynamically synced from real persistent attendance API)
   const [trackerSeconds, setTrackerSeconds] = useState(0);
-  const [isTrackerRunning, setIsTrackerRunning] = useState(false);
-  const [isOnBreak, setIsOnBreak] = useState(false);
+  const [isActionLoading, setIsActionLoading] = useState(false);
+
+  // Sync elapsed seconds from real persistent attendance session
+  useEffect(() => {
+    let timer;
+    if (isClockedIn && activeAttendance?.clockIn && !isOnBreak) {
+      const startTime = new Date(activeAttendance.clockIn).getTime();
+      setTrackerSeconds(Math.max(0, Math.floor((Date.now() - startTime) / 1000)));
+      timer = setInterval(() => {
+        setTrackerSeconds(Math.max(0, Math.floor((Date.now() - startTime) / 1000)));
+      }, 1000);
+    } else if (!isClockedIn) {
+      setTrackerSeconds(0);
+    }
+    return () => clearInterval(timer);
+  }, [isClockedIn, activeAttendance?.clockIn, isOnBreak]);
+
+  const handleToggleClock = async () => {
+    try {
+      setIsActionLoading(true);
+      if (isClockedIn) {
+        window.dispatchEvent(new Event('stop-web-tracker'));
+        await clockOut();
+      } else {
+        await clockIn();
+      }
+    } catch (err) {
+      console.error('Attendance action failed:', err);
+    } finally {
+      setIsActionLoading(false);
+    }
+  };
+
+  const handleToggleBreak = async () => {
+    if (!isClockedIn) return;
+    try {
+      setIsActionLoading(true);
+      await toggleBreak();
+    } catch (err) {
+      console.error('Break action failed:', err);
+    } finally {
+      setIsActionLoading(false);
+    }
+  };
 
   // Tasks play/pause states (dynamically loaded from database)
   const [tasksList, setTasksList] = useState([]);
 
+  // Dropdown & Popover Refs
   const datePickerRef = useRef(null);
   const exportRef = useRef(null);
   const columnsRef = useRef(null);
   const filterRef = useRef(null);
 
+  // Close popovers on click outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (datePickerRef.current && !datePickerRef.current.contains(e.target)) setShowDatePicker(false);
@@ -135,14 +179,6 @@ export function ActivitiesTimeline() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-  useEffect(() => {
-    let timer;
-    if (isTrackerRunning && !isOnBreak) {
-      timer = setInterval(() => setTrackerSeconds(s => s + 1), 1000);
-    }
-    return () => clearInterval(timer);
-  }, [isTrackerRunning, isOnBreak]);
 
   const formatTrackerTime = (totalSecs) => {
     const h = String(Math.floor(totalSecs / 3600)).padStart(2, '0');
@@ -202,16 +238,15 @@ export function ActivitiesTimeline() {
     }).catch(err => console.error('Failed to load productivity apps:', err));
   }, []);
 
-  // Sync mini tracker with real user session if active today
+  // Sync mini tracker with real user session if active today and not clocked in
   useEffect(() => {
-    if (data?.employeeTimelines?.length) {
+    if (data?.employeeTimelines?.length && !isClockedIn) {
       const myEmp = data.employeeTimelines.find(e => e.id === user?.employeeId || e.email === user?.email);
-      if (myEmp) {
-        setTrackerSeconds(myEmp.activeSeconds || 0);
-        setIsTrackerRunning(myEmp.isOnline || false);
+      if (myEmp && myEmp.activeSeconds) {
+        setTrackerSeconds(myEmp.activeSeconds);
       }
     }
-  }, [data, user]);
+  }, [data, user, isClockedIn]);
 
   const filteredEmployees = useMemo(() => {
     if (!data?.employeeTimelines) return [];
@@ -348,9 +383,9 @@ export function ActivitiesTimeline() {
           {role !== 'EMPLOYEE' && (
             <button
               onClick={() => setShowReviewModal(true)}
-              className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-black text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 transition-all shadow-sm active:scale-95"
+              className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] bg-[#EEE8DD] dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] hover:bg-[#E5DDCF] transition-all shadow-warm-xs active:scale-95 cursor-pointer"
             >
-              <ShieldCheck size={14} className="text-primary-600" />
+              <ShieldCheck size={14} className="text-[#5E7D64]" />
               <span>Review Productivity</span>
             </button>
           )}
@@ -359,15 +394,15 @@ export function ActivitiesTimeline() {
           <div className="relative" ref={datePickerRef}>
             <button
               onClick={() => setShowDatePicker(!showDatePicker)}
-              className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-black text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-primary-400 transition-all shadow-sm"
+              className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] bg-[#EEE8DD] dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] hover:bg-[#E5DDCF] transition-all shadow-warm-xs cursor-pointer"
             >
-              <Calendar size={14} className="text-primary-600" />
+              <Calendar size={14} className="text-[#B9955B]" />
               <span>{selectedDate}</span>
               <ChevronDown size={12} className="text-slate-400" />
             </button>
 
             {showDatePicker && (
-              <div className="absolute top-full right-0 mt-2 w-64 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-3 z-50 animate-in fade-in duration-200 space-y-2">
+              <div className="absolute top-full right-0 mt-2 w-64 bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl shadow-warm-lg border border-[#D6CDBC] dark:border-[#384232] p-3 z-50 animate-in fade-in duration-200 space-y-2">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider px-2">Select Activity Date</p>
                 {[
                   { label: 'Today (Nov 17, 2026)', date: '2026-11-17' },
@@ -414,14 +449,14 @@ export function ActivitiesTimeline() {
           <div className="relative" ref={exportRef}>
             <button
               onClick={() => setShowExportMenu(!showExportMenu)}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-black text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 transition-all shadow-sm active:scale-95"
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] bg-[#EEE8DD] dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] hover:bg-[#E5DDCF] transition-all shadow-warm-xs active:scale-95 cursor-pointer"
             >
               <Download size={14} />
               <span>Export</span>
             </button>
 
             {showExportMenu && (
-              <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-2 z-50 animate-in fade-in duration-200">
+              <div className="absolute top-full right-0 mt-2 w-48 bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl shadow-warm-lg border border-[#D6CDBC] dark:border-[#384232] p-2 z-50 animate-in fade-in duration-200">
                 <button
                   onClick={() => handleExport('csv')}
                   className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl"
@@ -444,14 +479,14 @@ export function ActivitiesTimeline() {
           <div className="relative" ref={columnsRef}>
             <button
               onClick={() => setShowColumnsMenu(!showColumnsMenu)}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-black text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 transition-all shadow-sm active:scale-95"
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] bg-[#EEE8DD] dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] hover:bg-[#E5DDCF] transition-all shadow-warm-xs active:scale-95 cursor-pointer"
             >
               <Columns size={14} />
               <span>Columns</span>
             </button>
 
             {showColumnsMenu && (
-              <div className="absolute top-full right-0 mt-2 w-56 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-3 z-50 animate-in fade-in duration-200 space-y-2">
+              <div className="absolute top-full right-0 mt-2 w-56 bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl shadow-warm-lg border border-[#D6CDBC] dark:border-[#384232] p-3 z-50 animate-in fade-in duration-200 space-y-2">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Visible Columns</p>
                 {Object.entries({
                   employeeName: 'Employee Name & Team',
@@ -476,7 +511,7 @@ export function ActivitiesTimeline() {
       </div>
 
       {/* ── 2. Top Filter & Search Controls Bar ────────────────────────────── */}
-      <div className="flex flex-wrap items-center justify-between gap-4 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+      <div className="flex flex-wrap items-center justify-between gap-4 bg-[#EEE8DD] dark:bg-[#252B20] p-4 rounded-2xl border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs">
         <div className="flex items-center gap-3 flex-1 min-w-[240px]">
           <div className="relative flex-1 max-w-sm">
             <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
@@ -485,7 +520,7 @@ export function ActivitiesTimeline() {
               placeholder="Search employee or team..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 rounded-xl text-xs font-bold text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+              className="w-full pl-9 pr-4 py-2 bg-[#F5F1E9] dark:bg-[#1E2419] border border-[#D6CDBC] dark:border-[#384232] rounded-xl text-xs font-medium text-[#29291F] dark:text-[#F5F1E9] placeholder-[#777367] focus:outline-none focus:border-[#B9955B]"
             />
           </div>
 
@@ -498,7 +533,7 @@ export function ActivitiesTimeline() {
                   "flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-black transition-all shadow-sm",
                   filterTeam || filterShiftStatus !== 'ALL'
                     ? "bg-primary-600 text-white shadow-primary-600/20"
-                    : "text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-950/40 border border-primary-200 dark:border-primary-800/60 hover:bg-primary-100"
+                    : "text-[#29291F] dark:text-[#F5F1E9] bg-[#F5F1E9] dark:bg-[#1E2419] border border-[#D6CDBC] dark:border-[#384232] hover:bg-[#E5DDCF]"
                 )}
               >
                 <span>+ Add Filter</span>
@@ -508,7 +543,7 @@ export function ActivitiesTimeline() {
               </button>
 
               {showFilterPopover && (
-                <div className="absolute top-full left-0 mt-2 w-64 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-4 z-50 animate-in fade-in duration-200 space-y-3">
+                <div className="absolute top-full left-0 mt-2 w-64 bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl shadow-warm-lg border border-[#D6CDBC] dark:border-[#384232] p-4 z-50 animate-in fade-in duration-200 space-y-3">
                   <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
                     <span className="text-xs font-black text-slate-800 dark:text-white">Filter Timeline</span>
                     {(filterTeam || filterShiftStatus !== 'ALL') && (
@@ -553,7 +588,7 @@ export function ActivitiesTimeline() {
 
                   <button
                     onClick={() => setShowFilterPopover(false)}
-                    className="w-full py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-xs font-black transition-colors"
+                    className="w-full py-2 bg-[#30382B] hover:bg-[#3C4536] text-[#FDFBF7] rounded-xl text-xs font-semibold transition-colors cursor-pointer"
                   >
                     Apply Filters
                   </button>
@@ -598,9 +633,11 @@ export function ActivitiesTimeline() {
 
       {/* ── 3. Main Body: Timeline vs Logs ─────────────────────────────────── */}
       {activeTab === 'Timeline' ? (
-        <div className="bg-white dark:bg-slate-900 rounded-[1.75rem] border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden relative">
-          {/* Top Hourly Workforce Activity Density Histogram */}
-          <div className="pt-4 px-6 pb-2 border-b border-slate-100 dark:border-slate-800/60 bg-slate-50/40 dark:bg-slate-900/40">
+        <div className="bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs overflow-hidden relative">
+          <div className="overflow-x-auto">
+            <div className="min-w-[850px]">
+              {/* Top Hourly Workforce Activity Density Histogram */}
+          <div className="pt-4 px-6 pb-2 border-b border-[#D6CDBC] dark:border-[#384232] bg-[#E5DDCF]/50 dark:bg-[#1E2419]">
             <div className="flex items-end h-10 w-full pl-[260px] pr-6 gap-1 relative">
               {data?.hourlyDistribution?.map((bucket, idx) => {
                 const maxEmployees = Math.max(1, bucket.totalEmployees || 4);
@@ -652,7 +689,7 @@ export function ActivitiesTimeline() {
           </div>
 
           {/* Table Header Row */}
-          <div className="flex items-center border-b border-slate-200 dark:border-slate-800 bg-[#f8fafc] dark:bg-slate-900/80 px-6 py-3 text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+          <div className="flex items-center border-b border-[#D6CDBC] dark:border-[#384232] bg-[#E5DDCF]/70 dark:bg-[#1E2419] px-6 py-3.5 text-[10px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-[0.14em]">
             {columns.employeeName && (
               <div className="w-[180px] flex items-center gap-1 cursor-pointer hover:text-slate-800">
                 <span>↑ Employee Name</span>
@@ -677,7 +714,7 @@ export function ActivitiesTimeline() {
           {/* Table Employee Rows */}
           <div 
             onMouseLeave={handleRowMouseLeave}
-            className="divide-y divide-slate-100 dark:divide-slate-800/60 relative"
+            className="divide-y divide-[#D6CDBC]/60 dark:divide-[#384232] relative"
           >
             {loading ? (
               <div className="py-20 flex flex-col items-center justify-center gap-3 text-slate-400">
@@ -694,13 +731,13 @@ export function ActivitiesTimeline() {
                   key={emp.id}
                   onMouseEnter={() => handleRowMouseEnter(emp)}
                   onMouseLeave={handleRowMouseLeave}
-                  className="flex items-center px-6 py-4 hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors relative group"
+                  className="flex items-center px-6 py-4 bg-[#F5F1E9] dark:bg-[#1E2419] hover:bg-[#EAE2D3] dark:hover:bg-[#252B20] transition-colors relative group"
                 >
                   {/* Employee Name & Team */}
                   {columns.employeeName && (
                     <div className="w-[180px] flex items-center gap-3 pr-2">
                       <div className="relative flex-shrink-0">
-                        <div className="w-9 h-9 rounded-full bg-primary-100 dark:bg-primary-950/60 text-primary-700 dark:text-primary-300 border border-primary-200 dark:border-primary-800 font-black text-xs flex items-center justify-center">
+                        <div className="w-9 h-9 rounded-xl bg-[#EEE8DD] text-[#30382B] border border-[#D6CDBC] font-bold text-xs flex items-center justify-center">
                           {emp.initials}
                         </div>
                         {emp.isLate && (
@@ -723,7 +760,7 @@ export function ActivitiesTimeline() {
 
                   {/* Horizontal Gantt Bar Track */}
                   {columns.activityBar && (
-                    <div className="flex-1 h-9 bg-slate-50 dark:bg-slate-800/30 rounded-xl relative overflow-hidden border border-slate-100 dark:border-slate-800 flex items-center mx-2">
+                    <div className="flex-1 h-9 bg-[#EEE8DD] dark:bg-[#252B20] rounded-xl relative overflow-hidden border border-[#D6CDBC] dark:border-[#384232] flex items-center mx-2">
                       {timeMarkers.map(m => (
                         <div
                           key={m.label}
@@ -738,7 +775,7 @@ export function ActivitiesTimeline() {
                             left: `${emp.scheduledStartPercent}%`,
                             width: `${emp.scheduledEndPercent - emp.scheduledStartPercent}%`
                           }}
-                          className="absolute h-0.5 bg-purple-400/40 dark:bg-purple-500/30 pointer-events-none flex items-center justify-between"
+                          className="absolute h-0.5 bg-[#30382B]/30 pointer-events-none flex items-center justify-between"
                         >
                           <div className="h-2.5 w-[2px] bg-purple-500 rounded" />
                           <div className="h-2.5 w-[2px] bg-purple-500 rounded" />
@@ -779,13 +816,15 @@ export function ActivitiesTimeline() {
               ))
             )}
           </div>
+          </div>
+          </div>
 
           {/* Interactive Employee Profile Hover Card */}
           {hoveredEmployee && (
             <div 
               onMouseEnter={handleCardMouseEnter}
               onMouseLeave={handleCardMouseLeave}
-              className="absolute right-8 top-28 w-72 bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 p-5 z-40 animate-in fade-in duration-200"
+              className="absolute right-8 top-28 w-72 bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl shadow-warm-lg border border-[#D6CDBC] dark:border-[#384232] p-5 z-40 animate-in fade-in duration-200"
             >
               <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
                 <div className="flex items-center gap-2.5">
@@ -876,7 +915,7 @@ export function ActivitiesTimeline() {
         </div>
       ) : (
         /* ── Logs Tab View (Working Detailed Table) ── */
-        <div className="bg-white dark:bg-slate-900 rounded-[1.75rem] border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden p-6 space-y-4">
+        <div className="bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs overflow-hidden p-6 space-y-4">
           <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
             <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">
               Activity Logs ({activityLogs.length} Records)
@@ -960,39 +999,29 @@ export function ActivitiesTimeline() {
             </div>
             <div className="flex items-center gap-3">
               <button
-                onClick={() => {
-                  if (isTrackerRunning) {
-                    setIsTrackerRunning(false);
-                    setIsOnBreak(false);
-                  } else {
-                    setIsTrackerRunning(true);
-                    setIsOnBreak(false);
-                  }
-                }}
+                onClick={handleToggleClock}
+                disabled={isActionLoading}
                 className={cn(
-                  "flex-1 py-3 rounded-xl text-xs font-black shadow-lg transition-all active:scale-95 text-white",
-                  isTrackerRunning ? "bg-rose-500 hover:bg-rose-600 shadow-rose-500/20" : "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20"
+                  "flex-1 py-3 rounded-xl text-xs font-black shadow-lg transition-all active:scale-95 text-white disabled:opacity-50 cursor-pointer",
+                  isClockedIn ? "bg-rose-500 hover:bg-rose-600 shadow-rose-500/20" : "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20"
                 )}
               >
-                {isTrackerRunning ? "Clock Out" : "Clock In"}
+                {isActionLoading ? "Processing..." : isClockedIn ? "Clock Out" : "Clock In"}
               </button>
               <button
-                onClick={() => {
-                  if (!isTrackerRunning) return;
-                  setIsOnBreak(!isOnBreak);
-                }}
-                disabled={!isTrackerRunning}
+                onClick={handleToggleBreak}
+                disabled={!isClockedIn || isActionLoading}
                 className={cn(
                   "flex-1 py-3 rounded-xl text-xs font-black transition-all text-white shadow-lg",
-                  !isTrackerRunning
+                  !isClockedIn
                     ? "bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed shadow-none"
                     : isOnBreak
-                      ? "bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20 active:scale-95"
-                      : "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/20 active:scale-95"
+                      ? "bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20 active:scale-95 cursor-pointer"
+                      : "bg-[#B9955B] hover:bg-[#A17D45] shadow-[#B9955B]/20 active:scale-95 cursor-pointer"
                 )}
-                title={!isTrackerRunning ? "Clock in first to take a break" : isOnBreak ? "Resume Work" : "Take a Break"}
+                title={!isClockedIn ? "Clock in first to take a break" : isOnBreak ? "Resume Work" : "Take a Break"}
               >
-                {!isTrackerRunning ? "Take a Break" : isOnBreak ? "Resume Work" : "Take a Break"}
+                {!isClockedIn ? "Take a Break" : isOnBreak ? "Resume Work" : "Take a Break"}
               </button>
             </div>
             <p className="text-center text-[10px] font-bold text-slate-400 mt-3">
@@ -1000,14 +1029,14 @@ export function ActivitiesTimeline() {
               <span
                 className={cn(
                   "font-black",
-                  !isTrackerRunning
+                  !isClockedIn
                     ? "text-slate-400"
                     : isOnBreak
                     ? "text-amber-500"
                     : "text-emerald-500"
                 )}
               >
-                {!isTrackerRunning
+                {!isClockedIn
                   ? "Clocked Out"
                   : isOnBreak
                   ? "On Break"

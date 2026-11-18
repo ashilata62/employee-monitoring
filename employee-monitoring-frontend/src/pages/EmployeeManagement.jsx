@@ -47,16 +47,16 @@ const Modal = ({ isOpen, onClose, title, subtitle, children, maxWidth = "max-w-m
     if (!isOpen) return null;
 
     return createPortal(
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
             <div className="absolute inset-0" onClick={onClose}></div>
             <div
                 className={cn(
-                    "w-full bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl p-8 shadow-2xl border border-[#E5DED2] dark:border-[#384232] animate-in zoom-in-95 duration-200 relative z-10",
+                    "w-full bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl p-5 sm:p-8 max-h-[90vh] overflow-y-auto shadow-2xl border border-[#E5DED2] dark:border-[#384232] animate-in zoom-in-95 duration-200 relative z-10",
                     maxWidth
                 )}
                 onClick={(e) => e.stopPropagation()}
             >
-                <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center justify-between mb-5 sm:mb-8">
                     <div>
                         <h3 className="font-serif text-2xl font-bold text-[#29291F] dark:text-[#F5F1E9] leading-none">{title}</h3>
                         {subtitle && <p className="text-xs font-semibold text-[#777367] mt-1.5 uppercase tracking-wider">{subtitle}</p>}
@@ -237,13 +237,17 @@ const EditEmployeeModal = ({ isOpen, onClose, employee, onUpdate }) => {
 
     useEffect(() => {
         if (employee) {
+            let initialLocation = employee.workMode || 'Remote';
+            if (employee.location && !employee.location.startsWith('—')) {
+                initialLocation = employee.location;
+            }
             setFormData({
-                fullName: employee.name || employee.fullName,
-                email: employee.email,
+                fullName: employee.name || employee.fullName || '',
+                email: employee.email || '',
                 teamId: employee.teamId || '',
-                location: employee.location || 'Remote',
+                location: initialLocation,
                 hourlyRate: employee.hourlyRate || 0,
-                status: employee.status.toUpperCase(),
+                status: (employee.status || 'ACTIVE').toUpperCase(),
                 password: ''
             });
         }
@@ -263,6 +267,19 @@ const EditEmployeeModal = ({ isOpen, onClose, employee, onUpdate }) => {
 
         // Final validation and data prep
         const submitData = { ...formData };
+
+        // Clean teamId: if empty string or not selected, send null so foreign key check succeeds
+        if (!submitData.teamId || submitData.teamId === '') {
+            submitData.teamId = null;
+        }
+
+        // Clean location if it contains display format like "— (Office)"
+        if (submitData.location) {
+            const loc = submitData.location.trim();
+            if (loc.startsWith('— (')) {
+                submitData.location = loc.replace('— (', '').replace(')', '').trim();
+            }
+        }
 
         // Remove empty password so it doesn't fail backend min(6) validation
         if (!submitData.password || submitData.password.trim() === '') {
@@ -371,6 +388,7 @@ const EditEmployeeModal = ({ isOpen, onClose, employee, onUpdate }) => {
                     <div className="relative group">
                         <input
                             type={showPassword ? "text" : "password"}
+                            autoComplete="new-password"
                             value={formData.password}
                             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                             placeholder={formData.status === 'INVITED' ? "Password not set - Enter to create" : "Leave blank to keep existing (********)"}
@@ -468,7 +486,7 @@ const EmployeeActionsDrawer = ({ isOpen, onClose, employee, onUpdateStatus }) =>
     return createPortal(
         <div className="fixed inset-0 z-[10000] flex justify-end">
             <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-500" onClick={onClose}></div>
-            <div className="relative w-full max-w-md bg-white dark:bg-slate-950 h-full shadow-2xl animate-in slide-in-from-right duration-500 flex flex-col">
+            <div className="relative w-full max-w-md bg-[#EEE8DD] dark:bg-[#252B20] h-full shadow-warm-lg border-l border-[#D6CDBC] dark:border-[#384232] animate-in slide-in-from-right duration-500 flex flex-col">
                 <div className="p-8 border-b border-slate-100 dark:border-slate-800">
                     <div className="flex items-center justify-between mb-8">
                         <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-widest">Quick Actions</h3>
@@ -634,7 +652,7 @@ const AdvancedCalendar = ({ isOpen, onClose, selectedPreset, onSelectPreset, tri
                 left: `${coords.left}px`,
                 position: 'absolute'
             }}
-            className="z-[9999] w-[540px] bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-white/20 dark:border-slate-800/50 flex overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+            className="z-[9999] w-[540px] bg-[#EEE8DD] dark:bg-[#252B20] backdrop-blur-md rounded-2xl shadow-warm-lg border border-[#D6CDBC] dark:border-[#384232] flex overflow-hidden animate-in fade-in zoom-in-95 duration-200"
         >
             {/* Left side: Calendar */}
             <div className="flex-1 p-8 border-r border-slate-50 dark:border-slate-800">
@@ -743,7 +761,7 @@ const EmployeeRow = ({ employee, onEdit, onDelete, onTransparencyClick, visibleC
             <tr className="md:hidden border-b border-slate-100 dark:border-slate-800 last:border-0 relative">
                 <td className="p-4" colSpan={99}>
                     <div
-                        className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm p-5 flex flex-col gap-4 active:scale-[0.98] transition-transform cursor-pointer relative"
+                        className="bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs p-5 flex flex-col gap-4 active:scale-[0.98] transition-transform cursor-pointer relative"
                         onClick={() => navigate(`/admin/employees/${employee.id}`)}
                     >
                         {/* Status Badge (Top Right) */}
@@ -823,83 +841,90 @@ const EmployeeRow = ({ employee, onEdit, onDelete, onTransparencyClick, visibleC
 
             {/* ── DESKTOP TABLE ROW (hidden below md) ── */}
             <tr
-                className="hidden md:table-row group hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer transition-all duration-200 border-b border-slate-50 dark:border-slate-800 last:border-0"
+                className="hidden md:table-row group hover:bg-[#EEE8DD]/30 dark:hover:bg-[#1E2419] cursor-pointer transition-all duration-200 border-b border-[#E5DED2]/60 dark:border-[#384232]/60 last:border-0"
                 onClick={() => navigate(`${rolePath}/employees/${employee.id}`)}
             >
                 {visibleColumns.includes('User') && (
-                    <td className="px-6 py-5">
-                        <div className="flex items-center gap-4">
-                            <div className="h-10 w-10 shrink-0 rounded-2xl border-2 border-white dark:border-slate-700 shadow-sm overflow-hidden group-hover:scale-105 transition-transform">
-                                <img src={employee.avatar} className="h-full w-full object-cover" alt="" />
+                    <td className="px-6 py-4">
+                        <div className="flex items-center gap-3.5">
+                            <div className="h-10 w-10 shrink-0 rounded-xl bg-[#EEE8DD] text-[#30382B] border border-[#E5DED2] flex items-center justify-center font-bold text-xs tracking-wider">
+                                {employee.avatar && !employee.avatar.includes('ui-avatars.com') ? (
+                                    <img src={employee.avatar} className="h-full w-full object-cover rounded-xl" alt="" />
+                                ) : (
+                                    <span>{(employee.name || 'U').slice(0, 2).toUpperCase()}</span>
+                                )}
                             </div>
                             <div className="min-w-0 flex-1">
-                                <p className="text-sm font-black text-slate-900 dark:text-white truncate">{employee.name}</p>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">{employee.email}</p>
+                                <p className="text-sm font-semibold text-[#29291F] dark:text-[#F5F1E9] truncate">{employee.name}</p>
+                                <p className="text-[11px] font-medium text-[#777367]">{employee.email}</p>
                             </div>
                         </div>
                     </td>
                 )}
                 {visibleColumns.includes('Team') && (
-                    <td className="px-6 py-5">
-                        <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs font-bold text-slate-600 dark:text-slate-400">
+                    <td className="px-6 py-4">
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-[#EEE8DD]/60 text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9]">
                             {typeof employee.team === 'object' ? (employee.team?.name || 'No Team') : (employee.team || 'No Team')}
                         </span>
                     </td>
                 )}
                 {visibleColumns.includes('Location') && (
-                    <td className="px-6 py-5">
-                        <span className="text-xs font-bold text-slate-600 dark:text-slate-400">{employee.location}</span>
+                    <td className="px-6 py-4">
+                        <span className="text-xs font-medium text-[#777367] dark:text-[#B8B3A7]">{employee.location || 'Remote'}</span>
                     </td>
                 )}
                 {visibleColumns.includes('Work Time') && (
-                    <td className="px-6 py-5">
-                        <span className="text-xs font-bold text-slate-600 dark:text-slate-400">0h 00m</span>
+                    <td className="px-6 py-4">
+                        <span className="text-xs font-medium text-[#29291F] dark:text-[#F5F1E9]">0h 00m</span>
                     </td>
                 )}
                 {visibleColumns.includes('Manual Time') && (
-                    <td className="px-6 py-5">
-                        <span className="text-xs font-bold text-slate-600 dark:text-slate-400">0h 00m</span>
+                    <td className="px-6 py-4">
+                        <span className="text-xs font-medium text-[#29291F] dark:text-[#F5F1E9]">0h 00m</span>
                     </td>
                 )}
                 {visibleColumns.includes('Computer Act.') && (
-                    <td className="px-6 py-5">
-                        <span className="text-xs font-bold text-slate-600 dark:text-slate-400">0h 00m</span>
+                    <td className="px-6 py-4">
+                        <span className="text-xs font-medium text-[#29291F] dark:text-[#F5F1E9]">0h 00m</span>
                     </td>
                 )}
-                <td className="px-6 py-5">
-                    <div className="flex items-center gap-2">
-                        <div className={cn("h-2.5 w-2.5 rounded-full ring-2 ring-white dark:ring-slate-900", statusColor)} />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">{employee.status}</span>
-                    </div>
+                <td className="px-6 py-4">
+                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${
+                        employee.status === 'active' || employee.status === 'online' ? 'bg-[#5E7D64]/10 text-[#5E7D64]' :
+                        employee.status === 'pending' || employee.status === 'invited' ? 'bg-[#B9955B]/15 text-[#A17D45]' :
+                        employee.status === 'deactivated' ? 'bg-[#A84B4B]/10 text-[#A84B4B]' :
+                        'bg-[#777367]/10 text-[#777367]'
+                    }`}>
+                        <span className="h-1.5 w-1.5 rounded-full bg-current" />
+                        {employee.status}
+                    </span>
                 </td>
-                <td className="px-6 py-5 text-right relative">
-                    <div className="flex items-center justify-end gap-[10px]">
-                        {/* Transparency button removed */}
-
+                <td className="px-6 py-4 text-right relative">
+                    <div className="flex items-center justify-end gap-1.5">
                         <button
                             onClick={(e) => { e.stopPropagation(); navigate(`${rolePath}/employees/${employee.id}`); }}
-                            className="h-9 w-9 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-indigo-500 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all shadow-sm group/btn"
+                            className="h-8 w-8 rounded-lg bg-[#EEE8DD]/60 text-[#777367] hover:text-[#30382B] hover:bg-[#EEE8DD] flex items-center justify-center transition-all shadow-warm-xs cursor-pointer"
                             title="View Profile"
                         >
-                            <Eye size={18} className="group-hover/btn:scale-110 transition-transform" />
+                            <Eye size={15} />
                         </button>
 
                         {(userRole === 'ADMIN' || userRole === 'MANAGER') && (
                             <>
                                 <button
                                     onClick={(e) => { e.stopPropagation(); onEdit(employee); }}
-                                    className="h-9 w-9 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-amber-500 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all shadow-sm group/btn"
+                                    className="h-8 w-8 rounded-lg bg-[#EEE8DD]/60 text-[#777367] hover:text-[#B9955B] hover:bg-[#EEE8DD] flex items-center justify-center transition-all shadow-warm-xs cursor-pointer"
                                     title="Edit Employee"
                                 >
-                                    <Edit size={18} className="group-hover/btn:scale-110 transition-transform" />
+                                    <Edit size={15} />
                                 </button>
 
                                 <button
                                     onClick={(e) => { e.stopPropagation(); onDelete(employee); }}
-                                    className="h-9 w-9 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-rose-500 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all shadow-sm group/btn"
+                                    className="h-8 w-8 rounded-lg bg-[#EEE8DD]/60 text-[#777367] hover:text-[#A84B4B] hover:bg-[#FAF3F2] flex items-center justify-center transition-all shadow-warm-xs cursor-pointer"
                                     title="Delete Employee"
                                 >
-                                    <Trash2 size={18} className="group-hover/btn:scale-110 transition-transform" />
+                                    <Trash2 size={15} />
                                 </button>
                             </>
                         )}
@@ -1049,10 +1074,10 @@ export function EmployeeManagement() {
 
 
             {/* Table Container */}
-            <div className="rounded-2xl border border-[#E5DED2] dark:border-[#384232] bg-[#FBF9F5] dark:bg-[#252B20] shadow-warm-xs overflow-hidden mb-8">
+            <div className="rounded-2xl border border-[#D6CDBC] dark:border-[#384232] bg-[#EEE8DD] dark:bg-[#252B20] shadow-warm-xs overflow-hidden mb-8">
 
                 {/* Filter Bar */}
-                <div className="p-4 md:p-5 border-b border-[#E5DED2] dark:border-[#384232] bg-[#FBF9F5] dark:bg-[#252B20]">
+                <div className="p-4 md:p-5 border-b border-[#D6CDBC] dark:border-[#384232] bg-[#EEE8DD] dark:bg-[#252B20]">
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                         {/* Status Filter Dropdown */}
                         <div className="relative min-w-[150px] group">
@@ -1086,18 +1111,18 @@ export function EmployeeManagement() {
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
                         <thead className="hidden md:table-header-group">
-                            <tr className="bg-slate-50/50 dark:bg-slate-800/30 border-b border-slate-100 dark:border-slate-800">
-                                {visibleColumns.includes('User') && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Employee</th>}
-                                {visibleColumns.includes('Team') && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Team</th>}
-                                {visibleColumns.includes('Location') && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Location</th>}
-                                {visibleColumns.includes('Work Time') && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Work Time [h]</th>}
-                                {visibleColumns.includes('Manual Time') && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Manual Time [h]</th>}
-                                {visibleColumns.includes('Computer Act.') && <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Computer Act. [h]</th>}
-                                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Status</th>
-                                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Action</th>
+                            <tr className="bg-[#EEE8DD]/40 dark:bg-[#1E2419] border-b border-[#E5DED2] dark:border-[#384232]">
+                                {visibleColumns.includes('User') && <th className="px-6 py-3.5 text-[10px] font-bold uppercase tracking-wider text-[#777367] dark:text-[#B8B3A7]">Employee</th>}
+                                {visibleColumns.includes('Team') && <th className="px-6 py-3.5 text-[10px] font-bold uppercase tracking-wider text-[#777367] dark:text-[#B8B3A7]">Team</th>}
+                                {visibleColumns.includes('Location') && <th className="px-6 py-3.5 text-[10px] font-bold uppercase tracking-wider text-[#777367] dark:text-[#B8B3A7]">Location</th>}
+                                {visibleColumns.includes('Work Time') && <th className="px-6 py-3.5 text-[10px] font-bold uppercase tracking-wider text-[#777367] dark:text-[#B8B3A7]">Work Time</th>}
+                                {visibleColumns.includes('Manual Time') && <th className="px-6 py-3.5 text-[10px] font-bold uppercase tracking-wider text-[#777367] dark:text-[#B8B3A7]">Manual Time</th>}
+                                {visibleColumns.includes('Computer Act.') && <th className="px-6 py-3.5 text-[10px] font-bold uppercase tracking-wider text-[#777367] dark:text-[#B8B3A7]">Computer Act.</th>}
+                                <th className="px-6 py-3.5 text-[10px] font-bold uppercase tracking-wider text-[#777367] dark:text-[#B8B3A7]">Status</th>
+                                <th className="px-6 py-3.5 text-[10px] font-bold uppercase tracking-wider text-[#777367] dark:text-[#B8B3A7] text-right">Action</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-transparent md:divide-slate-50 dark:md:divide-slate-800/50">
+                        <tbody className="divide-y divide-transparent md:divide-[#E5DED2]/60 dark:md:divide-[#384232]/60">
                             {paginatedEmployees.map((emp) => (
                                 <EmployeeRow
                                     key={emp.id}
@@ -1143,7 +1168,7 @@ export function EmployeeManagement() {
                             <button
                                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                                 disabled={currentPage === 1}
-                                className="h-9 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-400 hover:border-primary-500 disabled:opacity-50 transition-all flex items-center gap-2"
+                                className="h-9 px-4 rounded-xl border border-[#D6CDBC] dark:border-[#384232] bg-[#F5F1E9] dark:bg-[#1E2419] text-[10px] font-bold uppercase tracking-wider text-[#29291F] dark:text-[#F5F1E9] hover:bg-[#EAE2D3] disabled:opacity-50 transition-all flex items-center gap-2 cursor-pointer"
                             >
                                 <ChevronLeft size={14} /> Previous
                             </button>
@@ -1156,7 +1181,7 @@ export function EmployeeManagement() {
                                         className={cn(
                                             "h-9 w-9 rounded-xl text-[10px] font-black transition-all",
                                             currentPage === i + 1
-                                                ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-lg"
+                                                ? "bg-[#30382B] text-[#FDFBF7] shadow-warm-xs"
                                                 : "text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
                                         )}
                                     >
@@ -1168,7 +1193,7 @@ export function EmployeeManagement() {
                             <button
                                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                                 disabled={currentPage === totalPages}
-                                className="h-9 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-400 hover:border-primary-500 disabled:opacity-50 transition-all flex items-center gap-2"
+                                className="h-9 px-4 rounded-xl border border-[#D6CDBC] dark:border-[#384232] bg-[#F5F1E9] dark:bg-[#1E2419] text-[10px] font-bold uppercase tracking-wider text-[#29291F] dark:text-[#F5F1E9] hover:bg-[#EAE2D3] disabled:opacity-50 transition-all flex items-center gap-2 cursor-pointer"
                             >
                                 Next <ChevronRight size={14} />
                             </button>

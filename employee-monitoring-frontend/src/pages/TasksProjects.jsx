@@ -29,7 +29,9 @@ import {
     ArrowRight,
     Play,
     Square,
-    X
+    X,
+    UserX,
+    AlertCircle
 } from 'lucide-react';
 import { FilterDropdown } from '../components/FilterDropdown';
 import { GlobalCalendar } from '../components/GlobalCalendar';
@@ -96,10 +98,21 @@ const CreateTaskModal = ({ isOpen, onClose, onSave, defaultStatus = 'To Do', emp
             return;
         }
         const project = projects.find(p => p.id === selectedProjectId);
+
+        let finalAssigneeId = assigneeId;
+        if (!finalAssigneeId && assignee) {
+            const matchedEmp = employees.find(emp => 
+                (emp.name || emp.fullName || '').toLowerCase() === assignee.trim().toLowerCase()
+            );
+            if (matchedEmp) {
+                finalAssigneeId = matchedEmp.id;
+            }
+        }
+
         onSave({
             title,
-            assignee,
-            assigneeId,
+            assignee: assignee || (finalAssigneeId ? (employees.find(e => e.id === finalAssigneeId)?.name || employees.find(e => e.id === finalAssigneeId)?.fullName) : ''),
+            assigneeId: finalAssigneeId,
             priority,
             dueDate,
             status,
@@ -109,13 +122,15 @@ const CreateTaskModal = ({ isOpen, onClose, onSave, defaultStatus = 'To Do', emp
         });
         onClose();
         setTitle('');
+        setAssignee('');
+        setAssigneeId('');
         setDueDate('');
         setEstimatedHours('');
     };
 
     return createPortal(
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-md animate-in fade-in duration-200 p-4">
-            <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-6 w-full max-w-sm shadow-2xl border border-slate-100 dark:border-slate-800 animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-md animate-in fade-in duration-200 p-3 sm:p-4">
+            <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-5 sm:p-6 w-full max-w-sm max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-100 dark:border-slate-800 animate-in zoom-in-95 duration-200">
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-lg font-black text-slate-900 dark:text-white">{role === 'ADMIN' || role === 'MANAGER' ? 'New Task' : 'Request Task'}</h3>
                     <button onClick={onClose} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
@@ -143,24 +158,35 @@ const CreateTaskModal = ({ isOpen, onClose, onSave, defaultStatus = 'To Do', emp
                                 placeholder="Type or select assignee..."
                             />
                             {showSuggestions && (
-                                <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl shadow-xl max-h-40 overflow-y-auto z-50">
-                                    {employees.filter(e => e.status !== 'deactivated' && e.name.toLowerCase().includes(assignee.toLowerCase())).map(e => (
+                                <div 
+                                    onMouseDown={(e) => e.preventDefault()}
+                                    className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl shadow-xl max-h-40 overflow-y-auto z-50"
+                                >
+                                    {employees.filter(e => e.status?.toLowerCase() !== 'deactivated' && (e.name || e.fullName || '').toLowerCase().includes((assignee || '').toLowerCase())).map(e => (
                                         <div
                                             key={e.id}
+                                            onMouseDown={(evt) => {
+                                                evt.preventDefault();
+                                                const empName = e.name || e.fullName || '';
+                                                setAssignee(empName);
+                                                setAssigneeId(e.id);
+                                                setShowSuggestions(false);
+                                            }}
                                             onClick={() => {
-                                                setAssignee(e.name);
+                                                const empName = e.name || e.fullName || '';
+                                                setAssignee(empName);
                                                 setAssigneeId(e.id);
                                                 setShowSuggestions(false);
                                             }}
                                             className="p-2.5 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 cursor-pointer flex items-center gap-2 transition-colors"
                                         >
                                             <div className="h-6 w-6 rounded-full bg-slate-200 overflow-hidden flex-shrink-0">
-                                                <img src={e.avatar || `https://ui-avatars.com/api/?background=6366f1&color=fff&name=${encodeURIComponent(e.name || 'User')}`} alt="" className="h-full w-full object-cover" />
+                                                <img src={e.avatar || `https://ui-avatars.com/api/?background=6366f1&color=fff&name=${encodeURIComponent(e.name || e.fullName || 'User')}`} alt="" className="h-full w-full object-cover" />
                                             </div>
-                                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{e.name}</span>
+                                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{e.name || e.fullName}</span>
                                         </div>
                                     ))}
-                                    {employees.filter(e => e.name.toLowerCase().includes(assignee.toLowerCase())).length === 0 && (
+                                    {employees.filter(e => (e.name || e.fullName || '').toLowerCase().includes((assignee || '').toLowerCase())).length === 0 && (
                                         <div className="p-2.5 text-xs text-slate-400 font-bold text-center">No matches found</div>
                                     )}
                                 </div>
@@ -282,8 +308,8 @@ const CreateGoalModal = ({ isOpen, onClose, onSave, employees = [], initialData 
     };
 
     return createPortal(
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-md animate-in fade-in duration-200 p-4">
-            <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-6 w-full max-w-sm shadow-2xl border border-slate-100 dark:border-slate-800 animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-md animate-in fade-in duration-200 p-3 sm:p-4">
+            <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-5 sm:p-6 w-full max-w-sm max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-100 dark:border-slate-800 animate-in zoom-in-95 duration-200">
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-lg font-black text-slate-900 dark:text-white">Define Objective</h3>
                     <button onClick={onClose} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
@@ -383,10 +409,21 @@ const EditTaskModal = ({ isOpen, onClose, onSave, task, employees = [], projects
             alert('Estimated hours must be greater than zero');
             return;
         }
+
+        let finalAssigneeId = assigneeId;
+        if (!finalAssigneeId && assignee) {
+            const matchedEmp = employees.find(emp => 
+                (emp.name || emp.fullName || '').toLowerCase() === assignee.trim().toLowerCase()
+            );
+            if (matchedEmp) {
+                finalAssigneeId = matchedEmp.id;
+            }
+        }
+
         onSave(task.id, { 
             title, 
-            assignee, 
-            assigneeId, 
+            assignee: assignee || (finalAssigneeId ? (employees.find(e => e.id === finalAssigneeId)?.name || employees.find(e => e.id === finalAssigneeId)?.fullName) : ''), 
+            assigneeId: finalAssigneeId, 
             priority, 
             dueDate, 
             status,
@@ -396,8 +433,8 @@ const EditTaskModal = ({ isOpen, onClose, onSave, task, employees = [], projects
     };
 
     return createPortal(
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-md animate-in fade-in duration-200 p-4">
-            <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-6 w-full max-w-sm shadow-2xl border border-slate-100 dark:border-slate-800 animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-md animate-in fade-in duration-200 p-3 sm:p-4">
+            <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-5 sm:p-6 w-full max-w-sm max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-100 dark:border-slate-800 animate-in zoom-in-95 duration-200">
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-lg font-black text-slate-900 dark:text-white">Edit Task</h3>
                     <button onClick={onClose} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
@@ -422,16 +459,37 @@ const EditTaskModal = ({ isOpen, onClose, onSave, task, employees = [], projects
                                 placeholder="Assignee..."
                             />
                             {showSuggestions && (
-                                <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl shadow-xl max-h-40 overflow-y-auto z-50">
-                                    {employees.filter(e => e.status !== 'deactivated' && e.name.toLowerCase().includes(assignee.toLowerCase())).map(e => (
-                                        <div key={e.id} onClick={() => { setAssignee(e.name); setAssigneeId(e.id); setShowSuggestions(false); }}
-                                            className="p-2.5 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 cursor-pointer flex items-center gap-2 transition-colors">
+                                <div 
+                                    onMouseDown={(e) => e.preventDefault()}
+                                    className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl shadow-xl max-h-40 overflow-y-auto z-50"
+                                >
+                                    {employees.filter(e => e.status?.toLowerCase() !== 'deactivated' && (e.name || e.fullName || '').toLowerCase().includes((assignee || '').toLowerCase())).map(e => (
+                                        <div 
+                                            key={e.id} 
+                                            onMouseDown={(evt) => {
+                                                evt.preventDefault();
+                                                const empName = e.name || e.fullName || '';
+                                                setAssignee(empName);
+                                                setAssigneeId(e.id);
+                                                setShowSuggestions(false);
+                                            }}
+                                            onClick={() => {
+                                                const empName = e.name || e.fullName || '';
+                                                setAssignee(empName);
+                                                setAssigneeId(e.id);
+                                                setShowSuggestions(false);
+                                            }}
+                                            className="p-2.5 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 cursor-pointer flex items-center gap-2 transition-colors"
+                                        >
                                             <div className="h-6 w-6 rounded-full bg-slate-200 overflow-hidden flex-shrink-0">
-                                                <img src={e.avatar || `https://ui-avatars.com/api/?background=6366f1&color=fff&name=${encodeURIComponent(e.name || 'User')}`} alt="" className="h-full w-full object-cover" />
+                                                <img src={e.avatar || `https://ui-avatars.com/api/?background=6366f1&color=fff&name=${encodeURIComponent(e.name || e.fullName || 'User')}`} alt="" className="h-full w-full object-cover" />
                                             </div>
-                                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{e.name}</span>
+                                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{e.name || e.fullName}</span>
                                         </div>
                                     ))}
+                                    {employees.filter(e => (e.name || e.fullName || '').toLowerCase().includes((assignee || '').toLowerCase())).length === 0 && (
+                                        <div className="p-2.5 text-xs text-slate-400 font-bold text-center">No matches found</div>
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -493,8 +551,8 @@ const GoalStreamModal = ({ goal, onClose }) => {
     ];
 
     return createPortal(
-        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-lg animate-in fade-in duration-300 p-4">
-            <div className="bg-white dark:bg-slate-900 rounded-[3rem] p-10 w-full max-w-2xl shadow-2xl border border-slate-100 dark:border-slate-800 animate-in zoom-in-95 duration-300 relative overflow-hidden">
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-lg animate-in fade-in duration-300 p-3 sm:p-4">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-[3rem] p-5 sm:p-10 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-100 dark:border-slate-800 animate-in zoom-in-95 duration-300 relative overflow-hidden">
                 <div className={cn("absolute top-0 right-0 h-48 w-48 translate-x-16 -translate-y-16 rounded-full opacity-[0.03] animate-pulse", goal.color)} />
 
                 <div className="flex justify-between items-start mb-10">
@@ -646,6 +704,15 @@ const KanbanColumn = ({ title, tasks, status, color, onAdd, updateTaskStatus, on
 
 
                 {tasks.map((task, index) => {
+                    const isUnassigned = !task.assigneeId || task.assignee === 'Unassigned' || !task.assignee;
+                    const isOverdue = (() => {
+                        if (!task.dueDate || task.dueDate === 'No Date') return false;
+                        const due = new Date(task.dueDate);
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        return due < today && status !== 'FINALIZED';
+                    })();
+
                     const getCardStyle = (status) => {
                         const baseStyle = "border-[1.5px] rounded-[16px] transition-all duration-300";
                         switch (status) {
@@ -660,6 +727,19 @@ const KanbanColumn = ({ title, tasks, status, color, onAdd, updateTaskStatus, on
                         }
                     };
 
+                    const handleAdvanceStage = async (e) => {
+                        e.stopPropagation();
+                        const nextStageMap = {
+                            'BACKLOG': 'In Operations',
+                            'IN_OPERATIONS': 'Quality Assurance',
+                            'QUALITY_ASSURANCE': 'Finalized'
+                        };
+                        const targetStage = nextStageMap[status];
+                        if (targetStage && updateTaskStatus) {
+                            await updateTaskStatus(task.id, targetStage);
+                        }
+                    };
+
                     return (
                         <div
                             key={task.id}
@@ -671,19 +751,32 @@ const KanbanColumn = ({ title, tasks, status, color, onAdd, updateTaskStatus, on
                         >
                             {/* Priority Header */}
                             <div className="flex items-center justify-between mb-3 gap-1">
-                                <span className={cn(
-                                    "px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border transition-all truncate max-w-[110px]",
-                                    status === 'IN_OPERATIONS' ? "bg-blue-50 text-blue-600 border-blue-100" :
-                                    status === 'FINALIZED' ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
-                                    status === 'QUALITY_ASSURANCE' ? "bg-amber-50 text-amber-600 border-amber-100" :
-                                    "bg-slate-50 text-slate-500 border-slate-100"
-                                )}>
-                                    {task.project}
+                                <span 
+                                    className={cn(
+                                        "px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border transition-all truncate max-w-[170px]",
+                                        status === 'IN_OPERATIONS' ? "bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-950/40 dark:text-blue-400 dark:border-blue-900" :
+                                        status === 'FINALIZED' ? "bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-900" :
+                                        status === 'QUALITY_ASSURANCE' ? "bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-900" :
+                                        "bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700"
+                                    )}
+                                    title={task.project}
+                                >
+                                    {task.project || 'General'}
                                 </span>
                                 
                                 <div className="flex items-center gap-1 shrink-0">
                                     {/* Action Buttons (visible on hover) */}
-                                    <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        {status !== 'FINALIZED' && (
+                                            <button
+                                                onClick={handleAdvanceStage}
+                                                className="h-6 px-1.5 flex items-center gap-0.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 text-[8px] font-black uppercase transition-all"
+                                                title={`Move to next column`}
+                                            >
+                                                <span>Move</span>
+                                                <ArrowRight size={9} strokeWidth={2.5} />
+                                            </button>
+                                        )}
                                         <button
                                             onClick={(e) => { e.stopPropagation(); onEdit && onEdit(task); }}
                                             className="h-6 w-6 flex items-center justify-center rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition-colors"
@@ -703,9 +796,9 @@ const KanbanColumn = ({ title, tasks, status, color, onAdd, updateTaskStatus, on
                                     {/* Priority Badge */}
                                     <div className={cn(
                                         "flex items-center gap-1 px-2 py-0.5 rounded-full border shadow-sm shrink-0",
-                                        task.priority === 'High' || task.priority === 'Critical' ? "bg-rose-50 border-rose-100 text-rose-600" :
-                                        task.priority === 'Medium' ? "bg-amber-50 border-amber-100 text-amber-600" :
-                                        "bg-emerald-50 border-emerald-100 text-emerald-600"
+                                        task.priority === 'High' || task.priority === 'Critical' ? "bg-rose-50 border-rose-100 text-rose-600 dark:bg-rose-950/40 dark:border-rose-900 dark:text-rose-400" :
+                                        task.priority === 'Medium' ? "bg-amber-50 border-amber-100 text-amber-600 dark:bg-amber-950/40 dark:border-amber-900 dark:text-amber-400" :
+                                        "bg-emerald-50 border-emerald-100 text-emerald-600 dark:bg-emerald-950/40 dark:border-emerald-900 dark:text-emerald-400"
                                     )}>
                                         <div className={cn("h-1.5 w-1.5 rounded-full animate-pulse", 
                                             task.priority === 'High' || task.priority === 'Critical' ? "bg-rose-500" :
@@ -719,7 +812,7 @@ const KanbanColumn = ({ title, tasks, status, color, onAdd, updateTaskStatus, on
 
                             <h5 className="text-sm font-black text-slate-900 dark:text-white mb-2 leading-relaxed group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors uppercase tracking-tight">{task.title}</h5>
                             <p className="text-[10px] font-bold text-slate-400/90 mb-4 line-clamp-2 leading-relaxed opacity-90 group-hover:opacity-100 italic">
-                                {task.description || "System logic optimization and performance tuning required for the new module..."}
+                                {task.description || (task.project && task.project !== 'No Project' ? `Deliverable for ${task.project}` : "General project workflow task")}
                             </p>
 
                             {/* Estimated vs Actual Hours Comparison */}
@@ -759,18 +852,63 @@ const KanbanColumn = ({ title, tasks, status, color, onAdd, updateTaskStatus, on
                             })()}
 
                             <div className="flex items-center justify-between pt-3 gap-2 border-t border-dashed border-slate-100 dark:border-slate-800/60 group-hover:border-indigo-100 dark:group-hover:border-slate-700 transition-colors">
-                                <div className="flex items-center gap-2 min-w-0">
-                                    <div className="relative h-8 w-8 rounded-xl bg-white dark:bg-slate-800 ring-2 ring-slate-100 dark:ring-slate-800 overflow-hidden shadow-sm shrink-0 group-hover:scale-105 transition-transform">
-                                        <img src={`https://ui-avatars.com/api/?background=6366f1&color=fff&name=${encodeURIComponent(task.assignee || 'User')}`} alt={task.assignee} className="h-full w-full object-cover" />
-                                    </div>
-                                    <div className="flex flex-col min-w-0">
-                                        <span className="text-[10px] font-black text-slate-800 dark:text-slate-100 tracking-tight truncate max-w-[65px] sm:max-w-[75px] leading-tight">{task.assignee}</span>
-                                        <div className="flex items-center gap-1 text-slate-400">
-                                            <Calendar size={9} className="shrink-0" />
-                                            <span className="text-[8px] font-bold uppercase tracking-wider truncate">{task.dueDate}</span>
+                                {isUnassigned ? (
+                                    <div 
+                                        onClick={(e) => { e.stopPropagation(); onEdit && onEdit(task); }}
+                                        className="flex items-center gap-2 min-w-0 cursor-pointer group/assign hover:opacity-80 transition-opacity"
+                                        title="Click to assign an employee"
+                                    >
+                                        <div className="h-8 w-8 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-dashed border-amber-300 dark:border-amber-700/60 flex items-center justify-center text-amber-500 shrink-0 group-hover/assign:border-indigo-500 group-hover/assign:text-indigo-500 transition-colors">
+                                            <UserX size={14} />
+                                        </div>
+                                        <div className="flex flex-col min-w-0">
+                                            <span className="text-[10px] font-black text-amber-600 dark:text-amber-400 tracking-tight leading-tight flex items-center gap-1">
+                                                Unassigned
+                                                <span className="text-[8px] bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 px-1 py-0.2 rounded font-bold">+ Assign</span>
+                                            </span>
+                                            <div className="flex items-center gap-1 text-slate-400">
+                                                <Calendar size={9} className="shrink-0" />
+                                                <span className={cn(
+                                                    "text-[8px] font-bold uppercase tracking-wider truncate",
+                                                    isOverdue ? "text-rose-500 font-black" : "text-slate-400"
+                                                )}>
+                                                    {isOverdue ? `Overdue: ${task.dueDate}` : (task.dueDate || 'No Date')}
+                                                </span>
+                                            </div>
+
                                         </div>
                                     </div>
-                                </div>
+                                ) : (
+                                    <div className="flex items-center gap-2 min-w-0">
+                                        <div className="relative h-8 w-8 rounded-xl bg-white dark:bg-slate-800 ring-2 ring-slate-100 dark:ring-slate-800 overflow-hidden shadow-sm shrink-0">
+                                            {task.assigneeAvatar ? (
+                                                <img src={task.assigneeAvatar} alt={task.assignee} className="h-full w-full object-cover" />
+                                            ) : (
+                                                <div className="h-full w-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-black text-xs flex items-center justify-center">
+                                                    {task.assignee.charAt(0).toUpperCase()}
+                                                </div>
+                                            )}
+                                            <span className={cn(
+                                                "absolute bottom-0 right-0 h-2 w-2 rounded-full ring-1 ring-white dark:ring-slate-900",
+                                                task.assigneeStatus === 'online' ? "bg-emerald-500" : "bg-slate-300"
+                                            )} />
+                                        </div>
+                                        <div className="flex flex-col min-w-0">
+                                            <span className="text-[10px] font-black text-slate-800 dark:text-slate-100 tracking-tight truncate max-w-[85px] leading-tight" title={task.assignee}>
+                                                {task.assignee}
+                                            </span>
+                                            <div className="flex items-center gap-1 text-slate-400">
+                                                <Calendar size={9} className="shrink-0" />
+                                                <span className={cn(
+                                                    "text-[8px] font-bold uppercase tracking-wider truncate",
+                                                    isOverdue ? "text-rose-500 font-black" : "text-slate-400"
+                                                )}>
+                                                    {isOverdue ? `Overdue: ${task.dueDate}` : task.dueDate}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
 
                                 <div className="flex items-center gap-1.5 shrink-0">
                                     <div className="flex items-center gap-1 text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/80 px-2 py-1 rounded-lg border border-slate-100 dark:border-slate-700 shadow-inner shrink-0">

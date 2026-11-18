@@ -40,17 +40,17 @@ export function Header({ onMenuClick }) {
     const unreadCount = liveNotifications.filter(n => n.unread).length;
 
     return (
-        <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-[#E5DED2] bg-[#F5F1E9]/95 px-4 md:px-8 backdrop-blur-md dark:border-[#384232] dark:bg-[#1A1F18]/95 transition-colors">
-            <div className="flex items-center gap-4">
+        <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-[#E5DED2] bg-[#F5F1E9]/95 px-2.5 sm:px-4 md:px-8 backdrop-blur-md dark:border-[#384232] dark:bg-[#1A1F18]/95 transition-colors">
+            <div className="flex items-center gap-2 sm:gap-4">
                 <button
                     onClick={onMenuClick}
-                    className="lg:hidden flex h-10 w-10 items-center justify-center rounded-xl text-[#777367] hover:bg-[#EEE8DD] hover:text-[#29291F] dark:text-[#B8B3A7] dark:hover:bg-[#283025] transition-colors"
+                    className="md:hidden flex h-10 w-10 items-center justify-center rounded-xl text-[#777367] hover:bg-[#EEE8DD] hover:text-[#29291F] dark:text-[#B8B3A7] dark:hover:bg-[#283025] transition-colors cursor-pointer"
                 >
                     <Menu size={22} />
                 </button>
             </div>
 
-            <div className="flex items-center gap-2 md:gap-3.5">
+            <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3.5">
                 <HeaderTaskTimer />
                 <WebTrackerAgent />
 
