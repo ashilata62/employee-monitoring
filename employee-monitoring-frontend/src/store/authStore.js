@@ -132,9 +132,9 @@ export const useAuthStore = create(
                         "tasks", "agents", "payroll", "compliance", "reports", "settings"
                     ],
                     MANAGER: [
-                        "dashboard", "realtime", "alerts", "employees", "teams", 
+                        "dashboard", "realtime", "alerts", "employees", "teams",
                         "screenshots", "timeAttendance", "activity", "projects",
-                        "tasks", "agents", "reports"
+                        "tasks", "reports"
                     ],
                     EMPLOYEE: [
                         "dashboard", "timeAttendance", "tasks", "projects", "activity"
