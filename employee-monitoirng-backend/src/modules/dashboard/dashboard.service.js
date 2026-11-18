@@ -59,6 +59,35 @@ async function calculateMetrics(organizationId, employeeId = null, teamId = null
     // manualTime is typically productive or neutral. We'll count it towards productive
     productiveTime += manualTime;
 
+    // Incorporate persistent attendance sessions
+    const attWhere = {
+        organizationId,
+        OR: [
+            { date: dateFilter },
+            { clockIn: dateFilter }
+        ]
+    };
+    if (employeeId) attWhere.employeeId = employeeId;
+    if (teamId) attWhere.employee = { teamId };
+
+    const attendances = await prisma.attendance.findMany({ where: attWhere });
+    let attendanceWorkTime = 0;
+    attendances.forEach(att => {
+        if (att.duration && att.duration > 0) {
+            attendanceWorkTime += att.duration;
+        } else if (att.clockIn && !att.clockOut) {
+            attendanceWorkTime += Math.max(0, Math.floor((Date.now() - new Date(att.clockIn).getTime()) / 1000));
+        } else if (att.clockIn && att.clockOut) {
+            attendanceWorkTime += Math.max(0, Math.floor((new Date(att.clockOut).getTime() - new Date(att.clockIn).getTime()) / 1000));
+        }
+    });
+
+    if (attendanceWorkTime > activeTime) {
+        const delta = attendanceWorkTime - activeTime;
+        activeTime = attendanceWorkTime;
+        productiveTime += delta;
+    }
+
     const workTime = activeTime + manualTime + idleTime;
     
     const utilization = workTime > 0 ? Math.round((productiveTime / workTime) * 100) : 0;
@@ -180,6 +209,38 @@ async function getDailyProductivityBreakdown(organizationId, employeeId = null, 
         else dayMap[dayKey].neutral += durHours;
     });
 
+    // Also include attendance sessions in daily breakdown
+    const attWhere = {
+        organizationId,
+        OR: [
+            { date: dateFilter },
+            { clockIn: dateFilter }
+        ]
+    };
+    if (employeeId) attWhere.employeeId = employeeId;
+    if (teamId) attWhere.employee = { teamId };
+
+    const attendances = await prisma.attendance.findMany({ where: attWhere });
+    attendances.forEach(att => {
+        const attDate = att.date || att.clockIn;
+        const dayKey = new Date(attDate).toISOString().split('T')[0];
+        if (!dayMap[dayKey]) {
+            dayMap[dayKey] = { productive: 0, unproductive: 0, neutral: 0 };
+        }
+        let dur = 0;
+        if (att.duration && att.duration > 0) {
+            dur = att.duration;
+        } else if (att.clockIn && !att.clockOut) {
+            dur = Math.max(0, Math.floor((Date.now() - new Date(att.clockIn).getTime()) / 1000));
+        } else if (att.clockIn && att.clockOut) {
+            dur = Math.max(0, Math.floor((new Date(att.clockOut).getTime() - new Date(att.clockIn).getTime()) / 1000));
+        }
+        const durHours = dur / 3600;
+        if (durHours > dayMap[dayKey].productive) {
+            dayMap[dayKey].productive = Number(durHours.toFixed(2));
+        }
+    });
+
     const result = Object.keys(dayMap).sort().map(key => {
         const dateObj = new Date(key + 'T00:00:00');
         const monthName = dateObj.toLocaleString('en-US', { month: 'short' });
@@ -216,6 +277,17 @@ async function getIntradayActivity(organizationId, employeeId = null, teamId = n
     
     const manualLogs = await prisma.manualTime.findMany({ where: manualWhere });
 
+    const attWhere = {
+        organizationId,
+        OR: [
+            { date: dateFilter },
+            { clockIn: dateFilter }
+        ]
+    };
+    if (employeeId) attWhere.employeeId = employeeId;
+    if (teamId) attWhere.employee = { teamId };
+    const attendances = await prisma.attendance.findMany({ where: attWhere });
+
     // Group by hour
     const hourlyData = {};
     for (let i = 0; i < 24; i++) {
@@ -232,6 +304,22 @@ async function getIntradayActivity(organizationId, employeeId = null, teamId = n
     manualLogs.forEach(log => {
         const hour = new Date(log.startTime).getHours();
         hourlyData[hour].manual += log.duration;
+    });
+
+    // Also distribute attendance sessions into intraday hours
+    attendances.forEach(att => {
+        const start = new Date(att.clockIn);
+        const end = att.clockOut ? new Date(att.clockOut) : new Date();
+        const startHour = start.getHours();
+        const endHour = end.getHours();
+        for (let h = startHour; h <= Math.min(23, endHour); h++) {
+            if (hourlyData[h]) {
+                const hourSeconds = (startHour === endHour)
+                    ? Math.max(300, Math.floor((end - start) / 1000))
+                    : 3600;
+                hourlyData[h].active = Math.max(hourlyData[h].active, hourSeconds);
+            }
+        }
     });
 
     // Format for Recharts
@@ -300,6 +388,38 @@ async function getEmployeeRankings(organizationId, teamId = null, startDate = nu
         initEmp(log.employee);
         empStats[log.employee.id].manual += log.duration;
         empStats[log.employee.id].productive += log.duration; // manual assumed productive
+    });
+
+    const attWhere = {
+        organizationId,
+        OR: [
+            { date: dateFilter },
+            { clockIn: dateFilter }
+        ]
+    };
+    if (teamId) attWhere.employee = { teamId };
+
+    const attendances = await prisma.attendance.findMany({ 
+        where: attWhere,
+        include: { employee: { include: { team: true } } }
+    });
+
+    attendances.forEach(att => {
+        if (!att.employee) return;
+        initEmp(att.employee);
+        let dur = 0;
+        if (att.duration && att.duration > 0) {
+            dur = att.duration;
+        } else if (att.clockIn && !att.clockOut) {
+            dur = Math.max(0, Math.floor((Date.now() - new Date(att.clockIn).getTime()) / 1000));
+        } else if (att.clockIn && att.clockOut) {
+            dur = Math.max(0, Math.floor((new Date(att.clockOut).getTime() - new Date(att.clockIn).getTime()) / 1000));
+        }
+        if (dur > empStats[att.employee.id].active) {
+            const delta = dur - empStats[att.employee.id].active;
+            empStats[att.employee.id].active = dur;
+            empStats[att.employee.id].productive += delta;
+        }
     });
 
     const rankings = Object.values(empStats).map(e => {

@@ -89,6 +89,24 @@ const attendanceService = {
             }
         });
 
+        // Record persistent active work log in database
+        try {
+            await prisma.activityLog.create({
+                data: {
+                    employeeId,
+                    organizationId,
+                    activityType: 'ACTIVE',
+                    productivity: 'PRODUCTIVE',
+                    duration: 0,
+                    timestamp: now,
+                    appWebsite: 'Work Session',
+                    title: 'Active Work Session'
+                }
+            });
+        } catch (actErr) {
+            console.error('[AttendanceService] Could not create initial active activity log:', actErr.message);
+        }
+
         // Update employee status to ACTIVE (Guard: Ensure not deactivated)
         if (employee && employee.status !== 'DEACTIVATED') {
             await prisma.employee.update({
@@ -156,6 +174,23 @@ const attendanceService = {
                     data: { duration: bDuration }
                 });
             }
+        }
+
+        // Close any open ACTIVE work log
+        try {
+            const openActive = await prisma.activityLog.findFirst({
+                where: { employeeId, activityType: 'ACTIVE', duration: 0 },
+                orderBy: { timestamp: 'desc' }
+            });
+            if (openActive) {
+                const aDuration = Math.max(1, Math.floor((now - new Date(openActive.timestamp).getTime()) / 1000));
+                await prisma.activityLog.update({
+                    where: { id: openActive.id },
+                    data: { duration: aDuration }
+                });
+            }
+        } catch (actErr) {
+            console.error('[AttendanceService] Could not close active activity log:', actErr.message);
         }
 
         // Calculate unpaid breaks during this attendance session
@@ -534,6 +569,23 @@ const attendanceService = {
                 data: { status: 'BREAK' }
             });
 
+            // Close any open ACTIVE activity log so work duration up to break is locked
+            try {
+                const openActive = await prisma.activityLog.findFirst({
+                    where: { employeeId, activityType: 'ACTIVE', duration: 0 },
+                    orderBy: { timestamp: 'desc' }
+                });
+                if (openActive) {
+                    const dur = Math.max(1, Math.floor((Date.now() - new Date(openActive.timestamp).getTime()) / 1000));
+                    await prisma.activityLog.update({
+                        where: { id: openActive.id },
+                        data: { duration: dur }
+                    });
+                }
+            } catch (aErr) {
+                console.error('[AttendanceService] Could not close open active log on break:', aErr.message);
+            }
+
             // Create an activity log for the break start
             const log = await prisma.activityLog.create({
                 data: {
@@ -620,6 +672,24 @@ const attendanceService = {
                     where: { id: lastBreak.id },
                     data: { duration }
                 });
+            }
+
+            // Start a new open ACTIVE activity log now that work has resumed
+            try {
+                await prisma.activityLog.create({
+                    data: {
+                        employeeId,
+                        organizationId: employee.organizationId || 'default-org-id',
+                        activityType: 'ACTIVE',
+                        productivity: 'PRODUCTIVE',
+                        duration: 0,
+                        timestamp: new Date(),
+                        appWebsite: 'Work Session',
+                        title: 'Active Work Session'
+                    }
+                });
+            } catch (aErr) {
+                console.error('[AttendanceService] Could not start new active log on resume:', aErr.message);
             }
 
             // Notify real-time

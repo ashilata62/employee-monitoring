@@ -54,10 +54,31 @@ async function processStaleAttendanceForEmployee(employeeId) {
     const lastSeenMs = agent.lastSeen ? new Date(agent.lastSeen).getTime() : 0;
     if (Date.now() - lastSeenMs < STALE_MS) return false;
 
+    // Agent has been silent for > STALE_MS, mark agent status offline so it won't be picked up again
+    await prisma.agent.updateMany({
+        where: { employeeId },
+        data: { status: 'offline' },
+    });
+
     const open = await prisma.attendance.findFirst({
         where: { employeeId, clockOut: null },
     });
     if (!open) return false;
+
+    // Guard 1: If employee is on BREAK, do NOT auto clock-out
+    const emp = await prisma.employee.findUnique({
+        where: { id: employeeId },
+        select: { status: true }
+    });
+    if (emp?.status === 'BREAK') {
+        return false;
+    }
+
+    // Guard 2: If the open session was started recently (< STALE_MS), do NOT auto clock-out
+    const clockInMs = open.clockIn ? new Date(open.clockIn).getTime() : 0;
+    if (Date.now() - clockInMs < STALE_MS) {
+        return false;
+    }
 
     try {
         try {

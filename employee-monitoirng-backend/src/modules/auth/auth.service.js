@@ -180,6 +180,7 @@ const getMe = async (userId) => {
         user.fullName = user.name || user.employee.fullName;
         user.name = user.name || user.employee.fullName; // For frontend compatibility
         user.avatar = user.avatar || user.employee.avatar;
+        user.status = user.employee.status;
         
         if (user.employee.organization) {
             user.organization = user.employee.organization;
