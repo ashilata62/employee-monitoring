@@ -9,8 +9,8 @@ export function NewProjectModal({ isOpen, onClose, employees = [], teams = [], i
     const [projectBillRate, setProjectBillRate] = useState('0');
     const [projectBudget, setProjectBudget] = useState('0');
     const [description, setDescription] = useState('');
+    const [selectedEmployeeIds, setSelectedEmployeeIds] = useState([]);
     const [showError, setShowError] = useState(false);
-
 
     useEffect(() => {
         if (initialData) {
@@ -18,16 +18,17 @@ export function NewProjectModal({ isOpen, onClose, employees = [], teams = [], i
             setProjectBillRate(String(initialData.billRate || '0'));
             setProjectBudget(String(initialData.budget || initialData.totalCosts || '0'));
             setDescription(initialData.description || '');
+            setSelectedEmployeeIds(initialData.assignedEmployeeIds || initialData.assignments?.map(a => a.employeeId) || []);
         } else {
             setProjectName('');
             setProjectBillRate('0');
             setProjectBudget('0');
             setDescription('');
+            setSelectedEmployeeIds([]);
         }
     }, [initialData, isOpen]);
 
     if (!isOpen) return null;
-
 
     const handleSave = async () => {
         if (!projectName.trim()) {
@@ -40,6 +41,7 @@ export function NewProjectModal({ isOpen, onClose, employees = [], teams = [], i
             description: description,
             billRate: Number(projectBillRate),
             budget: Number(projectBudget),
+            employeeIds: selectedEmployeeIds,
         };
 
         try {
@@ -55,6 +57,7 @@ export function NewProjectModal({ isOpen, onClose, employees = [], teams = [], i
                 setProjectBillRate('0');
                 setProjectBudget('0');
                 setDescription('');
+                setSelectedEmployeeIds([]);
             }
             setShowError(false);
         } catch (error) {
@@ -159,10 +162,52 @@ export function NewProjectModal({ isOpen, onClose, employees = [], teams = [], i
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
                                 placeholder="Enter project description..."
-                                rows={6}
+                                rows={4}
                                 className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl px-4 py-4 text-sm font-medium dark:text-slate-200 focus:ring-4 focus:ring-primary-500/5 focus:border-primary-500 outline-none transition-all placeholder:text-slate-300 dark:placeholder:text-slate-600 resize-none font-sans"
                             />
                         </div>
+                    </div>
+
+                    {/* Assign Employees */}
+                    <div className="space-y-3 pt-2">
+                        <div className="flex items-center justify-between">
+                            <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+                                Assign Employees ({selectedEmployeeIds.length} Selected)
+                            </label>
+                            <span className="text-[10px] text-slate-400 font-medium">Click to select employees</span>
+                        </div>
+                        {employees && employees.length > 0 ? (
+                            <div className="flex flex-wrap gap-2 max-h-36 overflow-y-auto p-2.5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800">
+                                {employees.map((emp) => {
+                                    const isSelected = selectedEmployeeIds.includes(emp.id);
+                                    return (
+                                        <button
+                                            key={emp.id}
+                                            type="button"
+                                            onClick={() => {
+                                                setSelectedEmployeeIds(prev =>
+                                                    prev.includes(emp.id)
+                                                        ? prev.filter(id => id !== emp.id)
+                                                        : [...prev, emp.id]
+                                                );
+                                            }}
+                                            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border cursor-pointer ${
+                                                isSelected
+                                                    ? 'bg-primary-600 text-white border-primary-600 shadow-sm'
+                                                    : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-primary-400'
+                                            }`}
+                                        >
+                                            <div className={`w-3.5 h-3.5 rounded flex items-center justify-center border ${isSelected ? 'border-white bg-white/20' : 'border-slate-400'}`}>
+                                                {isSelected && <Check size={10} className="text-white" strokeWidth={3} />}
+                                            </div>
+                                            <span>{emp.fullName || emp.name}</span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        ) : (
+                            <p className="text-xs text-slate-400 italic">No employees found to assign</p>
+                        )}
                     </div>
                 </div>
 

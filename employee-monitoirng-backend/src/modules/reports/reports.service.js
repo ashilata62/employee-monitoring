@@ -37,11 +37,20 @@ const PRODUCTIVITY_BUCKETS = ['PRODUCTIVE', 'NEUTRAL', 'UNPRODUCTIVE'];
 const getWorkTypeByCategory = async (organizationId, startDate, endDate, params) => {
     const where = buildReportFilter(organizationId, startDate, endDate, params);
 
-    const logs = await prisma.appUsageLog.groupBy({
+    let logs = await prisma.appUsageLog.groupBy({
         by: ['productivity'],
         _sum: { duration: true },
         where,
     });
+
+    // Fallback: If no AppUsageLog records exist for this period, aggregate from ActivityLog
+    if (!logs || logs.length === 0 || logs.every((l) => (l._sum.duration || 0) === 0)) {
+        logs = await prisma.activityLog.groupBy({
+            by: ['productivity'],
+            _sum: { duration: true },
+            where,
+        });
+    }
 
     const durationByType = Object.fromEntries(
         logs.map((log) => [log.productivity, log._sum.duration || 0])
@@ -59,7 +68,7 @@ const getWorkTypeByCategory = async (organizationId, startDate, endDate, params)
 const getWorkTypeByTags = async (organizationId, startDate, endDate, params) => {
     const where = buildReportFilter(organizationId, startDate, endDate, params);
 
-    const [logs, rules] = await Promise.all([
+    let [logs, rules] = await Promise.all([
         prisma.appUsageLog.findMany({
             where,
             select: { duration: true, domain: true, appName: true },
@@ -69,6 +78,19 @@ const getWorkTypeByTags = async (organizationId, startDate, endDate, params) => 
             include: { tag: true },
         }),
     ]);
+
+    // Fallback: If no AppUsageLogs, fallback to ActivityLog appWebsite
+    if (!logs || logs.length === 0) {
+        const actLogs = await prisma.activityLog.findMany({
+            where,
+            select: { duration: true, appWebsite: true },
+        });
+        logs = actLogs.map((l) => ({
+            duration: l.duration,
+            domain: l.appWebsite || '',
+            appName: l.appWebsite || '',
+        }));
+    }
 
     const ruleByDomain = new Map(rules.map((r) => [r.domain, r]));
     const ruleByApp = new Map(
