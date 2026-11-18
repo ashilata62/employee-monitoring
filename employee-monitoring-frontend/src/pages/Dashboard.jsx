@@ -29,7 +29,6 @@ import {
     Bar
 } from 'recharts';
 import { useFilterStore } from '../store/filterStore';
-import { AddEmployeeModal } from '../components/AddEmployeeModal';
 import { GlobalCalendar } from '../components/GlobalCalendar';
 import { useRealTime } from '../hooks/RealTimeContext';
 import { useAuthStore } from '../store/authStore';
@@ -224,7 +223,6 @@ export function Dashboard() {
     const [compareEndDate, setCompareEndDate] = useState(null);
     const [activeFilter, setActiveFilter] = useState({ employeeId: null, teamId: null, role: null });
     const [activeChartTab, setActiveChartTab] = useState('Activities');
-    const [isModalOpen, setIsModalOpen] = useState(false);
     const [dashboardData, setDashboardData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [pieData2, setPieData2] = useState([]);
@@ -429,11 +427,6 @@ export function Dashboard() {
                 intradayData={chartData}
                 productivityBreakdown={stats.productivityBreakdown}
                 onExport={handleDownload}
-            />
-
-            <AddEmployeeModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
             />
         </div>
     );
