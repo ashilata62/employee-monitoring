@@ -33,28 +33,40 @@ export function Teams() {
         if (!organization?.id) fetchOrganization();
     }, [fetchTeams, fetchEmployees, fetchOrganization, organization?.id]);
 
+    const teamIdsKey = useMemo(
+        () => contextTeams.map(t => t.id).sort().join(','),
+        [contextTeams]
+    );
+
     useEffect(() => {
+        if (!teamIdsKey) return;
+        let cancelled = false;
+        const ids = teamIdsKey.split(',').filter(Boolean);
+
         const fetchSummaries = async () => {
-            const summaries = {};
-            for (const team of contextTeams) {
-                try {
-                    const res = await activityService.getTeamSummary(team.id);
-                    if (res.success) {
-                        summaries[team.id] = res.data;
+            const results = await Promise.all(
+                ids.map(async (id) => {
+                    try {
+                        const res = await activityService.getTeamSummary(id);
+                        return res.success ? [id, res.data] : null;
+                    } catch (error) {
+                        console.error(`Failed to fetch summary for team ${id}:`, error);
+                        return null;
                     }
-                } catch (error) {
-                    console.error(`Failed to fetch summary for team ${team.id}:`, error);
-                }
+                })
+            );
+            if (!cancelled) {
+                const summaries = {};
+                results.forEach((entry) => {
+                    if (entry) summaries[entry[0]] = entry[1];
+                });
+                setTeamSummaries(summaries);
             }
-            setTeamSummaries(summaries);
         };
 
-        if (contextTeams.length === 0) return;
-
         fetchSummaries();
-        const interval = setInterval(fetchSummaries, 10000);
-        return () => clearInterval(interval);
-    }, [contextTeams]);
+        return () => { cancelled = true; };
+    }, [teamIdsKey]);
 
     const teamsData = useMemo(() => contextTeams.map(team => {
         const initials = team.name.substring(0, 2).toUpperCase();

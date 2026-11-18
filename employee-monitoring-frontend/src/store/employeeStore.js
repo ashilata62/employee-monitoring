@@ -87,6 +87,17 @@ export const useEmployeeStore = create((set, get) => ({
         }
     },
 
+    updateEmployeeStatus: (employeeId, status) => {
+        const normalized = (status || 'offline').toLowerCase();
+        set((state) => ({
+            employees: state.employees.map((emp) =>
+                String(emp.id) === String(employeeId)
+                    ? { ...emp, status: normalized }
+                    : emp
+            )
+        }));
+    },
+
     removeEmployee: async (id) => {
         try {
             await employeeService.deleteEmployee(id);
