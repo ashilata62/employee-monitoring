@@ -140,7 +140,7 @@ export function Teams() {
                         <span>{employees.length} employees · {contextTeams.length} teams</span>
                     </div>
                 </div>
-                {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
+                {user?.role === 'ADMIN' && (
                     <button
                         onClick={() => { setEditingTeam(null); setIsModalOpen(true); }}
                         className="flex items-center justify-center gap-2 bg-[#30382B] hover:bg-[#3C4536] text-[#FDFBF7] px-5 py-2.5 rounded-xl text-xs font-semibold shadow-warm-sm transition-all active:scale-95 cursor-pointer"
@@ -251,22 +251,22 @@ export function Teams() {
                                                 <Eye size={15} />
                                             </button>
                                             {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
-                                                <>
-                                                    <button
-                                                        onClick={() => handleEditClick(team)}
-                                                        className="h-8 w-8 flex items-center justify-center rounded-lg bg-[#EEE8DD]/60 text-[#777367] hover:text-[#B9955B] hover:bg-[#EEE8DD] transition-all shadow-warm-xs cursor-pointer"
-                                                        title="Edit Team"
-                                                    >
-                                                        <Edit size={15} />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => { if (window.confirm(`Are you sure you want to delete ${team.name}?`)) deleteTeam(team.id); }}
-                                                        className="h-8 w-8 flex items-center justify-center rounded-lg bg-[#EEE8DD]/60 text-[#777367] hover:text-[#A84B4B] hover:bg-[#FAF3F2] transition-all shadow-warm-xs cursor-pointer"
-                                                        title="Delete Team"
-                                                    >
-                                                        <Trash2 size={15} />
-                                                    </button>
-                                                </>
+                                                <button
+                                                    onClick={() => handleEditClick(team)}
+                                                    className="h-8 w-8 flex items-center justify-center rounded-lg bg-[#EEE8DD]/60 text-[#777367] hover:text-[#B9955B] hover:bg-[#EEE8DD] transition-all shadow-warm-xs cursor-pointer"
+                                                    title="Edit Team"
+                                                >
+                                                    <Edit size={15} />
+                                                </button>
+                                            )}
+                                            {user?.role === 'ADMIN' && (
+                                                <button
+                                                    onClick={() => { if (window.confirm(`Are you sure you want to delete ${team.name}?`)) deleteTeam(team.id); }}
+                                                    className="h-8 w-8 flex items-center justify-center rounded-lg bg-[#EEE8DD]/60 text-[#777367] hover:text-[#A84B4B] hover:bg-[#FAF3F2] transition-all shadow-warm-xs cursor-pointer"
+                                                    title="Delete Team"
+                                                >
+                                                    <Trash2 size={15} />
+                                                </button>
                                             )}
                                         </div>
                                     </td>
@@ -323,20 +323,20 @@ export function Teams() {
                                     <Eye size={13} /> View
                                 </button>
                                 {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
-                                    <>
-                                        <button
-                                            onClick={() => handleEditClick(team)}
-                                            className="px-2.5 py-1 text-xs rounded-lg bg-[#EEE8DD] text-[#B9955B] font-semibold flex items-center gap-1"
-                                        >
-                                            <Edit size={13} /> Edit
-                                        </button>
-                                        <button
-                                            onClick={() => { if (window.confirm(`Are you sure you want to delete ${team.name}?`)) deleteTeam(team.id); }}
-                                            className="px-2.5 py-1 text-xs rounded-lg bg-[#FAF3F2] text-[#A84B4B] font-semibold flex items-center gap-1"
-                                        >
-                                            <Trash2 size={13} /> Delete
-                                        </button>
-                                    </>
+                                    <button
+                                        onClick={() => handleEditClick(team)}
+                                        className="px-2.5 py-1 text-xs rounded-lg bg-[#EEE8DD] text-[#B9955B] font-semibold flex items-center gap-1"
+                                    >
+                                        <Edit size={13} /> Edit
+                                    </button>
+                                )}
+                                {user?.role === 'ADMIN' && (
+                                    <button
+                                        onClick={() => { if (window.confirm(`Are you sure you want to delete ${team.name}?`)) deleteTeam(team.id); }}
+                                        className="px-2.5 py-1 text-xs rounded-lg bg-[#FAF3F2] text-[#A84B4B] font-semibold flex items-center gap-1"
+                                    >
+                                        <Trash2 size={13} /> Delete
+                                    </button>
                                 )}
                             </div>
                         </div>

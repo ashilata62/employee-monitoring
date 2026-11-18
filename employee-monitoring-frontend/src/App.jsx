@@ -160,14 +160,26 @@ function App() {
                                             <Route path="location-insights" element={<LocationInsights />} />
                                             <Route path="process-mining" element={<ProcessMining />} />
                                         </Route>
-                                        <Route path="payroll" element={<Payroll />} />
+                                        <Route path="payroll" element={
+                                            <RoleRoute allowedRoles={['ADMIN']}>
+                                                <Payroll />
+                                            </RoleRoute>
+                                        } />
                                         <Route path="alerts" element={<Alerts />} />
                                         <Route path="employees" element={<EmployeeManagement />} />
                                         <Route path="employees/:id" element={<EmployeeProfile />} />
                                         <Route path="teams" element={<Teams />} />
                                         <Route path="projects" element={<Projects />} />
-                                        <Route path="agents" element={<AgentManagement />} />
-                                        <Route path="settings" element={<Settings />} />
+                                        <Route path="agents" element={
+                                            <RoleRoute allowedRoles={['ADMIN']}>
+                                                <AgentManagement />
+                                            </RoleRoute>
+                                        } />
+                                        <Route path="settings" element={
+                                            <RoleRoute allowedRoles={['ADMIN']}>
+                                                <Settings />
+                                            </RoleRoute>
+                                        } />
                                         <Route path="settings/reports/workload-distribution" element={<WorkloadDistributionSettings />} />
                                         <Route path="settings/reports/location-insights" element={<LocationInsightsSettings />} />
 
@@ -216,8 +228,16 @@ function App() {
                                             <Route path="add-ons" element={<AddOns />} />
                                         </Route>
 
-                                        <Route path="compliance" element={<Compliance />} />
-                                        <Route path="compliance/readiness" element={<ComplianceReadiness />} />
+                                        <Route path="compliance" element={
+                                            <RoleRoute allowedRoles={['ADMIN']}>
+                                                <Compliance />
+                                            </RoleRoute>
+                                        } />
+                                        <Route path="compliance/readiness" element={
+                                            <RoleRoute allowedRoles={['ADMIN']}>
+                                                <ComplianceReadiness />
+                                            </RoleRoute>
+                                        } />
                                         <Route path="notifications" element={<Notifications />} />
                                         <Route path="*" element={<Navigate to="/" replace />} />
                                     </Routes>

@@ -357,40 +357,45 @@ export function Dashboard() {
             {role === 'EMPLOYEE' && <WorkSessionBanner />}
 
             {/* Insightful Module Quick Switcher */}
-            <div className="flex items-center gap-2.5 mb-6 overflow-x-auto pb-1 scrollbar-none">
-                <button
-                    onClick={() => navigate(role === 'EMPLOYEE' ? '/employee' : '/admin')}
-                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-[#30382B] text-white shadow-warm-xs whitespace-nowrap cursor-pointer"
-                >
-                    <Zap size={14} className="text-[#D3B98D]" />
-                    <span>Productivity Trends</span>
-                </button>
-                <button
-                    onClick={() => navigate(`${role === 'EMPLOYEE' ? '/employee' : '/admin'}/activities`)}
-                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium bg-[#FBF9F5] dark:bg-[#252B20] text-[#29291F] dark:text-[#F5F1E9] border border-[#E5DED2] dark:border-[#384232] hover:bg-[#EEE8DD] transition-all shadow-warm-xs whitespace-nowrap cursor-pointer"
-                >
-                    <Activity size={14} className="text-[#B9955B]" />
-                    <span>Activities Timeline</span>
-                </button>
-                {role !== 'EMPLOYEE' && (
-                    <>
+            {(() => {
+                const roleBase = `/${(role || 'employee').toLowerCase()}`;
+                return (
+                    <div className="flex items-center gap-2.5 mb-6 overflow-x-auto pb-1 scrollbar-none">
                         <button
-                            onClick={() => navigate(`${role === 'EMPLOYEE' ? '/employee' : '/admin'}/reports/location-insights`)}
-                            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium bg-[#FBF9F5] dark:bg-[#252B20] text-[#29291F] dark:text-[#F5F1E9] border border-[#E5DED2] dark:border-[#384232] hover:bg-[#EEE8DD] transition-all shadow-warm-xs whitespace-nowrap cursor-pointer"
+                            onClick={() => navigate(roleBase)}
+                            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-[#30382B] text-white shadow-warm-xs whitespace-nowrap cursor-pointer"
                         >
-                            <Globe size={14} className="text-[#5E7D64]" />
-                            <span>Office vs Remote</span>
+                            <Zap size={14} className="text-[#D3B98D]" />
+                            <span>Productivity Trends</span>
                         </button>
                         <button
-                            onClick={() => navigate(`${role === 'EMPLOYEE' ? '/employee' : '/admin'}/reports/apps-websites`)}
+                            onClick={() => navigate(`${roleBase}/activities`)}
                             className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium bg-[#FBF9F5] dark:bg-[#252B20] text-[#29291F] dark:text-[#F5F1E9] border border-[#E5DED2] dark:border-[#384232] hover:bg-[#EEE8DD] transition-all shadow-warm-xs whitespace-nowrap cursor-pointer"
                         >
-                            <Monitor size={14} className="text-[#30382B] dark:text-[#D3B98D]" />
-                            <span>Apps & Websites Usage</span>
+                            <Activity size={14} className="text-[#B9955B]" />
+                            <span>Activities Timeline</span>
                         </button>
-                    </>
-                )}
-            </div>
+                        {role !== 'EMPLOYEE' && (
+                            <>
+                                <button
+                                    onClick={() => navigate(`${roleBase}/reports/location-insights`)}
+                                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium bg-[#FBF9F5] dark:bg-[#252B20] text-[#29291F] dark:text-[#F5F1E9] border border-[#E5DED2] dark:border-[#384232] hover:bg-[#EEE8DD] transition-all shadow-warm-xs whitespace-nowrap cursor-pointer"
+                                >
+                                    <Globe size={14} className="text-[#5E7D64]" />
+                                    <span>Office vs Remote</span>
+                                </button>
+                                <button
+                                    onClick={() => navigate(`${roleBase}/reports/apps-websites`)}
+                                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium bg-[#FBF9F5] dark:bg-[#252B20] text-[#29291F] dark:text-[#F5F1E9] border border-[#E5DED2] dark:border-[#384232] hover:bg-[#EEE8DD] transition-all shadow-warm-xs whitespace-nowrap cursor-pointer"
+                                >
+                                    <Monitor size={14} className="text-[#30382B] dark:text-[#D3B98D]" />
+                                    <span>Apps & Websites Usage</span>
+                                </button>
+                            </>
+                        )}
+                    </div>
+                );
+            })()}
 
             {/* Reference Period vs Compared Period Bar (Insightful Image 1) */}
             <PeriodComparisonBar
