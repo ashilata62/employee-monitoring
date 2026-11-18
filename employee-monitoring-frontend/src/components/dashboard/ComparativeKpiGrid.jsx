@@ -27,13 +27,13 @@ const FormattedDisplayValue = ({ value }) => {
     const matchHMS = value.match(/^(\d{1,3})h\s*(\d{2})m\s*(\d{2})s$/);
     if (matchHMS) {
         return (
-            <div className="flex items-baseline font-sans font-bold tracking-tight text-[#29291F] dark:text-[#F5F1E9] tabular-nums leading-none flex-wrap">
+            <div className="flex items-baseline font-mono font-bold tracking-tight text-[#29291F] dark:text-[#F5F1E9] tabular-nums leading-none flex-wrap">
                 <span className="text-base sm:text-xl md:text-2xl">{matchHMS[1]}</span>
-                <span className="text-[10px] sm:text-xs font-semibold text-[#777367] dark:text-[#9E988A] ml-0.5 mr-1 sm:mr-1.5">h</span>
+                <span className="text-[10px] sm:text-xs font-semibold text-[#B9955B] ml-0.5 mr-1 sm:mr-1.5">h</span>
                 <span className="text-base sm:text-xl md:text-2xl">{matchHMS[2]}</span>
-                <span className="text-[10px] sm:text-xs font-semibold text-[#777367] dark:text-[#9E988A] ml-0.5 mr-1 sm:mr-1.5">m</span>
-                <span className="text-xs sm:text-base md:text-lg text-[#777367] dark:text-[#9E988A]">{matchHMS[3]}</span>
-                <span className="text-[9px] sm:text-[10px] md:text-[11px] font-semibold text-[#777367]/80 dark:text-[#9E988A]/80 ml-0.5">s</span>
+                <span className="text-[10px] sm:text-xs font-semibold text-[#B9955B] ml-0.5 mr-1 sm:mr-1.5">m</span>
+                <span className="text-base sm:text-xl md:text-2xl text-[#29291F] dark:text-[#F5F1E9]">{matchHMS[3]}</span>
+                <span className="text-[10px] sm:text-xs font-semibold text-[#B9955B] ml-0.5">s</span>
             </div>
         );
     }
@@ -94,9 +94,17 @@ const KpiCard = ({
         <div className="group bg-[#EEE8DD] dark:bg-[#252B20] rounded-xl sm:rounded-2xl border border-[#D6CDBC] dark:border-[#384232] p-3.5 sm:p-4 shadow-warm-xs hover:border-[#B9955B]/60 dark:hover:border-[#B9955B]/50 transition-all duration-200 flex flex-col justify-between">
             {/* Top row: Title & Mini Icon */}
             <div className="flex items-center justify-between gap-2 mb-2">
-                <span className="text-[10px] sm:text-[11px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-[0.12em] truncate">
-                    {title}
-                </span>
+                <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="text-[10px] sm:text-[11px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-[0.12em] truncate">
+                        {title}
+                    </span>
+                    {liveTick && (
+                        <span className="relative flex h-2 w-2 shrink-0" title="Live ticking stopwatch">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                        </span>
+                    )}
+                </div>
                 <div className="h-7 w-7 rounded-lg bg-[#EEE8DD]/80 dark:bg-[#30382B] flex items-center justify-center text-[#B9955B] group-hover:bg-[#B9955B]/15 group-hover:text-[#A17D45] transition-colors shrink-0">
                     <Icon size={14} strokeWidth={2} />
                 </div>

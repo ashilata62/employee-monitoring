@@ -66,16 +66,31 @@ async function calculateMetrics(organizationId, employeeId = null, teamId = null
 
     const attLogs = await prisma.attendance.findMany({ where: attWhere });
     let attendanceTime = 0;
+    let hasLiveActiveSession = false;
     const now = Date.now();
     attLogs.forEach(att => {
         let dur = att.duration || 0;
         if (!att.clockOut && att.clockIn) {
             dur = Math.max(0, Math.floor((now - new Date(att.clockIn).getTime()) / 1000));
+            hasLiveActiveSession = true;
         } else if (dur === 0 && att.clockIn && att.clockOut) {
             dur = Math.max(0, Math.floor((new Date(att.clockOut).getTime() - new Date(att.clockIn).getTime()) / 1000));
         }
         attendanceTime += dur;
     });
+
+    if (!hasLiveActiveSession) {
+        const agentWhere = {
+            status: 'active',
+            lastSeen: { gte: new Date(Date.now() - 5 * 60 * 1000) }
+        };
+        if (organizationId) agentWhere.employee = { organizationId };
+        if (employeeId) agentWhere.employeeId = employeeId;
+        const activeAgent = await prisma.agent.findFirst({ where: agentWhere });
+        if (activeAgent) {
+            hasLiveActiveSession = true;
+        }
+    }
 
     if (attendanceTime > activeTime) {
         const diff = attendanceTime - activeTime;
@@ -105,7 +120,8 @@ async function calculateMetrics(organizationId, employeeId = null, teamId = null
             productiveTime,
             unproductiveTime: unproductiveTime || idleTime,
             neutralTime,
-            utilization
+            utilization,
+            isLive: hasLiveActiveSession
         }
     };
 }
@@ -342,6 +358,7 @@ async function getEmployeeRankings(organizationId, teamId = null, startDate = nu
         let dur = att.duration || 0;
         if (!att.clockOut && att.clockIn) {
             dur = Math.max(0, Math.floor((now - new Date(att.clockIn).getTime()) / 1000));
+            empStats[att.employee.id].status = 'ACTIVE';
         } else if (dur === 0 && att.clockIn && att.clockOut) {
             dur = Math.max(0, Math.floor((new Date(att.clockOut).getTime() - new Date(att.clockIn).getTime()) / 1000));
         }
@@ -409,6 +426,7 @@ const getAdminDashboard = async (organizationId, startDate = null, endDate = nul
         employees,
         teams: teamStats,
         totalAttendance,
+        isLive: summary?.rawSeconds?.isLive || false,
         workHours: summary.totalWorkHours,
         productivityScore: summary.utilization,
         summary,
@@ -446,6 +464,7 @@ const getManagerDashboard = async (organizationId, teamId, startDate = null, end
         activityLogs,
         tasks,
         totalAttendance: attendance,
+        isLive: summary?.rawSeconds?.isLive || false,
         workHours: summary.totalWorkHours,
         productivityScore: summary.utilization,
         summary,
@@ -494,6 +513,7 @@ const getEmployeeDashboard = async (organizationId, employeeId, startDate = null
         attendance: attendanceList,
         tasks,
         screenshots,
+        isLive: summary?.rawSeconds?.isLive || false,
         workHours: summary.totalWorkHours,
         productivityScore: summary.utilization,
         summary,

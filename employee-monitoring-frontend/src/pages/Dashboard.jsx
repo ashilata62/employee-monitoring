@@ -327,6 +327,9 @@ export function Dashboard() {
 
     const liveTick = useMemo(() => {
         if (!isToday) return false;
+        if (stats?.summary?.rawSeconds?.isLive || stats?.isLive || dashboardData?.isLive) {
+            return true;
+        }
         if (role === 'EMPLOYEE') {
             return isClockedIn && !isOnBreak;
         }
@@ -338,7 +341,7 @@ export function Dashboard() {
             return s === 'active' || s === 'online';
         });
         return someoneOnline;
-    }, [isToday, role, isClockedIn, isOnBreak, stats?.empMetrics, stats?.employees, contextEmployees]);
+    }, [isToday, role, isClockedIn, isOnBreak, stats?.summary?.rawSeconds?.isLive, stats?.isLive, dashboardData?.isLive, stats?.empMetrics, stats?.employees, contextEmployees]);
 
     const chartData = stats.intradayActivity?.length
         ? stats.intradayActivity

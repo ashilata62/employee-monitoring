@@ -1070,12 +1070,8 @@ export function TasksProjects() {
         addNotification("Report generated successfully", 'success');
     };
 
-    // Simulated Archived Data
-    const archivedEntries = [
-        { id: 101, task: "Legacy System Audit", duration: "4h 20m", date: "2023-10-15", employee: "Sarah Connor" },
-        { id: 102, task: "Database Migration", duration: "6h 15m", date: "2023-10-14", employee: "John Wick" },
-        { id: 103, task: "API Documentation", duration: "2h 30m", date: "2023-10-12", employee: "Ellen Ripley" },
-    ];
+    // Archived Data (Loaded dynamically, no mock data)
+    const archivedEntries = [];
     // Goals State (Lifted from context)
     const goals = contextGoals;
 
