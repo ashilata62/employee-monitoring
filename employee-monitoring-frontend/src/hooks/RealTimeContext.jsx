@@ -327,11 +327,21 @@ export function RealTimeProvider({ children }) {
                         id: p.id,
                         name: p.projectName || p.name,
                         client: p.client || 'Internal',
-                        progress: parseInt(p.progress) || 0,
+                        progress: p.progress !== undefined ? parseInt(p.progress) : 0,
                         status: p.status || 'Active',
                         color: p.color || 'bg-indigo-500',
                         taskCount: p.tasks || 0,
-                        memberIds: p.assignments?.map(a => a.employeeId) || [],
+                        tasks: p.tasks || 0,
+                        completedTasks: p.completedTasks || 0,
+                        inProgressTasks: p.inProgressTasks || 0,
+                        efficiency: p.efficiency !== undefined ? p.efficiency : 100,
+                        leadStakeholder: p.leadStakeholder || (p.assignedEmployees && p.assignedEmployees[0]) || 'Lead',
+                        assignedEmployees: p.assignedEmployees || [],
+                        assignedEmployeeIds: p.assignedEmployeeIds || [],
+                        totalSeconds: p.totalSeconds || 0,
+                        totalTime: p.totalTime || '00:00',
+                        billableRate: p.billableRate || p.billRate || 120,
+                        memberIds: p.assignedEmployeeIds || p.assignments?.map(a => a.employeeId) || [],
                         isSeed: false
                     }))
                 }));
@@ -372,10 +382,11 @@ export function RealTimeProvider({ children }) {
         if (!isAuthenticated) return;
         try {
             const res = await alertService.getAlertHistory({ limit: 50 });
-            if (res && res.alerts) {
+            const alertList = res?.alerts || res?.data?.alerts || (Array.isArray(res) ? res : []);
+            if (alertList) {
                 setState(prev => ({
                     ...prev,
-                    alerts: res.alerts
+                    alerts: alertList
                 }));
             }
         } catch (err) {

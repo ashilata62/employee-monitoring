@@ -21,7 +21,8 @@ export function ExportDropdown({
     fileName = 'export-report',
     metadata = {},
     disabled = false,
-    className = ''
+    className = '',
+    buttonClassName = ''
 }) {
     const [isOpen, setIsOpen] = useState(false);
     const [exportingFormat, setExportingFormat] = useState(null);
@@ -74,9 +75,10 @@ export function ExportDropdown({
                 disabled={disabled || isBusy}
                 title="Export Report Data"
                 className={cn(
-                    "flex h-10 items-center gap-2 px-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 shadow-sm transition-all hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-300 active:scale-95 text-xs font-bold",
+                    "flex h-9 items-center gap-1.5 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 shadow-xs transition-all hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-95 text-xs font-semibold cursor-pointer",
                     (disabled || isBusy) && "opacity-50 cursor-not-allowed",
-                    isOpen && "ring-2 ring-primary-500/20 border-primary-500"
+                    isOpen && "ring-2 ring-indigo-500/20 border-indigo-500",
+                    buttonClassName
                 )}
             >
                 {isBusy ? (

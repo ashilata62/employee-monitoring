@@ -246,30 +246,42 @@ export function Projects() {
                         {(() => {
                             if (loading) return <div className="text-center py-20 font-bold text-slate-400 animate-pulse">Fetching project data...</div>;
 
-                            const filtered = projects.filter(p => (p.projectName || p.name || '').toLowerCase().includes(projectSearch.toLowerCase()));
-                            if (filtered.length === 0) {
-                                return (
-                                    <div className="flex flex-col items-center justify-center py-20 text-center col-span-full">
-                                        <div className="h-20 w-20 rounded-full bg-slate-50 dark:bg-slate-900 flex items-center justify-center mb-4">
-                                            <Search size={32} className="text-slate-200 dark:text-slate-800" />
+                                const filtered = projects.filter(p => (p.projectName || p.name || '').toLowerCase().includes(projectSearch.toLowerCase()));
+                                if (filtered.length === 0) {
+                                    return (
+                                        <div className="flex flex-col items-center justify-center py-20 text-center col-span-full">
+                                            <div className="h-20 w-20 rounded-full bg-slate-50 dark:bg-slate-900 flex items-center justify-center mb-4">
+                                                <Search size={32} className="text-slate-200 dark:text-slate-800" />
+                                            </div>
+                                            <h3 className="text-xl font-black text-slate-300 dark:text-slate-800 select-none">
+                                                {role === 'EMPLOYEE' && !projectSearch
+                                                    ? 'No Projects Assigned'
+                                                    : 'No Projects Found'}
+                                            </h3>
+                                            <p className="text-xs font-bold text-slate-400 mt-2">
+                                                {role === 'EMPLOYEE' && !projectSearch
+                                                    ? 'No projects assigned to you yet. Contact your manager.'
+                                                    : 'Try adjusting your search or filters'}
+                                            </p>
                                         </div>
-                                        <h3 className="text-xl font-black text-slate-300 dark:text-slate-800 select-none">No Projects Found</h3>
-                                        <p className="text-xs font-bold text-slate-400 mt-2">Try adjusting your search or filters</p>
-                                    </div>
-                                );
-                            }
-                            return filtered.map((project, idx) => (
-                                <div key={idx} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[1.5rem] lg:rounded-2xl p-5 md:p-6 lg:p-4 hover:shadow-xl hover:border-primary-100 dark:hover:border-primary-900/30 transition-all group lg:grid lg:grid-cols-12 lg:items-center">
-                                    {/* Desktop-only hidden / Mobile visible labels */}
-                                    <div className="lg:col-span-4 flex items-center gap-4 mb-4 lg:mb-0">
-                                        <div className="h-12 w-12 lg:h-9 lg:lg:w-9 rounded-2xl lg:rounded-xl bg-primary-600 flex items-center justify-center text-xs lg:text-[10px] font-black text-white shadow-lg shadow-primary-200 dark:shadow-none transition-transform group-hover:scale-105">
-                                            {(project.projectName || project.name || 'PR').substring(0, 2).toUpperCase()}
+                                    );
+                                }
+                                return filtered.map((project, idx) => (
+                                    <div 
+                                        key={idx} 
+                                        onClick={() => setViewingProject(project)}
+                                        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[1.5rem] lg:rounded-2xl p-5 md:p-6 lg:p-4 hover:shadow-xl hover:border-primary-100 dark:hover:border-primary-900/30 transition-all group lg:grid lg:grid-cols-12 lg:items-center cursor-pointer"
+                                    >
+                                        {/* Desktop-only hidden / Mobile visible labels */}
+                                        <div className="lg:col-span-4 flex items-center gap-4 mb-4 lg:mb-0">
+                                            <div className="h-12 w-12 lg:h-9 lg:lg:w-9 rounded-2xl lg:rounded-xl bg-primary-600 flex items-center justify-center text-xs lg:text-[10px] font-black text-white shadow-lg shadow-primary-200 dark:shadow-none transition-transform group-hover:scale-105">
+                                                {(project.projectName || project.name || 'PR').substring(0, 2).toUpperCase()}
+                                            </div>
+                                            <div className="flex flex-col lg:flex-row lg:items-center gap-0.5 lg:gap-0">
+                                                <span className="text-sm lg:text-xs font-black text-slate-900 dark:text-slate-100">{project.projectName || project.name}</span>
+                                                <span className="lg:hidden text-[10px] font-bold text-slate-400 uppercase tracking-wider">{project.tasks} Tasks active</span>
+                                            </div>
                                         </div>
-                                        <div className="flex flex-col lg:flex-row lg:items-center gap-0.5 lg:gap-0">
-                                            <span className="text-sm lg:text-xs font-black text-slate-900 dark:text-slate-100">{project.projectName || project.name}</span>
-                                            <span className="lg:hidden text-[10px] font-bold text-slate-400 uppercase tracking-wider">{project.tasks} Tasks active</span>
-                                        </div>
-                                    </div>
 
                                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-8 gap-4 lg:gap-0 lg:col-span-8 items-center">
                                         {/* Assignees */}
@@ -332,21 +344,32 @@ export function Projects() {
                                                         </button>
                                                     )}
                                                 </div>
-                                            </>
-                                        ) : (
-                                            <div className="flex items-center justify-center lg:col-span-4">
-                                                <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">
-                                                    Active Project
-                                                </span>
-                                            </div>
-                                        )}
+                                                </>
+                                            ) : (
+                                                <div className="flex items-center justify-center gap-2 lg:col-span-4">
+                                                    <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">
+                                                        Active Project
+                                                    </span>
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setViewingProject(project);
+                                                        }}
+                                                        className="h-7 px-2.5 flex items-center gap-1 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 text-[10px] font-black uppercase tracking-wider transition-all shadow-sm cursor-pointer"
+                                                        title="View Project Tasks"
+                                                    >
+                                                        <Eye size={13} />
+                                                        <span>View</span>
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
-                            ));
-                        })()}
+                                ));
+                            })() }
+                        </div>
                     </div>
-                </div>
-
+                
             )}
 
             <NewProjectModal
