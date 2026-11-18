@@ -1960,19 +1960,22 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                     <h1 className="font-serif text-3xl font-normal text-[#29291F] dark:text-[#F5F1E9] tracking-tight">Screenshots & Screen Recording</h1>
 
                     {/* Main Navigation Tabs (Phase 2) */}
-                    <div className="flex items-center gap-1.5 bg-[#EEE8DD] dark:bg-[#252B20] p-1.5 rounded-xl border border-[#E5DED2] dark:border-[#384232]">
+                    <div className="flex items-center gap-1.5 bg-[#EEE8DD] dark:bg-[#252B20] p-1.5 rounded-xl border border-[#D6CDBC] dark:border-[#384232]">
                       <button
                         onClick={() => setActiveMainTab('screenshots')}
                         className={cn(
-                          "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all",
+                          "flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer",
                           activeMainTab === 'screenshots'
-                            ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/10"
-                            : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
+                            ? "bg-[#30382B] text-[#FDFBF7] shadow-warm-xs"
+                            : "text-[#777367] hover:text-[#29291F] dark:hover:text-[#F5F1E9]"
                         )}
                       >
-                        <Camera size={15} />
+                        <Camera size={15} className={activeMainTab === 'screenshots' ? "text-[#D3B98D]" : ""} />
                         <span>Screenshots</span>
-                        <span className="text-[10px] bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded-full font-bold">
+                        <span className={cn(
+                          "text-[10px] px-2 py-0.5 rounded-full font-bold",
+                          activeMainTab === 'screenshots' ? "bg-[#3C4536] text-[#D3B98D]" : "bg-[#D6CDBC]/50 text-[#777367]"
+                        )}>
                           {filteredScreenshots.length}
                         </span>
                       </button>
@@ -1983,15 +1986,18 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                           fetchVideos();
                         }}
                         className={cn(
-                          "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all",
+                          "flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer",
                           activeMainTab === 'videos'
-                            ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/10"
-                            : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
+                            ? "bg-[#30382B] text-[#FDFBF7] shadow-warm-xs"
+                            : "text-[#777367] hover:text-[#29291F] dark:hover:text-[#F5F1E9]"
                         )}
                       >
-                        <Video size={15} />
+                        <Video size={15} className={activeMainTab === 'videos' ? "text-[#D3B98D]" : ""} />
                         <span>Video Recordings</span>
-                        <span className="text-[10px] bg-primary-100 dark:bg-primary-900/50 text-primary-600 dark:text-primary-400 px-2 py-0.5 rounded-full font-bold">
+                        <span className={cn(
+                          "text-[10px] px-2 py-0.5 rounded-full font-bold",
+                          activeMainTab === 'videos' ? "bg-[#3C4536] text-[#D3B98D]" : "bg-[#D6CDBC]/50 text-[#777367]"
+                        )}>
                           {videoRecordings.length}
                         </span>
                       </button>
@@ -2000,7 +2006,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
 
                   {/* Top Controls (Screenshots tab only) */}
                   {activeMainTab === 'screenshots' && (
-                    <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex items-center gap-2.5 flex-nowrap shrink-0">
                       {role !== 'EMPLOYEE' && (
                         <button
                           onClick={handleCaptureRealScreen}
@@ -2065,7 +2071,8 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                         </div>
                       )}
 
-                      {/* Calendar Date Picker */}
+                      <div data-date-sort-group="true" className="flex items-center gap-2 flex-nowrap shrink-0">
+{/* Calendar Date Picker */}
                       <div className="relative" ref={calendarRef}>
                         <button
                           onClick={() => setShowCalendarDropdown(!showCalendarDropdown)}
@@ -2198,6 +2205,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                         </select>
                         <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#777367] pointer-events-none" />
                       </div>
+</div>
                     </div>
                   )}
                 </div>
