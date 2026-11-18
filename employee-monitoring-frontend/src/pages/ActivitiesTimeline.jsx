@@ -139,6 +139,7 @@ export function ActivitiesTimeline() {
         await clockOut();
       } else {
         await clockIn();
+        window.dispatchEvent(new Event('start-web-tracker'));
       }
     } catch (err) {
       console.error('Attendance action failed:', err);

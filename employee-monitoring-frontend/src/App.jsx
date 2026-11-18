@@ -114,7 +114,7 @@ function App() {
     return (
         <ToastProvider>
             <RealTimeProvider>
-                <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+                <Router future={{ v7_relativeSplatPath: true }}>
                     <Routes>
                         {/* Public Routes */}
                         <Route path="/login" element={
