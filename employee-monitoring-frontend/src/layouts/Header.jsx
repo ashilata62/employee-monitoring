@@ -40,11 +40,11 @@ export function Header({ onMenuClick }) {
     const unreadCount = liveNotifications.filter(n => n.unread).length;
 
     return (
-        <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-slate-200 bg-white/95 px-2.5 sm:px-4 md:px-8 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/95 transition-colors">
+        <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-[#E5DED2] bg-[#F5F1E9]/95 px-2.5 sm:px-4 md:px-8 backdrop-blur-md dark:border-[#384232] dark:bg-[#1A1F18]/95 transition-colors">
             <div className="flex items-center gap-2 sm:gap-4">
                 <button
                     onClick={onMenuClick}
-                    className="lg:hidden flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 transition-colors"
+                    className="md:hidden flex h-10 w-10 items-center justify-center rounded-xl text-[#777367] hover:bg-[#EEE8DD] hover:text-[#29291F] dark:text-[#B8B3A7] dark:hover:bg-[#283025] transition-colors cursor-pointer"
                 >
                     <Menu size={22} />
                 </button>
@@ -56,10 +56,10 @@ export function Header({ onMenuClick }) {
 
                 <button
                     onClick={toggleTheme}
-                    className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 transition-all active:scale-95"
+                    className="flex h-9 w-9 items-center justify-center rounded-xl text-[#777367] hover:bg-[#EEE8DD] hover:text-[#29291F] dark:text-[#B8B3A7] dark:hover:bg-[#283025] transition-all active:scale-95"
                     title={theme === 'dark' ? "Switch to Light Mode" : "Switch to Dark Mode"}
                 >
-                    {theme === 'dark' ? <Sun size={18} className="text-amber-400" /> : <Moon size={18} className="text-slate-600" />}
+                    {theme === 'dark' ? <Sun size={18} className="text-[#D3B98D]" /> : <Moon size={18} className="text-[#777367]" />}
                 </button>
 
                 <div className="relative" ref={notificationRef}>
@@ -68,27 +68,27 @@ export function Header({ onMenuClick }) {
                         className={clsx(
                             "relative flex h-9 w-9 items-center justify-center rounded-xl transition-all active:scale-95",
                             showNotifications
-                                ? "bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400"
-                                : "text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800"
+                                ? "bg-[#B9955B] text-white"
+                                : "text-[#777367] hover:bg-[#EEE8DD] hover:text-[#29291F] dark:text-[#B8B3A7] dark:hover:bg-[#283025]"
                         )}
                         title="Notifications"
                     >
                         <Bell size={18} className={unreadCount > 0 ? "animate-pulse" : ""} />
                         {unreadCount > 0 && (
                             <span className="absolute right-2 top-2 flex h-2 w-2">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500 ring-2 ring-white dark:ring-slate-900"></span>
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#A84B4B] opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#A84B4B] ring-2 ring-[#F5F1E9] dark:ring-[#1A1F18]"></span>
                             </span>
                         )}
                     </button>
 
                     {showNotifications && (
-                        <div className="fixed left-4 right-4 top-[4.5rem] w-auto md:absolute md:right-0 md:top-full md:left-auto md:w-80 md:mt-2 origin-top-right rounded-2xl border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900 animate-in fade-in slide-in-from-top-1 z-50 overflow-hidden">
-                            <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 dark:border-slate-800">
-                                <h3 className="text-sm font-bold text-slate-900 dark:text-white">Notifications</h3>
+                        <div className="fixed left-4 right-4 top-[4.5rem] w-auto md:absolute md:right-0 md:top-full md:left-auto md:w-80 md:mt-2 origin-top-right rounded-2xl border border-[#E5DED2] bg-[#FBF9F5] shadow-xl dark:border-[#384232] dark:bg-[#252B20] animate-in fade-in slide-in-from-top-1 z-50 overflow-hidden">
+                            <div className="flex items-center justify-between border-b border-[#E5DED2] px-4 py-3 dark:border-[#384232]">
+                                <h3 className="text-sm font-semibold text-[#29291F] dark:text-[#F5F1E9]">Notifications</h3>
                                 <button
                                     onClick={markAllNotificationsRead}
-                                    className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline transition-colors"
+                                    className="text-xs font-semibold text-[#B9955B] hover:text-[#A17D45] transition-colors"
                                 >
                                     Mark all as read
                                 </button>
@@ -106,15 +106,15 @@ export function Header({ onMenuClick }) {
                                                 }
                                             }}
                                             className={clsx(
-                                                "group relative flex gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors cursor-pointer",
-                                                n.unread && "bg-indigo-50/40 dark:bg-indigo-950/20"
+                                                "group relative flex gap-3 px-4 py-3 hover:bg-[#EEE8DD]/60 dark:hover:bg-[#2E362A] transition-colors cursor-pointer",
+                                                n.unread && "bg-[#EEE8DD]/40 dark:bg-[#2E362A]/50"
                                             )}
                                         >
                                             <div className={clsx(
                                                 "flex h-8 w-8 shrink-0 items-center justify-center rounded-xl mt-0.5",
-                                                n.type === 'alert' && "bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400",
-                                                n.type === 'success' && "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400",
-                                                n.type === 'info' && "bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400"
+                                                n.type === 'alert' && "bg-[#FAF3F2] text-[#A84B4B]",
+                                                n.type === 'success' && "bg-[#F4F7F4] text-[#5E7D64]",
+                                                n.type === 'info' && "bg-[#F8F2E4] text-[#B9955B]"
                                             )}>
                                                 {n.type === 'alert' && <AlertCircle size={16} />}
                                                 {n.type === 'success' && <CheckCircle2 size={16} />}
@@ -122,41 +122,41 @@ export function Header({ onMenuClick }) {
                                             </div>
                                             <div className="flex-1">
                                                 <div className="flex items-start justify-between">
-                                                    <p className={clsx("text-xs transition-colors", n.unread ? "font-bold text-slate-900 dark:text-white" : "text-slate-600 dark:text-slate-300")}>
+                                                    <p className={clsx("text-xs transition-colors", n.unread ? "font-bold text-[#29291F] dark:text-[#F5F1E9]" : "text-[#777367] dark:text-[#B8B3A7]")}>
                                                         {n.title}
                                                     </p>
                                                     <div className="flex items-center gap-1.5 shrink-0">
-                                                        {n.unread && <span className="h-1.5 w-1.5 rounded-full bg-indigo-600"></span>}
+                                                        {n.unread && <span className="h-1.5 w-1.5 rounded-full bg-[#B9955B]"></span>}
                                                         <button
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
                                                                 deleteNotification(n.id);
                                                             }}
-                                                            className="opacity-0 group-hover:opacity-100 p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md text-slate-400 transition-all"
+                                                            className="opacity-0 group-hover:opacity-100 p-1 hover:bg-[#E5DED2] dark:hover:bg-[#384232] rounded-md text-[#777367] transition-all"
                                                             title="Delete notification"
                                                         >
                                                             <X size={12} />
                                                         </button>
                                                     </div>
                                                 </div>
-                                                <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 mt-0.5">{n.description}</p>
-                                                <p className="mt-1 text-[9px] font-bold text-slate-400 uppercase tracking-wider">{n.time || 'Just now'}</p>
+                                                <p className="text-[11px] text-[#777367] dark:text-[#B8B3A7] line-clamp-2 mt-0.5">{n.description}</p>
+                                                <p className="mt-1 text-[9px] font-bold text-[#9E988A] uppercase tracking-wider">{n.time || 'Just now'}</p>
                                             </div>
                                         </div>
                                     ))
                                 ) : (
-                                    <div className="px-4 py-8 text-center text-xs text-slate-400">
+                                    <div className="px-4 py-8 text-center text-xs text-[#777367]">
                                         No new notifications
                                     </div>
                                 )}
                             </div>
-                            <div className="border-t border-slate-100 dark:border-slate-800 p-2.5 text-center bg-slate-50 dark:bg-slate-850">
+                            <div className="border-t border-[#E5DED2] dark:border-[#384232] p-2.5 text-center bg-[#EEE8DD]/50 dark:bg-[#1E2419]">
                                 <button
                                     onClick={() => {
                                         setShowNotifications(false);
                                         navigate(resolveRolePath('/notifications'));
                                     }}
-                                    className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline transition-colors w-full py-0.5 block"
+                                    className="text-xs font-semibold text-[#B9955B] hover:text-[#A17D45] transition-colors w-full py-0.5 block"
                                 >
                                     View All Notifications
                                 </button>
@@ -165,7 +165,7 @@ export function Header({ onMenuClick }) {
                     )}
                 </div>
 
-                <div className="h-5 w-px bg-slate-200 dark:bg-slate-700 mx-1"></div>
+                <div className="h-5 w-px bg-[#E5DED2] dark:bg-[#384232] mx-1"></div>
 
                 <ProfileDropdown />
             </div>

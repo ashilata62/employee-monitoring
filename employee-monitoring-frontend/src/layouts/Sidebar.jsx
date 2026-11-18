@@ -3,10 +3,13 @@ import { NavLink } from 'react-router-dom';
 import {
     LayoutDashboard,
     Clock,
+    CalendarCheck,
     Activity,
+    MapPin,
     CheckSquare,
     BarChart3,
     CreditCard,
+    Bell,
     Users,
     Settings,
     ShieldCheck,
@@ -15,7 +18,7 @@ import {
     Monitor,
     Zap,
     X,
-    Layers
+    Sparkles
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -76,38 +79,38 @@ export function Sidebar({ collapsed, setCollapsed, onMobileClose }) {
     return (
         <aside
             className={cn(
-                "h-full border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 transition-all duration-300 ease-in-out relative flex flex-col",
-                "w-[80vw] max-w-[280px] lg:max-w-none shadow-xl lg:shadow-none",
-                collapsed ? "lg:w-20" : "lg:w-64"
+                "h-full border-r border-[#3C4536] bg-[#30382B] text-[#F5F1E9] transition-all duration-300 ease-in-out relative flex flex-col",
+                "w-[80vw] max-w-[280px] md:max-w-none shadow-2xl md:shadow-none",
+                collapsed ? "md:w-20" : "md:w-60"
             )}
         >
             {/* Header Brand Section */}
-            <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-slate-100 dark:border-slate-800 min-h-[72px]">
+            <div className="flex items-center justify-between px-5 pt-6 pb-5 border-b border-[#3C4536]/80 min-h-[76px]">
                 {!collapsed ? (
                     <div className="flex items-center gap-3 animate-in fade-in duration-300">
-                        <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/20 shrink-0">
-                            <Layers size={18} />
+                        <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-[#B9955B] to-[#8C6D38] flex items-center justify-center text-white shadow-md shadow-black/20 shrink-0">
+                            <Sparkles size={18} className="text-[#FDFBF7]" />
                         </div>
                         <div className="flex flex-col">
-                            <span className="text-[15px] font-black tracking-tight text-slate-900 dark:text-white leading-tight">
-                                Employee Performance
+                            <span className="font-serif text-[18px] font-semibold text-[#FBF9F5] tracking-tight leading-tight">
+                                Performance
                             </span>
-                            <span className="text-[10px] font-bold tracking-wider text-indigo-600 dark:text-indigo-400 uppercase leading-tight mt-0.5">
-                                Software
+                            <span className="text-[9px] font-bold tracking-[0.22em] text-[#D3B98D] uppercase leading-tight mt-0.5">
+                                Command Center
                             </span>
                         </div>
                     </div>
                 ) : (
                     <div className="mx-auto flex items-center justify-center">
-                        <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/20">
-                            <span className="text-sm font-black">EPS</span>
+                        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-[#B9955B] to-[#8C6D38] flex items-center justify-center text-white shadow-md shadow-black/20">
+                            <span className="font-serif text-lg font-bold text-[#FDFBF7]">P</span>
                         </div>
                     </div>
                 )}
 
                 <button
                     onClick={onMobileClose}
-                    className="lg:hidden p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                    className="md:hidden p-2 text-[#C5CEBF] hover:text-white hover:bg-[#3C4536] rounded-lg transition-colors"
                     aria-label="Close menu"
                 >
                     <X size={20} />
@@ -115,7 +118,7 @@ export function Sidebar({ collapsed, setCollapsed, onMobileClose }) {
             </div>
 
             {/* Navigation List */}
-            <nav className="flex-1 mt-4 flex flex-col gap-1 px-3 overflow-y-auto scrollbar-thin pb-8">
+            <nav className="flex-1 mt-4 flex flex-col gap-1.5 px-3 overflow-y-auto scrollbar-thin pb-8">
                 {allowedNavItems.map((item) => {
                     const isReportsAllowed = hasAccess('reports');
                     const isLastItemInGroup = item.key === 'tasks';
@@ -126,10 +129,10 @@ export function Sidebar({ collapsed, setCollapsed, onMobileClose }) {
                                 to={item.path}
                                 onClick={onMobileClose}
                                 className={({ isActive }) => cn(
-                                    "group flex items-center gap-3.5 rounded-xl px-3.5 py-2.5 text-[13px] font-semibold transition-all duration-200",
+                                    "group flex items-center gap-3.5 rounded-xl px-3.5 py-2.5 text-[13px] font-medium transition-all duration-200",
                                     isActive
-                                        ? "bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400 shadow-xs font-bold"
-                                        : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100",
+                                        ? "bg-[#B9955B] text-white shadow-sm shadow-black/15 font-semibold"
+                                        : "text-[#D2DACB] hover:bg-[#3C4536] hover:text-[#FFFFFF]",
                                     collapsed && "justify-center px-0"
                                 )}
                                 title={collapsed ? item.name : ""}
@@ -140,14 +143,14 @@ export function Sidebar({ collapsed, setCollapsed, onMobileClose }) {
                                             size={19}
                                             className={cn(
                                                 "shrink-0 transition-transform duration-200 group-hover:scale-105",
-                                                isActive ? "text-indigo-600 dark:text-indigo-400" : "text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200"
+                                                isActive ? "text-white" : "text-[#B9C6B1] group-hover:text-white"
                                             )}
                                         />
                                         {!collapsed && (
                                             <span className="tracking-tight">{item.name}</span>
                                         )}
                                         {isActive && !collapsed && (
-                                            <div className="ml-auto h-1.5 w-1.5 rounded-full bg-indigo-600 dark:bg-indigo-400 animate-pulse" />
+                                            <div className="ml-auto h-1.5 w-1.5 rounded-full bg-white/90 shadow-xs" />
                                         )}
                                     </>
                                 )}
@@ -162,42 +165,42 @@ export function Sidebar({ collapsed, setCollapsed, onMobileClose }) {
                                             setReportsOpen(!reportsOpen);
                                         }}
                                         className={cn(
-                                            "group flex w-full items-center gap-3.5 rounded-xl px-3.5 py-2.5 text-[13px] font-semibold transition-all duration-200",
+                                            "group flex w-full items-center gap-3.5 rounded-xl px-3.5 py-2.5 text-[13px] font-medium transition-all duration-200",
                                             window.location.pathname.includes('/reports')
-                                                ? "bg-slate-100 dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 font-bold"
-                                                : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100",
+                                                ? "bg-[#3C4536] text-[#D3B98D] font-semibold"
+                                                : "text-[#D2DACB] hover:bg-[#3C4536] hover:text-[#FFFFFF]",
                                             collapsed && "justify-center px-0"
                                         )}
                                         title={collapsed ? "Reports" : ""}
                                     >
                                         <BarChart3
                                             size={19}
-                                            className="shrink-0 text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-transform group-hover:scale-105"
+                                            className="shrink-0 text-[#B9C6B1] group-hover:text-white transition-transform group-hover:scale-105"
                                         />
                                         {!collapsed && <span className="tracking-tight">Reports</span>}
                                         {!collapsed && (
                                             <ChevronRight
                                                 size={15}
                                                 className={cn(
-                                                    "ml-auto text-slate-400 transition-transform duration-200",
-                                                    reportsOpen && "rotate-90 text-indigo-600 dark:text-indigo-400"
+                                                    "ml-auto text-[#B9C6B1] transition-transform duration-200",
+                                                    reportsOpen && "rotate-90 text-[#D3B98D]"
                                                 )}
                                             />
                                         )}
                                     </button>
 
                                     {reportsOpen && !collapsed && (
-                                        <div className="ml-5 flex flex-col gap-1 border-l-2 border-slate-100 dark:border-slate-800 pl-3 py-1 my-1 animate-in slide-in-from-left-2 duration-200">
+                                        <div className="ml-5 flex flex-col gap-1 border-l border-[#3C4536] pl-3 py-1 my-1 animate-in slide-in-from-left-2 duration-200">
                                             {allowedReportSubItems.map((subItem) => (
                                                 <NavLink
                                                     key={subItem.path}
                                                     to={subItem.path}
                                                     onClick={onMobileClose}
                                                     className={({ isActive }) => cn(
-                                                        "rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-all duration-150",
+                                                        "rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all duration-150",
                                                         isActive
-                                                            ? "text-indigo-600 bg-indigo-50 dark:bg-indigo-950/30 dark:text-indigo-400 font-bold"
-                                                            : "text-slate-500 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800/60"
+                                                            ? "text-[#D3B98D] bg-[#3C4536]/80 font-semibold"
+                                                            : "text-[#B9C6B1] hover:text-white hover:bg-[#3C4536]/50"
                                                     )}
                                                 >
                                                     {subItem.name}
@@ -212,10 +215,10 @@ export function Sidebar({ collapsed, setCollapsed, onMobileClose }) {
                 })}
             </nav>
 
-            {/* Collapse/Expand Toggle Button */}
+            {/* Collapse/Expand Toggle Pill Button */}
             <button
                 onClick={() => setCollapsed(!collapsed)}
-                className="absolute -right-3 top-20 hidden lg:flex h-6 w-6 items-center justify-center rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 shadow-md transition-all hover:scale-110 hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-600 dark:hover:text-white z-50 cursor-pointer"
+                className="absolute -right-3 top-20 hidden lg:flex h-6 w-6 items-center justify-center rounded-full border border-[#3C4536] bg-[#30382B] text-[#D3B98D] shadow-lg transition-all hover:scale-110 hover:bg-[#B9955B] hover:text-white hover:border-[#B9955B] z-50 cursor-pointer"
                 aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
             >
                 {collapsed ? <ChevronRight size={13} /> : <ChevronLeft size={13} />}

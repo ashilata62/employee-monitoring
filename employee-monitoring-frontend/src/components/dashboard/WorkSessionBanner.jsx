@@ -58,16 +58,16 @@ export function WorkSessionBanner() {
     };
 
     return (
-        <div className="bg-[#ffffff] dark:bg-[#0f172a] p-4 sm:p-5 rounded-2xl border border-[#e2e8f0] dark:border-[#1e293b] shadow-warm-xs flex flex-col gap-3.5 mb-6 sm:mb-8 w-full">
+        <div className="bg-[#EEE8DD] dark:bg-[#252B20] p-4 sm:p-5 rounded-2xl border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs flex flex-col gap-3.5 mb-6 sm:mb-8 w-full">
 
             {/* ── Row 1: Timer + status ───────────────────────────────────────── */}
-            <div className="flex flex-col md:flex-row items-center gap-4 justify-between p-4 sm:p-5 bg-[#f1f5f9]/50 dark:bg-[#1E2419] rounded-xl border border-[#e2e8f0] dark:border-[#1e293b]">
+            <div className="flex flex-col md:flex-row items-center gap-4 justify-between p-4 sm:p-5 bg-[#EEE8DD]/50 dark:bg-[#1E2419] rounded-xl border border-[#D6CDBC] dark:border-[#384232]">
                 {/* Timer */}
                 <div className="flex flex-col items-center md:items-start">
-                    <span className="text-[10px] font-bold text-[#64748b] dark:text-[#94a3b8] uppercase tracking-[0.14em] mb-1">
+                    <span className="text-[10px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-[0.14em] mb-1">
                         {isOnBreak ? 'Session Paused' : 'Total Work Hours'}
                     </span>
-                    <div className="font-sans text-2xl xs:text-3xl lg:text-4xl font-bold text-[#0f172a] dark:text-[#f8fafc] tabular-nums tracking-tight">
+                    <div className="font-sans text-2xl xs:text-3xl lg:text-4xl font-bold text-[#29291F] dark:text-[#F5F1E9] tabular-nums tracking-tight">
                         {formatTime(elapsedSeconds)}
                     </div>
                 </div>
@@ -75,18 +75,18 @@ export function WorkSessionBanner() {
                 {/* Status badge */}
                 <div className="flex items-center gap-2">
                     {isAgentActive ? (
-                        <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F4F7F4] text-[#10b981] border border-[#C8DAC8] text-xs font-bold uppercase tracking-wider">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#10b981] animate-pulse" />
+                        <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F4F7F4] text-[#5E7D64] border border-[#C8DAC8] text-xs font-bold uppercase tracking-wider">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#5E7D64] animate-pulse" />
                             Tracker Active
                         </span>
                     ) : (
-                        <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#f1f5f9] text-[#64748b] text-xs font-bold uppercase tracking-wider">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#94a3b8]" />
+                        <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EEE8DD] text-[#777367] text-xs font-bold uppercase tracking-wider">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#9E988A]" />
                             Tracker Inactive
                         </span>
                     )}
                     {isClockedIn && (
-                        <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FDFBF7] text-[#6366f1] border border-[#e2e8f0] text-xs font-bold uppercase tracking-wider">
+                        <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FDFBF7] text-[#B9955B] border border-[#D6CDBC] text-xs font-bold uppercase tracking-wider">
                             <Clock size={12} />
                             Clocked In
                         </span>
@@ -102,16 +102,16 @@ export function WorkSessionBanner() {
                     <button
                         onClick={handleClockIn}
                         disabled={isLoading}
-                        className="flex items-center gap-2 px-5 py-2.5 bg-[#1e293b] hover:bg-[#334155] disabled:opacity-50 text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-warm-xs transition-all hover:scale-[1.02] active:scale-95 cursor-pointer"
+                        className="flex items-center gap-2 px-5 py-2.5 bg-[#30382B] hover:bg-[#3C4536] disabled:opacity-50 text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-warm-xs transition-all hover:scale-[1.02] active:scale-95 cursor-pointer"
                     >
-                        <LogIn size={15} className="text-[#818cf8]" />
+                        <LogIn size={15} className="text-[#D3B98D]" />
                         Clock In
                     </button>
                 ) : (
                     <button
                         onClick={handleClockOut}
                         disabled={isLoading}
-                        className="flex items-center gap-2 px-5 py-2.5 bg-[#f43f5e] hover:bg-[#8E3B3B] disabled:opacity-50 text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-warm-xs transition-all hover:scale-[1.02] active:scale-95 cursor-pointer"
+                        className="flex items-center gap-2 px-5 py-2.5 bg-[#A84B4B] hover:bg-[#8E3B3B] disabled:opacity-50 text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-warm-xs transition-all hover:scale-[1.02] active:scale-95 cursor-pointer"
                     >
                         <LogOut size={15} />
                         Clock Out
@@ -122,7 +122,7 @@ export function WorkSessionBanner() {
                 {!isAgentActive ? (
                     <button
                         onClick={handleStartTracker}
-                        className="flex items-center gap-2 px-5 py-2.5 bg-[#10b981] hover:bg-[#4A6B53] text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-warm-xs transition-all hover:scale-[1.02] active:scale-95 cursor-pointer"
+                        className="flex items-center gap-2 px-5 py-2.5 bg-[#5E7D64] hover:bg-[#4A6B53] text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-warm-xs transition-all hover:scale-[1.02] active:scale-95 cursor-pointer"
                     >
                         <MonitorCheck size={15} />
                         Start Tracker
@@ -131,7 +131,7 @@ export function WorkSessionBanner() {
                 ) : (
                     <button
                         onClick={handleStopTracker}
-                        className="flex items-center gap-2 px-5 py-2.5 bg-[#f43f5e] hover:bg-[#8E3B3B] text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-warm-xs transition-all hover:scale-[1.02] active:scale-95 cursor-pointer"
+                        className="flex items-center gap-2 px-5 py-2.5 bg-[#A84B4B] hover:bg-[#8E3B3B] text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-warm-xs transition-all hover:scale-[1.02] active:scale-95 cursor-pointer"
                     >
                         <MonitorOff size={15} />
                         Stop Tracker

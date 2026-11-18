@@ -45,7 +45,7 @@
   }
 
   .animate-shimmer {
-    background: linear-gradient(90deg, transparent 25%, rgba(99, 102, 241, 0.1) 50%, transparent 75%);
+    background: linear-gradient(90deg, transparent 25%, rgba(185, 149, 91, 0.12) 50%, transparent 75%);
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite linear;
   }
@@ -113,13 +113,27 @@
 }
 
 :root {
-  font-family: 'Inter', 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --bg-main: #F5F1E9;
+  --bg-secondary: #EEE8DD;
+  --bg-card: #FBF9F5;
+  --sidebar-primary: #30382B;
+  --sidebar-secondary: #3C4536;
+  --accent-primary: #B9955B;
+  --accent-secondary: #D3B98D;
+  --text-primary: #29291F;
+  --text-secondary: #777367;
+  --border-color: #E5DED2;
+  --success-color: #5E7D64;
+  --warning-color: #C98A3C;
+  --danger-color: #A84B4B;
+
+  font-family: 'DM Sans', Inter, system-ui, -apple-system, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
   color-scheme: light dark;
-  color: #0f172a;
-  background-color: #f8fafc;
+  color: #29291F;
+  background-color: #F5F1E9;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -128,8 +142,14 @@
 }
 
 .dark {
-  color: #f8fafc;
-  background-color: #020617;
+  --bg-main: #1A1F18;
+  --bg-secondary: #22291F;
+  --bg-card: #283025;
+  --sidebar-primary: #1E2419;
+  --sidebar-secondary: #2B3425;
+  --text-primary: #F5F1E9;
+  --text-secondary: #B8B3A7;
+  --border-color: #384232;
 }
 
 html,
@@ -138,14 +158,14 @@ body {
   padding: 0;
   height: 100%;
   width: 100%;
-  background-color: #f8fafc;
-  color: #0f172a;
+  background-color: #F5F1E9;
+  color: #29291F;
 }
 
 .dark html,
 .dark body {
-  background-color: #020617;
-  color: #f8fafc;
+  background-color: #1A1F18;
+  color: #F5F1E9;
 }
 
 body {
@@ -163,11 +183,127 @@ body {
   }
 
   body {
-    @apply bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-50 transition-colors duration-200;
+    @apply bg-[#F5F1E9] text-[#29291F] dark:bg-[#1A1F18] dark:text-[#F5F1E9] transition-colors duration-200;
+  }
+
+  /* Elegant serif styling for page titles and main headings */
+  h1, h2 {
+    font-family: 'Playfair Display', 'Cormorant Garamond', Georgia, serif;
+    letter-spacing: -0.015em;
   }
 }
 
-/* Modern Clean Scrollbar */
+/* HearthLedger Luxury Warm Cream Palette Overrides: Eliminate all white */
+.bg-white,
+.bg-white\/50,
+.bg-white\/60,
+.bg-white\/70,
+.bg-white\/80,
+.bg-white\/90,
+.bg-white\/95,
+.bg-slate-50,
+.bg-slate-50\/40,
+.bg-slate-50\/50,
+.bg-slate-50\/60,
+.bg-slate-50\/80,
+.bg-slate-100,
+.bg-gray-50,
+.bg-gray-100,
+.bg-\[\#f8fafc\],
+.bg-\[\#f1f5f9\],
+.bg-\[\#f3f4f6\],
+.bg-\[\#FBF9F5\],
+.bg-\[\#fbf9f5\],
+.bg-\[\#FAF6EF\],
+.bg-\[\#faf6ef\],
+.bg-\[\#FAF3F0\],
+.bg-\[\#faf3f0\] {
+  background-color: #EEE8DD !important;
+}
+
+.dark .bg-white,
+.dark .bg-white\/50,
+.dark .bg-white\/60,
+.dark .bg-white\/70,
+.dark .bg-white\/80,
+.dark .bg-white\/90,
+.dark .bg-white\/95,
+.dark .bg-slate-900,
+.dark .bg-slate-900\/40,
+.dark .bg-slate-900\/60,
+.dark .bg-slate-900\/80,
+.dark .bg-slate-950,
+.dark .bg-slate-950\/20,
+.dark .bg-slate-950\/40,
+.dark .bg-slate-950\/60,
+.dark .bg-slate-800,
+.dark .bg-slate-800\/30,
+.dark .bg-slate-800\/40,
+.dark .bg-slate-800\/60,
+.dark .bg-\[\#FBF9F5\],
+.dark .bg-\[\#fbf9f5\],
+.dark .bg-\[\#FAF6EF\],
+.dark .bg-\[\#faf6ef\] {
+  background-color: #252B20 !important;
+}
+
+.bg-\[\#fcfdfe\] {
+  background-color: #F5F1E9 !important;
+}
+
+.dark .bg-\[\#fcfdfe\] {
+  background-color: #1A1F18 !important;
+}
+
+/* Ensure borders are warm hairline borders */
+.border-slate-100,
+.border-slate-200,
+.border-slate-300,
+.border-gray-100,
+.border-gray-200,
+.border-gray-300,
+.border-\[\#E5DED2\],
+.border-\[\#e5ded2\] {
+  border-color: #D6CDBC !important;
+}
+
+.dark .border-slate-100,
+.dark .border-slate-200,
+.dark .border-slate-300,
+.dark .border-slate-700,
+.dark .border-slate-800,
+.dark .border-gray-700,
+.dark .border-gray-800,
+.dark .border-\[\#384232\] {
+  border-color: #384232 !important;
+}
+
+/* Inputs, textareas, selects */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+input[type="date"],
+select,
+textarea {
+  background-color: #F5F1E9 !important;
+  border-color: #D6CDBC !important;
+  color: #29291F !important;
+}
+
+.dark input[type="text"],
+.dark input[type="email"],
+.dark input[type="password"],
+.dark input[type="search"],
+.dark input[type="date"],
+.dark select,
+.dark textarea {
+  background-color: #1E2419 !important;
+  border-color: #384232 !important;
+  color: #F5F1E9 !important;
+}
+
+/* Custom Luxury Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -178,29 +314,29 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #cbd5e1;
+  background-color: #D6CDBC;
   border-radius: 9999px;
   transition: background-color 0.2s;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: #94a3b8;
+  background-color: #B9955B;
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background-color: #334155;
+  background-color: #384232;
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
-  background-color: #475569;
+  background-color: #526A47;
 }
 
 /* For Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 transparent;
+  scrollbar-color: #D6CDBC transparent;
 }
 
 .dark * {
-  scrollbar-color: #334155 transparent;
+  scrollbar-color: #384232 transparent;
 }

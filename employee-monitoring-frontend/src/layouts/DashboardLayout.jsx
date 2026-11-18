@@ -30,12 +30,12 @@ export function DashboardLayout({ children }) {
     }, [mobileOpen]);
 
     return (
-        <div className="h-screen overflow-hidden overflow-x-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-50">
+        <div className="h-screen overflow-hidden overflow-x-hidden bg-[#F5F1E9] dark:bg-[#1A1F18] text-[#29291F] dark:text-[#F5F1E9]">
             <LocationTracker />
             
             {/* Mobile Overlay */}
             <div
-                className={`fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-xs transition-opacity lg:hidden ${
+                className={`fixed inset-0 z-40 bg-black/50 backdrop-blur-xs transition-opacity lg:hidden ${
                     mobileOpen ? "opacity-100 pointer-events-auto" : "pointer-events-none opacity-0"
                 }`}
                 onClick={() => setMobileOpen(false)}
@@ -44,7 +44,7 @@ export function DashboardLayout({ children }) {
 
             {/* Sidebar Container (Drawer on mobile/tablet, Collapsible on desktop) */}
             <div
-                className={`fixed inset-y-0 left-0 z-50 transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+                className={`fixed inset-y-0 left-0 z-50 transition-transform duration-300 ease-in-out md:translate-x-0 ${
                     mobileOpen ? "translate-x-0" : "-translate-x-full"
                 }`}
                 onClick={(e) => e.stopPropagation()}
@@ -58,11 +58,11 @@ export function DashboardLayout({ children }) {
 
             <div
                 className={`flex flex-col h-screen transition-all duration-300 ${
-                    collapsed ? "lg:pl-20" : "lg:pl-64"
+                    collapsed ? "md:pl-20" : "md:pl-64"
                 }`}
             >
                 <Header onMenuClick={() => setMobileOpen(true)} />
-                <main className="flex-1 p-3 sm:p-4 md:p-6 lg:p-8 overflow-y-auto scrollbar-thin bg-slate-50 dark:bg-slate-950 max-w-full overflow-x-hidden">
+                <main className="flex-1 p-3 sm:p-4 md:p-6 lg:p-8 overflow-y-auto scrollbar-thin bg-[#F5F1E9] dark:bg-[#1A1F18] max-w-full overflow-x-hidden">
                     <div className="mx-auto max-w-7xl pb-16 w-full">
                         {children}
                     </div>

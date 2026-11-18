@@ -135,21 +135,21 @@ export function AgentManagement() {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
-                        <Monitor className="text-primary-600" />
+                    <h1 className="font-serif text-3xl font-normal text-[#29291F] dark:text-[#F5F1E9] tracking-tight flex items-center gap-2.5">
+                        <Monitor className="text-[#B9955B]" size={28} />
                         Monitoring Agents
                     </h1>
-                    <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
-                        Manage and track all registered desktop monitoring devices.
+                    <p className="text-[#777367] dark:text-[#B8B3A7] text-xs font-medium mt-1">
+                        Manage and track all registered desktop monitoring devices
                     </p>
                 </div>
                 
                 <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#777367]" size={16} />
                     <input 
                         type="text" 
                         placeholder="Search by employee name or device ID..."
-                        className="pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl w-full md:w-80 focus:ring-2 focus:ring-primary-500 outline-none transition-all"
+                        className="pl-10 pr-4 py-2 bg-[#FBF9F5] dark:bg-[#1E2419] border border-[#E5DED2] dark:border-[#384232] rounded-xl w-full md:w-80 text-xs font-medium text-[#29291F] dark:text-[#F5F1E9] focus:border-[#B9955B] outline-none transition-all placeholder:text-[#9E988A]"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -157,60 +157,60 @@ export function AgentManagement() {
             </div>
 
             {/* Stats Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-primary-50 dark:bg-primary-900/20 text-primary-600 rounded-lg">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <div className="p-5 bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs">
+                    <div className="flex items-center gap-3.5">
+                        <div className="p-2.5 bg-[#EEE8DD] text-[#30382B] rounded-xl">
                             <Monitor size={20} />
                         </div>
                         <div>
-                            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Total Agents</p>
-                            <h3 className="text-xl font-black text-slate-900 dark:text-white">{agents.length}</h3>
+                            <p className="text-[10px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-[0.14em]">Total Agents</p>
+                            <h3 className="font-serif text-2xl font-bold text-[#29291F] dark:text-[#F5F1E9] mt-0.5">{agents.length}</h3>
                         </div>
                     </div>
                 </div>
-                <div className="p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded-lg">
+                <div className="p-5 bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs">
+                    <div className="flex items-center gap-3.5">
+                        <div className="p-2.5 bg-[#F4F7F4] text-[#5E7D64] rounded-xl">
                             <CheckCircle2 size={20} />
                         </div>
                         <div>
-                            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Online Now</p>
-                            <h3 className="text-xl font-black text-slate-900 dark:text-white">
+                            <p className="text-[10px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-[0.14em]">Online Now</p>
+                            <h3 className="font-serif text-2xl font-bold text-[#29291F] dark:text-[#F5F1E9] mt-0.5">
                                 {agents.filter(a => isOnline(a.lastSeen)).length}
                             </h3>
                         </div>
                     </div>
                 </div>
-                <div className="p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-amber-50 dark:bg-amber-900/20 text-amber-600 rounded-lg">
+                <div className="p-5 bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs">
+                    <div className="flex items-center gap-3.5">
+                        <div className="p-2.5 bg-[#FDF8F0] text-[#C98A3C] rounded-xl">
                             <Shield size={20} />
                         </div>
                         <div>
-                            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Active Status</p>
-                            <h3 className="text-xl font-black text-slate-900 dark:text-white">{agents.filter(a => a.status === 'active').length}</h3>
+                            <p className="text-[10px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-[0.14em]">Active Status</p>
+                            <h3 className="font-serif text-2xl font-bold text-[#29291F] dark:text-[#F5F1E9] mt-0.5">{agents.filter(a => a.status === 'active').length}</h3>
                         </div>
                     </div>
                 </div>
             </div>
 
             {/* Table */}
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden">
+            <div className="bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="bg-slate-50/50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
-                                <th className="px-6 py-4 text-xs font-black text-slate-500 uppercase tracking-widest">Agent ID</th>
-                                <th className="px-6 py-4 text-xs font-black text-slate-500 uppercase tracking-widest">Employee & ID</th>
-                                <th className="px-6 py-4 text-xs font-black text-slate-500 uppercase tracking-widest">Device ID</th>
-                                <th className="px-6 py-4 text-xs font-black text-slate-500 uppercase tracking-widest">Status</th>
-                                <th className="px-6 py-4 text-xs font-black text-slate-500 uppercase tracking-widest">System Info</th>
-                                <th className="px-6 py-4 text-xs font-black text-slate-500 uppercase tracking-widest">Last Seen</th>
-                                <th className="px-6 py-4 text-xs font-black text-slate-500 uppercase tracking-widest text-right">Actions</th>
+                            <tr className="bg-[#E5DDCF]/70 dark:bg-[#1E2419] border-b border-[#D6CDBC] dark:border-[#384232]">
+                                <th className="px-6 py-4 text-[10px] font-bold text-[#777367] uppercase tracking-[0.14em]">Agent ID</th>
+                                <th className="px-6 py-4 text-[10px] font-bold text-[#777367] uppercase tracking-[0.14em]">Employee & ID</th>
+                                <th className="px-6 py-4 text-[10px] font-bold text-[#777367] uppercase tracking-[0.14em]">Device ID</th>
+                                <th className="px-6 py-4 text-[10px] font-bold text-[#777367] uppercase tracking-[0.14em]">Status</th>
+                                <th className="px-6 py-4 text-[10px] font-bold text-[#777367] uppercase tracking-[0.14em]">System Info</th>
+                                <th className="px-6 py-4 text-[10px] font-bold text-[#777367] uppercase tracking-[0.14em]">Last Seen</th>
+                                <th className="px-6 py-4 text-[10px] font-bold text-[#777367] uppercase tracking-[0.14em] text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                        <tbody className="divide-y divide-[#D6CDBC]/60 dark:divide-[#384232]">
                             {loading ? (
                                 Array(3).fill(0).map((_, i) => (
                                     <tr key={i} className="animate-pulse">
@@ -221,13 +221,13 @@ export function AgentManagement() {
                                 ))
                             ) : filteredAgents.length > 0 ? (
                                 filteredAgents.map((agent) => (
-                                    <tr key={agent.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                                    <tr key={agent.id} className="bg-[#F5F1E9] dark:bg-[#1E2419] hover:bg-[#EAE2D3] dark:hover:bg-[#252B20] transition-colors border-b border-[#D6CDBC]/50">
                                         <td className="px-6 py-4">
                                             <span className="text-[10px] font-mono font-bold text-slate-400">{agent.id}</span>
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
-                                                <div className="h-9 w-9 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-primary-600 font-bold">
+                                                <div className="h-9 w-9 rounded-xl bg-[#EEE8DD] text-[#30382B] border border-[#D6CDBC] flex items-center justify-center font-bold text-xs">
                                                     {agent.employee?.fullName?.charAt(0)}
                                                 </div>
                                                 <div>
@@ -325,14 +325,14 @@ export function AgentManagement() {
                                                 )}
                                                 <button 
                                                     onClick={() => handleEdit(agent)}
-                                                    className="p-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all"
+                                                    className="p-2 bg-[#EEE8DD] hover:bg-[#E5DED2] text-[#B9955B] rounded-xl transition-all cursor-pointer"
                                                     title="Edit Agent"
                                                 >
                                                     <Edit3 size={14} />
                                                 </button>
                                                 <button 
                                                     onClick={() => handleDelete(agent)}
-                                                    className="p-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-all"
+                                                    className="p-2 bg-[#FAF3F2] hover:bg-[#F5E4E2] text-[#A84B4B] rounded-xl transition-all cursor-pointer"
                                                     title="Delete Employee & Agent"
                                                 >
                                                     <Trash2 size={14} />
@@ -359,8 +359,8 @@ export function AgentManagement() {
             {/* Edit Modal */}
             {editingAgent && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-                    <div className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-                        <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                    <div className="bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl w-full max-w-md shadow-warm-lg border border-[#D6CDBC] dark:border-[#384232] overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="p-6 border-b border-[#D6CDBC] dark:border-[#384232] flex items-center justify-between bg-[#E5DDCF]/40">
                             <h3 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
                                 <Edit3 className="text-primary-600" size={20} />
                                 Edit Monitoring Member
@@ -375,7 +375,7 @@ export function AgentManagement() {
                                 <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1.5 ml-1">Full Name</label>
                                 <input 
                                     type="text" 
-                                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold focus:ring-2 focus:ring-primary-500 outline-none transition-all dark:text-white"
+                                    className="w-full px-4 py-2.5 bg-[#F5F1E9] dark:bg-[#1E2419] border border-[#D6CDBC] dark:border-[#384232] rounded-xl text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] focus:border-[#B9955B] outline-none transition-all"
                                     value={editForm.name}
                                     onChange={(e) => setEditForm({...editForm, name: e.target.value})}
                                     required
@@ -386,7 +386,7 @@ export function AgentManagement() {
                                 <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1.5 ml-1">Email Address</label>
                                 <input 
                                     type="email" 
-                                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold focus:ring-2 focus:ring-primary-500 outline-none transition-all dark:text-white"
+                                    className="w-full px-4 py-2.5 bg-[#F5F1E9] dark:bg-[#1E2419] border border-[#D6CDBC] dark:border-[#384232] rounded-xl text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] focus:border-[#B9955B] outline-none transition-all"
                                     value={editForm.email}
                                     onChange={(e) => setEditForm({...editForm, email: e.target.value})}
                                     required
@@ -399,7 +399,7 @@ export function AgentManagement() {
                                     <input 
                                         type={showPassword ? "text" : "password"} 
                                         placeholder="Enter new password to reset"
-                                        className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold focus:ring-2 focus:ring-primary-500 outline-none transition-all dark:text-white pr-10"
+                                        className="w-full px-4 py-2.5 bg-[#F5F1E9] dark:bg-[#1E2419] border border-[#D6CDBC] dark:border-[#384232] rounded-xl text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] focus:border-[#B9955B] outline-none transition-all pr-10"
                                         value={editForm.password}
                                         onChange={(e) => setEditForm({...editForm, password: e.target.value})}
                                     />

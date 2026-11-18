@@ -701,7 +701,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
     return (
       <div
         className={cn(
-          "group flex items-center bg-white dark:bg-slate-900 rounded-2xl border p-3 hover:shadow-lg transition-all duration-300 hover:-translate-x-1 cursor-pointer",
+          "group flex items-center bg-[#FBF9F5] dark:bg-[#252B20] rounded-xl sm:rounded-2xl border p-3 hover:shadow-warm-xs transition-all duration-200 cursor-pointer",
           isSelected ? "border-primary-500 bg-primary-50/30 dark:bg-primary-500/5 shadow-md shadow-primary-500/10" : "border-slate-200 dark:border-slate-800"
         )}
         onClick={isSelectionMode ? () => onToggleSelection(id) : handleView}
@@ -789,7 +789,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
   return (
     <div
       className={cn(
-        "group relative bg-white dark:bg-slate-900 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden cursor-pointer",
+        "group relative bg-[#FBF9F5] dark:bg-[#252B20] rounded-xl sm:rounded-2xl shadow-warm-xs hover:shadow-warm-sm transition-all duration-200 hover:-translate-y-0.5 overflow-hidden cursor-pointer",
         isSelected ? "border-primary-500 ring-2 ring-primary-500/20" : "",
         borderClass
       )}
@@ -807,7 +807,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
       )}
 
       {/* ── Top Header: App Name + Icon + 3-dots Menu (Insightful Image 3) ── */}
-      <div className="p-3 pb-2 flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-800/30">
+      <div className="p-2.5 px-3 flex items-center justify-between border-b border-[#E5DED2]/80 dark:border-[#384232]/80 bg-[#EEE8DD]/40 dark:bg-[#1E2419]/60">
         <div className="flex items-center gap-2 min-w-0">
           <span className="text-sm select-none">{getAppIcon(app || 'Desktop')}</span>
           <span className="text-xs font-black text-slate-800 dark:text-slate-200 truncate">
@@ -887,7 +887,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
         </div>
       </div>
       {/* ── Bottom Footer: Time, Project, Employee, Department (Insightful Image 3) ── */}
-      <div className="p-3 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800/80 text-[11px] flex flex-col gap-1.5">
+      <div className="p-2.5 px-3 bg-[#FBF9F5] dark:bg-[#252B20] border-t border-[#E5DED2]/80 dark:border-[#384232]/80 text-[11px] flex flex-col gap-1">
         <div className="flex items-center justify-between text-slate-400 dark:text-slate-500 font-bold">
           <span className="flex items-center gap-1">
             <Clock size={11} /> {time}

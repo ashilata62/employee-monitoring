@@ -191,7 +191,7 @@ export function GlobalCalendar({ label, className }) {
     const popover = open ? (
         <div
             style={popoverStyle}
-            className="global-calendar-popover rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200 max-h-[85vh] overflow-y-auto"
+            className="global-calendar-popover rounded-2xl border border-[#D6CDBC] dark:border-[#384232] bg-[#EEE8DD] dark:bg-[#252B20] shadow-warm-lg animate-in fade-in slide-in-from-top-2 duration-200 max-h-[85vh] overflow-y-auto"
         >
             <div className="p-3 border-b border-slate-100 dark:border-slate-800">
                 <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Quick Select</p>
@@ -203,9 +203,7 @@ export function GlobalCalendar({ label, className }) {
                             onClick={() => handlePreset(p.value)}
                             className={clsx(
                                 'px-2 py-1.5 text-[10px] font-black rounded-lg transition-all',
-                                quickFilter === p.value
-                                    ? 'bg-primary-600 text-white shadow-sm'
-                                    : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:text-primary-600'
+                                quickFilter === p.value ? 'bg-[#30382B] text-[#FDFBF7] shadow-warm-xs' : 'bg-[#F5F1E9] dark:bg-[#1E2419] text-[#29291F] dark:text-[#F5F1E9] hover:bg-[#E5DDCF] border border-[#D6CDBC] dark:border-[#384232]'
                             )}
                         >
                             {p.label}
@@ -243,7 +241,7 @@ export function GlobalCalendar({ label, className }) {
                 <button
                     type="button"
                     onClick={() => setOpen(false)}
-                    className="text-[10px] font-black text-primary-600 hover:text-primary-700"
+                    className="text-[10px] font-bold text-[#B9955B] hover:text-[#A17D45] uppercase tracking-wider"
                 >
                     Done
                 </button>
@@ -257,14 +255,14 @@ export function GlobalCalendar({ label, className }) {
                 type="button"
                 onClick={() => setOpen((o) => !o)}
                 className={clsx(
-                    'flex items-center gap-2 px-3 py-2 text-xs font-black uppercase tracking-tight rounded-lg border transition-all',
+                    'flex items-center gap-2 px-3.5 py-2 text-xs font-semibold uppercase tracking-wider rounded-xl border transition-all shadow-warm-xs cursor-pointer',
                     open || isModified
-                        ? 'bg-primary-50 dark:bg-primary-900/20 border-primary-200 dark:border-primary-800 text-primary-700 dark:text-primary-300'
-                        : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800',
+                        ? 'bg-[#EEE8DD] border-[#B9955B] text-[#B9955B]'
+                        : 'bg-[#EEE8DD] dark:bg-[#252B20] border-[#D6CDBC] dark:border-[#384232] text-[#29291F] dark:text-[#F5F1E9] hover:border-[#B9955B]',
                     className
                 )}
             >
-                <Calendar size={14} strokeWidth={2.5} className={isModified ? 'text-primary-600' : 'text-slate-400'} />
+                <Calendar size={14} strokeWidth={2.2} className={isModified ? 'text-[#B9955B]' : 'text-[#777367]'} />
                 <span>{displayLabel}</span>
                 {isModified && (
                     <span
@@ -275,7 +273,7 @@ export function GlobalCalendar({ label, className }) {
                             resetFilters();
                         }}
                         onKeyDown={(e) => e.key === 'Enter' && resetFilters()}
-                        className="ml-1 flex items-center justify-center h-4 w-4 rounded-full hover:bg-primary-200 dark:hover:bg-primary-800"
+                        className="ml-1 flex items-center justify-center h-4 w-4 rounded-full hover:bg-[#E5DED2] dark:hover:bg-[#384232]"
                     >
                         <X size={10} />
                     </span>
