@@ -10,4 +10,5 @@ tmp/
 backups/
 *.sql
 public/uploads/screenshots/
+public/uploads/videos/
 

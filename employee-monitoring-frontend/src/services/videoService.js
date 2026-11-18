@@ -7,7 +7,7 @@ const videoService = {
      */
     uploadVideo: async (formData) => {
         const response = await apiClient.post('/videos', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
+            timeout: 60000,
         });
         return response.data;
     },

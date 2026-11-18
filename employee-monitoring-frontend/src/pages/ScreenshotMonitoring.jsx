@@ -37,13 +37,15 @@ import {
   PieChart,
   Video,
   FileVideo,
+  Square,
   HardDrive,
   Maximize,
   Volume2,
   VolumeX,
   AlertCircle,
   MoreVertical,
-  Briefcase
+  Briefcase,
+  Loader2
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -52,6 +54,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import screenshotService from '../services/screenshotService';
 import videoService from '../services/videoService';
+import { useScreenRecordingStore, formatRecordingTimer } from '../store/screenRecordingStore';
 import { toast } from '../utils/toastManager';
 import { API_BASE_URL, BASE_URL } from '../config/api';
 
@@ -1244,6 +1247,33 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
         }
     }, [isVideoModalOpen, activePlaybackVideo]);
 
+    // Global Screen Recording State & Handlers (Persists across all route changes)
+    const { 
+        isRecording: isRecordingVideo, 
+        recordingSeconds, 
+        isUploading: isUploadingVideo, 
+        startRecording: globalStartRecording, 
+        stopRecording: globalStopRecording 
+    } = useScreenRecordingStore();
+
+    const handleStartScreenRecording = () => {
+        const targetEmpId = (videoEmployeeFilter && videoEmployeeFilter !== 'All') ? videoEmployeeFilter : null;
+        globalStartRecording(targetEmpId);
+    };
+
+    const handleStopScreenRecording = () => {
+        globalStopRecording();
+    };
+
+    // Auto-refresh videos gallery whenever a recording finishes saving
+    useEffect(() => {
+        const handleVideoSaved = () => {
+            fetchVideos();
+        };
+        window.addEventListener('video-recording-saved', handleVideoSaved);
+        return () => window.removeEventListener('video-recording-saved', handleVideoSaved);
+    }, [fetchVideos]);
+
   // Sync context screenshots (newly arrived via socket) to local state
   useEffect(() => {
     if (contextScreenshots && contextScreenshots.length > 0) {
@@ -1331,7 +1361,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
             // View & Filter State
             const [viewMode, setViewMode] = useState('grid');
             const [timelineDate, setTimelineDate] = useState(new Date());
-            const [isAllHistory, setIsAllHistory] = useState(false);
+            const [isAllHistory, setIsAllHistory] = useState(true); // Permanent retention: default to all history so screenshots from previous days are never hidden
             const [showCalendar, setShowCalendar] = useState(false);
             const [viewDate, setViewDate] = useState(new Date());
             const [isPlaying, setIsPlaying] = useState(false);
@@ -1953,11 +1983,11 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
 
             return (
     <>
-              <div className="w-full space-y-6 sm:space-y-8 pb-20 max-w-full overflow-x-hidden box-border animate-fade-in">
+              <div className="min-h-screen bg-[#fcfdfe] dark:bg-slate-950 space-y-6 sm:space-y-8 pb-20 px-2 sm:px-4 lg:px-8 max-w-full overflow-x-hidden box-border animate-fade-in">
                 {/* Header */}
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 py-8">
                   <div className="flex flex-wrap items-center gap-4">
-                    <h1 className="font-serif text-3xl font-normal text-[#29291F] dark:text-[#F5F1E9] tracking-tight">Screenshots & Screen Recording</h1>
+                    <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Screenshots & Screen Recording</h1>
 
                     {/* Main Navigation Tabs (Phase 2) */}
                     <div className="flex items-center gap-1.5 bg-[#EEE8DD] dark:bg-[#252B20] p-1.5 rounded-xl border border-[#D6CDBC] dark:border-[#384232]">
@@ -2010,7 +2040,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                       {role !== 'EMPLOYEE' && (
                         <button
                           onClick={handleCaptureRealScreen}
-                          className="px-4 py-2 bg-[#30382B] hover:bg-[#3C4536] text-[#FDFBF7] rounded-xl text-xs font-semibold shadow-warm-xs active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
+                          className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-emerald-500/20 active:scale-95 transition-all flex items-center gap-2"
                           title="Capture and upload your actual screen as a demo"
                         >
                           <Camera size={16} />
@@ -2036,7 +2066,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                         <div className="relative" ref={filterRef}>
                           <button
                             onClick={() => setShowAddFilterDropdown(!showAddFilterDropdown)}
-                            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-[#29291F] dark:text-[#F5F1E9] bg-[#FBF9F5] dark:bg-[#252B20] border border-[#E5DED2] dark:border-[#384232] hover:border-[#B9955B] transition-all shadow-warm-xs cursor-pointer text-xs font-semibold"
+                            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-primary-600 dark:text-primary-400 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-primary-50 dark:hover:bg-primary-500/10 transition-all shadow-sm"
                           >
                             <Plus size={16} />
                             <span>Add Filter</span>
@@ -2076,9 +2106,9 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                       <div className="relative" ref={calendarRef}>
                         <button
                           onClick={() => setShowCalendarDropdown(!showCalendarDropdown)}
-                          className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] bg-[#EEE8DD] dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] hover:bg-[#E5DDCF] transition-all shadow-warm-xs"
+                          className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm"
                         >
-                          <Calendar size={14} className="text-[#B9955B]" />
+                          <Calendar size={16} className="text-primary-500" />
                           <span>
                             {isAllHistory ? 'All History' : isToday ? 'Today' : timelineDate.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
                           </span>
@@ -2086,7 +2116,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                         </button>
 
                         {showCalendarDropdown && (
-                          <div className="absolute top-full right-0 mt-2 w-[320px] bg-[#EEE8DD] dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] rounded-2xl shadow-warm-lg z-[100] overflow-hidden animate-in fade-in zoom-in duration-200 origin-top-right p-4">
+                          <div className="absolute top-full right-0 mt-2 w-[320px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl z-[100] overflow-hidden animate-in fade-in zoom-in duration-200 origin-top-right p-4">
                             <div className="space-y-4">
                               <div>
                                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 block">Quick Select</label>
@@ -2198,14 +2228,63 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                         <select
                           value={sortOrder}
                           onChange={(e) => setSortOrder(e.target.value)}
-                          className="appearance-none pl-4 pr-10 py-2 bg-[#EEE8DD] dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] rounded-xl text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] hover:bg-[#E5DDCF] cursor-pointer transition-all focus:outline-none focus:border-[#B9955B]"
+                          className="appearance-none pl-4 pr-10 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-bold text-primary-600 dark:text-primary-400 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-all focus:outline-none focus:ring-2 focus:ring-primary-500/10"
                         >
                           <option value="newest">Newest</option>
                           <option value="oldest">Oldest</option>
                         </select>
-                        <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#777367] pointer-events-none" />
+                        <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-primary-600 dark:text-primary-400 pointer-events-none" />
                       </div>
 </div>
+                    </div>
+                  )}
+
+                  {/* Top Controls (Videos Tab) */}
+                  {activeMainTab === 'videos' && (
+                    <div className="flex flex-wrap items-center gap-3">
+                      {role !== 'EMPLOYEE' && (
+                        <>
+                          {!isRecordingVideo ? (
+                            <button
+                              onClick={handleStartScreenRecording}
+                              disabled={isUploadingVideo}
+                              className="px-4 py-2 bg-rose-500 hover:bg-rose-600 disabled:opacity-50 text-white rounded-xl text-sm font-bold shadow-lg shadow-rose-500/20 active:scale-95 transition-all flex items-center gap-2 animate-in fade-in cursor-pointer"
+                              title="Start screen recording to capture and save video session"
+                            >
+                              {isUploadingVideo ? (
+                                <>
+                                  <Loader2 size={16} className="animate-spin" />
+                                  <span>Saving Video...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Video size={16} />
+                                  <span>Record Screen Video</span>
+                                </>
+                              )}
+                            </button>
+                          ) : (
+                            <button
+                              onClick={handleStopScreenRecording}
+                              className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-rose-600/30 active:scale-95 transition-all flex items-center gap-2 animate-pulse"
+                              title="Stop recording and save video"
+                            >
+                              <span className="h-2 w-2 rounded-full bg-white animate-ping" />
+                              <Square size={14} className="fill-current" />
+                              <span>Stop Recording ({formatRecordingTimer(recordingSeconds)})</span>
+                            </button>
+                          )}
+                        </>
+                      )}
+
+                      <button
+                        onClick={fetchVideos}
+                        disabled={loadingVideos}
+                        className="p-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl transition-all shadow-sm"
+                        title="Refresh video list"
+                      >
+                        <RefreshCw size={16} className={cn(loadingVideos && "animate-spin text-primary-500")} />
+                      </button>
                     </div>
                   )}
                 </div>
@@ -2215,14 +2294,14 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                   <>
                     {/* Selection & Bulk Actions Bar */}
                     {role !== 'EMPLOYEE' && (
-                      <div className="flex flex-wrap items-center gap-3 bg-[#EEE8DD] dark:bg-[#252B20] p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs">
+                      <div className="flex flex-wrap items-center gap-4 bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-[1.5rem] border border-slate-200 dark:border-slate-800 shadow-sm animate-in slide-in-from-top duration-300">
                         <button
                           onClick={toggleSelectionMode}
                           className={cn(
                             "px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 border",
                             isSelectionMode
                               ? "bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-500/20 shadow-inner"
-                              : "bg-[#EEE8DD] dark:bg-[#1E2419] text-[#29291F] dark:text-[#F5F1E9] border-[#E5DED2] dark:border-[#384232] hover:bg-[#E5DED2] shadow-warm-xs text-xs font-semibold"
+                              : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 shadow-sm"
                           )}
                         >
                           <CheckSquare size={18} />
@@ -2253,13 +2332,13 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                         )}
 
                         {role !== 'EMPLOYEE' && (
-                          <div className="ml-auto flex items-center gap-2 bg-[#EEE8DD]/70 dark:bg-[#1E2419] px-3.5 py-1.5 rounded-xl border border-[#E5DED2] dark:border-[#384232]">
+                          <div className="ml-auto flex items-center gap-2 bg-slate-50 dark:bg-slate-800/50 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 min-h-[40px]">
                             <span className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Global Blur</span>
                             <button
                               onClick={() => { setGlobalBlur(!globalBlur); updateSetting('globalBlur', !globalBlur); }}
                               className={cn(
                                 "relative h-5 w-9 flex-shrink-0 rounded-full transition-colors duration-300 focus:outline-none",
-                                globalBlur ? "bg-[#5E7D64]" : "bg-[#D6CDBC] dark:bg-[#384232]"
+                                globalBlur ? "bg-emerald-500" : "bg-slate-200 dark:bg-slate-700"
                               )}
                             >
                               <span
@@ -2290,7 +2369,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                       <div className="flex flex-col items-center justify-center py-24 px-4">
                         <div className="w-48 h-48 mb-6">
                           <svg viewBox="0 0 200 200" className="w-full h-full">
-                            <circle cx="100" cy="100" r="80" fill="#EEE8DD" stroke="#D6CDBC" strokeWidth="2" />
+                            <circle cx="100" cy="100" r="80" fill="#F1F5F9" stroke="#CBD5E1" strokeWidth="2" />
                             <circle cx="85" cy="90" r="5" fill="#94A3B8" />
                             <circle cx="115" cy="90" r="5" fill="#94A3B8" />
                             <path d="M 85 115 Q 100 125 115 115" fill="none" stroke="#94A3B8" strokeWidth="2" strokeLinecap="round" />
@@ -2382,7 +2461,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                         {activeMainTab === 'videos' && (
                           <div className="space-y-6 animate-in fade-in duration-300">
                             {/* Filter & Control Bar */}
-                            <div className="flex flex-wrap items-center justify-between gap-3 bg-[#FBF9F5] dark:bg-[#252B20] p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-[#E5DED2] dark:border-[#384232] shadow-warm-xs">
+                            <div className="flex flex-wrap items-center justify-between gap-4 bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-[1.5rem] border border-slate-200 dark:border-slate-800 shadow-sm">
                               <div className="flex flex-wrap items-center gap-3 flex-1 min-w-[280px]">
                                 {/* Search input */}
                                 <div className="relative flex-1 min-w-[200px] max-w-sm">
@@ -2478,26 +2557,59 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                                 <p className="text-sm font-bold text-slate-500 dark:text-slate-400">Loading video recordings...</p>
                               </div>
                             ) : filteredVideoRecordings.length === 0 ? (
-                              <div className="flex flex-col items-center justify-center py-20 px-4 bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl border border-[#E5DED2] dark:border-[#384232] text-center shadow-warm-xs">
+                              <div className="flex flex-col items-center justify-center py-24 px-4 bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200 dark:border-slate-800 text-center">
                                 <div className="h-20 w-20 rounded-3xl bg-primary-50 dark:bg-primary-500/10 flex items-center justify-center text-primary-600 dark:text-primary-400 mb-4 shadow-inner">
                                   <Video size={36} />
                                 </div>
                                 <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">No Video Recordings Found</h3>
                                 <p className="text-sm font-medium text-slate-500 dark:text-slate-400 max-w-md mb-6 leading-relaxed">
-                                  Screen video recordings are captured in 5-minute chunks when employees run the Screen Tracker. Start the tracker to record screen sessions.
+                                  Screen video recordings are captured in 5-minute chunks when employees run the Screen Tracker, or you can record a real screen session right now.
                                 </p>
-                                {(videoEmployeeFilter !== 'All' || videoDateFilter || videoSearchQuery) && (
-                                  <button
-                                    onClick={() => {
-                                      setVideoEmployeeFilter('All');
-                                      setVideoDateFilter('');
-                                      setVideoSearchQuery('');
-                                    }}
-                                    className="px-5 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-xs font-bold transition-all shadow-md active:scale-95"
-                                  >
-                                    Clear All Filters
-                                  </button>
-                                )}
+                                <div className="flex flex-wrap items-center justify-center gap-3">
+                                  {role !== 'EMPLOYEE' && (
+                                    <>
+                                      {!isRecordingVideo ? (
+                                        <button
+                                          onClick={handleStartScreenRecording}
+                                          disabled={isUploadingVideo}
+                                          className="px-5 py-2.5 bg-rose-500 hover:bg-rose-600 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition-all shadow-md active:scale-95 flex items-center gap-2 cursor-pointer"
+                                        >
+                                          {isUploadingVideo ? (
+                                            <>
+                                              <Loader2 size={16} className="animate-spin" />
+                                              <span>Saving Video...</span>
+                                            </>
+                                          ) : (
+                                            <>
+                                              <Video size={16} />
+                                              <span>Record Screen Video Now</span>
+                                            </>
+                                          )}
+                                        </button>
+                                      ) : (
+                                        <button
+                                          onClick={handleStopScreenRecording}
+                                          className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition-all shadow-md active:scale-95 flex items-center gap-2 animate-pulse"
+                                        >
+                                          <Square size={14} className="fill-current" />
+                                          <span>Stop & Save Recording ({formatRecordingTimer(recordingSeconds)})</span>
+                                        </button>
+                                      )}
+                                    </>
+                                  )}
+                                  {(videoEmployeeFilter !== 'All' || videoDateFilter || videoSearchQuery) && (
+                                    <button
+                                      onClick={() => {
+                                        setVideoEmployeeFilter('All');
+                                        setVideoDateFilter('');
+                                        setVideoSearchQuery('');
+                                      }}
+                                      className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95"
+                                    >
+                                      Clear All Filters
+                                    </button>
+                                  )}
+                                </div>
                               </div>
                             ) : (
                               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
@@ -2511,7 +2623,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                                   return (
                                     <div
                                       key={recording.id}
-                                      className="group bg-[#FBF9F5] dark:bg-[#252B20] rounded-xl sm:rounded-2xl border border-[#E5DED2] dark:border-[#384232] shadow-warm-xs hover:border-[#B9955B]/60 transition-all duration-200 overflow-hidden flex flex-col hover:-translate-y-0.5"
+                                      className="group bg-white dark:bg-slate-900 rounded-[1.75rem] border border-slate-200 dark:border-slate-800/80 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col hover:-translate-y-1"
                                     >
                                       {/* Video Thumbnail / Preview Area */}
                                       <div

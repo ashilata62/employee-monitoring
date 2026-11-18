@@ -39,7 +39,7 @@ import { InsightfulModuleSwitcher } from '../components/common/InsightfulModuleS
 const cn = (...inputs) => twMerge(clsx(inputs));
 
 export function ActivitiesTimeline() {
-  const { role, user } = useAuthStore();
+  const { role, user, isClockedIn, isOnBreak, activeAttendance, clockIn, clockOut, toggleBreak } = useAuthStore();
   const [activeTab, setActiveTab] = useState('Timeline'); // 'Timeline' | 'Logs'
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
@@ -112,19 +112,63 @@ export function ActivitiesTimeline() {
   // Productivity Review Apps state (dynamically loaded from database)
   const [unreviewedApps, setUnreviewedApps] = useState([]);
 
-  // Mini live tracker state (dynamically calculated from real session)
+  // Mini live tracker state (dynamically synced from real persistent attendance API)
   const [trackerSeconds, setTrackerSeconds] = useState(0);
-  const [isTrackerRunning, setIsTrackerRunning] = useState(false);
-  const [isOnBreak, setIsOnBreak] = useState(false);
+  const [isActionLoading, setIsActionLoading] = useState(false);
+
+  // Sync elapsed seconds from real persistent attendance session
+  useEffect(() => {
+    let timer;
+    if (isClockedIn && activeAttendance?.clockIn && !isOnBreak) {
+      const startTime = new Date(activeAttendance.clockIn).getTime();
+      setTrackerSeconds(Math.max(0, Math.floor((Date.now() - startTime) / 1000)));
+      timer = setInterval(() => {
+        setTrackerSeconds(Math.max(0, Math.floor((Date.now() - startTime) / 1000)));
+      }, 1000);
+    } else if (!isClockedIn) {
+      setTrackerSeconds(0);
+    }
+    return () => clearInterval(timer);
+  }, [isClockedIn, activeAttendance?.clockIn, isOnBreak]);
+
+  const handleToggleClock = async () => {
+    try {
+      setIsActionLoading(true);
+      if (isClockedIn) {
+        window.dispatchEvent(new Event('stop-web-tracker'));
+        await clockOut();
+      } else {
+        await clockIn();
+      }
+    } catch (err) {
+      console.error('Attendance action failed:', err);
+    } finally {
+      setIsActionLoading(false);
+    }
+  };
+
+  const handleToggleBreak = async () => {
+    if (!isClockedIn) return;
+    try {
+      setIsActionLoading(true);
+      await toggleBreak();
+    } catch (err) {
+      console.error('Break action failed:', err);
+    } finally {
+      setIsActionLoading(false);
+    }
+  };
 
   // Tasks play/pause states (dynamically loaded from database)
   const [tasksList, setTasksList] = useState([]);
 
+  // Dropdown & Popover Refs
   const datePickerRef = useRef(null);
   const exportRef = useRef(null);
   const columnsRef = useRef(null);
   const filterRef = useRef(null);
 
+  // Close popovers on click outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (datePickerRef.current && !datePickerRef.current.contains(e.target)) setShowDatePicker(false);
@@ -135,14 +179,6 @@ export function ActivitiesTimeline() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-  useEffect(() => {
-    let timer;
-    if (isTrackerRunning && !isOnBreak) {
-      timer = setInterval(() => setTrackerSeconds(s => s + 1), 1000);
-    }
-    return () => clearInterval(timer);
-  }, [isTrackerRunning, isOnBreak]);
 
   const formatTrackerTime = (totalSecs) => {
     const h = String(Math.floor(totalSecs / 3600)).padStart(2, '0');
@@ -202,16 +238,15 @@ export function ActivitiesTimeline() {
     }).catch(err => console.error('Failed to load productivity apps:', err));
   }, []);
 
-  // Sync mini tracker with real user session if active today
+  // Sync mini tracker with real user session if active today and not clocked in
   useEffect(() => {
-    if (data?.employeeTimelines?.length) {
+    if (data?.employeeTimelines?.length && !isClockedIn) {
       const myEmp = data.employeeTimelines.find(e => e.id === user?.employeeId || e.email === user?.email);
-      if (myEmp) {
-        setTrackerSeconds(myEmp.activeSeconds || 0);
-        setIsTrackerRunning(myEmp.isOnline || false);
+      if (myEmp && myEmp.activeSeconds) {
+        setTrackerSeconds(myEmp.activeSeconds);
       }
     }
-  }, [data, user]);
+  }, [data, user, isClockedIn]);
 
   const filteredEmployees = useMemo(() => {
     if (!data?.employeeTimelines) return [];
@@ -599,7 +634,9 @@ export function ActivitiesTimeline() {
       {/* ── 3. Main Body: Timeline vs Logs ─────────────────────────────────── */}
       {activeTab === 'Timeline' ? (
         <div className="bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs overflow-hidden relative">
-          {/* Top Hourly Workforce Activity Density Histogram */}
+          <div className="overflow-x-auto">
+            <div className="min-w-[850px]">
+              {/* Top Hourly Workforce Activity Density Histogram */}
           <div className="pt-4 px-6 pb-2 border-b border-[#D6CDBC] dark:border-[#384232] bg-[#E5DDCF]/50 dark:bg-[#1E2419]">
             <div className="flex items-end h-10 w-full pl-[260px] pr-6 gap-1 relative">
               {data?.hourlyDistribution?.map((bucket, idx) => {
@@ -610,8 +647,7 @@ export function ActivitiesTimeline() {
                 return (
                   <div
                     key={idx}
-                    onMouseEnter={() => setHoveredHour(bucket)}
-                    onMouseLeave={() => setHoveredHour(null)}
+                    title={`${bucket.hourLabel} → ${String((bucket.hour + 1) % 24).padStart(2, '0')}:00 | Active Employees: ${bucket.activeCount} of ${bucket.totalEmployees}`}
                     className="flex-1 h-full flex items-end justify-center group cursor-pointer relative"
                   >
                     <div
@@ -619,32 +655,10 @@ export function ActivitiesTimeline() {
                       className={cn(
                         "w-full rounded-t-sm transition-all duration-300",
                         bucket.activeCount > 0
-                          ? "bg-purple-300 dark:bg-purple-600/60 group-hover:bg-purple-500"
-                          : "bg-slate-200/50 dark:bg-slate-800/40"
+                          ? "bg-[#B9955B] dark:bg-[#D3B98D] group-hover:bg-[#30382B]"
+                          : "bg-[#D6CDBC]/40 dark:bg-[#384232]/40"
                       )}
                     />
-
-                    {/* Hourly Popover on Hover */}
-                    {isHovered && (
-                      <div className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 w-64 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-3.5 z-50 animate-in fade-in zoom-in duration-200 pointer-events-none">
-                        <div className="flex items-center justify-between text-xs font-black pb-2 border-b border-slate-100 dark:border-slate-800">
-                          <span className="text-slate-400">Total Count</span>
-                          <span className="text-slate-700 dark:text-slate-200">{bucket.hourLabel} → {String((bucket.hour + 1) % 24).padStart(2, '0')}:00</span>
-                        </div>
-                        <div className="space-y-1.5 pt-2 text-[11px] font-bold">
-                          <div className="flex items-center justify-between text-slate-700 dark:text-slate-300">
-                            <span className="flex items-center gap-1.5">
-                              <Users size={12} className="text-primary-600" /> Active Employees
-                            </span>
-                            <span className="font-black text-slate-900 dark:text-white">{bucket.activeCount} of {bucket.totalEmployees}</span>
-                          </div>
-                          <div className="flex items-center justify-between text-slate-500">
-                            <span>☕ on break: {bucket.onBreakCount}</span>
-                            <span>⏱️ overages: {bucket.breakOverageCount}</span>
-                          </div>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 );
               })}
@@ -778,6 +792,8 @@ export function ActivitiesTimeline() {
                 </div>
               ))
             )}
+          </div>
+          </div>
           </div>
 
           {/* Interactive Employee Profile Hover Card */}
@@ -960,39 +976,29 @@ export function ActivitiesTimeline() {
             </div>
             <div className="flex items-center gap-3">
               <button
-                onClick={() => {
-                  if (isTrackerRunning) {
-                    setIsTrackerRunning(false);
-                    setIsOnBreak(false);
-                  } else {
-                    setIsTrackerRunning(true);
-                    setIsOnBreak(false);
-                  }
-                }}
+                onClick={handleToggleClock}
+                disabled={isActionLoading}
                 className={cn(
-                  "flex-1 py-3 rounded-xl text-xs font-black shadow-lg transition-all active:scale-95 text-white",
-                  isTrackerRunning ? "bg-rose-500 hover:bg-rose-600 shadow-rose-500/20" : "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20"
+                  "flex-1 py-3 rounded-xl text-xs font-black shadow-lg transition-all active:scale-95 text-white disabled:opacity-50 cursor-pointer",
+                  isClockedIn ? "bg-rose-500 hover:bg-rose-600 shadow-rose-500/20" : "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20"
                 )}
               >
-                {isTrackerRunning ? "Clock Out" : "Clock In"}
+                {isActionLoading ? "Processing..." : isClockedIn ? "Clock Out" : "Clock In"}
               </button>
               <button
-                onClick={() => {
-                  if (!isTrackerRunning) return;
-                  setIsOnBreak(!isOnBreak);
-                }}
-                disabled={!isTrackerRunning}
+                onClick={handleToggleBreak}
+                disabled={!isClockedIn || isActionLoading}
                 className={cn(
                   "flex-1 py-3 rounded-xl text-xs font-black transition-all text-white shadow-lg",
-                  !isTrackerRunning
+                  !isClockedIn
                     ? "bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed shadow-none"
                     : isOnBreak
-                      ? "bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20 active:scale-95"
-                      : "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/20 active:scale-95"
+                      ? "bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20 active:scale-95 cursor-pointer"
+                      : "bg-[#B9955B] hover:bg-[#A17D45] shadow-[#B9955B]/20 active:scale-95 cursor-pointer"
                 )}
-                title={!isTrackerRunning ? "Clock in first to take a break" : isOnBreak ? "Resume Work" : "Take a Break"}
+                title={!isClockedIn ? "Clock in first to take a break" : isOnBreak ? "Resume Work" : "Take a Break"}
               >
-                {!isTrackerRunning ? "Take a Break" : isOnBreak ? "Resume Work" : "Take a Break"}
+                {!isClockedIn ? "Take a Break" : isOnBreak ? "Resume Work" : "Take a Break"}
               </button>
             </div>
             <p className="text-center text-[10px] font-bold text-slate-400 mt-3">
@@ -1000,14 +1006,14 @@ export function ActivitiesTimeline() {
               <span
                 className={cn(
                   "font-black",
-                  !isTrackerRunning
+                  !isClockedIn
                     ? "text-slate-400"
                     : isOnBreak
                     ? "text-amber-500"
                     : "text-emerald-500"
                 )}
               >
-                {!isTrackerRunning
+                {!isClockedIn
                   ? "Clocked Out"
                   : isOnBreak
                   ? "On Break"

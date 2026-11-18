@@ -634,28 +634,32 @@ const GoalStreamModal = ({ goal, onClose }) => {
 
 // --- Reusable Components ---
 
-const KPICard = ({ title, value, subValue, trend, icon: Icon, color, delay }) => (
+const KPICard = ({ title, value, subValue, trend, icon: Icon, delay }) => (
     <div
-        className="group relative rounded-[2.5rem] border border-slate-100 bg-white p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:border-slate-800 dark:bg-slate-900 transition-all hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] hover:-translate-y-1 animate-slide-up"
+        className="group relative rounded-2xl border border-[#D6CDBC] dark:border-[#384232] bg-[#EEE8DD] dark:bg-[#252B20] p-4 shadow-warm-xs transition-all hover:border-[#B9955B]/60 flex flex-col justify-between"
         style={{ animationDelay: delay }}
     >
-        <div className="flex items-center justify-between mb-6">
-            <div className={cn("h-14 w-14 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-lgp-3 rounded-xl transition-transform group-hover:scale-110 bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20", color)}>
-                <Icon size={24} className="text-white" />
+        <div className="flex items-center justify-between mb-3">
+            <div className="w-9 h-9 rounded-xl bg-[#F5F1E9] dark:bg-[#1E2419] border border-[#D6CDBC] dark:border-[#384232] flex items-center justify-center text-[#B9955B] dark:text-[#D3B98D] transition-transform group-hover:scale-105">
+                <Icon size={16} />
             </div>
             {trend !== undefined && (
                 <div className={cn(
-                    "flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest",
-                    trend >= 0 ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30" : "bg-rose-50 text-rose-600 dark:bg-rose-950/30"
+                    "flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold tracking-wider",
+                    trend >= 0 
+                        ? "bg-[#3C4536]/10 text-[#30382B] dark:text-[#D3B98D] border border-[#3C4536]/20" 
+                        : "bg-[#8C4A38]/10 text-[#8C4A38] dark:text-[#E07A5F] border border-[#8C4A38]/20"
                 )}>
-                    {trend >= 0 ? <TrendingUp size={12} /> : <TrendingUp size={12} className="rotate-180" />}
-                    {Math.abs(trend)}%
+                    {trend >= 0 ? <TrendingUp size={11} /> : <TrendingUp size={11} className="rotate-180" />}
+                    <span>{Math.abs(trend)}%</span>
                 </div>
             )}
         </div>
-        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">{title}</h3>
-        <p className="text-4xl font-black text-slate-900 dark:text-white mb-2 leading-none">{value}</p>
-        <p className="text-xs font-bold text-slate-500 tracking-tight">{subValue}</p>
+        <div>
+            <h3 className="text-[11px] font-semibold text-[#777367] dark:text-[#A8A295] uppercase tracking-wider mb-0.5">{title}</h3>
+            <p className="font-serif text-2xl font-normal text-[#29291F] dark:text-[#F5F1E9] leading-tight">{value}</p>
+            <p className="text-[11px] text-[#777367] dark:text-[#A8A295] mt-0.5">{subValue}</p>
+        </div>
     </div>
 );
 
@@ -669,31 +673,30 @@ const KanbanColumn = ({ title, tasks, status, color, onAdd, updateTaskStatus, on
     };
 
     return (
-        <div className="flex-1 w-full min-w-0 bg-white/70 dark:bg-slate-900/60 backdrop-blur-md rounded-[18px] p-6 flex flex-col h-[600px] border border-slate-100 dark:border-slate-800/60 shadow-[0_8px_24px_rgba(0,0,0,0.06)] hover:-translate-y-1.5 hover:shadow-[0_18px_40px_rgba(0,0,0,0.12)] transition-all duration-300 ease-out group/col relative overflow-hidden">
+        <div className="flex-1 w-full min-w-0 bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl p-4 flex flex-col h-[600px] border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs transition-all duration-300 ease-out group/col relative overflow-hidden">
             {/* Soft Header Gradient Underline */}
             <div className={cn("absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r opacity-30 group-hover/col:opacity-100 transition-opacity duration-500", getGradient())} />
 
-            <div className="flex items-center justify-between mb-6 px-1 z-10">
-                <div className="flex items-center gap-3">
-                    {/* Pulsing Status Dot */}
-                    <div className="relative flex items-center justify-center w-3 h-3">
-                        <div className={cn("absolute inset-0 rounded-full opacity-40 animate-[ping_2s_cubic-bezier(0,0,0.2,1)_infinite]", color.replace('bg-', 'bg-'))} />
-                        <div className={cn("w-2.5 h-2.5 rounded-full shadow-sm relative z-10", color)} />
+            <div className="flex items-center justify-between mb-4 px-1 z-10">
+                <div className="flex items-center gap-2.5">
+                    {/* Status Dot */}
+                    <div className="relative flex items-center justify-center w-2.5 h-2.5">
+                        <div className={cn("w-2.5 h-2.5 rounded-full shadow-xs", color)} />
                     </div>
 
-                    <h4 className="text-xs font-black text-slate-900 dark:text-slate-100 uppercase tracking-widest">{title}</h4>
-                    <div className="h-6 min-w-[1.5rem] px-1.5 rounded-lg bg-white/50 dark:bg-slate-800/50 flex items-center justify-center text-[9px] font-black border border-slate-200 dark:border-slate-700/50 shadow-sm backdrop-blur-sm text-slate-500">
+                    <h4 className="text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] uppercase tracking-wider">{title}</h4>
+                    <div className="h-5 min-w-[1.25rem] px-1.5 rounded-md bg-[#F5F1E9] dark:bg-[#1E2419] flex items-center justify-center text-[10px] font-bold border border-[#D6CDBC] dark:border-[#384232] text-[#777367]">
                         {tasks.length}
                     </div>
                 </div>
                 {onAdd && (
-                    <button onClick={onAdd} className="h-8 w-8 rounded-lg text-slate-400 hover:text-indigo-600 dark:hover:text-white transition-all hover:bg-white/80 dark:hover:bg-slate-800/80 hover:shadow-sm flex items-center justify-center">
-                        <Plus size={16} strokeWidth={2.5} />
+                    <button onClick={onAdd} className="h-7 w-7 rounded-lg text-[#777367] hover:text-[#29291F] dark:hover:text-[#F5F1E9] transition-all hover:bg-[#E5DDCF] dark:hover:bg-[#1E2419] flex items-center justify-center cursor-pointer">
+                        <Plus size={15} />
                     </button>
                 )}
             </div>
 
-            <div className="flex-1 space-y-4 overflow-y-auto overflow-x-hidden pr-1 pl-1 -ml-1 custom-scrollbar thin-scrollbar">
+            <div className="flex-1 space-y-3 overflow-y-auto overflow-x-hidden pr-1 pl-1 -ml-1 custom-scrollbar thin-scrollbar">
                 <style>{`
                     .thin-scrollbar::-webkit-scrollbar { width: 4px; }
                     .thin-scrollbar::-webkit-scrollbar-track { background: transparent; }
@@ -714,16 +717,16 @@ const KanbanColumn = ({ title, tasks, status, color, onAdd, updateTaskStatus, on
                     })();
 
                     const getCardStyle = (status) => {
-                        const baseStyle = "border-[1.5px] rounded-[16px] transition-all duration-300";
+                        const baseStyle = "border rounded-xl transition-all duration-200";
                         switch (status) {
                             case 'IN_OPERATIONS':
-                                return `${baseStyle} border-blue-500 shadow-[0_0_0_1px_rgba(59,130,246,0.15)] hover:shadow-[0_6px_18px_rgba(59,130,246,0.18)]`;
+                                return `${baseStyle} border-[#B9955B] bg-[#FBF9F5] dark:bg-[#1E2419] shadow-warm-xs`;
                             case 'FINALIZED':
-                                return `${baseStyle} border-emerald-500 shadow-[0_0_0_1px_rgba(16,185,129,0.15)] hover:shadow-[0_6px_18px_rgba(16,185,129,0.18)]`;
+                                return `${baseStyle} border-[#3C4536]/30 bg-[#FBF9F5] dark:bg-[#1E2419] shadow-warm-xs`;
                             case 'QUALITY_ASSURANCE':
-                                return `${baseStyle} border-amber-400 shadow-[0_0_0_1px_rgba(251,191,36,0.15)] hover:shadow-[0_6px_18px_rgba(251,191,36,0.18)]`;
+                                return `${baseStyle} border-[#D3B98D] bg-[#FBF9F5] dark:bg-[#1E2419] shadow-warm-xs`;
                             default:
-                                return `${baseStyle} border-slate-200 shadow-sm`;
+                                return `${baseStyle} border-[#E5DED2] dark:border-[#384232] bg-[#FBF9F5] dark:bg-[#1E2419] shadow-warm-xs`;
                         }
                     };
 
@@ -744,7 +747,7 @@ const KanbanColumn = ({ title, tasks, status, color, onAdd, updateTaskStatus, on
                         <div
                             key={task.id}
                             className={cn(
-                                "bg-white dark:bg-slate-900 p-4 cursor-grab active:cursor-grabbing group animate-in slide-in-from-bottom-2 fade-in fill-mode-both hover:-translate-y-1 hover:scale-[1.01] overflow-hidden",
+                                "p-3.5 cursor-grab active:cursor-grabbing group animate-in slide-in-from-bottom-2 fade-in fill-mode-both hover:border-[#B9955B] transition-all overflow-hidden",
                                 getCardStyle(status)
                             )}
                             style={{ animationDelay: `${index * 75}ms`, animationDuration: '400ms' }}
@@ -1261,26 +1264,19 @@ export function TasksProjects() {
     return (
         <div className="space-y-6 md:space-y-8 pb-32 animate-fade-in px-4 md:px-0 max-w-full overflow-x-hidden box-border">
             {/* Elegant Header */}
-            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 mb-8">
-                {/* Left: Title */}
-                {/* <div className="shrink-0 flex items-start gap-4 w-full lg:w-auto">
-                    <div className="h-12 w-12 md:h-14 md:w-14 rounded-2xl md:rounded-[1.5rem] bg-indigo-600 text-white flex items-center justify-center shadow-[0_20px_40px_rgba(79,70,229,0.3)] shrink-0">
-                        <Briefcase size={24} className="md:w-7 md:h-7" />
-                    </div> */}
-                <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                        <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Enterprise Hub</h1>
-                        <span className="px-2 py-0.5 md:px-3 md:py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[9px] md:text-[10px] font-black uppercase tracking-widest whitespace-nowrap">Live Status</span>
+            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-6">
+                <div className="min-w-0">
+                    <div className="flex items-center gap-2.5 flex-wrap">
+                        <h1 className="font-serif text-3xl font-normal text-[#29291F] dark:text-[#F5F1E9] tracking-tight">Enterprise Hub</h1>
+                        <span className="px-2.5 py-0.5 rounded-full bg-[#3C4536]/10 dark:bg-[#3C4536]/30 border border-[#3C4536]/20 text-[#30382B] dark:text-[#D3B98D] text-[10px] font-semibold uppercase tracking-wider">Live Status</span>
                     </div>
-                    <p className="text-xs md:text-lg text-slate-400 font-bold tracking-tight mt-1 leading-relaxed">Requirement-driven task management & business intelligence.</p>
+                    <p className="text-xs text-[#777367] dark:text-[#A8A295] mt-1">Requirement-driven task management & business intelligence.</p>
                 </div>
-                {/* </div> */}
 
-                {/* Right: Tabs (Separated Chips) */}
-                <div className="w-full lg:flex-1 flex flex-wrap items-center justify-center gap-2 md:gap-3">
+                {/* Right: Tabs (Single Line Segmented Bar) */}
+                <div className="flex items-center gap-1 p-1 bg-[#EEE8DD] dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] rounded-2xl flex-nowrap shrink-0 overflow-x-auto max-w-full">
                     {[
                         { id: 'board', name: 'Board', icon: Kanban },
-                        // { id: 'logs', name: 'Work Logs', icon: Clock },
                         { id: 'cycle-time', name: 'Cycle Time', icon: Clock },
                         { id: 'projects', name: 'Projects', icon: Layout },
                         { id: 'performance', name: 'Performance', icon: Trophy },
@@ -1290,69 +1286,72 @@ export function TasksProjects() {
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={cn(
-                                "flex items-center justify-center gap-1.5 px-4 py-2.5 md:px-5 md:py-3 text-[9px] md:text-[10px] font-black rounded-xl md:rounded-full transition-all duration-300 uppercase tracking-widest relative group outline-none",
+                                "flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl transition-all duration-200 uppercase tracking-wider whitespace-nowrap shrink-0 cursor-pointer",
                                 activeTab === tab.id
-                                    ? "text-white bg-slate-900 dark:bg-white dark:text-slate-900 shadow-xl scale-105"
-                                    : "text-slate-500 bg-white dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800 shadow-sm"
+                                    ? "bg-[#30382B] text-[#FDFBF7] shadow-warm-xs"
+                                    : "text-[#777367] hover:text-[#29291F] dark:hover:text-[#F5F1E9] hover:bg-[#E5DDCF]/60 dark:hover:bg-[#1E2419]"
                             )}
                         >
-                            <tab.icon size={12} className={cn("md:w-3.5 md:h-3.5 transition-transform duration-300", activeTab === tab.id ? "scale-110" : "group-hover:scale-110")} />
-                            <span className="font-black">{tab.name}</span>
+                            <tab.icon size={13} className={activeTab === tab.id ? "text-[#D3B98D]" : "text-[#777367]"} />
+                            <span>{tab.name}</span>
                         </button>
                     ))}
                 </div>
             </div>
 
             {/* Global Context Stats */}
-            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-                <KPICard title="Tasks Completed" value={derivedStats.completedTasks} subValue={role === 'EMPLOYEE' ? `Across ${filteredTasks.length} Assigned Tasks` : `Across ${tasks.length} Active Tasks`} trend={14} icon={CheckSquare} color="bg-indigo-600 shadow-indigo-200" delay="0ms" />
-                <KPICard title="Productivity Index" value={`${derivedStats.avgProductivity}%`} subValue="Global Average Score" trend={4.2} icon={Zap} color="bg-amber-500 shadow-amber-200" delay="100ms" />
-                <KPICard title="Billable Resources" value={`${derivedStats.totalBillableHours}h`} subValue="Logged Hours today" trend={-2} icon={Clock} color="bg-blue-600 shadow-blue-200" delay="200ms" />
-                <KPICard title="Project Milestones" value={derivedStats.projectMilestones} subValue="Active Client Projects" trend={12} icon={Target} color="bg-purple-600 shadow-purple-200" delay="300ms" />
+            <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+                <KPICard title="Tasks Completed" value={derivedStats.completedTasks} subValue={role === 'EMPLOYEE' ? `Across ${filteredTasks.length} Assigned Tasks` : `Across ${tasks.length} Active Tasks`} trend={14} icon={CheckSquare} delay="0ms" />
+                <KPICard title="Productivity Index" value={`${derivedStats.avgProductivity}%`} subValue="Global Average Score" trend={4.2} icon={Zap} delay="100ms" />
+                <KPICard title="Billable Resources" value={`${derivedStats.totalBillableHours}h`} subValue="Logged Hours today" trend={-2} icon={Clock} delay="200ms" />
+                <KPICard title="Project Milestones" value={derivedStats.projectMilestones} subValue="Active Client Projects" trend={12} icon={Target} delay="300ms" />
             </div>
 
             {/* Main Dynamic View */}
             <div className="relative">
                 {/* 1. KANBAN BOARD VIEW */}
                 {activeTab === 'board' && (
-                    <div className="space-y-8 animate-fade-in">
-                        <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-4 md:gap-6 justify-between">
-                            <div className="relative flex-1 group">
-                                <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-500 transition-colors" size={20} />
+                    <div className="space-y-6 animate-fade-in">
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 justify-between">
+                            <div className="relative flex-1 max-w-md">
+                                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#777367] pointer-events-none" size={15} />
                                 <input
                                     type="text"
                                     placeholder="Search tasks, stakeholders..."
-                                    className="w-full h-14 md:h-16 pl-16 pr-8 rounded-[1.25rem] md:rounded-[1.75rem] border-2 border-slate-50 bg-white shadow-sm focus:border-primary-500 focus:bg-white dark:border-slate-800 dark:bg-slate-900/50 font-bold transition-all outline-none text-sm md:text-base"
+                                    className="w-full h-10 pl-9 pr-4 rounded-xl border border-[#D6CDBC] dark:border-[#384232] bg-[#EEE8DD] dark:bg-[#252B20] text-xs font-medium text-[#29291F] dark:text-[#F5F1E9] placeholder-[#777367] focus:outline-none focus:border-[#B9955B]"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                 />
                             </div>
-                            <FilterDropdown />
-                            {(role === 'ADMIN' || role === 'MANAGER') && (
-                                <button onClick={() => openTaskModal('Working on it')} className="h-14 md:h-16 px-6 md:px-10 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-[1.25rem] md:rounded-[1.75rem] font-black text-[10px] md:text-xs uppercase tracking-widest shadow-xl hover:scale-102 active:scale-95 transition-all flex items-center justify-center gap-3">
-                                    <Plus size={18} strokeWidth={3} />
-                                    <span>Assign Task</span>
-                                </button>
-                            )}
-
+                            <div className="flex items-center gap-2 shrink-0">
+                                <FilterDropdown />
+                                {(role === 'ADMIN' || role === 'MANAGER') && (
+                                    <button onClick={() => openTaskModal('Working on it')} className="h-10 px-4 bg-[#30382B] hover:bg-[#3C4536] text-[#FDFBF7] rounded-xl font-semibold text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-warm-xs">
+                                        <Plus size={15} />
+                                        <span>Assign Task</span>
+                                    </button>
+                                )}
+                            </div>
                         </div>
 
                         {/* Loading State */}
                         {isLoading && tasks.length === 0 && (
                             <div className="py-12 flex flex-col items-center justify-center gap-3 text-slate-400">
-                                <Clock className="h-8 w-8 animate-spin text-primary-500" />
-                                <span className="text-xs font-bold uppercase tracking-wider">Loading tasks...</span>
+                                <Clock className="h-8 w-8 animate-spin text-[#B9955B]" />
+                                <span className="text-xs font-semibold uppercase tracking-wider text-[#777367]">Loading tasks...</span>
                             </div>
                         )}
 
                         {/* Employee Empty State Banner */}
                         {role === 'EMPLOYEE' && !isLoading && filteredTasks.length === 0 && (
-                            <div className="bg-slate-50/80 dark:bg-slate-900/40 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl p-6 text-center animate-fade-in">
-                                <CheckSquare className="mx-auto h-8 w-8 text-slate-400 dark:text-slate-500 mb-2" strokeWidth={1.5} />
-                                <h4 className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                            <div className="bg-[#EEE8DD] dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] rounded-2xl p-8 text-center shadow-warm-xs">
+                                <div className="w-12 h-12 mx-auto rounded-full bg-[#F5F1E9] dark:bg-[#1E2419] border border-[#D6CDBC] dark:border-[#384232] flex items-center justify-center text-[#B9955B] mb-3">
+                                    <CheckSquare size={20} />
+                                </div>
+                                <h4 className="font-serif text-lg font-normal text-[#29291F] dark:text-[#F5F1E9]">
                                     {searchQuery ? "No Matching Tasks Found" : "No Assigned Tasks"}
                                 </h4>
-                                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
+                                <p className="text-xs text-[#777367] dark:text-[#A8A295] mt-1 max-w-md mx-auto">
                                     {searchQuery ? "Try refining your search keyword." : "You currently have no tasks assigned to you. Once a manager assigns you a task, it will appear here on your board."}
                                 </p>
                             </div>
