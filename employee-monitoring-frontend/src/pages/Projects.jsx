@@ -188,7 +188,7 @@ export function Projects() {
                                                 <span><span className="text-slate-900 dark:text-slate-300">{card.tickets}</span> Tickets</span>
                                             </div>
                                             {isConnected && (
-                                                <button 
+                                                <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         alert('Syncing ' + card.name + ' projects...');
@@ -223,128 +223,128 @@ export function Projects() {
                 </div>
             ) : (
                 <div className="space-y-6">
-                        {/* Table Layout (Hidden on Mobile) */}
-                        <div className="hidden lg:block">
-                            <div className="grid grid-cols-12 px-6 py-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center border-b border-slate-100 dark:border-slate-800">
-                                <div className="text-left col-span-4">Project Name</div>
-                                <div className="col-span-2">Assignees</div>
-                                <div className="col-span-2">Tasks</div>
-                                {role !== 'EMPLOYEE' ? (
-                                    <>
-                                        <div className="col-span-1">Rate</div>
-                                        <div className="col-span-1">Costs</div>
-                                        <div className="col-span-2 text-center">Actions</div>
-                                    </>
-                                ) : (
-                                    <div className="col-span-4 text-center">Status</div>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Product Rows / Mobile Cards */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 md:gap-6 lg:gap-0 lg:space-y-3">
-                            {(() => {
-                                if (loading) return <div className="text-center py-20 font-bold text-slate-400 animate-pulse">Fetching project data...</div>;
-
-                                const filtered = projects.filter(p => (p.projectName || p.name || '').toLowerCase().includes(projectSearch.toLowerCase()));
-                                if (filtered.length === 0) {
-                                    return (
-                                        <div className="flex flex-col items-center justify-center py-20 text-center col-span-full">
-                                            <div className="h-20 w-20 rounded-full bg-slate-50 dark:bg-slate-900 flex items-center justify-center mb-4">
-                                                <Search size={32} className="text-slate-200 dark:text-slate-800" />
-                                            </div>
-                                            <h3 className="text-xl font-black text-slate-300 dark:text-slate-800 select-none">No Projects Found</h3>
-                                            <p className="text-xs font-bold text-slate-400 mt-2">Try adjusting your search or filters</p>
-                                        </div>
-                                    );
-                                }
-                                return filtered.map((project, idx) => (
-                                    <div key={idx} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[1.5rem] lg:rounded-2xl p-5 md:p-6 lg:p-4 hover:shadow-xl hover:border-primary-100 dark:hover:border-primary-900/30 transition-all group lg:grid lg:grid-cols-12 lg:items-center">
-                                        {/* Desktop-only hidden / Mobile visible labels */}
-                                        <div className="lg:col-span-4 flex items-center gap-4 mb-4 lg:mb-0">
-                                            <div className="h-12 w-12 lg:h-9 lg:lg:w-9 rounded-2xl lg:rounded-xl bg-primary-600 flex items-center justify-center text-xs lg:text-[10px] font-black text-white shadow-lg shadow-primary-200 dark:shadow-none transition-transform group-hover:scale-105">
-                                                {(project.projectName || project.name || 'PR').substring(0, 2).toUpperCase()}
-                                            </div>
-                                            <div className="flex flex-col lg:flex-row lg:items-center gap-0.5 lg:gap-0">
-                                                <span className="text-sm lg:text-xs font-black text-slate-900 dark:text-slate-100">{project.projectName || project.name}</span>
-                                                <span className="lg:hidden text-[10px] font-bold text-slate-400 uppercase tracking-wider">{project.tasks} Tasks active</span>
-                                            </div>
-                                        </div>
-
-                                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-8 gap-4 lg:gap-0 lg:col-span-8 items-center">
-                                            {/* Assignees */}
-                                            <div className="flex flex-col lg:items-center gap-1 lg:col-span-2">
-                                                <span className="lg:hidden text-[9px] font-black text-slate-400 uppercase tracking-widest">Assignees</span>
-                                                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{project.assignees}</span>
-                                            </div>
-                                            {/* Tasks */}
-                                            <div className="hidden lg:flex flex-col lg:items-center gap-1 lg:col-span-2">
-                                                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{project.tasks}</span>
-                                            </div>
-                                            {role !== 'EMPLOYEE' ? (
-                                                <>
-                                                    {/* Bill Rate */}
-                                                    <div className="flex flex-col lg:items-center gap-1 lg:col-span-1">
-                                                        <span className="lg:hidden text-[9px] font-black text-emerald-500/70 uppercase tracking-widest">Rate</span>
-                                                        <span className="text-xs font-black text-emerald-600 dark:text-emerald-400">${project.billRate}</span>
-                                                    </div>
-                                                    {/* Total Costs */}
-                                                    <div className="flex flex-col lg:items-center gap-1 lg:col-span-1">
-                                                        <span className="lg:hidden text-[9px] font-black text-primary-500/70 uppercase tracking-widest">Costs</span>
-                                                        <span className="text-sm lg:text-xs font-black text-primary-600 dark:text-primary-400">${project.totalCosts}</span>
-                                                    </div>
-
-                                                    {/* Actions */}
-                                                    <div className="flex items-center justify-center gap-2 lg:col-span-2">
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                setViewingProject(project);
-                                                            }}
-                                                            className="h-8 w-8 flex items-center justify-center rounded-lg bg-slate-50 dark:bg-slate-800 text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all shadow-sm"
-                                                            title="View Project Details"
-                                                        >
-                                                            <Eye size={16} />
-                                                        </button>
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                setEditingProject(project);
-                                                                setIsModalOpen(true);
-                                                            }}
-                                                            className="h-8 w-8 flex items-center justify-center rounded-lg bg-slate-50 dark:bg-slate-800 text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-all shadow-sm"
-                                                            title="Edit Project"
-                                                        >
-                                                            <Edit3 size={16} />
-                                                        </button>
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                if (window.confirm('Are you sure you want to delete this project?')) {
-                                                                    deleteProject(project.id);
-                                                                }
-                                                            }}
-                                                            className="h-8 w-8 flex items-center justify-center rounded-lg bg-slate-50 dark:bg-slate-800 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all shadow-sm"
-                                                            title="Delete Project"
-                                                        >
-                                                            <Trash2 size={16} />
-                                                        </button>
-                                                    </div>
-                                                </>
-                                            ) : (
-                                                <div className="flex items-center justify-center lg:col-span-4">
-                                                    <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">
-                                                        Active Project
-                                                    </span>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                ));
-                            })() }
+                    {/* Table Layout (Hidden on Mobile) */}
+                    <div className="hidden lg:block">
+                        <div className="grid grid-cols-12 px-6 py-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center border-b border-slate-100 dark:border-slate-800">
+                            <div className="text-left col-span-4">Project Name</div>
+                            <div className="col-span-2">Assignees</div>
+                            <div className="col-span-2">Tasks</div>
+                            {role !== 'EMPLOYEE' ? (
+                                <>
+                                    <div className="col-span-1">Rate</div>
+                                    <div className="col-span-1">Costs</div>
+                                    <div className="col-span-2 text-center">Actions</div>
+                                </>
+                            ) : (
+                                <div className="col-span-4 text-center">Status</div>
+                            )}
                         </div>
                     </div>
-                
+
+                    {/* Product Rows / Mobile Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 md:gap-6 lg:gap-0 lg:space-y-3">
+                        {(() => {
+                            if (loading) return <div className="text-center py-20 font-bold text-slate-400 animate-pulse">Fetching project data...</div>;
+
+                            const filtered = projects.filter(p => (p.projectName || p.name || '').toLowerCase().includes(projectSearch.toLowerCase()));
+                            if (filtered.length === 0) {
+                                return (
+                                    <div className="flex flex-col items-center justify-center py-20 text-center col-span-full">
+                                        <div className="h-20 w-20 rounded-full bg-slate-50 dark:bg-slate-900 flex items-center justify-center mb-4">
+                                            <Search size={32} className="text-slate-200 dark:text-slate-800" />
+                                        </div>
+                                        <h3 className="text-xl font-black text-slate-300 dark:text-slate-800 select-none">No Projects Found</h3>
+                                        <p className="text-xs font-bold text-slate-400 mt-2">Try adjusting your search or filters</p>
+                                    </div>
+                                );
+                            }
+                            return filtered.map((project, idx) => (
+                                <div key={idx} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[1.5rem] lg:rounded-2xl p-5 md:p-6 lg:p-4 hover:shadow-xl hover:border-primary-100 dark:hover:border-primary-900/30 transition-all group lg:grid lg:grid-cols-12 lg:items-center">
+                                    {/* Desktop-only hidden / Mobile visible labels */}
+                                    <div className="lg:col-span-4 flex items-center gap-4 mb-4 lg:mb-0">
+                                        <div className="h-12 w-12 lg:h-9 lg:lg:w-9 rounded-2xl lg:rounded-xl bg-primary-600 flex items-center justify-center text-xs lg:text-[10px] font-black text-white shadow-lg shadow-primary-200 dark:shadow-none transition-transform group-hover:scale-105">
+                                            {(project.projectName || project.name || 'PR').substring(0, 2).toUpperCase()}
+                                        </div>
+                                        <div className="flex flex-col lg:flex-row lg:items-center gap-0.5 lg:gap-0">
+                                            <span className="text-sm lg:text-xs font-black text-slate-900 dark:text-slate-100">{project.projectName || project.name}</span>
+                                            <span className="lg:hidden text-[10px] font-bold text-slate-400 uppercase tracking-wider">{project.tasks} Tasks active</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-8 gap-4 lg:gap-0 lg:col-span-8 items-center">
+                                        {/* Assignees */}
+                                        <div className="flex flex-col lg:items-center gap-1 lg:col-span-2">
+                                            <span className="lg:hidden text-[9px] font-black text-slate-400 uppercase tracking-widest">Assignees</span>
+                                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{project.assignees}</span>
+                                        </div>
+                                        {/* Tasks */}
+                                        <div className="hidden lg:flex flex-col lg:items-center gap-1 lg:col-span-2">
+                                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{project.tasks}</span>
+                                        </div>
+                                        {role !== 'EMPLOYEE' ? (
+                                            <>
+                                                {/* Bill Rate */}
+                                                <div className="flex flex-col lg:items-center gap-1 lg:col-span-1">
+                                                    <span className="lg:hidden text-[9px] font-black text-emerald-500/70 uppercase tracking-widest">Rate</span>
+                                                    <span className="text-xs font-black text-emerald-600 dark:text-emerald-400">${project.billRate}</span>
+                                                </div>
+                                                {/* Total Costs */}
+                                                <div className="flex flex-col lg:items-center gap-1 lg:col-span-1">
+                                                    <span className="lg:hidden text-[9px] font-black text-primary-500/70 uppercase tracking-widest">Costs</span>
+                                                    <span className="text-sm lg:text-xs font-black text-primary-600 dark:text-primary-400">${project.totalCosts}</span>
+                                                </div>
+
+                                                {/* Actions */}
+                                                <div className="flex items-center justify-center gap-2 lg:col-span-2">
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setViewingProject(project);
+                                                        }}
+                                                        className="h-8 w-8 flex items-center justify-center rounded-lg bg-slate-50 dark:bg-slate-800 text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all shadow-sm"
+                                                        title="View Project Details"
+                                                    >
+                                                        <Eye size={16} />
+                                                    </button>
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setEditingProject(project);
+                                                            setIsModalOpen(true);
+                                                        }}
+                                                        className="h-8 w-8 flex items-center justify-center rounded-lg bg-slate-50 dark:bg-slate-800 text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-all shadow-sm"
+                                                        title="Edit Project"
+                                                    >
+                                                        <Edit3 size={16} />
+                                                    </button>
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            if (window.confirm('Are you sure you want to delete this project?')) {
+                                                                deleteProject(project.id);
+                                                            }
+                                                        }}
+                                                        className="h-8 w-8 flex items-center justify-center rounded-lg bg-slate-50 dark:bg-slate-800 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all shadow-sm"
+                                                        title="Delete Project"
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <div className="flex items-center justify-center lg:col-span-4">
+                                                <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">
+                                                    Active Project
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            ));
+                        })()}
+                    </div>
+                </div>
+
             )}
 
             <NewProjectModal
@@ -358,7 +358,7 @@ export function Projects() {
                 teams={teams}
             />
 
-            <ProjectDetailModal 
+            <ProjectDetailModal
                 isOpen={!!viewingProject}
                 onClose={() => setViewingProject(null)}
                 project={viewingProject}

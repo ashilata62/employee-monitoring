@@ -44,7 +44,8 @@ import {
   VolumeX,
   AlertCircle,
   MoreVertical,
-  Briefcase
+  Briefcase,
+  Loader2
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -53,6 +54,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import screenshotService from '../services/screenshotService';
 import videoService from '../services/videoService';
+import { useScreenRecordingStore, formatRecordingTimer } from '../store/screenRecordingStore';
 import { toast } from '../utils/toastManager';
 import { API_BASE_URL, BASE_URL } from '../config/api';
 
@@ -1245,144 +1247,32 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
         }
     }, [isVideoModalOpen, activePlaybackVideo]);
 
-    // Live Screen Recording State & Handlers
-    const [isRecordingVideo, setIsRecordingVideo] = useState(false);
-    const [recordingSeconds, setRecordingSeconds] = useState(0);
-    const [isUploadingVideo, setIsUploadingVideo] = useState(false);
-    const screenStreamRef = useRef(null);
-    const mediaRecorderRef = useRef(null);
-    const recordingTimerRef = useRef(null);
-    const recordedChunksRef = useRef([]);
+    // Global Screen Recording State & Handlers (Persists across all route changes)
+    const { 
+        isRecording: isRecordingVideo, 
+        recordingSeconds, 
+        isUploading: isUploadingVideo, 
+        startRecording: globalStartRecording, 
+        stopRecording: globalStopRecording 
+    } = useScreenRecordingStore();
 
-    const formatRecordingTimer = (totalSeconds) => {
-        const mins = Math.floor(totalSeconds / 60);
-        const secs = totalSeconds % 60;
-        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    };
-
-    const handleStartScreenRecording = async () => {
-        try {
-            let stream = null;
-            try {
-                stream = await navigator.mediaDevices.getDisplayMedia({
-                    video: { cursor: 'always' },
-                    audio: true
-                });
-            } catch (mediaErr) {
-                stream = await navigator.mediaDevices.getDisplayMedia({
-                    video: { cursor: 'always' }
-                });
-            }
-
-            if (!stream) return;
-
-            screenStreamRef.current = stream;
-            recordedChunksRef.current = [];
-
-            const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp8')
-                ? 'video/webm;codecs=vp8'
-                : (MediaRecorder.isTypeSupported('video/webm') ? 'video/webm' : 'video/mp4');
-
-            const recorder = new MediaRecorder(stream, { mimeType });
-            mediaRecorderRef.current = recorder;
-
-            recorder.ondataavailable = (e) => {
-                if (e.data && e.data.size > 0) {
-                    recordedChunksRef.current.push(e.data);
-                }
-            };
-
-            recorder.onstop = async () => {
-                if (screenStreamRef.current) {
-                    screenStreamRef.current.getTracks().forEach(t => t.stop());
-                    screenStreamRef.current = null;
-                }
-                if (recordingTimerRef.current) {
-                    clearInterval(recordingTimerRef.current);
-                    recordingTimerRef.current = null;
-                }
-                setIsRecordingVideo(false);
-
-                const chunks = recordedChunksRef.current;
-                if (!chunks || chunks.length === 0) {
-                    toast.error('No video data recorded');
-                    return;
-                }
-
-                const blob = new Blob(chunks, { type: mimeType });
-                const validEmployeeId = (videoEmployeeFilter && videoEmployeeFilter !== 'All')
-                    ? videoEmployeeFilter
-                    : (employeesList.length > 0 ? employeesList[0].id : (contextEmployees.length > 0 ? contextEmployees[0].id : null));
-
-                if (!validEmployeeId) {
-                    toast.error('No employee found to attach this recording to');
-                    return;
-                }
-
-                try {
-                    setIsUploadingVideo(true);
-                    const toastId = toast.loading('Uploading and saving screen recording...');
-                    const formData = new FormData();
-                    formData.append('video', blob, `screen-recording-${Date.now()}.webm`);
-                    formData.append('employeeId', validEmployeeId);
-
-                    const res = await videoService.uploadVideo(formData);
-                    toast.dismiss(toastId);
-                    if (res && res.success) {
-                        toast.success('Screen video recorded and saved successfully!');
-                        fetchVideos();
-                    } else {
-                        toast.error(res?.message || 'Failed to save recording');
-                    }
-                } catch (err) {
-                    console.error('Failed to upload video recording:', err);
-                    toast.error(err.response?.data?.message || err.message || 'Failed to upload video');
-                } finally {
-                    setIsUploadingVideo(false);
-                    setRecordingSeconds(0);
-                }
-            };
-
-            const videoTrack = stream.getVideoTracks()[0];
-            if (videoTrack) {
-                videoTrack.onended = () => {
-                    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-                        mediaRecorderRef.current.stop();
-                    }
-                };
-            }
-
-            recorder.start(1000);
-            setIsRecordingVideo(true);
-            setRecordingSeconds(0);
-
-            recordingTimerRef.current = setInterval(() => {
-                setRecordingSeconds(prev => prev + 1);
-            }, 1000);
-
-            toast.info('Screen recording started. Click Stop when finished.');
-        } catch (err) {
-            if (err.name !== 'NotAllowedError') {
-                console.error('Failed to start screen recording:', err);
-                toast.error('Could not start recording: ' + err.message);
-            }
-        }
+    const handleStartScreenRecording = () => {
+        const targetEmpId = (videoEmployeeFilter && videoEmployeeFilter !== 'All') ? videoEmployeeFilter : null;
+        globalStartRecording(targetEmpId);
     };
 
     const handleStopScreenRecording = () => {
-        if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-            mediaRecorderRef.current.stop();
-        }
+        globalStopRecording();
     };
 
+    // Auto-refresh videos gallery whenever a recording finishes saving
     useEffect(() => {
-        return () => {
-            if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
-            if (screenStreamRef.current) {
-                screenStreamRef.current.getTracks().forEach(t => t.stop());
-            }
+        const handleVideoSaved = () => {
+            fetchVideos();
         };
-    }, []);
+        window.addEventListener('video-recording-saved', handleVideoSaved);
+        return () => window.removeEventListener('video-recording-saved', handleVideoSaved);
+    }, [fetchVideos]);
 
   // Sync context screenshots (newly arrived via socket) to local state
   useEffect(() => {
@@ -1471,7 +1361,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
             // View & Filter State
             const [viewMode, setViewMode] = useState('grid');
             const [timelineDate, setTimelineDate] = useState(new Date());
-            const [isAllHistory, setIsAllHistory] = useState(false);
+            const [isAllHistory, setIsAllHistory] = useState(true); // Permanent retention: default to all history so screenshots from previous days are never hidden
             const [showCalendar, setShowCalendar] = useState(false);
             const [viewDate, setViewDate] = useState(new Date());
             const [isPlaying, setIsPlaying] = useState(false);
@@ -2100,19 +1990,22 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                     <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Screenshots & Screen Recording</h1>
 
                     {/* Main Navigation Tabs (Phase 2) */}
-                    <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-900 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800">
+                    <div className="flex items-center gap-1.5 bg-[#EEE8DD] dark:bg-[#252B20] p-1.5 rounded-xl border border-[#D6CDBC] dark:border-[#384232]">
                       <button
                         onClick={() => setActiveMainTab('screenshots')}
                         className={cn(
-                          "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all",
+                          "flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer",
                           activeMainTab === 'screenshots'
-                            ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/10"
-                            : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
+                            ? "bg-[#30382B] text-[#FDFBF7] shadow-warm-xs"
+                            : "text-[#777367] hover:text-[#29291F] dark:hover:text-[#F5F1E9]"
                         )}
                       >
-                        <Camera size={15} />
+                        <Camera size={15} className={activeMainTab === 'screenshots' ? "text-[#D3B98D]" : ""} />
                         <span>Screenshots</span>
-                        <span className="text-[10px] bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded-full font-bold">
+                        <span className={cn(
+                          "text-[10px] px-2 py-0.5 rounded-full font-bold",
+                          activeMainTab === 'screenshots' ? "bg-[#3C4536] text-[#D3B98D]" : "bg-[#D6CDBC]/50 text-[#777367]"
+                        )}>
                           {filteredScreenshots.length}
                         </span>
                       </button>
@@ -2123,15 +2016,18 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                           fetchVideos();
                         }}
                         className={cn(
-                          "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all",
+                          "flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer",
                           activeMainTab === 'videos'
-                            ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/10"
-                            : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
+                            ? "bg-[#30382B] text-[#FDFBF7] shadow-warm-xs"
+                            : "text-[#777367] hover:text-[#29291F] dark:hover:text-[#F5F1E9]"
                         )}
                       >
-                        <Video size={15} />
+                        <Video size={15} className={activeMainTab === 'videos' ? "text-[#D3B98D]" : ""} />
                         <span>Video Recordings</span>
-                        <span className="text-[10px] bg-primary-100 dark:bg-primary-900/50 text-primary-600 dark:text-primary-400 px-2 py-0.5 rounded-full font-bold">
+                        <span className={cn(
+                          "text-[10px] px-2 py-0.5 rounded-full font-bold",
+                          activeMainTab === 'videos' ? "bg-[#3C4536] text-[#D3B98D]" : "bg-[#D6CDBC]/50 text-[#777367]"
+                        )}>
                           {videoRecordings.length}
                         </span>
                       </button>
@@ -2140,7 +2036,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
 
                   {/* Top Controls (Screenshots tab only) */}
                   {activeMainTab === 'screenshots' && (
-                    <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex items-center gap-2.5 flex-nowrap shrink-0">
                       {role !== 'EMPLOYEE' && (
                         <button
                           onClick={handleCaptureRealScreen}
@@ -2205,7 +2101,8 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                         </div>
                       )}
 
-                      {/* Calendar Date Picker */}
+                      <div data-date-sort-group="true" className="flex items-center gap-2 flex-nowrap shrink-0">
+{/* Calendar Date Picker */}
                       <div className="relative" ref={calendarRef}>
                         <button
                           onClick={() => setShowCalendarDropdown(!showCalendarDropdown)}
@@ -2338,6 +2235,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                         </select>
                         <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-primary-600 dark:text-primary-400 pointer-events-none" />
                       </div>
+</div>
                     </div>
                   )}
 
@@ -2350,11 +2248,20 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                             <button
                               onClick={handleStartScreenRecording}
                               disabled={isUploadingVideo}
-                              className="px-4 py-2 bg-rose-500 hover:bg-rose-600 disabled:opacity-50 text-white rounded-xl text-sm font-bold shadow-lg shadow-rose-500/20 active:scale-95 transition-all flex items-center gap-2 animate-in fade-in"
+                              className="px-4 py-2 bg-rose-500 hover:bg-rose-600 disabled:opacity-50 text-white rounded-xl text-sm font-bold shadow-lg shadow-rose-500/20 active:scale-95 transition-all flex items-center gap-2 animate-in fade-in cursor-pointer"
                               title="Start screen recording to capture and save video session"
                             >
-                              <Video size={16} />
-                              <span>Record Screen Video</span>
+                              {isUploadingVideo ? (
+                                <>
+                                  <Loader2 size={16} className="animate-spin" />
+                                  <span>Saving Video...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Video size={16} />
+                                  <span>Record Screen Video</span>
+                                </>
+                              )}
                             </button>
                           ) : (
                             <button
@@ -2665,10 +2572,19 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                                         <button
                                           onClick={handleStartScreenRecording}
                                           disabled={isUploadingVideo}
-                                          className="px-5 py-2.5 bg-rose-500 hover:bg-rose-600 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition-all shadow-md active:scale-95 flex items-center gap-2"
+                                          className="px-5 py-2.5 bg-rose-500 hover:bg-rose-600 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition-all shadow-md active:scale-95 flex items-center gap-2 cursor-pointer"
                                         >
-                                          <Video size={16} />
-                                          <span>Record Screen Video Now</span>
+                                          {isUploadingVideo ? (
+                                            <>
+                                              <Loader2 size={16} className="animate-spin" />
+                                              <span>Saving Video...</span>
+                                            </>
+                                          ) : (
+                                            <>
+                                              <Video size={16} />
+                                              <span>Record Screen Video Now</span>
+                                            </>
+                                          )}
                                         </button>
                                       ) : (
                                         <button

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 import { LocationTracker } from '../components/LocationTracker';
+import { ScreenRecordingBanner } from '../components/common/ScreenRecordingBanner';
 
 export function DashboardLayout({ children }) {
     const [collapsed, setCollapsed] = useState(false);
@@ -32,6 +33,7 @@ export function DashboardLayout({ children }) {
     return (
         <div className="h-screen overflow-hidden overflow-x-hidden bg-[#F5F1E9] dark:bg-[#1A1F18] text-[#29291F] dark:text-[#F5F1E9]">
             <LocationTracker />
+            <ScreenRecordingBanner />
             
             {/* Mobile Overlay */}
             <div

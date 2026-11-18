@@ -155,7 +155,7 @@ export function ComparativeKpiGrid({ sec, stats, deltas, liveTick }) {
             <KpiCard
                 title="Idle Time"
                 baseSeconds={sec?.idleTime}
-                liveTick={liveTick}
+                liveTick={false}
                 delta={d.idleTime}
                 inverse={true}
                 icon={MonitorOff}
@@ -164,7 +164,7 @@ export function ComparativeKpiGrid({ sec, stats, deltas, liveTick }) {
             <KpiCard
                 title="Manual Time"
                 baseSeconds={sec?.manualTime}
-                liveTick={liveTick}
+                liveTick={false}
                 delta={d.manualTime}
                 icon={Clock}
             />
@@ -180,7 +180,7 @@ export function ComparativeKpiGrid({ sec, stats, deltas, liveTick }) {
             <KpiCard
                 title="Unproductive Time"
                 baseSeconds={sec?.unproductiveTime}
-                liveTick={liveTick}
+                liveTick={false}
                 delta={d.unproductiveTime}
                 inverse={true}
                 icon={Activity}
@@ -189,7 +189,7 @@ export function ComparativeKpiGrid({ sec, stats, deltas, liveTick }) {
             <KpiCard
                 title="Neutral Time"
                 baseSeconds={sec?.neutralTime}
-                liveTick={liveTick}
+                liveTick={false}
                 delta={d.neutralTime}
                 icon={PieChart}
             />

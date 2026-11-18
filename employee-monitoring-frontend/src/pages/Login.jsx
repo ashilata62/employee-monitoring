@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff, Loader2, Shield, User, Monitor, Sparkles } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, Loader2, Shield, User, Monitor, Sparkles, Briefcase } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useToast } from '../context/ToastContext';
 import authService from '../services/authService';
@@ -37,10 +37,13 @@ export function Login() {
         setIsLoading(true);
         setError('');
         try {
-            const quickEmail = role.toLowerCase() === 'admin' ? 'admin@gmail.com' : 'demo1@gmail.com';
+            const roleKey = role.toLowerCase();
+            let quickEmail = 'admin@example.com';
+            if (roleKey === 'manager') quickEmail = 'manager@example.com';
+            if (roleKey === 'employee') quickEmail = 'employee@example.com';
             const quickPass = '123456';
             await login(quickEmail, quickPass);
-            navigate(`/${role.toLowerCase()}`, { replace: true });
+            navigate(`/${roleKey}`, { replace: true });
         } catch (err) {
             setError(getErrorMessage(err));
         } finally {
@@ -170,25 +173,38 @@ export function Login() {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
                         <button
+                            type="button"
                             onClick={() => handleQuickLogin('Admin')}
-                            className="flex flex-col items-center gap-1.5 rounded-2xl border border-[#E5DED2] dark:border-[#384232] bg-[#F5F1E9] dark:bg-[#1E2419] p-3 text-center transition-all hover:border-[#B9955B] group cursor-pointer"
+                            className="flex flex-col items-center gap-1.5 rounded-2xl border border-[#E5DED2] dark:border-[#384232] bg-[#F5F1E9] dark:bg-[#1E2419] p-2.5 text-center transition-all hover:border-[#B9955B] group cursor-pointer"
                         >
-                            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#30382B] text-[#D3B98D] transition-transform group-hover:scale-105">
-                                <Shield size={18} />
+                            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#30382B] text-[#D3B98D] transition-transform group-hover:scale-105">
+                                <Shield size={16} />
                             </div>
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-[#29291F] dark:text-[#F5F1E9]">Admin Portal</span>
+                            <span className="text-[9px] font-bold uppercase tracking-wider text-[#29291F] dark:text-[#F5F1E9] leading-tight">Admin Portal</span>
                         </button>
 
                         <button
-                            onClick={() => handleQuickLogin('Employee')}
-                            className="flex flex-col items-center gap-1.5 rounded-2xl border border-[#E5DED2] dark:border-[#384232] bg-[#F5F1E9] dark:bg-[#1E2419] p-3 text-center transition-all hover:border-[#B9955B] group cursor-pointer"
+                            type="button"
+                            onClick={() => handleQuickLogin('Manager')}
+                            className="flex flex-col items-center gap-1.5 rounded-2xl border border-[#E5DED2] dark:border-[#384232] bg-[#F5F1E9] dark:bg-[#1E2419] p-2.5 text-center transition-all hover:border-[#B9955B] group cursor-pointer"
                         >
-                            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#B9955B] text-white transition-transform group-hover:scale-105">
-                                <User size={18} />
+                            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#5E7D64] text-white transition-transform group-hover:scale-105">
+                                <Briefcase size={16} />
                             </div>
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-[#29291F] dark:text-[#F5F1E9]">Employee Portal</span>
+                            <span className="text-[9px] font-bold uppercase tracking-wider text-[#29291F] dark:text-[#F5F1E9] leading-tight">Manager Portal</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() => handleQuickLogin('Employee')}
+                            className="flex flex-col items-center gap-1.5 rounded-2xl border border-[#E5DED2] dark:border-[#384232] bg-[#F5F1E9] dark:bg-[#1E2419] p-2.5 text-center transition-all hover:border-[#B9955B] group cursor-pointer"
+                        >
+                            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#B9955B] text-white transition-transform group-hover:scale-105">
+                                <User size={16} />
+                            </div>
+                            <span className="text-[9px] font-bold uppercase tracking-wider text-[#29291F] dark:text-[#F5F1E9] leading-tight">Employee Portal</span>
                         </button>
                     </div>
 

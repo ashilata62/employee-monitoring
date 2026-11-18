@@ -99,7 +99,8 @@ export function WebTrackerAgent() {
 
             const formData = new FormData();
             formData.append('video', blob, `recording-${Date.now()}.webm`);
-            formData.append('employeeId', user?.employeeId || '');
+            const resolvedEmpId = user?.employeeId || user?.employee?.id || user?.id || '';
+            formData.append('employeeId', resolvedEmpId);
 
             // Upload with exponential backoff (3 attempts)
             for (let attempt = 1; attempt <= 3; attempt++) {

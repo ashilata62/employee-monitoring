@@ -216,7 +216,7 @@ const AppSection = ({ title }) => (
 import dashboardService from '../services/dashboardService';
 
 export function Dashboard() {
-    const { employees: contextEmployees, teams: contextTeams, stats: realTimeStats, isLoading: isRealTimeLoading } = useRealTime();
+    const { employees: contextEmployees, teams: contextTeams, stats: realTimeStats, isLoading: isRealTimeLoading, socket } = useRealTime();
     const { role, isClockedIn, isOnBreak } = useAuthStore();
     const { dateRange, setDateRange } = useFilterStore();
     const { start: startDate, end: endDate } = dateRange || {};
@@ -230,33 +230,49 @@ export function Dashboard() {
     const [pieData2, setPieData2] = useState([]);
     const navigate = useNavigate();
 
-    React.useEffect(() => {
-        const fetchDashboardData = async () => {
-            // Only set loading on initial fetch to avoid UI flicker during auto-refresh
-            if (!dashboardData) setIsLoading(true);
-            try {
-                let data;
-                if (role === 'ADMIN') {
-                    data = await dashboardService.getAdminDashboard(startDate, endDate, compareStartDate, compareEndDate);
-                } else if (role === 'MANAGER') {
-                    data = await dashboardService.getManagerDashboard(startDate, endDate, compareStartDate, compareEndDate);
-                } else {
-                    data = await dashboardService.getEmployeeDashboard(startDate, endDate, compareStartDate, compareEndDate);
-                }
-                setDashboardData(data);
-            } catch (error) {
-                console.error('Error fetching dashboard data:', error);
-            } finally {
-                if (!dashboardData) setIsLoading(false);
+    const fetchDashboardData = React.useCallback(async () => {
+        try {
+            let data;
+            if (role === 'ADMIN') {
+                data = await dashboardService.getAdminDashboard(startDate, endDate, compareStartDate, compareEndDate);
+            } else if (role === 'MANAGER') {
+                data = await dashboardService.getManagerDashboard(startDate, endDate, compareStartDate, compareEndDate);
+            } else {
+                data = await dashboardService.getEmployeeDashboard(startDate, endDate, compareStartDate, compareEndDate);
             }
-        };
+            setDashboardData(data);
+        } catch (error) {
+            console.error('Error fetching dashboard data:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [role, startDate, endDate, compareStartDate, compareEndDate]);
 
+    React.useEffect(() => {
         fetchDashboardData();
 
         // Auto-refresh every 30 seconds (seconds tick live between refreshes)
         const interval = setInterval(fetchDashboardData, 30000);
         return () => clearInterval(interval);
-    }, [role, startDate, endDate, compareStartDate, compareEndDate]);
+    }, [fetchDashboardData]);
+
+    // Instant real-time socket refresh on attendance/status updates
+    React.useEffect(() => {
+        if (!socket) return;
+        const handleLiveUpdate = () => {
+            fetchDashboardData();
+        };
+
+        socket.on('attendance:update', handleLiveUpdate);
+        socket.on('employee:status', handleLiveUpdate);
+        socket.on('activity:update', handleLiveUpdate);
+
+        return () => {
+            socket.off('attendance:update', handleLiveUpdate);
+            socket.off('employee:status', handleLiveUpdate);
+            socket.off('activity:update', handleLiveUpdate);
+        };
+    }, [socket, fetchDashboardData]);
 
     const handleDownload = () => {
         const empMetricsData = realTimeStats.empMetrics || [];
@@ -314,13 +330,15 @@ export function Dashboard() {
         if (role === 'EMPLOYEE') {
             return isClockedIn && !isOnBreak;
         }
-        const list = stats?.empMetrics || contextEmployees || [];
-        const someoneOnline = list.some((e) => {
+        const empList = (stats?.empMetrics?.length ? stats.empMetrics : null) ||
+                        (contextEmployees?.length ? contextEmployees : null) ||
+                        (stats?.employees?.length ? stats.employees : null) || [];
+        const someoneOnline = empList.some((e) => {
             const s = String(e.status || '').toLowerCase();
             return s === 'active' || s === 'online';
         });
-        return someoneOnline || (sec.workTime > 0);
-    }, [isToday, role, isClockedIn, isOnBreak, stats?.empMetrics, contextEmployees, sec.workTime]);
+        return someoneOnline;
+    }, [isToday, role, isClockedIn, isOnBreak, stats?.empMetrics, stats?.employees, contextEmployees]);
 
     const chartData = stats.intradayActivity?.length
         ? stats.intradayActivity
