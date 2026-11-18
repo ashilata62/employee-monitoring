@@ -56,13 +56,25 @@ const register = async (userData) => {
  * Login user
  */
 const login = async (email, password) => {
-    const user = await prisma.user.findUnique({
-        where: { email },
+    const normalizedEmail = (email || '').trim().toLowerCase();
+    console.log('[Auth] Login attempt for:', normalizedEmail);
+
+    const user = await prisma.user.findFirst({
+        where: {
+            OR: [
+                { email: normalizedEmail },
+                ...(normalizedEmail === 'demo@gmail.com' ? [{ email: 'demo1@gmail.com' }] : []),
+                ...(normalizedEmail === 'demo1@gmail.com' ? [{ email: 'demo@gmail.com' }] : [])
+            ]
+        },
         include: { employee: true },
     });
 
     if (!user) {
-        throw new Error('Invalid email or password');
+        console.warn(`[Auth] User not found for email: ${normalizedEmail}`);
+        const err = new Error('Invalid email or password');
+        err.statusCode = 401;
+        throw err;
     }
 
     // Check if account is deactivated
@@ -75,7 +87,9 @@ const login = async (email, password) => {
             status: 'Denied',
             metadata: { reason: 'Account de-activated' }
         });
-        throw new Error('Your account has been deactivated. Please contact your administrator.');
+        const err = new Error('Your account has been deactivated. Please contact your administrator.');
+        err.statusCode = 403;
+        throw err;
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -89,7 +103,10 @@ const login = async (email, password) => {
             status: 'Denied',
             metadata: { reason: 'Invalid password' }
         });
-        throw new Error('Invalid email or password');
+        console.warn(`[Auth] Password mismatch for: ${normalizedEmail}`);
+        const err = new Error('Invalid email or password');
+        err.statusCode = 401;
+        throw err;
     }
 
     const token = generateToken({
