@@ -33,11 +33,14 @@ export function WeeklyTimesheetsView({ employees = [] }) {
     const [submitting, setSubmitting] = useState(false);
     const [activeDayModal, setActiveDayModal] = useState(null);
 
-    // Filter employees: If manager, only show employees in their assigned team
+    // Filter employees: If manager, only show employees in their assigned team. Filter out ADMIN role.
     const managerTeamId = user?.teamId || user?.employee?.teamId;
     const selectableEmployees = useMemo(() => {
-        if (role !== 'MANAGER' || !managerTeamId) return employees;
-        return employees.filter(emp => (emp.teamId === managerTeamId || emp.team?.id === managerTeamId));
+        let list = employees.filter(emp => (emp.role || 'EMPLOYEE').toUpperCase() !== 'ADMIN');
+        if (role === 'MANAGER' && managerTeamId) {
+            list = list.filter(emp => (emp.teamId === managerTeamId || emp.team?.id === managerTeamId));
+        }
+        return list;
     }, [employees, role, managerTeamId]);
 
     const fmtTimeShort = (dateStr) => {
@@ -76,6 +79,10 @@ export function WeeklyTimesheetsView({ employees = [] }) {
 
     useEffect(() => {
         loadTimesheet();
+        const interval = setInterval(() => {
+            loadTimesheet();
+        }, 30000);
+        return () => clearInterval(interval);
     }, [weekStart, selectedEmployeeId]);
 
     const handleSubmit = async () => {
@@ -142,19 +149,26 @@ export function WeeklyTimesheetsView({ employees = [] }) {
                 </div>
 
                 <div className="flex items-center gap-3">
-                    {/* Admin/Manager Employee Picker */}
-                    {(role === 'ADMIN' || role === 'MANAGER') && selectableEmployees.length > 0 && (
+                    {/* Admin/Manager Employee Picker: filter out ADMIN, team-scoped for MANAGER, show proper role and team */}
+                    {(role === 'ADMIN' || role === 'MANAGER') && (
                         <select
-                            value={selectedEmployeeId}
+                            value={selectedEmployeeId || (data?.employeeId || '')}
                             onChange={(e) => setSelectedEmployeeId(e.target.value)}
                             className="text-xs font-semibold bg-[#F5F1E9] dark:bg-[#1E2419] border border-[#D6CDBC] dark:border-[#384232] rounded-xl px-3.5 py-2 text-[#29291F] dark:text-[#F5F1E9] outline-none focus:border-[#B9955B] cursor-pointer"
                         >
                             <option value="">{role === 'MANAGER' ? 'All Team Timesheets' : 'Select Employee...'}</option>
-                            {selectableEmployees.map(emp => (
-                                <option key={emp.id} value={emp.id}>
-                                    {emp.fullName || emp.name} ({emp.team?.name || 'General'})
-                                </option>
-                            ))}
+                            {selectableEmployees.map(emp => {
+                                const team = typeof emp.team === 'object' ? emp.team?.name : emp.team;
+                                const teamLabel = team && team !== 'Unassigned' && team !== 'General' ? team : null;
+                                const roleUpper = (emp.role || 'EMPLOYEE').toUpperCase();
+                                const roleLabel = roleUpper === 'MANAGER' ? 'Manager' : 'Employee';
+                                const displayInfo = teamLabel ? `${roleLabel} • ${teamLabel}` : roleLabel;
+                                return (
+                                    <option key={emp.id} value={emp.id}>
+                                        {emp.fullName || emp.name} ({displayInfo})
+                                    </option>
+                                );
+                            })}
                         </select>
                     )}
 

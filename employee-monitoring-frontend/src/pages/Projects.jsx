@@ -42,7 +42,12 @@ export function Projects() {
     useEffect(() => {
         fetchProjects();
         fetchIntegrations();
-    }, []);
+
+        const interval = setInterval(() => {
+            fetchProjects();
+        }, 30000);
+        return () => clearInterval(interval);
+    }, [fetchProjects, fetchIntegrations]);
 
     const handleDownload = () => {
         const rows = [

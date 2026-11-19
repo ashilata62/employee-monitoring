@@ -142,7 +142,8 @@ const inviteEmployee = async (req, res, next) => {
                     validatedData.email,
                     role,
                     validatedData.organizationId,
-                    validatedData.fullName
+                    validatedData.fullName,
+                    employee.id
                 );
                 inviteResult = { setupLink };
             }

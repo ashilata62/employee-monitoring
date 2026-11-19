@@ -126,8 +126,15 @@ const inviteEmployee = async (data) => {
     // 4. If password is provided, create linked User login account
     if (data.password) {
         const hashedPassword = await bcrypt.hash(data.password, 10);
-        await prisma.user.create({
-            data: {
+        await prisma.user.upsert({
+            where: { email: employee.email },
+            update: {
+                password: hashedPassword,
+                role: employee.role,
+                name: employee.fullName,
+                employeeId: employee.id
+            },
+            create: {
                 email: employee.email,
                 password: hashedPassword,
                 role: employee.role,
@@ -169,6 +176,7 @@ const updateEmployee = async (id, data) => {
     }
 
     if (employeeData.status !== undefined) updateData.status = employeeData.status;
+    if (employeeData.role !== undefined) updateData.role = employeeData.role;
     if (employeeData.hourlyRate !== undefined) updateData.hourlyRate = employeeData.hourlyRate;
     if (employeeData.avatar !== undefined) updateData.avatar = employeeData.avatar;
 
@@ -179,11 +187,14 @@ const updateEmployee = async (id, data) => {
         include: { user: true }
     });
 
-    // Keep linked User name in sync with Employee fullName
-    if (employeeData.fullName && employee.user) {
+    // Keep linked User name and role in sync with Employee
+    if ((employeeData.fullName || employeeData.role) && employee.user) {
+        const userSyncData = {};
+        if (employeeData.fullName) userSyncData.name = employeeData.fullName;
+        if (employeeData.role) userSyncData.role = employeeData.role;
         await prisma.user.update({
             where: { id: employee.user.id },
-            data: { name: employeeData.fullName }
+            data: userSyncData
         }).catch(() => {});
     }
 

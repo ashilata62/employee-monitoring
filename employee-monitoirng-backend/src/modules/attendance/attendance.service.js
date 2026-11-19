@@ -109,8 +109,7 @@ const attendanceService = {
                     productivity: 'PRODUCTIVE',
                     duration: 0,
                     timestamp: now,
-                    appWebsite: 'Work Session',
-                    title: 'Active Work Session'
+                    appWebsite: 'Work Session'
                 }
             });
         } catch (actErr) {
@@ -251,20 +250,21 @@ const attendanceService = {
 
     getTimesheets: async (organizationId, filters = {}) => {
         const where = {
-            organizationId,
-            employee: {
-                role: 'EMPLOYEE'
-            }
+            organizationId
         };
 
+        if (filters.role) where.employee = { role: filters.role };
         if (filters.employeeId) where.employeeId = filters.employeeId;
-        if (filters.teamId) where.employee = { ...where.employee, teamId: filters.teamId };
+        if (filters.teamId) where.employee = { ...(where.employee || {}), teamId: filters.teamId };
         if (filters.startDate && filters.endDate) {
             const start = new Date(filters.startDate);
             start.setHours(0, 0, 0, 0);
             const end = new Date(filters.endDate);
             end.setHours(23, 59, 59, 999);
-            where.date = { gte: start, lte: end };
+            where.OR = [
+                { date: { gte: start, lte: end } },
+                { clockIn: { gte: start, lte: end } }
+            ];
         }
 
         return await prisma.attendance.findMany({
@@ -290,19 +290,20 @@ const attendanceService = {
      */
     getTimesheetsGrouped: async (organizationId, filters = {}) => {
         const where = {
-            organizationId,
-            employee: {
-                role: 'EMPLOYEE'
-            }
+            organizationId
         };
+        if (filters.role) where.employee = { role: filters.role };
         if (filters.employeeId) where.employeeId = filters.employeeId;
-        if (filters.teamId) where.employee = { ...where.employee, teamId: filters.teamId };
+        if (filters.teamId) where.employee = { ...(where.employee || {}), teamId: filters.teamId };
         if (filters.startDate && filters.endDate) {
             const start = new Date(filters.startDate);
             start.setHours(0, 0, 0, 0);
             const end = new Date(filters.endDate);
             end.setHours(23, 59, 59, 999);
-            where.date = { gte: start, lte: end };
+            where.OR = [
+                { date: { gte: start, lte: end } },
+                { clockIn: { gte: start, lte: end } }
+            ];
         }
 
         const records = await prisma.attendance.findMany({

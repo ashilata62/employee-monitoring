@@ -1,49 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAuthStore } from '../../store/authStore';
+import { useSessionTimer } from '../../hooks/useLiveTime';
+import { formatSecondsToHMS } from '../../utils/timeFormat';
 import { MonitorCheck, MonitorOff, LogIn, LogOut, Video, VideoOff, Clock } from 'lucide-react';
 import { toast } from '../../utils/toastManager';
 
 export function WorkSessionBanner() {
     const { user, isClockedIn, clockIn, clockOut, isOnBreak, toggleBreak, activeAttendance, isTrackerActive, setTrackerActive } = useAuthStore();
-    const [elapsedSeconds, setElapsedSeconds] = useState(0);
+    const elapsedSeconds = useSessionTimer();
     const [isLoading, setIsLoading] = useState(false);
 
     const isAgentActive = isTrackerActive || user?.agentStatus === 'active';
 
-    // ── Elapsed timer ──────────────────────────────────────────────────────────
-    useEffect(() => {
-        let timer;
-        if (isClockedIn && activeAttendance?.clockIn) {
-            const clockInMs = new Date(activeAttendance.clockIn).getTime();
-            const breakSec = activeAttendance.totalBreakSeconds || 0;
-
-            const calculateWorkSeconds = () => {
-                if (isOnBreak && activeAttendance.openBreak) {
-                    const breakStartMs = new Date(activeAttendance.openBreak).getTime();
-                    return Math.max(0, Math.floor((breakStartMs - clockInMs) / 1000) - breakSec);
-                }
-                return Math.max(0, Math.floor((Date.now() - clockInMs) / 1000) - breakSec);
-            };
-
-            setElapsedSeconds(calculateWorkSeconds());
-
-            if (!isOnBreak) {
-                timer = setInterval(() => {
-                    setElapsedSeconds(calculateWorkSeconds());
-                }, 1000);
-            }
-        } else if (!isClockedIn) {
-            setElapsedSeconds(0);
-        }
-        return () => clearInterval(timer);
-    }, [isClockedIn, activeAttendance?.clockIn, activeAttendance?.openBreak, activeAttendance?.totalBreakSeconds, isOnBreak]);
-
-    const formatTime = (totalSeconds) => {
-        const h = Math.floor(totalSeconds / 3600);
-        const m = Math.floor((totalSeconds % 3600) / 60);
-        const s = totalSeconds % 60;
-        return `${h.toString().padStart(2, '0')}h ${m.toString().padStart(2, '0')}m ${s.toString().padStart(2, '0')}s`;
-    };
+    const formatTime = (totalSeconds) => formatSecondsToHMS(totalSeconds);
 
     // ── Clock In / Out ─────────────────────────────────────────────────────────
     const handleClockIn = async () => {

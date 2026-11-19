@@ -91,15 +91,21 @@ export function WorkType() {
     };
 
     useEffect(() => {
-        const { start, end } = getDatesFromPreset(activePeriod);
-        const params = {
-            startDate: toYMD(start),
-            endDate: toYMD(end),
-            userId: selectedEmployee,
-            teamId: selectedTeam,
+        const loadData = () => {
+            const { start, end } = getDatesFromPreset(activePeriod);
+            const params = {
+                startDate: toYMD(start),
+                endDate: toYMD(end),
+                userId: selectedEmployee,
+                teamId: selectedTeam,
+            };
+            fetchReportData('work-type', params);
+            fetchReportData('work-type-tags', params);
         };
-        fetchReportData('work-type', params);
-        fetchReportData('work-type-tags', params);
+
+        loadData();
+        const interval = setInterval(loadData, 30000);
+        return () => clearInterval(interval);
     }, [activePeriod, fetchReportData, selectedEmployee, selectedTeam]);
 
     const categoryRaw = reportData['work-type'] || [];

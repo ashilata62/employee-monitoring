@@ -34,6 +34,21 @@ import { useAuthStore } from '../store/authStore';
 import { WeeklyTimesheetsView } from '../components/timesheets/WeeklyTimesheetsView';
 import { ApprovalsQueueView } from '../components/timesheets/ApprovalsQueueView';
 
+const isDayAttended = (t, dayStr) => {
+    if (!t) return false;
+    if (typeof t.date === 'string' && t.date.slice(0, 10) === dayStr) return true;
+    if (typeof t.clockIn === 'string' && t.clockIn.slice(0, 10) === dayStr) return true;
+    if (t.date) {
+        const d = new Date(t.date);
+        if (!isNaN(d.getTime()) && format(d, 'yyyy-MM-dd') === dayStr) return true;
+    }
+    if (t.clockIn) {
+        const d = new Date(t.clockIn);
+        if (!isNaN(d.getTime()) && format(d, 'yyyy-MM-dd') === dayStr) return true;
+    }
+    return false;
+};
+
 export function TimeAndAttendance() {
     const { employees } = useRealTime();
     const { role } = useAuthStore();
@@ -70,9 +85,20 @@ export function TimeAndAttendance() {
 
     // Re-fetch all data when date range or filters change
     useEffect(() => {
+        let start = dateRange?.start;
+        let end = dateRange?.end;
+
+        // When viewing Attendance Matrix, always query the full 7-day grid window so all matrix columns have data
+        if (activeTab === 'Attendance Matrix') {
+            const base = dateRange?.start ? parseISO(dateRange.start) : new Date();
+            const weekStart = startOfWeek(base, { weekStartsOn: 1 });
+            start = format(weekStart, 'yyyy-MM-dd');
+            end = format(addDays(weekStart, 6), 'yyyy-MM-dd');
+        }
+
         const params = {
-            startDate: dateRange?.start,
-            endDate: dateRange?.end,
+            startDate: start,
+            endDate: end,
             teamId: selectedTeam,
             employeeId: selectedEmployee
         };
@@ -82,7 +108,7 @@ export function TimeAndAttendance() {
         }
         fetchShifts(params);
         fetchTimeOffs(params);
-    }, [dateRange, selectedTeam, selectedEmployee, fetchTimesheets, fetchManualTimes, fetchShifts, fetchTimeOffs]);
+    }, [activeTab, dateRange, selectedTeam, selectedEmployee, fetchTimesheets, fetchManualTimes, fetchShifts, fetchTimeOffs]);
 
     // Socket-based real-time refresh
     const { socket } = useRealTime();
@@ -91,10 +117,17 @@ export function TimeAndAttendance() {
 
         const handleAttendanceUpdate = (data) => {
             console.log('Real-time attendance update received:', data);
-            // Refresh timesheets if on the relevant tab or if it's for today
+            let start = dateRange?.start;
+            let end = dateRange?.end;
+            if (activeTab === 'Attendance Matrix') {
+                const base = dateRange?.start ? parseISO(dateRange.start) : new Date();
+                const weekStart = startOfWeek(base, { weekStartsOn: 1 });
+                start = format(weekStart, 'yyyy-MM-dd');
+                end = format(addDays(weekStart, 6), 'yyyy-MM-dd');
+            }
             const params = {
-                startDate: dateRange?.start,
-                endDate: dateRange?.end,
+                startDate: start,
+                endDate: end,
                 teamId: selectedTeam,
                 employeeId: selectedEmployee
             };
@@ -103,7 +136,7 @@ export function TimeAndAttendance() {
 
         socket.on('attendance:update', handleAttendanceUpdate);
         return () => socket.off('attendance:update', handleAttendanceUpdate);
-    }, [socket, dateRange, selectedTeam, selectedEmployee, fetchTimesheets]);
+    }, [socket, activeTab, dateRange, selectedTeam, selectedEmployee, fetchTimesheets]);
 
     // Build the 7-day grid starting from the start of the filter week (or today's week)
     const gridDays = useMemo(() => {
@@ -300,7 +333,9 @@ export function TimeAndAttendance() {
                                                 </div>
                                             </td>
                                             <td className="px-6 py-6 text-xs font-bold text-slate-600 dark:text-slate-400 border-l border-slate-50 dark:border-slate-800">{row.employee?.location || 'Remote'}</td>
-                                            <td className="px-6 py-6 text-xs font-bold text-slate-600 dark:text-slate-400">{row.employee?.team?.name || 'General'}</td>
+                                            <td className="px-6 py-6 text-xs font-bold text-slate-600 dark:text-slate-400">
+                                                {typeof row.employee?.team === 'object' ? (row.employee?.team?.name || 'No Team') : (row.employee?.team || 'No Team')}
+                                            </td>
                                             <td className="px-6 py-6 text-xs font-bold text-slate-800 dark:text-slate-300">
                                                 {format(new Date(row.date), 'MMM dd, yyyy')}
                                             </td>
@@ -381,7 +416,7 @@ export function TimeAndAttendance() {
                                                     </div>
                                                 </td>
                                                 <td className="px-8 py-6 text-xs font-bold text-slate-500">
-                                                    {emp.team?.name || 'General'}
+                                                    {typeof emp.team === 'object' ? (emp.team?.name || 'No Team') : (emp.team || 'No Team')}
                                                 </td>
                                                 <td className="px-8 py-6 text-xs font-bold text-slate-500">
                                                     {shift ? (
@@ -473,57 +508,80 @@ export function TimeAndAttendance() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
-                                {filteredEmployees.map((emp, idx) => {
-                                    const empTimesheets = timesheets.filter(t => t.employeeId === emp.id);
-                                    return (
-                                        <tr key={idx} className="bg-[#F5F1E9] dark:bg-[#1E2419] hover:bg-[#EAE2D3] dark:hover:bg-[#252B20] transition-colors border-b border-[#D6CDBC]/50">
-                                            <td className="px-6 py-5">
-                                                <div className="flex items-center gap-3">
-                                                    <div className={`h-9 w-9 rounded-xl flex items-center justify-center text-xs font-bold border border-[#E5DED2] bg-[#EEE8DD] text-[#30382B]`}>
-                                                        {(emp.fullName || emp.name || '??').split(' ').map(n => n[0]).join('').toUpperCase()}
+                                {filteredEmployees
+                                    .filter(emp => (emp.role || 'EMPLOYEE').toUpperCase() !== 'ADMIN')
+                                    .map((emp, idx) => {
+                                        const empTimesheets = timesheets.filter(t => t.employeeId === emp.id);
+                                        const attendedDaysCount = gridDays.filter(date => {
+                                            const dayStr = format(date, 'yyyy-MM-dd');
+                                            return empTimesheets.some(t => isDayAttended(t, dayStr));
+                                        }).length;
+
+                                        return (
+                                            <tr key={idx} className="bg-[#F5F1E9] dark:bg-[#1E2419] hover:bg-[#EAE2D3] dark:hover:bg-[#252B20] transition-colors border-b border-[#D6CDBC]/50">
+                                                <td className="px-6 py-5">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className={`h-9 w-9 rounded-xl flex items-center justify-center text-xs font-bold border border-[#E5DED2] bg-[#EEE8DD] text-[#30382B]`}>
+                                                            {(emp.fullName || emp.name || '??').split(' ').map(n => n[0]).join('').toUpperCase()}
+                                                        </div>
+                                                        <div>
+                                                            <div className="flex items-center gap-1.5">
+                                                                <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{emp.fullName || emp.name || 'Unknown'}</span>
+                                                                {emp.role && emp.role !== 'EMPLOYEE' && (
+                                                                    <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300">
+                                                                        {emp.role}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <p className="text-[10px] text-slate-400 font-medium">
+                                                                {typeof emp.team === 'object' ? (emp.team?.name || 'No Team') : (emp.team || 'No Team')}
+                                                            </p>
+                                                        </div>
                                                     </div>
-                                                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{emp.fullName || emp.name || 'Unknown'}</span>
-                                                </div>
-                                            </td>
-                                            {gridDays.map((date, i) => {
-                                                const dayStr = format(date, 'yyyy-MM-dd');
-                                                const hasAttended = empTimesheets.some(t => format(new Date(t.date), 'yyyy-MM-dd') === dayStr);
-                                                return (
-                                                    <td key={i} className="px-3 py-5 text-center">
-                                                        <div className={`h-5 w-5 rounded-full mx-auto ${hasAttended ? 'bg-[#5E7D64]' : 'border border-[#D6CDBC] dark:border-[#384232]'}`} />
-                                                    </td>
-                                                );
-                                            })}
-                                            <td className="px-6 py-5 text-center">
-                                                <span className="text-xs font-black text-slate-700 dark:text-slate-200">
-                                                    {empTimesheets.filter(t => {
-                                                        const d = format(new Date(t.date), 'yyyy-MM-dd');
-                                                        return gridDays.some(gd => format(gd, 'yyyy-MM-dd') === d);
-                                                    }).length}/7
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
+                                                </td>
+                                                {gridDays.map((date, i) => {
+                                                    const dayStr = format(date, 'yyyy-MM-dd');
+                                                    const hasAttended = empTimesheets.some(t => isDayAttended(t, dayStr));
+                                                    return (
+                                                        <td key={i} className="px-3 py-5 text-center">
+                                                            <div
+                                                                className={`h-5 w-5 rounded-full mx-auto transition-all ${hasAttended ? 'bg-[#5E7D64] shadow-sm shadow-emerald-500/30 ring-2 ring-emerald-600/20' : 'border border-[#D6CDBC] dark:border-[#384232]'}`}
+                                                                title={hasAttended ? `${emp.fullName || emp.name}: Present on ${format(date, 'MMM dd')}` : `Not Present`}
+                                                            />
+                                                        </td>
+                                                    );
+                                                })}
+                                                <td className="px-6 py-5 text-center">
+                                                    <span className="text-xs font-black text-slate-700 dark:text-slate-200">
+                                                        {attendedDaysCount}/7
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
                                 <tr className="bg-[#E5DDCF]/50 dark:bg-[#1E2419]/50 border-t border-[#D6CDBC] dark:border-[#384232]">
                                     <td className="px-6 py-4"><span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Count</span></td>
                                     {gridDays.map((date, i) => {
                                         const dayStr = format(date, 'yyyy-MM-dd');
-                                        const count = filteredEmployees.filter(emp =>
-                                            timesheets.some(t => t.employeeId === emp.id && format(new Date(t.date), 'yyyy-MM-dd') === dayStr)
+                                        const matrixEmps = filteredEmployees.filter(emp => (emp.role || 'EMPLOYEE').toUpperCase() !== 'ADMIN');
+                                        const count = matrixEmps.filter(emp =>
+                                            timesheets.some(t => t.employeeId === emp.id && isDayAttended(t, dayStr))
                                         ).length;
                                         return (
                                             <td key={i} className="px-3 py-4 text-center text-xs font-black text-slate-700 dark:text-slate-300">{count}</td>
                                         );
                                     })}
                                     <td className="px-6 py-4 text-center text-xs font-black text-primary-600">
-                                        {filteredEmployees.reduce((acc, emp) => {
-                                            const empTimesheets = timesheets.filter(t => t.employeeId === emp.id);
-                                            return acc + empTimesheets.filter(t => {
-                                                const d = format(new Date(t.date), 'yyyy-MM-dd');
-                                                return gridDays.some(gd => format(gd, 'yyyy-MM-dd') === d);
-                                            }).length;
-                                        }, 0)}/{filteredEmployees.length * 7}
+                                        {(() => {
+                                            const matrixEmps = filteredEmployees.filter(emp => (emp.role || 'EMPLOYEE').toUpperCase() !== 'ADMIN');
+                                            const grandTotal = gridDays.reduce((acc, gd) => {
+                                                const dayStr = format(gd, 'yyyy-MM-dd');
+                                                return acc + matrixEmps.filter(emp =>
+                                                    timesheets.some(t => t.employeeId === emp.id && isDayAttended(t, dayStr))
+                                                ).length;
+                                            }, 0);
+                                            return `${grandTotal}/${matrixEmps.length * 7}`;
+                                        })()}
                                     </td>
                                 </tr>
                             </tbody>
