@@ -26,6 +26,7 @@ import {
     Zap
 } from 'lucide-react';
 import { useState, useMemo, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import usePayrollStore from '../store/payrollStore';
 import { FilterDropdown } from '../components/FilterDropdown';
 import { GlobalCalendar } from '../components/GlobalCalendar';
@@ -50,288 +51,6 @@ import api from '../services/apiClient';
 import { toast } from '../utils/toastManager';
 
 const cn = (...inputs) => twMerge(clsx(inputs));
-
-const INTEGRATIONS = [
-    { id: 'gusto', name: 'Gusto', desc: 'Direct payroll sync: employee hours, compensations and pay runs with Gusto API.', icon: CreditCard, color: 'text-rose-500 bg-rose-500', glow: 'shadow-rose-500/20' },
-    { id: 'adp', name: 'ADP Workforce Now', desc: 'Enterprise time-card batch sync directly to ADP RUN & Workforce Now API.', icon: Building2, color: 'text-blue-600 bg-blue-600', glow: 'shadow-blue-600/20' },
-    { id: 'quickbooks', name: 'QuickBooks Online', desc: 'Sync payroll time activities, billable rates, and expenses with QuickBooks Online ledger.', icon: Building2, color: 'text-emerald-500 bg-emerald-500', glow: 'shadow-emerald-500/20' },
-    { id: 'xero', name: 'Xero Cloud', desc: 'Automated timesheet sync for cloud-based accounting and pay runs.', icon: Globe, color: 'text-sky-500 bg-sky-500', glow: 'shadow-sky-500/20' }
-];
-
-const IntegrationCard = ({ item, status, lastSync, onConnect, onSync, isSyncing }) => {
-    const isConnected = status === 'Connected';
-
-    return (
-        <div className="group relative overflow-hidden rounded-2xl border border-[#D6CDBC] bg-[#EEE8DD] p-6 md:p-8 shadow-warm-xs transition-all dark:border-[#384232] dark:bg-[#252B20] flex flex-col justify-between">
-            <div className={cn("absolute top-0 right-0 h-32 w-32 blur-3xl opacity-5 rounded-full -mr-10 -mt-10", item.color)} />
-
-            <div>
-                <div className="flex items-start justify-between mb-6 relative z-10">
-                    <div className={cn("h-12 w-12 md:h-14 md:w-14 rounded-2xl flex items-center justify-center text-white shadow-md", item.color)}>
-                        <item.icon size={26} />
-                    </div>
-                    <span className={cn(
-                        "px-3 py-1 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest border transition-colors",
-                        isConnected
-                            ? "bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-800"
-                            : "bg-slate-50 text-slate-400 border-slate-100 dark:bg-slate-800 dark:border-slate-700"
-                    )}>
-                        {status}
-                    </span>
-                </div>
-
-                <div className="relative z-10">
-                    <h3 className="text-lg font-black text-slate-900 dark:text-white mb-2 tracking-tight">{item.name}</h3>
-                    <p className="text-xs text-slate-500 font-medium mb-4 leading-relaxed min-h-[36px]">{item.desc}</p>
-                    {lastSync && (
-                        <p className="text-[10px] text-slate-400 font-semibold mb-4">
-                            Last synced: {new Date(lastSync).toLocaleString()}
-                        </p>
-                    )}
-                </div>
-            </div>
-
-            <div className="relative z-10 pt-4 flex gap-2">
-                <button
-                    onClick={() => onConnect(item.id)}
-                    className={cn(
-                        "flex-1 py-3 rounded-xl font-black text-[9px] uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 border border-slate-200 dark:border-slate-700",
-                        isConnected
-                            ? "bg-white text-slate-700 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-200"
-                            : "bg-slate-900 text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900 shadow-md"
-                    )}
-                >
-                    <Link2 size={13} /> {isConnected ? 'Configure' : 'Connect'}
-                </button>
-                {isConnected && (
-                    <button
-                        onClick={() => onSync(item.id)}
-                        disabled={isSyncing}
-                        className="py-3 px-4 rounded-xl font-black text-[9px] uppercase tracking-wider bg-emerald-600 text-white hover:bg-emerald-500 transition-all flex items-center justify-center gap-1.5 shadow-md disabled:opacity-50"
-                        title="Sync live calculated payroll now"
-                    >
-                        {isSyncing ? <Loader2 size={13} className="animate-spin" /> : <Zap size={13} />}
-                        Sync
-                    </button>
-                )}
-            </div>
-        </div>
-    );
-};
-
-const CloudPayrollModal = ({ service, isOpen, onClose, onConnected }) => {
-    if (!isOpen || !service) return null;
-    const item = INTEGRATIONS.find(i => i.id === service) || { name: service };
-
-    const [apiKey, setApiKey] = useState('');
-    const [clientId, setClientId] = useState('');
-    const [clientSecret, setClientSecret] = useState('');
-    const [companyId, setCompanyId] = useState('');
-    const [sandbox, setSandbox] = useState(true);
-    const [testing, setTesting] = useState(false);
-    const [syncing, setSyncing] = useState(false);
-    const [syncResult, setSyncResult] = useState(null);
-    const [errorMsg, setErrorMsg] = useState(null);
-
-    const handleTest = async () => {
-        setTesting(true);
-        setErrorMsg(null);
-        try {
-            // First save config
-            await api.post(`/payroll/integrations/${service}/config`, {
-                apiKey,
-                clientId,
-                clientSecret,
-                companyId,
-                sandbox
-            });
-            // Then test
-            const res = await api.post(`/payroll/integrations/${service}/test`);
-            toast.success(res.data?.message || 'Connection verified successfully!');
-        } catch (err) {
-            const msg = err.response?.data?.message || err.message;
-            setErrorMsg(msg);
-            toast.error(msg);
-        } finally {
-            setTesting(false);
-        }
-    };
-
-    const handleSaveAndSync = async () => {
-        setSyncing(true);
-        setErrorMsg(null);
-        try {
-            await api.post(`/payroll/integrations/${service}/config`, {
-                apiKey,
-                clientId,
-                clientSecret,
-                companyId,
-                sandbox
-            });
-            const res = await api.post(`/payroll/integrations/${service}/sync`);
-            setSyncResult(res.data?.data || res.data);
-            toast.success(res.data?.message || 'Payroll synced successfully!');
-            if (onConnected) onConnected(service);
-        } catch (err) {
-            const msg = err.response?.data?.message || err.message;
-            setErrorMsg(msg);
-            toast.error(msg);
-        } finally {
-            setSyncing(false);
-        }
-    };
-
-    return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md animate-in fade-in duration-300">
-            <div className="w-full max-w-lg bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl p-8 shadow-warm-lg border border-[#D6CDBC] dark:border-[#384232] text-left">
-                <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100 dark:border-slate-800">
-                    <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 flex items-center justify-center font-black">
-                            <CreditCard size={20} />
-                        </div>
-                        <div>
-                            <h3 className="text-lg font-black text-slate-900 dark:text-white tracking-tight">{item.name} Integration</h3>
-                            <p className="text-xs text-slate-400 font-semibold">Direct API Connection & Payroll Synchronization</p>
-                        </div>
-                    </div>
-                    <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 rounded-lg">
-                        <X size={18} />
-                    </button>
-                </div>
-
-                <div className="space-y-4 mb-6">
-                    {service === 'gusto' && (
-                        <>
-                            <div>
-                                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">Gusto API Key / OAuth Bearer Token</label>
-                                <input
-                                    type="password"
-                                    value={apiKey}
-                                    onChange={(e) => setApiKey(e.target.value)}
-                                    placeholder="Enter your Gusto API Key or OAuth Bearer Token"
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-900 dark:text-white"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">Gusto Company ID</label>
-                                <input
-                                    type="text"
-                                    value={companyId}
-                                    onChange={(e) => setCompanyId(e.target.value)}
-                                    placeholder="e.g. comp_01H1234DEMO"
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-900 dark:text-white"
-                                />
-                            </div>
-                        </>
-                    )}
-
-                    {service === 'adp' && (
-                        <>
-                            <div>
-                                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">ADP Client ID</label>
-                                <input
-                                    type="text"
-                                    value={clientId}
-                                    onChange={(e) => setClientId(e.target.value)}
-                                    placeholder="Enter ADP Marketplace Client ID"
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-900 dark:text-white"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">ADP Client Secret</label>
-                                <input
-                                    type="password"
-                                    value={clientSecret}
-                                    onChange={(e) => setClientSecret(e.target.value)}
-                                    placeholder="Enter ADP Client Secret"
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-900 dark:text-white"
-                                />
-                            </div>
-                        </>
-                    )}
-
-                    {(service === 'quickbooks' || service === 'xero') && (
-                        <>
-                            <div>
-                                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">OAuth Access Token</label>
-                                <input
-                                    type="password"
-                                    value={apiKey}
-                                    onChange={(e) => setApiKey(e.target.value)}
-                                    placeholder="Enter Intuit / QuickBooks Access Token"
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-900 dark:text-white"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">Company / Realm ID</label>
-                                <input
-                                    type="text"
-                                    value={companyId}
-                                    onChange={(e) => setCompanyId(e.target.value)}
-                                    placeholder="e.g. 913035123456789"
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-900 dark:text-white"
-                                />
-                            </div>
-                        </>
-                    )}
-
-                    <div className="flex items-center gap-2 pt-1">
-                        <input
-                            type="checkbox"
-                            id="sandbox"
-                            checked={sandbox}
-                            onChange={(e) => setSandbox(e.target.checked)}
-                            className="rounded border-slate-300"
-                        />
-                        <label htmlFor="sandbox" className="text-xs text-slate-500 font-semibold cursor-pointer">
-                            Enable Sandbox / Demo Developer Mode (Recommended for testing)
-                        </label>
-                    </div>
-
-                    {errorMsg && (
-                        <div className="p-3 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 text-xs font-semibold">
-                            {errorMsg}
-                        </div>
-                    )}
-
-                    {syncResult && (
-                        <div className="p-3.5 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-semibold space-y-1">
-                            <p className="font-bold">Sync Successful!</p>
-                            <p>Synced Records: {syncResult.syncedCount} employees</p>
-                            <p>Total Hours: {syncResult.totalHours}h | Gross Pay: ${syncResult.totalGrossPay}</p>
-                            <p className="text-[10px] text-emerald-600">Batch ID: {syncResult.syncBatchId}</p>
-                        </div>
-                    )}
-                </div>
-
-                <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
-                    <button
-                        onClick={onClose}
-                        className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
-                    >
-                        Close
-                    </button>
-                    <button
-                        onClick={handleTest}
-                        disabled={testing}
-                        className="px-4 py-2.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-white flex items-center gap-1.5 disabled:opacity-50"
-                    >
-                        {testing ? <Loader2 size={13} className="animate-spin" /> : null}
-                        Test Connection
-                    </button>
-                    <button
-                        onClick={handleSaveAndSync}
-                        disabled={syncing}
-                        className="px-5 py-2.5 rounded-xl text-xs font-black bg-indigo-600 hover:bg-indigo-500 text-white shadow-md flex items-center gap-1.5 disabled:opacity-50"
-                    >
-                        {syncing ? <Loader2 size={13} className="animate-spin" /> : <Zap size={13} />}
-                        Save & Sync Payroll
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-};
 
 const StatCard = ({ title, value, subValue, icon: Icon, color, trend }) => (
     <div className="rounded-xl border border-[#D6CDBC] dark:border-[#384232] bg-[#FBF9F5] dark:bg-[#252B20] p-3.5 sm:p-4 shadow-warm-xs transition-all hover:border-[#B9955B]/60 hover:shadow-warm-md group flex flex-col justify-between">
@@ -389,51 +108,6 @@ export function Payroll() {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 12;
 
-    const [integrationStatuses, setIntegrationStatuses] = useState({
-        gusto: 'Not Connected',
-        adp: 'Not Connected',
-        quickbooks: 'Not Connected',
-        xero: 'Not Connected'
-    });
-    const [integrationLastSync, setIntegrationLastSync] = useState({});
-    const [connectingService, setConnectingService] = useState(null);
-    const [isCloudModalOpen, setIsCloudModalOpen] = useState(false);
-    const [syncingService, setSyncingService] = useState(null);
-
-    const loadCloudIntegrations = async () => {
-        try {
-            const res = await api.get('/payroll/integrations/status');
-            const data = res.data?.data || res.data || [];
-            const statuses = {};
-            const syncs = {};
-            data.forEach(item => {
-                statuses[item.provider] = item.connected ? 'Connected' : 'Not Connected';
-                if (item.lastSync) syncs[item.provider] = item.lastSync;
-            });
-            setIntegrationStatuses(prev => ({ ...prev, ...statuses }));
-            setIntegrationLastSync(syncs);
-        } catch (e) {
-            console.error('Failed to load payroll integrations:', e);
-        }
-    };
-
-    const handleDirectSync = async (provider) => {
-        setSyncingService(provider);
-        try {
-            const res = await api.post(`/payroll/integrations/${provider}/sync`);
-            toast.success(res.data?.message || `Successfully synced with ${provider.toUpperCase()}`);
-            loadCloudIntegrations();
-        } catch (err) {
-            toast.error(err.response?.data?.message || err.message);
-        } finally {
-            setSyncingService(null);
-        }
-    };
-
-    useEffect(() => {
-        loadCloudIntegrations();
-    }, []);
-
     useEffect(() => {
         const loadPayroll = () => {
             const params = {
@@ -487,21 +161,6 @@ export function Payroll() {
         } else {
             addNotification(res.error || "Failed to create invoice", "alert");
         }
-    };
-
-    const handleIntegrationFinish = () => {
-        setConnectingService(null);
-        setConnectionStep('idle');
-    };
-
-    const handleConnectTrigger = (id) => {
-        setConnectingService(id);
-        setConnectionStep('connecting');
-        setTimeout(() => {
-            setConnectionStep('success');
-            setIntegrationStatuses(prev => ({ ...prev, [id]: 'Connected' }));
-            addNotification(`${id.charAt(0).toUpperCase() + id.slice(1)} connected successfully!`, "success");
-        }, 2500);
     };
 
     const filteredPayroll = useMemo(() => {
@@ -835,72 +494,73 @@ export function Payroll() {
 
 
 
-            {/* Cloud Payroll Modal */}
-            <CloudPayrollModal
-                service={connectingService}
-                isOpen={isCloudModalOpen}
-                onClose={() => setIsCloudModalOpen(false)}
-                onConnected={() => loadCloudIntegrations()}
-            />
+            
 
             {/* Create Invoice Modal */}
-            {isInvoiceModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
-                    <div className="w-full max-w-lg bg-white dark:bg-slate-900 rounded-[2rem] p-6 md:p-8 shadow-2xl border border-slate-200 dark:border-slate-800 animate-in zoom-in slide-in-from-bottom-4 duration-300">
-                        <div className="flex items-center justify-between mb-8 pb-6 border-b border-slate-100 dark:border-slate-800">
-                            <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Create New Invoice</h3>
-                            <button onClick={() => setIsInvoiceModalOpen(false)} className="h-10 w-10 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 transition-colors">
-                                <X size={20} />
+            {isInvoiceModalOpen && createPortal(
+                <div
+                    className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-in fade-in duration-300 pointer-events-auto"
+                    style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh' }}
+                    onClick={() => setIsInvoiceModalOpen(false)}
+                >
+                    <div
+                        className="w-full max-w-lg bg-[#FBF9F5] dark:bg-[#1E2419] rounded-2xl p-6 md:p-8 shadow-2xl border border-[#E5DED2] dark:border-[#384232] text-left animate-in zoom-in-95 duration-200"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="flex items-center justify-between mb-6 pb-4 border-b border-[#E5DED2] dark:border-[#384232]">
+                            <h3 className="text-xl font-bold text-[#29291F] dark:text-[#F5F1E9] tracking-tight">Create New Invoice</h3>
+                            <button onClick={() => setIsInvoiceModalOpen(false)} className="h-9 w-9 flex items-center justify-center rounded-xl hover:bg-[#EEE8DD] dark:hover:bg-[#252B20] text-[#777367] transition-colors">
+                                <X size={18} />
                             </button>
                         </div>
 
-                        <div className="space-y-5">
+                        <div className="space-y-4">
                             <div>
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Client name</label>
+                                <label className="text-[10px] font-bold text-[#777367] dark:text-[#A8A295] uppercase tracking-wider mb-1.5 block">Client name</label>
                                 <input 
                                     type="text" 
                                     placeholder="Enter client name"
-                                    className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-slate-50 dark:bg-slate-800/50 focus:border-indigo-500 focus:outline-none font-bold text-sm"
+                                    className="w-full h-11 px-4 rounded-xl border border-[#E5DED2] dark:border-[#384232] bg-[#EEE8DD]/40 dark:bg-[#252B20] focus:border-[#C9A96E] focus:outline-none font-semibold text-xs text-[#29291F] dark:text-[#F5F1E9]"
                                     value={newInvoice.clientName}
                                     onChange={(e) => setNewInvoice({...newInvoice, clientName: e.target.value})}
                                 />
                             </div>
                             <div>
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Client email (Optional)</label>
+                                <label className="text-[10px] font-bold text-[#777367] dark:text-[#A8A295] uppercase tracking-wider mb-1.5 block">Client email (Optional)</label>
                                 <input 
                                     type="email" 
                                     placeholder="client@example.com"
-                                    className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-slate-50 dark:bg-slate-800/50 focus:border-indigo-500 focus:outline-none font-bold text-sm"
+                                    className="w-full h-11 px-4 rounded-xl border border-[#E5DED2] dark:border-[#384232] bg-[#EEE8DD]/40 dark:bg-[#252B20] focus:border-[#C9A96E] focus:outline-none font-semibold text-xs text-[#29291F] dark:text-[#F5F1E9]"
                                     value={newInvoice.clientEmail}
                                     onChange={(e) => setNewInvoice({...newInvoice, clientEmail: e.target.value})}
                                 />
                             </div>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Amount</label>
+                                    <label className="text-[10px] font-bold text-[#777367] dark:text-[#A8A295] uppercase tracking-wider mb-1.5 block">Amount ($)</label>
                                     <input 
                                         type="number" 
                                         placeholder="0.00"
-                                        className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-slate-50 dark:bg-slate-800/50 focus:border-indigo-500 focus:outline-none font-bold text-sm"
+                                        className="w-full h-11 px-4 rounded-xl border border-[#E5DED2] dark:border-[#384232] bg-[#EEE8DD]/40 dark:bg-[#252B20] focus:border-[#C9A96E] focus:outline-none font-semibold text-xs text-[#29291F] dark:text-[#F5F1E9]"
                                         value={newInvoice.amount}
                                         onChange={(e) => setNewInvoice({...newInvoice, amount: e.target.value})}
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Due Date</label>
+                                    <label className="text-[10px] font-bold text-[#777367] dark:text-[#A8A295] uppercase tracking-wider mb-1.5 block">Due Date</label>
                                     <input 
                                         type="date" 
-                                        className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-slate-50 dark:bg-slate-800/50 focus:border-indigo-500 focus:outline-none font-bold text-sm"
+                                        className="w-full h-11 px-4 rounded-xl border border-[#E5DED2] dark:border-[#384232] bg-[#EEE8DD]/40 dark:bg-[#252B20] focus:border-[#C9A96E] focus:outline-none font-semibold text-xs text-[#29291F] dark:text-[#F5F1E9]"
                                         value={newInvoice.dueDate}
                                         onChange={(e) => setNewInvoice({...newInvoice, dueDate: e.target.value})}
                                     />
                                 </div>
                             </div>
                             <div>
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Notes</label>
+                                <label className="text-[10px] font-bold text-[#777367] dark:text-[#A8A295] uppercase tracking-wider mb-1.5 block">Notes</label>
                                 <textarea 
                                     placeholder="Add any additional details..."
-                                    className="w-full h-24 p-4 rounded-xl border border-slate-200 bg-slate-50 dark:bg-slate-800/50 focus:border-indigo-500 focus:outline-none font-bold text-sm resize-none"
+                                    className="w-full h-20 p-3 rounded-xl border border-[#E5DED2] dark:border-[#384232] bg-[#EEE8DD]/40 dark:bg-[#252B20] focus:border-[#C9A96E] focus:outline-none font-semibold text-xs text-[#29291F] dark:text-[#F5F1E9] resize-none"
                                     value={newInvoice.notes}
                                     onChange={(e) => setNewInvoice({...newInvoice, notes: e.target.value})}
                                 />
@@ -908,91 +568,107 @@ export function Payroll() {
 
                             <button 
                                 onClick={handleCreateInvoice}
-                                className="w-full py-4 mt-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-[1.02] shadow-xl transition-all active:scale-95 dark:bg-white dark:text-slate-900"
+                                className="w-full py-3.5 mt-2 bg-[#C9A96E] hover:bg-[#d8b87d] text-[#161C14] rounded-xl font-bold text-xs uppercase tracking-wider shadow-md hover:scale-[1.01] transition-all active:scale-95 cursor-pointer"
                             >
                                 Generate Invoice
                             </button>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
 
             {/* Payslip Modal */}
-            {selectedPayslip && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
-                    <div className="w-full max-w-lg bg-white dark:bg-slate-900 rounded-[2rem] p-6 md:p-8 shadow-2xl border border-slate-200 dark:border-slate-800 animate-in zoom-in slide-in-from-bottom-4 duration-300 max-h-[95vh] overflow-y-auto custom-scrollbar">
+            {selectedPayslip && createPortal(
+                <div
+                    className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-300 pointer-events-auto"
+                    style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh' }}
+                    onClick={() => setSelectedPayslip(null)}
+                >
+                    <div
+                        className="w-full max-w-lg bg-[#FBF9F5] dark:bg-[#1C2419] rounded-[2rem] p-6 md:p-8 shadow-2xl border border-[#E5DED2] dark:border-[#384232] animate-in zoom-in-95 duration-200 max-h-[92vh] overflow-y-auto custom-scrollbar text-left"
+                        onClick={(e) => e.stopPropagation()}
+                    >
                         {/* Header */}
-                        <div className="flex items-center justify-between mb-6 md:mb-8 pb-4 md:pb-6 border-b border-slate-100 dark:border-slate-800">
-                            <div className="flex items-center gap-3 md:gap-4">
-                                <div className="h-12 w-12 md:h-14 md:w-14 rounded-full bg-slate-100 overflow-hidden shrink-0 ring-2 ring-slate-200 dark:ring-slate-700">
-                                    <img src={selectedPayslip.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedPayslip.employee)}&background=random`} alt={selectedPayslip.employee} className="w-full h-full object-cover" />
+                        <div className="flex items-center justify-between mb-6 md:mb-7 pb-4 md:pb-5 border-b border-[#E5DED2] dark:border-[#384232]">
+                            <div className="flex items-center gap-3.5 md:gap-4 min-w-0">
+                                <div className="h-12 w-12 md:h-14 md:w-14 rounded-full bg-[#EEE8DD] dark:bg-[#384232] text-[#30382B] dark:text-[#F5F1E9] border border-[#E5DED2] dark:border-[#4A5742] flex items-center justify-center font-bold text-sm md:text-base shrink-0 overflow-hidden shadow-inner">
+                                    {selectedPayslip.avatar ? (
+                                        <img src={selectedPayslip.avatar} alt={selectedPayslip.employee} className="w-full h-full object-cover" />
+                                    ) : (
+                                        <span>{(selectedPayslip.employee || '?').split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}</span>
+                                    )}
                                 </div>
-                                <div>
-                                    <h3 className="text-base md:text-xl font-black text-slate-900 dark:text-white leading-tight">{selectedPayslip.employee}</h3>
-                                    <p className="text-[10px] md:text-sm text-slate-500 font-bold uppercase tracking-tight">{selectedPayslip.role} {selectedPayslip.team ? `• ${selectedPayslip.team}` : ''}</p>
+                                <div className="min-w-0">
+                                    <h3 className="text-base md:text-xl font-serif font-bold text-[#29291F] dark:text-[#F5F1E9] leading-tight truncate">{selectedPayslip.employee}</h3>
+                                    <p className="text-[10px] md:text-xs text-[#777367] dark:text-[#A8A295] font-bold uppercase tracking-wider truncate">{selectedPayslip.role} {selectedPayslip.team ? `• ${selectedPayslip.team}` : ''}</p>
                                 </div>
                             </div>
-                            <button onClick={() => setSelectedPayslip(null)} className="h-10 w-10 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 transition-colors shrink-0">
-                                <X size={20} />
+                            <button
+                                onClick={() => setSelectedPayslip(null)}
+                                className="h-9 w-9 flex items-center justify-center rounded-xl hover:bg-[#EEE8DD] dark:hover:bg-[#252B20] text-[#777367] hover:text-[#29291F] dark:hover:text-[#F5F1E9] transition-colors shrink-0 cursor-pointer"
+                            >
+                                <X size={18} />
                             </button>
                         </div>
 
-                        <div className="space-y-6">
+                        <div className="space-y-5">
                             {/* Period Info */}
-                            <div className="grid grid-cols-2 gap-3 md:gap-4">
-                                <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-                                    <p className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Pay Period</p>
-                                    <p className="text-sm font-bold text-slate-900 dark:text-white tracking-tight">{selectedPayslip.period || 'Current Month'}</p>
+                            <div className="grid grid-cols-2 gap-3 md:gap-3.5">
+                                <div className="p-3.5 rounded-xl bg-[#EEE8DD]/50 dark:bg-[#252B20] border border-[#E5DED2]/80 dark:border-[#384232]/80 shadow-warm-xs">
+                                    <p className="text-[10px] md:text-[11px] font-bold text-[#777367] dark:text-[#A8A295] uppercase tracking-wider mb-1">Pay Period</p>
+                                    <p className="text-xs md:text-sm font-bold text-[#29291F] dark:text-[#F5F1E9] tracking-tight">{selectedPayslip.period || 'Current Month'}</p>
                                 </div>
-                                <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-                                    <p className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Hourly Rate</p>
-                                    <p className="text-sm font-bold text-slate-900 dark:text-white">${(selectedPayslip.hourlyRate || 0).toLocaleString()}/hr</p>
+                                <div className="p-3.5 rounded-xl bg-[#EEE8DD]/50 dark:bg-[#252B20] border border-[#E5DED2]/80 dark:border-[#384232]/80 shadow-warm-xs">
+                                    <p className="text-[10px] md:text-[11px] font-bold text-[#777367] dark:text-[#A8A295] uppercase tracking-wider mb-1">Hourly Rate</p>
+                                    <p className="text-xs md:text-sm font-bold text-[#29291F] dark:text-[#F5F1E9]">${(selectedPayslip.hourlyRate || 0).toLocaleString()}/hr</p>
                                 </div>
-                                <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-                                    <p className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Total Hours</p>
-                                    <p className="text-sm font-bold text-slate-900 dark:text-white">{selectedPayslip.totalHours}h</p>
+                                <div className="p-3.5 rounded-xl bg-[#EEE8DD]/50 dark:bg-[#252B20] border border-[#E5DED2]/80 dark:border-[#384232]/80 shadow-warm-xs">
+                                    <p className="text-[10px] md:text-[11px] font-bold text-[#777367] dark:text-[#A8A295] uppercase tracking-wider mb-1">Total Hours</p>
+                                    <p className="text-xs md:text-sm font-bold text-[#29291F] dark:text-[#F5F1E9]">{selectedPayslip.totalHours}h</p>
                                 </div>
-                                <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-                                    <p className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Overtime</p>
-                                    <p className="text-sm font-bold text-amber-600 dark:text-amber-400">{selectedPayslip.overTime || 0}h</p>
+                                <div className="p-3.5 rounded-xl bg-[#EEE8DD]/50 dark:bg-[#252B20] border border-[#E5DED2]/80 dark:border-[#384232]/80 shadow-warm-xs">
+                                    <p className="text-[10px] md:text-[11px] font-bold text-[#777367] dark:text-[#A8A295] uppercase tracking-wider mb-1">Overtime</p>
+                                    <p className="text-xs md:text-sm font-bold text-[#C98A3C] dark:text-[#D4A359]">{selectedPayslip.overTime || 0}h</p>
                                 </div>
                             </div>
 
                             {/* Earnings Breakdown */}
                             <div className="space-y-1">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 mb-3">Earnings Breakdown</p>
-                                <div className="flex justify-between items-center py-3 border-b border-slate-100 dark:border-slate-800">
-                                    <span className="text-xs md:text-sm font-bold text-slate-600 dark:text-slate-400">Regular Pay ({selectedPayslip.totalHours}h × ${selectedPayslip.hourlyRate || 0}/hr)</span>
-                                    <span className="text-sm font-black text-slate-900 dark:text-white">${(selectedPayslip.grossPay || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                <p className="text-[10px] font-bold text-[#777367] dark:text-[#A8A295] uppercase tracking-wider px-1 mb-2">Earnings Breakdown</p>
+                                <div className="flex justify-between items-center py-2.5 border-b border-[#E5DED2]/80 dark:border-[#384232]/80">
+                                    <span className="text-xs md:text-sm font-semibold text-[#777367] dark:text-[#B8B3A7]">Regular Pay ({selectedPayslip.totalHours}h × ${selectedPayslip.hourlyRate || 0}/hr)</span>
+                                    <span className="text-xs md:text-sm font-bold text-[#29291F] dark:text-[#F5F1E9]">${(selectedPayslip.grossPay || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                 </div>
                                 {selectedPayslip.overTime > 0 && (
-                                    <div className="flex justify-between items-center py-3 border-b border-slate-100 dark:border-slate-800">
-                                        <span className="text-xs md:text-sm font-bold text-amber-600">Overtime ({selectedPayslip.overTime}h)</span>
-                                        <span className="text-sm font-black text-amber-600">${((selectedPayslip.overTime || 0) * (selectedPayslip.hourlyRate || 0) * 1.5).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                    <div className="flex justify-between items-center py-2.5 border-b border-[#E5DED2]/80 dark:border-[#384232]/80">
+                                        <span className="text-xs md:text-sm font-semibold text-[#C98A3C]">Overtime ({selectedPayslip.overTime}h)</span>
+                                        <span className="text-xs md:text-sm font-bold text-[#C98A3C]">${((selectedPayslip.overTime || 0) * (selectedPayslip.hourlyRate || 0) * 1.5).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                     </div>
                                 )}
-                                <div className="flex justify-between items-center py-3 border-b border-slate-100 dark:border-slate-800 text-red-500">
-                                    <span className="text-xs md:text-sm font-black uppercase tracking-tight">Tax Deductions (20%)</span>
-                                    <span className="text-sm font-black">-${(selectedPayslip.deductions || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                <div className="flex justify-between items-center py-2.5 border-b border-[#E5DED2]/80 dark:border-[#384232]/80 text-rose-600 dark:text-rose-400">
+                                    <span className="text-xs md:text-sm font-bold uppercase tracking-tight">Tax Deductions (20%)</span>
+                                    <span className="text-xs md:text-sm font-bold">-${(selectedPayslip.deductions || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                 </div>
                             </div>
 
                             {/* Net Pay Banner */}
-                            <div className="p-5 md:p-6 rounded-2xl bg-slate-900 text-white flex flex-row justify-between items-center shadow-xl">
+                            <div className="p-4 md:p-5 rounded-2xl bg-[#161C14] border border-[#C9A96E]/40 text-[#F5F1E9] flex flex-row justify-between items-center shadow-xl">
                                 <div>
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Net Payable</p>
-                                    <p className="text-2xl md:text-3xl font-black">${(selectedPayslip.netPay || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                                    <p className="text-[10px] font-bold text-[#C9A96E] uppercase tracking-[0.2em] mb-1">Net Payable</p>
+                                    <p className="text-2xl md:text-3xl font-serif font-black text-[#F5F1E9]">${(selectedPayslip.netPay || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                                 </div>
                                 <button
                                     onClick={() => handleDownloadIndividualPayslip(selectedPayslip)}
-                                    className="h-12 w-12 md:h-14 md:w-14 items-center justify-center flex bg-white text-slate-900 rounded-xl md:rounded-2xl hover:bg-emerald-400 transition-all shadow-lg active:scale-95"
+                                    title="Download Payslip"
+                                    className="h-11 w-11 md:h-12 md:w-12 items-center justify-center flex bg-[#C9A96E] text-[#161C14] hover:bg-[#d8b87d] rounded-xl shadow-lg transition-all hover:scale-105 active:scale-95 cursor-pointer shrink-0"
                                 >
-                                    <Download size={20} className="md:w-[24px] md:h-[24px]" />
+                                    <Download size={18} className="md:w-[20px] md:h-[20px]" />
                                 </button>
                             </div>
 
                             {/* Actions */}
-                            <div className="grid grid-cols-1 gap-3">
+                            <div className="grid grid-cols-1 pt-1">
                                 <button
                                     onClick={() => {
                                         addNotification("Payslip email sent successfully", "success");
@@ -1004,14 +680,15 @@ export function Payroll() {
                                             });
                                         }
                                     }}
-                                    className="py-3.5 rounded-xl border-2 border-slate-100 dark:border-slate-800 font-black text-slate-500 uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-800 transition-all flex items-center justify-center gap-2 text-[9px] md:text-[10px] active:scale-95"
+                                    className="py-3 rounded-xl border border-[#E5DED2] dark:border-[#384232] bg-[#EEE8DD]/40 dark:bg-[#252B20] text-[#29291F] dark:text-[#F5F1E9] hover:bg-[#EEE8DD] dark:hover:bg-[#2E3727] font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-warm-xs active:scale-95"
                                 >
-                                    <Send size={14} className="text-indigo-500" /> Email Slip
+                                    <Send size={14} className="text-[#C9A96E]" /> Email Slip
                                 </button>
                             </div>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     );

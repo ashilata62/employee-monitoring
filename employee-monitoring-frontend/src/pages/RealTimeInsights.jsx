@@ -23,7 +23,10 @@ import { useAuthStore } from '../store/authStore';
 
 const statusColors = {
     online: 'bg-[#5E7D64]',
+    active: 'bg-[#5E7D64]',
     idle: 'bg-[#C98A3C]',
+    idle_warning: 'bg-[#D97706]',
+    passive: 'bg-[#60A5FA]',
     break: 'bg-[#B9955B]',
     offline: 'bg-[#9E988A]'
 };
@@ -96,19 +99,37 @@ export function RealTimeInsights() {
     }, []);
     useEffect(() => { setSecAgo(0); }, [employees]);
 
+    // Filter out Admin accounts from employee tracking cards
+    const nonAdminEmps = useMemo(() => {
+        return employees.filter(e => {
+            const r = (e.role || '').toUpperCase();
+            const nm = (e.name || '').toLowerCase();
+            return r !== 'ADMIN' && !nm.includes('admin demo');
+        });
+    }, [employees]);
+
     const filtered = useMemo(() => {
         const q = search.toLowerCase();
-        return employees.filter(e => {
+        return nonAdminEmps.filter(e => {
             const matchesSearch = e.name.toLowerCase().includes(q) || (e.team || '').toLowerCase().includes(q);
             const matchesStatus = statusFilter === 'ALL' || (e.status || '').toUpperCase() === statusFilter;
             return matchesSearch && matchesStatus;
         });
-    }, [employees, search, statusFilter]);
+    }, [nonAdminEmps, search, statusFilter]);
 
-    const onlineEmps = employees.filter(e => e.status === 'online');
-    const idleEmps = employees.filter(e => e.status === 'idle');
-    const breakEmps = employees.filter(e => e.status === 'break');
+    const onlineEmps = nonAdminEmps.filter(e => e.status === 'online' || e.status === 'active');
+    const idleEmps = nonAdminEmps.filter(e => e.status === 'idle' || e.status === 'idle_warning');
+    const breakEmps = nonAdminEmps.filter(e => e.status === 'break');
+    const offlineEmps = nonAdminEmps.filter(e => e.status === 'offline');
     const presentToday = onlineEmps.length + idleEmps.length + breakEmps.length;
+
+    const avgProductivity = useMemo(() => {
+        const withProd = nonAdminEmps.filter(e => (e.productivityScore || 0) > 0);
+        if (withProd.length > 0) {
+            return Math.round(withProd.reduce((sum, e) => sum + (e.productivityScore || 0), 0) / withProd.length);
+        }
+        return stats.summary?.productivity ?? 0;
+    }, [nonAdminEmps, stats.summary]);
 
     const handleAddEmployee = (emp) => { addEmployee(emp); setIsModalOpen(false); };
 
@@ -153,8 +174,8 @@ export function RealTimeInsights() {
                 e.team || '—',
                 e.status,
                 formatSecs(totalBreakSecs),
-                e.productivityScore || 0,
-                e.utilizationScore || 0
+                e.productivityScore || e.productivity || 0,
+                e.utilizationScore || e.utilization || 0
             ];
         });
         const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
@@ -205,11 +226,11 @@ export function RealTimeInsights() {
 
             {/* Stat Cards */}
             <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4">
-                <InsightStatCard title="Present Today" value={presentToday} total={employees.length} icon={Users} subLabel={`${employees.length} total team`} />
-                <InsightStatCard title="Currently Active" value={onlineEmps.length} icon={Zap} subLabel={`${stats.online} online`} />
+                <InsightStatCard title="Present Today" value={presentToday} total={nonAdminEmps.length} icon={Users} subLabel={`${nonAdminEmps.length} total team`} />
+                <InsightStatCard title="Currently Active" value={onlineEmps.length} icon={Zap} subLabel={`${onlineEmps.length} online`} />
                 <InsightStatCard title="Idle" value={idleEmps.length} icon={Clock} subLabel="Inactive now" />
-                <InsightStatCard title="Offline" value={stats.offline} icon={TrendingDown} subLabel="Not tracked today" />
-                <InsightStatCard title="Productivity Today" value={`${stats.summary?.productivity ?? 0}%`} icon={Activity} subLabel="vs. active time" />
+                <InsightStatCard title="Offline" value={offlineEmps.length} icon={TrendingDown} subLabel="Not tracked today" />
+                <InsightStatCard title="Productivity Today" value={`${avgProductivity}%`} icon={Activity} subLabel="vs. active time" />
             </div>
 
             {activeTab === 'overview' ? (
@@ -318,11 +339,14 @@ export function RealTimeInsights() {
                                                         </span>
                                                     </td>
                                                     <td className="px-6 py-4">
-                                                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${emp.status === 'online' ? 'bg-[#5E7D64]/10 text-[#5E7D64]' :
+                                                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${
+                                                            (emp.status === 'online' || emp.status === 'active') ? 'bg-[#5E7D64]/10 text-[#5E7D64]' :
                                                             emp.status === 'idle' ? 'bg-[#C98A3C]/10 text-[#C98A3C]' :
-                                                                emp.status === 'break' ? 'bg-[#B9955B]/15 text-[#A17D45]' :
-                                                                    'bg-[#777367]/10 text-[#777367]'
-                                                            }`}>
+                                                            emp.status === 'idle_warning' ? 'bg-[#D97706]/15 text-[#D97706]' :
+                                                            emp.status === 'passive' ? 'bg-[#60A5FA]/15 text-[#3B82F6]' :
+                                                            emp.status === 'break' ? 'bg-[#B9955B]/15 text-[#A17D45]' :
+                                                            'bg-[#777367]/10 text-[#777367]'
+                                                        }`}>
                                                             <span className={`h-1.5 w-1.5 rounded-full ${statusColors[emp.status] || statusColors.offline}`} />
                                                             {emp.status}
                                                         </span>
@@ -331,10 +355,10 @@ export function RealTimeInsights() {
                                                         {formatSecs(totalBreakSecs)}
                                                     </td>
                                                     <td className="px-6 py-4 text-center">
-                                                        <span className="font-bold text-[#B9955B]">{emp.productivityScore || 0}%</span>
+                                                        <span className="font-bold text-[#B9955B]">{emp.productivityScore || emp.productivity || 0}%</span>
                                                     </td>
                                                     <td className="px-6 py-4 text-center">
-                                                        <span className="font-bold text-[#5E7D64]">{emp.utilizationScore || 0}%</span>
+                                                        <span className="font-bold text-[#5E7D64]">{emp.utilizationScore || emp.utilization || 0}%</span>
                                                     </td>
                                                     <td className="px-6 py-4 text-right">
                                                         <button
@@ -378,8 +402,10 @@ export function RealTimeInsights() {
                                             </div>
                                         </div>
                                         <span className={`shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${
-                                            emp.status === 'online' ? 'bg-[#5E7D64]/10 text-[#5E7D64] dark:bg-[#5E7D64]/20' :
+                                            (emp.status === 'online' || emp.status === 'active') ? 'bg-[#5E7D64]/10 text-[#5E7D64] dark:bg-[#5E7D64]/20' :
                                             emp.status === 'idle' ? 'bg-[#C98A3C]/10 text-[#C98A3C] dark:bg-[#C98A3C]/20' :
+                                            emp.status === 'idle_warning' ? 'bg-[#D97706]/15 text-[#D97706] dark:bg-[#D97706]/25' :
+                                            emp.status === 'passive' ? 'bg-[#60A5FA]/15 text-[#3B82F6] dark:bg-[#60A5FA]/25' :
                                             emp.status === 'break' ? 'bg-[#B9955B]/15 text-[#A17D45] dark:bg-[#B9955B]/25 dark:text-[#D3B98D]' :
                                             'bg-[#777367]/10 text-[#777367] dark:bg-[#777367]/20 dark:text-[#A8A295]'
                                         }`}>
@@ -393,17 +419,17 @@ export function RealTimeInsights() {
                                         <div className="flex items-center justify-between text-[10px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-wider gap-2">
                                             <div className="flex items-center gap-1.5 min-w-0">
                                                 <Activity size={11} className="text-[#B9955B] shrink-0" />
-                                                <span className="truncate" title={emp.activeApp || 'Idle'}>
-                                                    {emp.status === 'offline' ? 'Offline' : (emp.activeApp || 'Idle')}
+                                                <span className="truncate" title={emp.activeApp || 'Active Work'}>
+                                                    {emp.status === 'offline' ? 'Offline' : (emp.activeApp || 'Active Work')}
                                                 </span>
                                             </div>
                                             <div className="flex items-center gap-1 shrink-0 text-[#777367] dark:text-[#9E988A]">
                                                 <MapPin size={11} className="shrink-0" />
-                                                <span>{emp.location || 'Remote'}</span>
+                                                <span>{(emp.location || 'Remote').replace(/^-\s*/, '').replace(/[()]/g, '').trim()}</span>
                                             </div>
                                         </div>
                                         <p className="text-[10px] text-[#777367] dark:text-[#A8A295] truncate italic px-0.5" title={emp.activeWindow}>
-                                            {emp.status === 'offline' ? 'No recent activity' : (emp.activeWindow || 'Waiting for activity...')}
+                                            {emp.status === 'offline' ? 'No recent activity' : (emp.activeWindow || 'Working on Task')}
                                         </p>
                                     </div>
 
@@ -411,18 +437,18 @@ export function RealTimeInsights() {
                                     <div className="space-y-2 pt-1">
                                         <div>
                                             <div className="flex justify-between text-[10px] font-bold text-[#777367] dark:text-[#B8B3A7] mb-1">
-                                                <span>Productivity</span><span className="text-[#B9955B] font-bold">{emp.productivityScore || 0}%</span>
+                                                <span>Productivity</span><span className="text-[#B9955B] font-bold">{emp.productivityScore || emp.productivity || 0}%</span>
                                             </div>
                                             <div className="h-1.5 bg-[#EEE8DD] dark:bg-[#1E2419] rounded-full overflow-hidden">
-                                                <div className="h-full bg-[#B9955B] rounded-full transition-all" style={{ width: `${emp.productivityScore || 0}%` }} />
+                                                <div className="h-full bg-[#B9955B] rounded-full transition-all" style={{ width: `${Math.min(100, emp.productivityScore || emp.productivity || 0)}%` }} />
                                             </div>
                                         </div>
                                         <div>
                                             <div className="flex justify-between text-[10px] font-bold text-[#777367] dark:text-[#B8B3A7] mb-1">
-                                                <span>Utilization</span><span className="text-[#5E7D64] font-bold">{emp.utilizationScore || 0}%</span>
+                                                <span>Utilization</span><span className="text-[#5E7D64] font-bold">{emp.utilizationScore || emp.utilization || 0}%</span>
                                             </div>
                                             <div className="h-1.5 bg-[#EEE8DD] dark:bg-[#1E2419] rounded-full overflow-hidden">
-                                                <div className="h-full bg-[#5E7D64] rounded-full transition-all" style={{ width: `${emp.utilizationScore || 0}%` }} />
+                                                <div className="h-full bg-[#5E7D64] rounded-full transition-all" style={{ width: `${Math.min(100, emp.utilizationScore || emp.utilization || 0)}%` }} />
                                             </div>
                                         </div>
                                     </div>

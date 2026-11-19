@@ -34,15 +34,25 @@ export function WeeklyTimesheetsView({ employees = [] }) {
     const [submittingId, setSubmittingId] = useState(null);
     const [activeDayModal, setActiveDayModal] = useState(null);
 
-    // Filter employees: If manager, only show employees in their assigned team. Strictly filter out ADMIN role.
-    const managerTeamId = user?.teamId || user?.employee?.teamId;
+    // Filter employees: If manager, only show employees in their assigned team. Filter out ADMIN role.
+    const effectiveManagerTeamId = useMemo(() => {
+        if (user?.teamId) return user.teamId;
+        if (user?.employee?.teamId) return user.employee.teamId;
+        const currentEmp = employees.find(e => e.id === user?.employeeId || e.id === user?.id || e.email === user?.email);
+        return currentEmp?.teamId || currentEmp?.team?.id || null;
+    }, [user, employees]);
+
     const selectableEmployees = useMemo(() => {
         let list = employees.filter(emp => (emp.role || 'EMPLOYEE').toUpperCase() !== 'ADMIN');
-        if (role === 'MANAGER' && managerTeamId) {
-            list = list.filter(emp => (emp.teamId === managerTeamId || emp.team?.id === managerTeamId));
+        if (role === 'MANAGER') {
+            if (effectiveManagerTeamId) {
+                list = list.filter(emp => (emp.teamId === effectiveManagerTeamId || emp.team?.id === effectiveManagerTeamId));
+            } else {
+                list = list.filter(emp => emp.id === (user?.employeeId || user?.id));
+            }
         }
         return list;
-    }, [employees, role, managerTeamId]);
+    }, [employees, role, effectiveManagerTeamId, user]);
 
     const fmtTimeShort = (dateStr) => {
         if (!dateStr) return '--';
@@ -294,15 +304,13 @@ export function WeeklyTimesheetsView({ employees = [] }) {
                                     <div
                                         key={day.date}
                                         onClick={() => day.sessions.length > 0 && setActiveDayModal(day)}
-                                        className={`rounded-xl border p-3 flex flex-col justify-between min-h-[140px] transition-all ${
-                                            day.sessions.length > 0 ? 'cursor-pointer hover:border-[#B9955B] hover:shadow-warm-xs' : ''
-                                        } ${
-                                            isHeavy
+                                        className={`rounded-xl border p-3 flex flex-col justify-between min-h-[140px] transition-all ${day.sessions.length > 0 ? 'cursor-pointer hover:border-[#B9955B] hover:shadow-warm-xs' : ''
+                                            } ${isHeavy
                                                 ? 'bg-[#FAF0E1] dark:bg-[#2A2418] border-[#E8D4B8] dark:border-[#5C4A28] shadow-sm'
                                                 : day.minutes > 0
-                                                ? 'bg-[#F5F1E9] dark:bg-[#1E2419] border-[#D6CDBC] dark:border-[#384232]'
-                                                : 'bg-[#F5F1E9]/70 dark:bg-[#1E2419]/70 border-[#D6CDBC]/60 dark:border-[#384232]/60 opacity-80'
-                                        }`}
+                                                    ? 'bg-[#F5F1E9] dark:bg-[#1E2419] border-[#D6CDBC] dark:border-[#384232]'
+                                                    : 'bg-[#F5F1E9]/70 dark:bg-[#1E2419]/70 border-[#D6CDBC]/60 dark:border-[#384232]/60 opacity-80'
+                                            }`}
                                     >
                                         <div className="flex items-center justify-between pb-2 border-b border-[#D6CDBC]/60 dark:border-[#384232]">
                                             <span className="font-serif text-xs font-bold text-[#29291F] dark:text-[#F5F1E9]">{dayName}</span>

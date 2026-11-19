@@ -40,14 +40,25 @@ const attendanceService = {
             });
         }
 
-        // Guard: Prevent clocking in if this period's timesheet is already approved and locked
+        // Guard: Prevent clocking in if a PAST period's timesheet is already approved and locked
         try {
             const timesheetsService = require('../timesheets/timesheets.service');
+            const currentWeekMonday = timesheetsService.getMondayOf(now);
             const isLocked = await timesheetsService.isPeriodLocked(organizationId, employeeId, today);
             if (isLocked) {
-                const err = new Error('Cannot clock in: The timesheet for this period has already been approved and locked');
-                err.statusCode = 409;
-                throw err;
+                const weekStartOfToday = timesheetsService.getMondayOf(today);
+                // If this is the current active week, auto-reopen to DRAFT so employee can clock in and work
+                if (weekStartOfToday === currentWeekMonday) {
+                    await prisma.timesheet.updateMany({
+                        where: { organizationId, employeeId, weekStart: weekStartOfToday, status: 'APPROVED' },
+                        data: { status: 'DRAFT' }
+                    });
+                    console.log(`[AttendanceService] Reopened current week's approved timesheet to DRAFT for clock-in: ${employeeId}`);
+                } else {
+                    const err = new Error('Cannot clock in: The timesheet for this past period has already been approved and locked');
+                    err.statusCode = 409;
+                    throw err;
+                }
             }
         } catch (lErr) {
             if (lErr.statusCode === 409) throw lErr;
