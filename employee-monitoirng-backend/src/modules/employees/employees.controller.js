@@ -95,6 +95,13 @@ const getEmployeeById = async (req, res, next) => {
             });
         }
 
+        if (req.user.role === 'MANAGER' && employee.role === 'ADMIN') {
+            return res.status(403).json({
+                success: false,
+                message: "Access denied: You cannot view admin profile"
+            });
+        }
+
         const formattedEmployee = {
             ...employee,
             name: employee.fullName,
