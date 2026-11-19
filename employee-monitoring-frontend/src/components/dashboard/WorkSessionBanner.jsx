@@ -6,7 +6,7 @@ import { MonitorCheck, MonitorOff, LogIn, LogOut, Video, VideoOff, Clock } from 
 import { toast } from '../../utils/toastManager';
 
 export function WorkSessionBanner() {
-    const { user, isClockedIn, clockIn, clockOut, isOnBreak, toggleBreak, activeAttendance, isTrackerActive, setTrackerActive } = useAuthStore();
+    const { user, isClockedIn, clockIn, clockOut, isOnBreak, isIdlePaused, toggleBreak, activeAttendance, isTrackerActive, setTrackerActive } = useAuthStore();
     const elapsedSeconds = useSessionTimer();
     const [isLoading, setIsLoading] = useState(false);
 
@@ -67,7 +67,7 @@ export function WorkSessionBanner() {
                 {/* Timer */}
                 <div className="flex flex-col items-center md:items-start">
                     <span className="text-[10px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-[0.14em] mb-1">
-                        {isOnBreak ? 'Session Paused' : 'Total Work Hours'}
+                        {isIdlePaused ? 'Session Paused (Inactivity)' : isOnBreak ? 'Session Paused' : 'Total Work Hours'}
                     </span>
                     <div className="font-sans text-2xl xs:text-3xl lg:text-4xl font-bold text-[#29291F] dark:text-[#F5F1E9] tabular-nums tracking-tight">
                         {formatTime(elapsedSeconds)}
@@ -89,12 +89,14 @@ export function WorkSessionBanner() {
                     )}
                     {isClockedIn && (
                         <span className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
-                            isOnBreak
+                            isIdlePaused
+                                ? 'bg-orange-100 text-orange-800 border border-orange-300 dark:bg-orange-950/40 dark:text-orange-400 dark:border-orange-800'
+                                : isOnBreak
                                 ? 'bg-amber-100 text-amber-800 border border-amber-300 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800'
                                 : 'bg-[#FDFBF7] text-[#B9955B] border border-[#D6CDBC]'
                         }`}>
                             <Clock size={12} />
-                            {isOnBreak ? 'On Break' : 'Clocked In'}
+                            {isIdlePaused ? 'Idle (Paused)' : isOnBreak ? 'On Break' : 'Clocked In'}
                         </span>
                     )}
                 </div>

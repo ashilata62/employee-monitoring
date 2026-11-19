@@ -565,15 +565,27 @@ const getAdminDashboard = async (organizationId, startDate = null, endDate = nul
 };
 
 const getManagerDashboard = async (organizationId, teamId, startDate = null, endDate = null, compareStartDate = null, compareEndDate = null, employeeId = null, role = null) => {
+    const empWhere = { organizationId };
+    if (teamId) empWhere.teamId = teamId;
+
+    const logWhere = { organizationId };
+    if (teamId) logWhere.employee = { teamId };
+
+    const taskWhere = { organizationId };
+    if (teamId) taskWhere.employee = { teamId };
+
+    const attWhere = { organizationId };
+    if (teamId) attWhere.employee = { teamId };
+
     const [employees, activityLogs, tasks, attendance] = await Promise.all([
-        prisma.employee.findMany({ where: { organizationId, teamId } }),
+        prisma.employee.findMany({ where: empWhere }),
         prisma.activityLog.findMany({
-            where: { organizationId, employee: { teamId } },
+            where: logWhere,
             take: 10,
             orderBy: { timestamp: 'desc' }
         }),
-        prisma.task.findMany({ where: { organizationId, employee: { teamId } } }),
-        prisma.attendance.count({ where: { organizationId, employee: { teamId } } })
+        prisma.task.findMany({ where: taskWhere }),
+        prisma.attendance.count({ where: attWhere })
     ]);
 
     const summary = await calculateMetrics(organizationId, employeeId, teamId, startDate, endDate, role);
@@ -583,7 +595,7 @@ const getManagerDashboard = async (organizationId, teamId, startDate = null, end
     const productivityBreakdown = await getDailyProductivityBreakdown(organizationId, employeeId, teamId, startDate, endDate, role);
 
     // Provide contextTeams for the manager UI to avoid crashes if UI expects an array
-    const contextTeams = await prisma.team.findMany({ where: { id: teamId } });
+    const contextTeams = await prisma.team.findMany({ where: teamId ? { id: teamId } : { organizationId } });
 
     return {
         employees,

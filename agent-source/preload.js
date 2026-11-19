@@ -26,10 +26,21 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // ─── Smart Idle & Inactivity Monitoring ──────────────────────────────
     getIdleStatus: () => ipcRenderer.invoke('idle:get-status'),
     setIdleThreshold: (seconds) => ipcRenderer.send('idle:set-threshold', seconds),
+    respondToIdlePrompt: (response) => ipcRenderer.invoke('idle:respond', response),
     onIdleStateChanged: (callback) => {
         const handler = (_event, state) => callback(state);
         ipcRenderer.on('idle:state-changed', handler);
         return () => ipcRenderer.removeListener('idle:state-changed', handler);
+    },
+    onIdleWarning: (callback) => {
+        const handler = (_event, data) => callback(data);
+        ipcRenderer.on('idle:warning', handler);
+        return () => ipcRenderer.removeListener('idle:warning', handler);
+    },
+    onIdlePrompt: (callback) => {
+        const handler = (_event, data) => callback(data);
+        ipcRenderer.on('idle:prompt', handler);
+        return () => ipcRenderer.removeListener('idle:prompt', handler);
     },
 
     // ─── Auto Project Mapping ────────────────────────────────────────────

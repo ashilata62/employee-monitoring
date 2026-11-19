@@ -461,9 +461,9 @@ export function RealTimeProvider({ children }) {
         }
         socket.on('connect', handleConnect);
 
-        const handleEmployeeStatus = ({ employeeId, status }) => {
+        const handleEmployeeStatus = ({ employeeId, status, idleStartTime, idleDuration, lastActiveAt }) => {
             const raw = (status || 'offline').toLowerCase();
-            const normalized = raw === 'active' ? 'online' : raw;
+            const normalized = (raw === 'active' || raw === 'online') ? 'online' : raw;
             setState(prev => ({
                 ...prev,
                 employees: prev.employees.map(e =>
@@ -472,12 +472,54 @@ export function RealTimeProvider({ children }) {
                             ...e,
                             status: normalized,
                             accountStatus: raw,
-                            ...(normalized === 'online' ? { lastSeen: new Date().toISOString() } : {})
+                            ...(normalized === 'online' ? { lastSeen: new Date().toISOString(), idleTime: 0 } : {}),
+                            ...(idleStartTime ? { idleStartTime } : {}),
+                            ...(idleDuration !== undefined ? { idleTime: idleDuration } : {}),
+                            ...(lastActiveAt ? { lastActiveAt } : {})
                         }
                         : e
                 )
             }));
             useEmployeeStore.getState().updateEmployeeStatus(employeeId, raw);
+        };
+
+        const handleAdminIdleAlert = (data) => {
+            console.log('RealTimeContext: Admin Inactivity Alert:', data);
+            playAlertChime();
+            toast.warning(`Inactivity Alert: ${data.employeeName || 'Employee'} has been inactive for 10 minutes.`);
+            setState(prev => ({
+                ...prev,
+                alerts: [
+                    {
+                        id: `alert-idle-${Date.now()}`,
+                        employeeId: data.employeeId,
+                        employeeName: data.employeeName,
+                        title: 'Employee Inactivity Alert',
+                        message: `Employee ${data.employeeName || 'Employee'} has been inactive for 10 minutes.`,
+                        severity: 'warning',
+                        createdAt: new Date().toISOString()
+                    },
+                    ...prev.alerts
+                ].slice(0, 50)
+            }));
+        };
+
+        const handleEmployeeIdleResumed = (data) => {
+            console.log('RealTimeContext: Employee resumed activity:', data);
+            setState(prev => ({
+                ...prev,
+                employees: prev.employees.map(e =>
+                    String(e.id) === String(data.employeeId)
+                        ? {
+                            ...e,
+                            status: 'online',
+                            accountStatus: 'active',
+                            idleTime: 0,
+                            lastSeen: data.resumedAt || new Date().toISOString()
+                        }
+                        : e
+                )
+            }));
         };
 
         const handleActivityUpdate = (data) => {
@@ -627,6 +669,8 @@ export function RealTimeProvider({ children }) {
         socket.on('alert:new', handleAlertNew);
         socket.on('notification:new', handleNotificationNew);
         socket.on('screenshot:violation', handleScreenshotViolation);
+        socket.on('admin:idle_alert', handleAdminIdleAlert);
+        socket.on('employee:idle_resumed', handleEmployeeIdleResumed);
 
         return () => {
             socket.off('connect', handleConnect);
@@ -643,6 +687,8 @@ export function RealTimeProvider({ children }) {
             socket.off('alert:new', handleAlertNew);
             socket.off('notification:new', handleNotificationNew);
             socket.off('screenshot:violation', handleScreenshotViolation);
+            socket.off('admin:idle_alert', handleAdminIdleAlert);
+            socket.off('employee:idle_resumed', handleEmployeeIdleResumed);
         };
     }, [isLoading, isAuthenticated, user?.id, user?.role]);
 

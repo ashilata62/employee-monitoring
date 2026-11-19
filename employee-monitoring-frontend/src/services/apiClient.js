@@ -43,7 +43,7 @@ api.interceptors.response.use(
         const message = getErrorMessage(error);
         
         // Handle 401 Unauthorized (expired or invalid token)
-        if (error.response?.status === 401 && !error.config?.url?.includes('/auth/login')) {
+        if (error.response?.status === 401 && !error.config?.url?.includes('/auth/login') && !error.config?.url?.includes('/agent/idle')) {
             localStorage.removeItem('token');
             if (window.location.pathname !== '/login') {
                 window.location.href = '/login';
