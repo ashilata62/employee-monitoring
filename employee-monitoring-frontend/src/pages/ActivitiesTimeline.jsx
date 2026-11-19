@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Calendar,
   Search,
@@ -27,7 +28,8 @@ import {
   Check,
   ChevronDown,
   X,
-  Activity
+  Activity,
+  ArrowRight
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -48,8 +50,10 @@ export function ActivitiesTimeline() {
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [hoveredEmployee, setHoveredEmployee] = useState(null);
   const hoverTimeoutRef = useRef(null);
+  const dismissedEmployeeIdRef = useRef(null);
 
   const handleRowMouseEnter = (emp) => {
+    if (dismissedEmployeeIdRef.current === emp.id) return;
     if (hoverTimeoutRef.current) {
       clearTimeout(hoverTimeoutRef.current);
       hoverTimeoutRef.current = null;
@@ -63,6 +67,7 @@ export function ActivitiesTimeline() {
     }
     hoverTimeoutRef.current = setTimeout(() => {
       setHoveredEmployee(null);
+      dismissedEmployeeIdRef.current = null;
     }, 200);
   };
 
@@ -79,7 +84,21 @@ export function ActivitiesTimeline() {
     }
     hoverTimeoutRef.current = setTimeout(() => {
       setHoveredEmployee(null);
+      dismissedEmployeeIdRef.current = null;
     }, 150);
+  };
+
+  const handleCloseCard = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+    dismissedEmployeeIdRef.current = hoveredEmployee?.id || true;
+    setHoveredEmployee(null);
   };
 
   useEffect(() => {
@@ -220,30 +239,33 @@ export function ActivitiesTimeline() {
     }
   };
 
-  useEffect(() => {
-    fetchTimeline();
-    const interval = setInterval(() => {
-      fetchTimeline();
-    }, 30000);
-    return () => clearInterval(interval);
-  }, [selectedDate]);
-
-  // Load real tasks from backend database
-  useEffect(() => {
+  const fetchTasksList = () => {
     taskService.getTasks().then(res => {
       const list = res?.data || res || [];
       if (Array.isArray(list) && list.length > 0) {
-        setTasksList(list.slice(0, 5).map(t => ({
+        setTasksList(list.slice(0, 6).map(t => ({
           id: t.id,
           name: t.name,
-          time: t.estimatedHours ? `${t.estimatedHours}h est` : 'Active',
-          isRunning: t.status === 'IN_PROGRESS'
+          projectName: t.project?.name || 'General',
+          assignedTo: t.employee?.fullName || t.employee?.name || 'Unassigned',
+          status: t.status || 'ACTIVE',
+          time: t.timeSpent || (t.estimatedHours ? `${t.estimatedHours}h est` : '0h')
         })));
       } else {
         setTasksList([]);
       }
     }).catch(err => console.error('Failed to load tasks:', err));
-  }, []);
+  };
+
+  useEffect(() => {
+    fetchTimeline();
+    fetchTasksList();
+    const interval = setInterval(() => {
+      fetchTimeline();
+      fetchTasksList();
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [selectedDate]);
 
   // Load real apps from backend database for review
   useEffect(() => {
@@ -274,6 +296,11 @@ export function ActivitiesTimeline() {
   const filteredEmployees = useMemo(() => {
     if (!data?.employeeTimelines) return [];
     return data.employeeTimelines.filter(emp => {
+      // Exclude Admin from trackable activities timeline
+      if ((emp.role || '').toUpperCase() === 'ADMIN' || (emp.name || '').toLowerCase().includes('admin demo')) {
+        return false;
+      }
+
       const matchesSearch = !searchQuery.trim() ||
         emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         emp.team.toLowerCase().includes(searchQuery.toLowerCase());
@@ -326,10 +353,6 @@ export function ActivitiesTimeline() {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
     setShowExportMenu(false);
-  };
-
-  const toggleTaskTimer = (taskId) => {
-    setTasksList(prev => prev.map(t => t.id === taskId ? { ...t, isRunning: !t.isRunning } : t));
   };
 
   const handleSaveClassifications = async () => {
@@ -863,98 +886,144 @@ export function ActivitiesTimeline() {
           </div>
           </div>
 
-          {/* Interactive Employee Profile Hover Card */}
-          {hoveredEmployee && (
+          {/* Interactive Employee Profile Hover Card (Portaled with maximum z-index) */}
+          {hoveredEmployee && typeof document !== 'undefined' && createPortal(
             <div 
               onMouseEnter={handleCardMouseEnter}
               onMouseLeave={handleCardMouseLeave}
-              className="absolute right-8 top-28 w-72 bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl shadow-warm-lg border border-[#D6CDBC] dark:border-[#384232] p-5 z-40 animate-in fade-in duration-200"
+              className="fixed right-8 top-32 w-80 bg-[#FAF8F5] dark:bg-[#1E2419] rounded-3xl shadow-2xl border border-[#D6CDBC] dark:border-[#384232] p-5 z-[9999] animate-in fade-in zoom-in-95 duration-200 space-y-4"
             >
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 font-black text-xs flex items-center justify-center">
-                    {hoveredEmployee.initials}
+              {/* Header: Avatar, Name, Role, Close Button */}
+              <div className="flex items-start justify-between gap-3 pb-3 border-b border-[#E5DED2] dark:border-[#384232]">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="relative flex-shrink-0">
+                    <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#EAE2D3] to-[#D8CEBC] dark:from-[#2A3324] dark:to-[#1E2419] border border-[#D6CDBC] dark:border-[#384232] shadow-sm flex items-center justify-center font-serif font-bold text-sm text-[#30382B] dark:text-[#E8D4B8]">
+                      {hoveredEmployee.initials}
+                    </div>
+                    <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-[#FAF8F5] dark:border-[#1E2419]" title="Active" />
                   </div>
-                  <div>
-                    <p className="text-xs font-black text-slate-900 dark:text-white leading-tight">{hoveredEmployee.name}</p>
-                    <p className="text-[10px] font-bold text-slate-400">{hoveredEmployee.team}</p>
+                  <div className="truncate">
+                    <h4 className="font-serif text-sm font-bold text-[#29291F] dark:text-[#F5F1E9] leading-tight truncate">
+                      {hoveredEmployee.name}
+                    </h4>
+                    <p className="text-[11px] font-medium text-[#777367] dark:text-[#B8B3A7] truncate mt-0.5">
+                      {hoveredEmployee.team || 'General Team'}
+                    </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <span className={cn(
-                    "text-[10px] font-black px-2 py-0.5 rounded-full border",
-                    (hoveredEmployee.productivityPct || 0) > 0
-                      ? "text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800"
-                      : "text-slate-500 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
-                  )}>
-                    {hoveredEmployee.productivityPct || 0}% productivity
-                  </span>
+
+                <div className="flex items-center gap-2 shrink-0">
                   <button
                     type="button"
-                    onClick={() => setHoveredEmployee(null)}
+                    onClick={handleCloseCard}
                     title="Close"
-                    className="p-1 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                    className="w-7 h-7 rounded-xl bg-[#F0EBE1] hover:bg-[#E5DDD0] dark:bg-[#2A3324] dark:hover:bg-[#343F2D] text-[#777367] hover:text-[#29291F] dark:text-[#B8B3A7] dark:hover:text-[#F5F1E9] flex items-center justify-center transition-all cursor-pointer shadow-xs active:scale-95"
                   >
-                    <X size={12} />
+                    <X size={14} />
                   </button>
                 </div>
               </div>
 
-              {/* Active Time */}
-              <div className="py-3 border-b border-slate-100 dark:border-slate-800">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                  <Clock size={11} className="text-primary-500" /> Active Time
-                </p>
-                <div className="flex items-baseline justify-between mt-1">
-                  <p className="text-xl font-black text-slate-900 dark:text-white">{hoveredEmployee.activeHoursFormatted}</p>
-                  <p className="text-xs font-bold text-slate-400">
+              {/* Productivity Pill Badge */}
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#777367] dark:text-[#B8B3A7]">
+                  Productivity Score
+                </span>
+                <span className={cn(
+                  "text-[10px] font-bold px-2.5 py-1 rounded-full border flex items-center gap-1.5",
+                  (hoveredEmployee.productivityPct || 0) >= 70
+                    ? "text-[#4E7554] dark:text-[#8BB394] bg-[#EAEFEA] dark:bg-[#1E2B20] border-[#C5D7C7] dark:border-[#325238]"
+                    : (hoveredEmployee.productivityPct || 0) >= 40
+                    ? "text-[#C98A3C] dark:text-[#E5B56D] bg-[#FAF0E1] dark:bg-[#2C2415] border-[#E8D4B8] dark:border-[#5C4A28]"
+                    : "text-[#A84B4B] dark:text-[#E07A7A] bg-[#FAF3F2] dark:bg-[#2E1E1E] border-[#F2D6D3] dark:border-[#572E2E]"
+                )}>
+                  <span className="w-1.5 h-1.5 rounded-full bg-current" />
+                  {hoveredEmployee.productivityPct || 0}% Productivity
+                </span>
+              </div>
+
+              {/* Active Time Highlight Box */}
+              <div className="bg-[#F5F1E9] dark:bg-[#252B20] rounded-2xl p-3.5 border border-[#E5DED2] dark:border-[#323A2C] shadow-xs space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#777367] dark:text-[#B8B3A7] flex items-center gap-1.5">
+                    <Clock size={12} className="text-[#B9955B]" /> Active Working Time
+                  </span>
+                  <span className="text-[10px] font-bold text-[#5E7D64] dark:text-[#8BB394] bg-[#EAEFEA] dark:bg-[#1E2B20] px-2 py-0.5 rounded-md border border-[#C5D7C7]/60">
                     {hoveredEmployee.startShift && hoveredEmployee.startShift !== '--:--'
                       ? `${hoveredEmployee.startShift} → ${hoveredEmployee.endShift}`
-                      : 'No activity'}
-                  </p>
+                      : 'Live Today'}
+                  </span>
+                </div>
+                <div className="text-2xl font-serif font-bold text-[#29291F] dark:text-[#F5F1E9] tabular-nums tracking-tight">
+                  {hoveredEmployee.activeHoursFormatted}
                 </div>
               </div>
 
               {/* Top 3 Apps */}
-              <div className="py-3">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
-                  Top 3 most used apps
-                </p>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-[#777367] dark:text-[#B8B3A7]">
+                  <span>Top Used Applications</span>
+                  <span className="text-[9px] font-medium text-[#B9955B]">By Duration</span>
+                </div>
                 {hoveredEmployee.topApps && hoveredEmployee.topApps.length > 0 ? (
                   <div className="space-y-1.5">
                     {hoveredEmployee.topApps.map((app, i) => (
-                      <div key={i} className="flex items-center justify-between text-[11px] font-bold p-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/60">
-                        <span className="truncate max-w-[110px] text-slate-700 dark:text-slate-200">{app.name}</span>
-                        <div className="flex items-center gap-2">
+                      <div
+                        key={i}
+                        className="flex items-center justify-between p-2 rounded-xl bg-[#F5F1E9] dark:bg-[#252B20] border border-[#E5DED2] dark:border-[#323A2C] text-xs transition hover:border-[#B9955B]"
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
                           <span className={cn(
-                            "text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter",
+                            "w-2 h-2 rounded-full shrink-0",
                             app.productivity === 'Productive'
-                              ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300"
-                              : "bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-300"
+                              ? "bg-[#5E7D64]"
+                              : app.productivity === 'Unproductive'
+                              ? "bg-[#A84B4B]"
+                              : "bg-[#B9955B]"
+                          )} />
+                          <span className="font-semibold text-[#29291F] dark:text-[#F5F1E9] truncate max-w-[110px]">
+                            {app.name}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className={cn(
+                            "text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider border",
+                            app.productivity === 'Productive'
+                              ? "bg-[#EAEFEA] text-[#5E7D64] border-[#C5D7C7]"
+                              : app.productivity === 'Unproductive'
+                              ? "bg-[#FAF3F2] text-[#A84B4B] border-[#F2D6D3]"
+                              : "bg-[#FAF0E1] text-[#C98A3C] border-[#E8D4B8]"
                           )}>
                             {app.productivity}
                           </span>
-                          <span className="text-slate-500 font-bold text-[10px]">{app.durationFormatted}</span>
+                          <span className="font-bold text-[#29291F] dark:text-[#F5F1E9] text-[11px] tabular-nums">
+                            {app.durationFormatted}
+                          </span>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-[11px] text-slate-400 italic py-1">No app activity recorded yet</p>
+                  <div className="py-2 text-center text-xs text-[#777367] dark:text-[#B8B3A7] bg-[#F5F1E9]/60 dark:bg-[#252B20]/60 rounded-xl border border-dashed border-[#D6CDBC] dark:border-[#384232]">
+                    No app activity recorded yet
+                  </div>
                 )}
               </div>
 
-              {/* View Logs Button -> Switches to Logs View filtered by this employee */}
+              {/* View Logs Button */}
               <button
                 onClick={() => {
                   setSearchQuery(hoveredEmployee.name);
                   setActiveTab('Logs');
+                  setHoveredEmployee(null);
                 }}
-                className="w-full mt-2 py-2 bg-primary-50 hover:bg-primary-100 dark:bg-primary-950/60 text-primary-600 dark:text-primary-400 rounded-xl text-xs font-black transition-colors"
+                className="w-full mt-2 py-2.5 px-4 bg-[#30382B] hover:bg-[#3C4536] text-[#FDFBF7] dark:bg-[#B9955B] dark:hover:bg-[#C9A86B] dark:text-[#1E2419] rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-warm-sm flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer"
               >
-                View Logs
+                <span>View Full Activity Logs</span>
+                <ArrowRight size={13} className="text-[#D3B98D] dark:text-[#1E2419]" />
               </button>
-            </div>
+            </div>,
+            document.body
           )}
         </div>
       ) : (
@@ -1028,8 +1097,8 @@ export function ActivitiesTimeline() {
 
       {/* ── 4. Floating Widgets Row ────────────────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-4">
-        {/* Floating Mini Tracker Card */}
-        {showMiniTracker && (
+        {/* Floating Mini Tracker Card - Only for tracking non-admin employees */}
+        {showMiniTracker && role !== 'ADMIN' && (
           <div className="bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl p-5 border border-[#E5DED2] dark:border-[#384232] shadow-warm-md flex flex-col justify-between relative overflow-hidden group">
             <div className="flex items-center justify-between pb-3 border-b border-[#E5DED2] dark:border-[#384232]">
               <span className="text-xs font-bold tracking-widest text-[#777367] dark:text-[#B8B3A7] uppercase">Insightful Tracker</span>
@@ -1104,50 +1173,77 @@ export function ActivitiesTimeline() {
               </div>
             </div>
 
-            <div className="divide-y divide-slate-100 dark:divide-slate-800/60 my-2">
+            <div className="divide-y divide-[#E5DED2] dark:divide-[#384232] my-2">
               {(data?.projectsSummary?.projectsList || []).map((p, idx) => (
                 <div key={p.id || idx} className="py-3 flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
-                    <span className="w-6 h-6 rounded-lg bg-primary-100 dark:bg-primary-900/60 text-primary-700 dark:text-primary-400 font-black text-[10px] flex items-center justify-center">
+                    <span className="w-6 h-6 rounded-lg bg-[#FAF0E1] dark:bg-[#2C2415] text-[#C98A3C] dark:text-[#E5B56D] font-black text-[10px] flex items-center justify-center border border-[#E8D4B8] dark:border-[#5C4A28]">
                       P{idx + 1}
                     </span>
                     <div>
-                      <p className="text-xs font-black text-slate-800 dark:text-slate-100">{p.name}</p>
-                      <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded">
+                      <p className="text-xs font-bold text-[#29291F] dark:text-[#F5F1E9]">{p.name}</p>
+                      <span className="text-[9px] font-bold text-[#5E7D64] dark:text-[#8BB394] bg-[#EAEFEA] dark:bg-[#1E2B20] px-1.5 py-0.5 rounded border border-[#C5D7C7] dark:border-[#325238]">
                         {p.status}
                       </span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4 text-xs font-bold text-slate-500">
+                  <div className="flex items-center gap-4 text-xs font-semibold text-[#777367] dark:text-[#B8B3A7]">
                     <span>{p.employeesCount} Employees</span>
                     <span>{p.tasksCount} Tasks</span>
-                    <span className="text-slate-800 dark:text-slate-200 font-black">{p.hoursFormatted}</span>
-                    <span className="text-primary-600 dark:text-primary-400 font-black">{p.costFormatted}</span>
+                    <span className="text-[#29291F] dark:text-[#F5F1E9] font-bold">{p.hoursFormatted}</span>
+                    <span className="text-[#B9955B] dark:text-[#D3B98D] font-bold">{p.costFormatted}</span>
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* Subtasks with interactive timers */}
-            <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2">
-              {tasksList.map((task) => (
-                <div key={task.id} className="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-700/40 text-xs">
-                  <span className="font-bold text-slate-700 dark:text-slate-300">{task.name}</span>
-                  <div className="flex items-center gap-2">
-                    <span className="font-black text-slate-900 dark:text-white text-[11px]">{task.time}</span>
-                    <button
-                      onClick={() => toggleTaskTimer(task.id)}
-                      className={cn(
-                        "w-6 h-6 rounded-lg flex items-center justify-center text-white transition-all active:scale-90",
-                        task.isRunning ? "bg-rose-500 hover:bg-rose-600" : "bg-primary-600 hover:bg-primary-700"
-                      )}
-                      title={task.isRunning ? "Pause Task" : "Start Task"}
-                    >
-                      {task.isRunning ? <Pause size={10} /> : <Play size={10} />}
-                    </button>
+            {/* Team Tasks Overview (Admin / Manager Oversight) */}
+            <div className="mt-4 pt-3 border-t border-[#E5DED2] dark:border-[#384232] space-y-2">
+              <div className="flex items-center justify-between pb-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#777367] dark:text-[#B8B3A7]">
+                  Active Team Tasks ({tasksList.length})
+                </span>
+                <span className="text-[10px] text-[#777367] dark:text-[#B8B3A7]">
+                  Assigned Team & Status
+                </span>
+              </div>
+              {tasksList.length === 0 ? (
+                <p className="text-xs text-[#777367] dark:text-[#B8B3A7] py-2 text-center">No tasks found</p>
+              ) : (
+                tasksList.map((task) => (
+                  <div
+                    key={task.id}
+                    className="flex items-center justify-between p-2.5 rounded-xl bg-[#F5F1E9] dark:bg-[#1E2419] border border-[#D6CDBC] dark:border-[#384232] text-xs transition hover:border-[#B9955B]"
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-1.5 h-1.5 rounded-full bg-[#B9955B] shrink-0" />
+                      <div className="truncate">
+                        <span className="font-bold text-[#29291F] dark:text-[#F5F1E9] block truncate">
+                          {task.name}
+                        </span>
+                        <span className="text-[10px] text-[#777367] dark:text-[#B8B3A7]">
+                          {task.projectName} · Assigned: <span className="font-semibold text-[#29291F] dark:text-[#F5F1E9]">{task.assignedTo}</span>
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2.5 shrink-0">
+                      <span className="font-bold text-[#29291F] dark:text-[#F5F1E9] text-[11px] tabular-nums">
+                        {task.time}
+                      </span>
+                      <span className={cn(
+                        "px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider border",
+                        task.status === 'IN_PROGRESS' || task.status === 'ACTIVE'
+                          ? "bg-[#EAEFEA] dark:bg-[#1E2B20] text-[#5E7D64] dark:text-[#8BB394] border-[#C5D7C7] dark:border-[#325238]"
+                          : task.status === 'FINALIZED' || task.status === 'COMPLETED'
+                          ? "bg-[#F0F4FA] dark:bg-[#1A2230] text-[#4A72B2] dark:text-[#7EA5E6] border-[#CBD8ED] dark:border-[#2C4166]"
+                          : "bg-[#FAF0E1] dark:bg-[#2C2415] text-[#C98A3C] dark:text-[#E5B56D] border-[#E8D4B8] dark:border-[#5C4A28]"
+                      )}>
+                        {task.status?.replace('_', ' ')}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         )}

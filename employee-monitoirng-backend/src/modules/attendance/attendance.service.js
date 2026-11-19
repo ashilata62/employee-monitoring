@@ -253,7 +253,8 @@ const attendanceService = {
             organizationId
         };
 
-        if (filters.role) where.employee = { role: filters.role };
+        const roleFilter = filters.role ? filters.role : { not: 'ADMIN' };
+        where.employee = { role: roleFilter };
         if (filters.employeeId) where.employeeId = filters.employeeId;
         if (filters.teamId) where.employee = { ...(where.employee || {}), teamId: filters.teamId };
         if (filters.startDate && filters.endDate) {
@@ -274,6 +275,7 @@ const attendanceService = {
                     select: {
                         fullName: true,
                         location: true,
+                        role: true,
                         teamId: true,
                         team: {
                             select: { name: true, description: true },
@@ -292,7 +294,8 @@ const attendanceService = {
         const where = {
             organizationId
         };
-        if (filters.role) where.employee = { role: filters.role };
+        const roleFilter = filters.role ? filters.role : { not: 'ADMIN' };
+        where.employee = { role: roleFilter };
         if (filters.employeeId) where.employeeId = filters.employeeId;
         if (filters.teamId) where.employee = { ...(where.employee || {}), teamId: filters.teamId };
         if (filters.startDate && filters.endDate) {
@@ -313,6 +316,7 @@ const attendanceService = {
                     select: {
                         fullName: true,
                         location: true,
+                        role: true,
                         teamId: true,
                         team: { select: { name: true, description: true } },
                     },

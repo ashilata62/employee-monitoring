@@ -382,7 +382,10 @@ const activityService = {
         const endOfDay = new Date(targetDate);
         endOfDay.setHours(23, 59, 59, 999);
 
-        const empWhere = { organizationId };
+        const empWhere = { 
+            organizationId,
+            role: { not: 'ADMIN' }
+        };
         if (employeeId) empWhere.id = employeeId;
         if (teamId) empWhere.teamId = teamId;
 
@@ -588,7 +591,7 @@ const activityService = {
                 name: emp.fullName || emp.user?.email || 'Employee',
                 initials: (emp.fullName || 'E').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase(),
                 team: emp.team?.name || 'General Team',
-                role: emp.designation || 'Specialist',
+                role: emp.role || emp.designation || 'Specialist',
                 activeHoursFormatted,
                 workHoursFormatted,
                 productivityPct,
@@ -629,14 +632,24 @@ const activityService = {
         const projects = await prisma.project.findMany({
             where: { organizationId },
             include: {
+                assignments: {
+                    include: {
+                        employee: {
+                            select: { id: true, fullName: true, role: true, hourlyRate: true }
+                        }
+                    }
+                },
+                timeLogs: true,
                 tasks: {
-                    select: {
-                        id: true,
-                        name: true,
-                        status: true,
+                    include: {
+                        timeLogs: true,
                         activityLogs: {
                             where: { organizationId },
                             select: { duration: true }
+                        },
+                        project_time_logs: true,
+                        employee: {
+                            select: { id: true, fullName: true, role: true, hourlyRate: true }
                         }
                     }
                 }
@@ -644,31 +657,85 @@ const activityService = {
         });
 
         let totalOrgProjectSecs = 0;
+        let totalOrgCost = 0;
+
         const projectsList = projects.map((p) => {
             let projSecs = 0;
+
+            // 1. Direct project time logs
+            (p.timeLogs || []).forEach(ptl => {
+                projSecs += (ptl.duration || 0);
+            });
+
+            // 2. Tasks time logs & activity logs
             (p.tasks || []).forEach(t => {
+                (t.timeLogs || []).forEach(tl => {
+                    if (tl.isRunning && tl.startTime) {
+                        projSecs += Math.max(0, Math.floor((Date.now() - new Date(tl.startTime).getTime()) / 1000));
+                    } else {
+                        projSecs += (tl.duration || 0);
+                    }
+                });
                 (t.activityLogs || []).forEach(al => {
                     projSecs += (al.duration || 0);
                 });
+                (t.project_time_logs || []).forEach(ptl => {
+                    projSecs += (ptl.duration || 0);
+                });
             });
+
+            // 3. Unique assignees for this project
+            const allAssigneeIds = new Set([
+                ...p.assignments.map(a => a.employeeId),
+                ...p.tasks.map(t => t.employeeId).filter(Boolean)
+            ]);
+            const employeesCount = allAssigneeIds.size > 0 ? allAssigneeIds.size : (p.assignments.length || 1);
+
+            // 4. Dynamic fallback: If project has no direct time logs yet,
+            // attribute tracked work time from assigned employees who logged attendance/activity
+            if (projSecs === 0 && allAssigneeIds.size > 0) {
+                employees.forEach(emp => {
+                    if (allAssigneeIds.has(emp.id)) {
+                        const empAttSecs = (emp.attendance || []).reduce((sum, att) => {
+                            let dur = att.duration || 0;
+                            if (!dur && att.clockIn && !att.clockOut) {
+                                dur = Math.max(0, Math.floor((Date.now() - new Date(att.clockIn).getTime()) / 1000));
+                            } else if (!dur && att.clockIn && att.clockOut) {
+                                dur = Math.max(0, Math.floor((new Date(att.clockOut).getTime() - new Date(att.clockIn).getTime()) / 1000));
+                            }
+                            return sum + dur;
+                        }, 0);
+                        const empActSecs = logs.filter(l => l.employeeId === emp.id).reduce((sum, l) => sum + (l.duration || 0), 0);
+                        projSecs += Math.max(empAttSecs, empActSecs);
+                    }
+                });
+            }
+
             totalOrgProjectSecs += projSecs;
-            const hours = (projSecs / 3600);
-            const hoursFormatted = `${String(Math.floor(hours)).padStart(2, '0')}:${String(Math.floor((projSecs % 3600) / 60)).padStart(2, '0')} h`;
-            const cost = (hours * 25).toFixed(2);
+
+            const hours = projSecs / 3600;
+            const hrs = Math.floor(hours);
+            const mins = Math.floor((projSecs % 3600) / 60);
+            const hoursFormatted = `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')} h`;
+
+            // Billable rate: project billableRate or fallback to 25
+            const rate = p.billableRate > 0 ? p.billableRate : 25;
+            const costVal = hours * rate;
+            totalOrgCost += costVal;
+            const costFormatted = `$${costVal.toFixed(2)}`;
 
             return {
                 id: p.id,
                 name: p.name,
                 status: p.status || 'Active',
-                employeesCount: employees.length,
+                employeesCount,
                 tasksCount: p.tasks.length,
                 hoursFormatted,
-                costFormatted: `$${cost}`
+                costFormatted
             };
         });
 
-        const totalOrgHours = (totalOrgProjectSecs / 3600);
-        const totalBillableCost = `$${(totalOrgHours * 25).toFixed(2)}`;
+        const totalBillableCost = `$${totalOrgCost.toFixed(2)}`;
 
         const projectsSummary = {
             totalBillableCost,

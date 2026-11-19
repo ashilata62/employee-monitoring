@@ -154,16 +154,18 @@ export function TimeAndAttendance() {
         timeOffs.forEach(t => {
             if (!empMap.has(t.employeeId)) empMap.set(t.employeeId, t.employee?.fullName || 'Unknown');
         });
-        // Also include all org employees
+        // Also include all org employees (exclude ADMIN)
         employees.forEach(e => {
+            if ((e.role || '').toUpperCase() === 'ADMIN') return;
             if (!empMap.has(e.id)) empMap.set(e.id, e.fullName || e.name || 'Unknown');
         });
         return Array.from(empMap, ([id, name]) => ({ id, name }));
     }, [shifts, timeOffs, employees]);
 
-    // Filtered lists for various tabs
+    // Filtered lists for various tabs (strictly exclude ADMIN)
     const filteredEmployees = useMemo(() => {
         return employees.filter(emp => {
+            if ((emp.role || '').toUpperCase() === 'ADMIN') return false;
             const matchesSearch = (emp.fullName || emp.name || '').toLowerCase().includes(generalSearch.toLowerCase());
             const matchesTeam = !selectedTeam || emp.teamId === selectedTeam;
             const matchesEmp = !selectedEmployee || emp.id === selectedEmployee;
@@ -173,8 +175,9 @@ export function TimeAndAttendance() {
 
     const filteredScheduleEmps = useMemo(() => {
         return scheduleEmployees.filter(emp => {
-            const matchesSearch = emp.name.toLowerCase().includes(scheduleSearch.toLowerCase());
             const orgEmp = employees.find(e => e.id === emp.id);
+            if ((orgEmp?.role || '').toUpperCase() === 'ADMIN') return false;
+            const matchesSearch = emp.name.toLowerCase().includes(scheduleSearch.toLowerCase());
             const matchesTeam = !selectedTeam || orgEmp?.teamId === selectedTeam;
             const matchesEmp = !selectedEmployee || emp.id === selectedEmployee;
             return matchesSearch && matchesTeam && matchesEmp;
@@ -312,6 +315,7 @@ export function TimeAndAttendance() {
                                 </thead>
                                 <tbody className="divide-y divide-[#D6CDBC]/60 dark:divide-[#384232]">
                                     {timesheets.filter(row => {
+                                        if ((row.employee?.role || '').toUpperCase() === 'ADMIN') return false;
                                         const matchesSearch = (row.employee?.fullName?.toLowerCase() ?? '').includes(generalSearch.toLowerCase()) ||
                                             (row.employee?.team?.name?.toLowerCase() ?? '').includes(generalSearch.toLowerCase());
                                         const matchesTeam = !selectedTeam || row.employee?.teamId === selectedTeam;

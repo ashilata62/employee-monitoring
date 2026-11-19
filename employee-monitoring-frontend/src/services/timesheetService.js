@@ -27,8 +27,10 @@ export const timesheetService = {
     /**
      * Get pending approvals queue (Manager/Admin)
      */
-    getApprovalQueue: async () => {
-        const res = await api.get('/timesheets/approvals/queue');
+    getApprovalQueue: async (status = null) => {
+        const params = {};
+        if (status && status !== 'ALL') params.status = status;
+        const res = await api.get('/timesheets/approvals/queue', { params });
         return res.data;
     },
 
