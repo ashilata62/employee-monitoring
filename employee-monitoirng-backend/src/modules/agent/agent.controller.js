@@ -503,16 +503,37 @@ const handleIdleActivity = async (req, res) => {
             ? taskId.trim()
             : null;
 
-        // Token verification
+        // Token verification (supports both Desktop Agent Base64 token and Web Browser JWT token)
         if (authHeader) {
             const raw = authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : authHeader;
+            let isAuthorized = false;
+
+            // 1. Check if Desktop Agent token
             try {
                 const decoded = Buffer.from(raw, 'base64').toString('ascii');
-                if (!decoded.includes(employeeId) || !decoded.includes('INSIGHTFUL')) {
-                    return errorResponse(res, 'Unauthorized agent request', 401);
+                if (decoded.includes('INSIGHTFUL') && decoded.includes(employeeId)) {
+                    isAuthorized = true;
                 }
-            } catch (e) {
-                // Ignore base64 decode error if jwt used
+            } catch (e) {}
+
+            // 2. Check if valid JWT (Web browser session)
+            if (!isAuthorized) {
+                try {
+                    const { verifyToken } = require('../../utils/jwt');
+                    const jwtUser = verifyToken(raw);
+                    if (jwtUser) {
+                        isAuthorized = true;
+                    }
+                } catch (jwtErr) {}
+            }
+
+            // 3. Allow WEB_AGENT source
+            if (!isAuthorized && source === 'WEB_AGENT') {
+                isAuthorized = true;
+            }
+
+            if (!isAuthorized) {
+                return errorResponse(res, 'Unauthorized agent request', 401);
             }
         }
 

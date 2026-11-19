@@ -47,7 +47,7 @@ const timesheetsController = {
                 }
 
                 // If requester is a Manager, enforce team-level authorization
-                if (role === 'MANAGER') {
+                if (role === 'MANAGER' && targetEmployeeId !== employeeId) {
                     const manager = await prisma.employee.findUnique({
                         where: { id: employeeId },
                         select: { teamId: true }

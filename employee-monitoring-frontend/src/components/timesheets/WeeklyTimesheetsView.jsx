@@ -34,14 +34,24 @@ export function WeeklyTimesheetsView({ employees = [] }) {
     const [activeDayModal, setActiveDayModal] = useState(null);
 
     // Filter employees: If manager, only show employees in their assigned team. Filter out ADMIN role.
-    const managerTeamId = user?.teamId || user?.employee?.teamId;
+    const effectiveManagerTeamId = useMemo(() => {
+        if (user?.teamId) return user.teamId;
+        if (user?.employee?.teamId) return user.employee.teamId;
+        const currentEmp = employees.find(e => e.id === user?.employeeId || e.id === user?.id || e.email === user?.email);
+        return currentEmp?.teamId || currentEmp?.team?.id || null;
+    }, [user, employees]);
+
     const selectableEmployees = useMemo(() => {
         let list = employees.filter(emp => (emp.role || 'EMPLOYEE').toUpperCase() !== 'ADMIN');
-        if (role === 'MANAGER' && managerTeamId) {
-            list = list.filter(emp => (emp.teamId === managerTeamId || emp.team?.id === managerTeamId));
+        if (role === 'MANAGER') {
+            if (effectiveManagerTeamId) {
+                list = list.filter(emp => (emp.teamId === effectiveManagerTeamId || emp.team?.id === effectiveManagerTeamId));
+            } else {
+                list = list.filter(emp => emp.id === (user?.employeeId || user?.id));
+            }
         }
         return list;
-    }, [employees, role, managerTeamId]);
+    }, [employees, role, effectiveManagerTeamId, user]);
 
     const fmtTimeShort = (dateStr) => {
         if (!dateStr) return '--';
@@ -381,8 +391,8 @@ export function WeeklyTimesheetsView({ employees = [] }) {
                                     </button>
                                 </div>
 
-                                <div className="overflow-y-auto flex-1 pr-1">
-                                    <table className="w-full text-left text-xs">
+                                <div className="overflow-y-auto overflow-x-auto flex-1 pr-1 custom-scrollbar">
+                                    <table className="w-full min-w-[500px] text-left text-xs">
                                         <thead className="bg-[#EEE8DD] dark:bg-[#252B20] text-[#777367] text-[10px] uppercase tracking-wider font-bold border-b border-[#D6CDBC]/70 dark:border-[#384232]">
                                             <tr>
                                                 <th className="p-2.5 rounded-l-lg">#</th>

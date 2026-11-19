@@ -110,9 +110,9 @@ let lastViolation = {
 const VIOLATION_COOLDOWN_MS = 60 * 1000; // 60s cooldown for same continuous violation
 
 // ─── Smart Idle & Inactivity Monitoring Configuration (Requirements 2, 3, 4, 5) ──
-const DEFAULT_IDLE_THRESHOLD_SECONDS = 600; // 10 minutes (600s) default - Idle classification & Admin Alert
-const WARNING_THRESHOLD_SECONDS = 300; // 5 minutes (300s) - First employee warning reminder
-const PASSIVE_THRESHOLD_SECONDS = 60; // 1 minute (60s) - Initial inactivity detection
+const DEFAULT_IDLE_THRESHOLD_SECONDS = 60; // 1 minute (60s) - Idle classification & Alert (testing mode)
+const WARNING_THRESHOLD_SECONDS = 45; // 45 seconds - Warning reminder
+const PASSIVE_THRESHOLD_SECONDS = 30; // 30 seconds - Initial inactivity detection
 
 let idleConfig = {
     thresholdSeconds: DEFAULT_IDLE_THRESHOLD_SECONDS,
@@ -597,8 +597,8 @@ async function checkIdleActivity() {
                 if (Notification && typeof Notification.isSupported === 'function' && Notification.isSupported()) {
                     try {
                         new Notification({
-                            title: 'Inactivity Detected',
-                            body: 'You have been inactive for 10 minutes. Are you still working?'
+                            title: 'Employee Inactivity Alert',
+                            body: 'You have been inactive for 1 minute. Please resume your work.'
                         }).show();
                     } catch (e) {}
                 }
@@ -615,8 +615,8 @@ async function checkIdleActivity() {
                 // Notify renderer UI
                 if (mainWindow && !mainWindow.isDestroyed()) {
                     mainWindow.webContents.send('idle:prompt', {
-                        title: 'Inactivity Detected',
-                        message: 'You have been inactive for 10 minutes. Are you still working?',
+                        title: 'Employee Inactivity Alert',
+                        message: 'You have been inactive for 1 minute. Please resume your work.',
                         idleDuration: idleSeconds,
                         idleStartTime: idleState.idleStartTime
                     });

@@ -170,7 +170,8 @@ export function ApprovalsQueueView() {
                 </div>
             ) : (
                 <div className="bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs overflow-hidden">
-                    <table className="w-full text-left border-collapse">
+                    <div className="w-full overflow-x-auto scrollbar-thin">
+                        <table className="w-full min-w-[850px] text-left border-collapse">
                         <thead>
                             <tr className="border-b border-[#D6CDBC]/70 dark:border-[#384232] bg-[#E5DDCF]/60 dark:bg-[#1E2419] text-[10px] font-bold uppercase tracking-[0.14em] text-[#777367]">
                                 <th className="p-4 w-10">
@@ -267,6 +268,7 @@ export function ApprovalsQueueView() {
                             })}
                         </tbody>
                     </table>
+                    </div>
                 </div>
             )}
 

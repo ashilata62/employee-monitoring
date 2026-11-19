@@ -74,7 +74,12 @@ export function WebTrackerAgent() {
 
     // Activity Detection on window (mouse move, click, scroll, keyboard input)
     useEffect(() => {
-        if (role !== 'EMPLOYEE') return;
+        if (!user) return;
+
+        // Request browser Notification permission for desktop alerts
+        if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission().catch(() => {});
+        }
 
         const handleUserActivity = () => {
             const now = Date.now();
@@ -126,9 +131,9 @@ export function WebTrackerAgent() {
         };
     }, [role, user]);
 
-    // Periodic 5-second Inactivity Check
+    // Periodic 5-second Inactivity Check (Reduced testing thresholds: 30s Passive, 60s Idle)
     useEffect(() => {
-        if (role !== 'EMPLOYEE' || !isTracking) {
+        if (!user) {
             if (idleTimerIntervalRef.current) clearInterval(idleTimerIntervalRef.current);
             return;
         }
@@ -138,8 +143,8 @@ export function WebTrackerAgent() {
             const idleSec = Math.round((now - lastActivityRef.current) / 1000);
             const resolvedEmpId = user?.employeeId || user?.employee?.id || user?.id;
 
-            // 1. Stage: IDLE (10 minutes / 600 seconds)
-            if (idleSec >= 600) {
+            // 1. Stage: IDLE (1 minute / 60 seconds - triggers Employee Inactivity Alert)
+            if (idleSec >= 60) {
                 if (idleStatusRef.current !== 'IDLE') {
                     idleStatusRef.current = 'IDLE';
                     if (!idleStartTimeRef.current) {
@@ -148,8 +153,23 @@ export function WebTrackerAgent() {
 
                     if (!hasSentIdleAlertRef.current) {
                         hasSentIdleAlertRef.current = true;
-                        setIdleMinutesPrompt(Math.floor(idleSec / 60));
+                        setIdleMinutesPrompt(1);
                         setShowIdleModal(true);
+
+                        // Trigger In-App Alert Toast Notification
+                        toast.error('Employee Inactivity Alert: You have been inactive for 1 minute. Please resume your work.');
+
+                        // Trigger Browser Native Desktop Notification
+                        if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+                            try {
+                                new window.Notification('Employee Inactivity Alert', {
+                                    body: 'You have been inactive for 1 minute. Please resume your work.',
+                                    icon: '/favicon.ico'
+                                });
+                            } catch (e) {
+                                console.warn('[WebTrackerAgent] Notification error:', e);
+                            }
+                        }
 
                         if (resolvedEmpId) {
                             api.post('/agent/idle-activity', {
@@ -164,8 +184,8 @@ export function WebTrackerAgent() {
                     }
                 }
             }
-            // 2. Stage: IDLE WARNING (5 minutes / 300 seconds)
-            else if (idleSec >= 300) {
+            // 2. Stage: IDLE WARNING (45 seconds reminder)
+            else if (idleSec >= 45) {
                 if (idleStatusRef.current !== 'IDLE_WARNING' && idleStatusRef.current !== 'IDLE') {
                     idleStatusRef.current = 'IDLE_WARNING';
                     if (!idleStartTimeRef.current) {
@@ -174,7 +194,7 @@ export function WebTrackerAgent() {
 
                     if (!hasSentWarningAlertRef.current) {
                         hasSentWarningAlertRef.current = true;
-                        toast.warning('Activity Reminder: No recent mouse or keyboard activity has been detected. Please check your activity status.');
+                        toast.warning('Activity Reminder: No recent mouse or keyboard activity detected.');
 
                         if (resolvedEmpId) {
                             api.post('/agent/idle-activity', {
@@ -189,12 +209,13 @@ export function WebTrackerAgent() {
                     }
                 }
             }
-            // 3. Stage: PASSIVE (1 minute / 60 seconds)
-            else if (idleSec >= 60) {
+            // 3. Stage: PASSIVE (30 seconds initial inactivity detection)
+            else if (idleSec >= 30) {
                 if (idleStatusRef.current === 'ACTIVE') {
                     idleStatusRef.current = 'PASSIVE';
                     if (!hasSentPassiveAlertRef.current) {
                         hasSentPassiveAlertRef.current = true;
+                        console.log(`[WebTrackerAgent] Inactivity detected: 30s elapsed. Status -> PASSIVE.`);
                         if (resolvedEmpId) {
                             api.post('/agent/idle-activity', {
                                 employeeId: resolvedEmpId,
@@ -213,7 +234,7 @@ export function WebTrackerAgent() {
         return () => {
             if (idleTimerIntervalRef.current) clearInterval(idleTimerIntervalRef.current);
         };
-    }, [role, isTracking, user]);
+    }, [role, user]);
 
     // Handle Desktop Agent IPC events if running inside Electron wrapper
     useEffect(() => {
@@ -684,11 +705,11 @@ export function WebTrackerAgent() {
                         </div>
 
                         <h3 className="text-xl sm:text-2xl font-serif font-bold text-[#E8DFD1] mb-2 tracking-tight">
-                            Inactivity Detected
+                            Employee Inactivity Alert
                         </h3>
 
                         <p className="text-sm text-[#9E988A] leading-relaxed mb-6 font-medium">
-                            You have been inactive for {idleMinutesPrompt} minutes. Are you still working?
+                            You have been inactive for 1 minute. Please resume your work.
                         </p>
 
                         <div className="flex flex-col sm:flex-row gap-3 justify-center">
