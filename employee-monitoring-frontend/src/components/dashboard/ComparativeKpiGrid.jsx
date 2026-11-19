@@ -132,42 +132,43 @@ export function ComparativeKpiGrid({ sec, stats, deltas, role, isToday = true, l
     const { isClockedIn } = useAuthStore();
     const sessionSeconds = useSessionTimer();
 
-    const isManagerOrEmp = role?.toUpperCase() !== 'ADMIN';
+    const isEmployee = role?.toUpperCase() === 'EMPLOYEE';
 
-    // When Manager / Employee is viewing Today:
+    // When Employee is viewing Today:
     // If clocked out: ALL cards reset to 00h 00m 00s and 0% immediately with zero latency!
     // If clocked in: session timer ticks live from 00h 00m 00s upwards!
-    const effectiveWorkTime = isManagerOrEmp && isToday
+    // For Admin and Manager: Displays genuine workforce/team aggregate metrics from stats.summary!
+    const effectiveWorkTime = isEmployee && isToday
         ? (isClockedIn ? formatSecondsToHMS(sessionSeconds) : '00h 00m 00s')
-        : (stats?.summary?.workTime || formatSecondsToHoursMins(sec?.workTime));
+        : (stats?.summary?.workTime || formatSecondsToHMS(sec?.workTime));
 
-    const effectiveActiveTime = isManagerOrEmp && isToday
+    const effectiveActiveTime = isEmployee && isToday
         ? (isClockedIn ? formatSecondsToHMS(sessionSeconds) : '00h 00m 00s')
-        : (stats?.summary?.activeTime || formatSecondsToHoursMins(sec?.activeTime));
+        : (stats?.summary?.activeTime || formatSecondsToHMS(sec?.activeTime));
 
-    const effectiveProductiveTime = isManagerOrEmp && isToday
+    const effectiveProductiveTime = isEmployee && isToday
         ? (isClockedIn ? formatSecondsToHMS(sessionSeconds) : '00h 00m 00s')
-        : (stats?.summary?.productiveTime || formatSecondsToHoursMins(sec?.productiveTime));
+        : (stats?.summary?.productiveTime || formatSecondsToHMS(sec?.productiveTime));
 
-    const effectiveIdleTime = isManagerOrEmp && isToday
+    const effectiveIdleTime = isEmployee && isToday
         ? '00h 00m 00s'
-        : (stats?.summary?.idleTime || formatSecondsToHoursMins(sec?.idleTime));
+        : (stats?.summary?.idleTime || formatSecondsToHMS(sec?.idleTime));
 
-    const effectiveManualTime = isManagerOrEmp && isToday
+    const effectiveManualTime = isEmployee && isToday
         ? '00h 00m 00s'
-        : (stats?.summary?.manualTime || formatSecondsToHoursMins(sec?.manualTime));
+        : (stats?.summary?.manualTime || formatSecondsToHMS(sec?.manualTime));
 
-    const effectiveUnproductiveTime = isManagerOrEmp && isToday
+    const effectiveUnproductiveTime = isEmployee && isToday
         ? '00h 00m 00s'
-        : (stats?.summary?.unproductiveTime || formatSecondsToHoursMins(sec?.unproductiveTime));
+        : (stats?.summary?.unproductiveTime || formatSecondsToHMS(sec?.unproductiveTime));
 
-    const effectiveNeutralTime = isManagerOrEmp && isToday
+    const effectiveNeutralTime = isEmployee && isToday
         ? '00h 00m 00s'
-        : (stats?.summary?.neutralTime || formatSecondsToHoursMins(sec?.neutralTime));
+        : (stats?.summary?.neutralTime || formatSecondsToHMS(sec?.neutralTime));
 
-    const effectiveProductivity = isManagerOrEmp && isToday
+    const effectiveProductivity = isEmployee && isToday
         ? (isClockedIn ? '100%' : '0%')
-        : (stats?.summary?.utilization !== undefined ? `${stats.summary.utilization}%` : '0%');
+        : (stats?.summary?.utilization !== undefined ? `${stats.summary.utilization}%` : (stats?.summary?.productivity !== undefined ? `${stats.summary.productivity}%` : '0%'));
 
     return (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 sm:gap-4 lg:gap-5 mb-6 sm:mb-8">

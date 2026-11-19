@@ -381,7 +381,7 @@ export function Dashboard() {
 
     const sec = useMemo(() => {
         const rawSec = stats?.summarySeconds || {};
-        if (role === 'ADMIN') {
+        if (role !== 'EMPLOYEE') {
             return rawSec;
         }
         if (!isToday) {
@@ -404,7 +404,7 @@ export function Dashboard() {
     }, [role, stats?.summarySeconds, isToday, isClockedIn, sessionSeconds]);
 
     const liveTick = useMemo(() => {
-        if (role === 'ADMIN') return false;
+        if (role !== 'EMPLOYEE') return false;
         if (!isToday) return false;
         // Only tick when clocked in and not on break
         return isClockedIn && !isOnBreak;
