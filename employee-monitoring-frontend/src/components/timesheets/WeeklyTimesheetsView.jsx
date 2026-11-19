@@ -18,10 +18,10 @@ import { useAuthStore } from '../../store/authStore';
 import { toast } from '../../utils/toastManager';
 
 const STATUS_BADGE = {
-    DRAFT: 'bg-[#E5DDCF] dark:bg-[#252B20] text-[#777367] dark:text-[#B8B3A7] border-[#D6CDBC] dark:border-[#384232]',
-    SUBMITTED: 'bg-[#FAF0E1] dark:bg-[#2A2318] text-[#C98A3C] dark:text-[#E5B56D] border-[#E8D4B8] dark:border-[#524128]',
-    APPROVED: 'bg-[#EAEFEA] dark:bg-[#1E291E] text-[#5E7D64] dark:text-[#A4C2A8] border-[#C5D7C7] dark:border-[#2D3E2F]',
-    REJECTED: 'bg-[#FAF3F2] dark:bg-[#2A1E1E] text-[#A84B4B] dark:text-[#E8A5A5] border-[#F2D6D3] dark:border-[#4E2D2D]'
+    DRAFT: 'bg-[#E5DDCF] text-[#777367] border-[#D6CDBC]',
+    SUBMITTED: 'bg-[#FAF0E1] text-[#C98A3C] border-[#E8D4B8]',
+    APPROVED: 'bg-[#EAEFEA] text-[#5E7D64] border-[#C5D7C7]',
+    REJECTED: 'bg-[#FAF3F2] text-[#A84B4B] border-[#F2D6D3]'
 };
 
 export function WeeklyTimesheetsView({ employees = [] }) {
@@ -185,7 +185,7 @@ export function WeeklyTimesheetsView({ employees = [] }) {
                                     {data.status}
                                 </span>
                                 {data.overThreshold && (
-                                    <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-[#FAF0E1] dark:bg-[#2A2318] text-[#C98A3C] dark:text-[#E5B56D] border border-[#E8D4B8] dark:border-[#524128]">
+                                    <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-[#FAF0E1] text-[#C98A3C] border border-[#E8D4B8]">
                                         <AlertTriangle size={11} /> {fmtH(data.overtimeMinutes)} OT
                                     </span>
                                 )}
@@ -226,14 +226,14 @@ export function WeeklyTimesheetsView({ employees = [] }) {
                             )}
 
                             {data.status === 'SUBMITTED' && (
-                                <span className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#FAF0E1] dark:bg-[#2A2318] text-[#C98A3C] dark:text-[#E5B56D] text-xs font-bold border border-[#E8D4B8] dark:border-[#524128]">
+                                <span className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#FAF0E1] text-[#C98A3C] text-xs font-bold border border-[#E8D4B8]">
                                     <Clock size={13} />
                                     Submitted · Awaiting Review
                                 </span>
                             )}
 
                             {data.status === 'APPROVED' && (
-                                <span className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#EAEFEA] dark:bg-[#1E291E] text-[#5E7D64] dark:text-[#A4C2A8] text-xs font-bold border border-[#C5D7C7] dark:border-[#2D3E2F]">
+                                <span className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#EAEFEA] text-[#5E7D64] text-xs font-bold border border-[#C5D7C7]">
                                     <CheckCircle2 size={13} />
                                     Approved & Locked
                                 </span>
@@ -243,13 +243,13 @@ export function WeeklyTimesheetsView({ employees = [] }) {
 
                     {/* Rejection Alert Banner */}
                     {data.status === 'REJECTED' && data.approvals && data.approvals.length > 0 && (
-                        <div className="p-4 rounded-xl bg-[#FAF3F2] dark:bg-[#2A1E1E] border border-[#F2D6D3] dark:border-[#4E2D2D] flex items-start gap-3">
-                            <XCircle size={18} className="text-[#A84B4B] dark:text-[#E8A5A5] shrink-0 mt-0.5" />
+                        <div className="p-4 rounded-xl bg-[#FAF3F2] border border-[#F2D6D3] flex items-start gap-3">
+                            <XCircle size={18} className="text-[#A84B4B] shrink-0 mt-0.5" />
                             <div className="flex-1">
-                                <h4 className="text-xs font-bold uppercase tracking-wider text-[#A84B4B] dark:text-[#E8A5A5]">
+                                <h4 className="text-xs font-bold uppercase tracking-wider text-[#A84B4B]">
                                     Timesheet Rejected by {data.approvals[0].approverName}
                                 </h4>
-                                <p className="text-xs text-[#A84B4B] dark:text-[#E8A5A5] mt-1 font-medium italic">
+                                <p className="text-xs text-[#A84B4B] mt-1 font-medium italic">
                                     “{data.approvals[0].comment || 'Please review your daily attendance and resubmit.'}”
                                 </p>
                             </div>

@@ -79,14 +79,14 @@ const SummaryCard = ({ title, value, trend, subValue, icon: Icon, color = 'prima
         <div className={`group bg-white dark:bg-slate-900 p-5 rounded-[1.5rem] border ${activeColor.split(' ')[2]} shadow-lg ${activeColor.split(' ')[3]} transition-all hover:-translate-y-1 hover:shadow-xl dark:shadow-none relative overflow-hidden h-full flex flex-col justify-between`}>
             {/* Subtle Gradient Background */}
             <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${activeColor.split(' ')[0]} ${activeColor.split(' ')[1]} rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-110 duration-500`} />
-            
+
             <div className="relative z-10">
                 <div className="flex items-center justify-between mb-4">
                     <div className={`h-10 w-10 rounded-xl bg-gradient-to-br ${activeColor.split(' ')[0]} ${activeColor.split(' ')[1]} flex items-center justify-center ${activeColor.split(' ')[2]}`}>
                         <Icon size={20} className={activeColor.split(' ')[2]} />
                     </div>
                 </div>
-                
+
                 <div className="space-y-1">
                     <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.15em] leading-none">
                         {title}
@@ -292,7 +292,7 @@ export function Dashboard() {
     };
 
     const isToday = !startDate || new Date(startDate).toISOString().split('T')[0] === new Date().toISOString().split('T')[0];
-    
+
     // Merge API data with Real-time stats
     const stats = useMemo(() => {
         const base = dashboardData || realTimeStats;
@@ -313,8 +313,8 @@ export function Dashboard() {
             ...base,
             summary: raw,
             summarySeconds,
-            screenshots: (isToday && realTimeStats.screenshots?.length > 0) 
-                ? realTimeStats.screenshots 
+            screenshots: (isToday && realTimeStats.screenshots?.length > 0)
+                ? realTimeStats.screenshots
                 : (base.screenshots || []),
             empMetrics: (isToday && realTimeStats.empMetrics?.length > 0)
                 ? realTimeStats.empMetrics

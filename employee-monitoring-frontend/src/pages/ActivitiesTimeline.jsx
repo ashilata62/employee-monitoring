@@ -222,6 +222,10 @@ export function ActivitiesTimeline() {
 
   useEffect(() => {
     fetchTimeline();
+    const interval = setInterval(() => {
+      fetchTimeline();
+    }, 30000);
+    return () => clearInterval(interval);
   }, [selectedDate]);
 
   // Load real tasks from backend database
