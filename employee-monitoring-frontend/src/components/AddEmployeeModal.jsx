@@ -101,9 +101,15 @@ export function AddEmployeeModal({ isOpen, onClose, initialTab = 'single' }) {
         setSingleForm(prev => ({ ...prev, password: retVal }));
     };
 
+    const publicFrontendOrigin = import.meta.env.VITE_FRONTEND_URL
+        || import.meta.env.VITE_PUBLIC_URL
+        || (import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : null)
+        || window.location.origin;
+
+    const setupAgentUrl = `${publicFrontendOrigin}/setup-agent`;
+
     const handleCopy = () => {
-        const url = `${window.location.origin}/setup-agent`;
-        navigator.clipboard.writeText(url);
+        navigator.clipboard.writeText(setupAgentUrl);
         setCopied(true);
         toast.success("Agent Setup URL copied to clipboard!");
         setTimeout(() => setCopied(false), 2000);
@@ -689,7 +695,7 @@ export function AddEmployeeModal({ isOpen, onClose, initialTab = 'single' }) {
                                 </label>
                                 <div className="flex gap-2">
                                     <div className="flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2 text-xs font-mono text-slate-600 dark:text-slate-300 truncate">
-                                        {window.location.origin}/setup-agent
+                                        {setupAgentUrl}
                                     </div>
                                     <button
                                         type="button"

@@ -16,13 +16,19 @@ const monitoredTargets = [
         name: 'employee1',
         email: 'employee@gmail.com',
         employeeId: '656bfb4e-4f15-4da2-bc93-16d57b5b2093',
-        deviceId: 'REVTS1RPUC1VUEg0UkRHLW1waDE='
+        deviceId: 'DEV-EMPLOY-656B'
     },
     {
         name: 'Test',
         email: 'test@example.com',
         employeeId: 'dec4a6b8-c082-4ce2-b525-3b7a545317ee',
-        deviceId: 'REVTS1RPUC1UUEg4UkRHLXdpbjMyLXg2'
+        deviceId: 'DEVICE123'
+    },
+    {
+        name: 'Alex Employee',
+        email: 'employee@example.com',
+        employeeId: 'b93a4d90-2454-4694-8edd-dcbb7e408098',
+        deviceId: 'DEV-ALEXEM-B93A'
     }
 ];
 

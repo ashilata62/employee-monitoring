@@ -68,7 +68,7 @@ const KpiCard = ({
 }) => {
     const liveSecsDisplay = useLiveTimeDisplay(baseSeconds, liveTick);
     
-    let displayValue = '00h 00m 00s';
+    let displayValue = '00:00 h';
     if (value !== undefined && value !== null) {
         displayValue = liveTick ? (liveSecsDisplay || value) : value;
     } else if (baseSeconds !== undefined && baseSeconds !== null) {
@@ -138,9 +138,11 @@ const KpiCard = ({
 export function ComparativeKpiGrid({ sec, stats, deltas, liveTick }) {
     const d = deltas || {};
 
-    const utilizationVal = stats?.summary?.utilization !== undefined
-        ? `${stats.summary.utilization}%`
-        : '0%';
+    const calculatedLiveUtil = (sec?.workTime > 0)
+        ? Math.min(100, Math.round(((sec?.productiveTime || 0) / sec.workTime) * 100))
+        : (stats?.summary?.utilization !== undefined ? stats.summary.utilization : 0);
+
+    const utilizationVal = `${calculatedLiveUtil}%`;
 
     return (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 sm:gap-4 lg:gap-5 mb-6 sm:mb-8">

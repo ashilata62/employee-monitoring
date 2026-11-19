@@ -196,7 +196,7 @@ const heartbeat = async (req, res) => {
         }
 
         // Check if Approved
-        if (agent.status !== 'active') {
+        if (agent.status === 'rejected' || agent.status === 'pending') {
             return errorResponse(res, 'Agent is not approved. Please contact admin.', 403);
         }
 
@@ -250,7 +250,7 @@ const logActivity = async (req, res) => {
             });
         }
 
-        if (agent.status !== 'active') {
+        if (agent.status === 'rejected' || agent.status === 'pending') {
             return errorResponse(res, 'Agent is not active or approved', 403);
         }
 

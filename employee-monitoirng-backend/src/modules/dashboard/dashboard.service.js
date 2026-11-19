@@ -37,13 +37,13 @@ async function calculateMetrics(organizationId, employeeId = null, teamId = null
     }
 
     const logs = await prisma.activityLog.findMany({ where: whereClause });
-    
+
     let activeTime = 0;
     let idleTime = 0;
     let productiveTime = 0;
     let unproductiveTime = 0;
     let neutralTime = 0;
-    
+
     logs.forEach(log => {
         if (log.activityType === 'ACTIVE') activeTime += log.duration;
         if (log.activityType === 'IDLE') idleTime += log.duration;
@@ -59,31 +59,35 @@ async function calculateMetrics(organizationId, employeeId = null, teamId = null
     if (role) {
         manualWhere.employee = { ...(manualWhere.employee || {}), role };
     }
-    
     const manualLogs = await prisma.manualTime.findMany({ where: manualWhere });
     const manualTime = manualLogs.reduce((acc, log) => acc + log.duration, 0);
     // manualTime is typically productive or neutral. We'll count it towards productive
     productiveTime += manualTime;
 
-<<<<<<< HEAD
-    // Include attendance session durations (especially for web-based Clock In/Out)
-    const attWhere = { organizationId, clockIn: dateFilter };
+    // Incorporate persistent attendance sessions
+    const attWhere = {
+        organizationId,
+        OR: [
+            { date: dateFilter },
+            { clockIn: dateFilter }
+        ]
+    };
     if (employeeId) attWhere.employeeId = employeeId;
     if (teamId) attWhere.employee = { teamId };
 
-    const attLogs = await prisma.attendance.findMany({ where: attWhere });
-    let attendanceTime = 0;
+    const attendances = await prisma.attendance.findMany({ where: attWhere });
+    let attendanceWorkTime = 0;
     let hasLiveActiveSession = false;
     const now = Date.now();
-    attLogs.forEach(att => {
-        let dur = att.duration || 0;
-        if (!att.clockOut && att.clockIn) {
-            dur = Math.max(0, Math.floor((now - new Date(att.clockIn).getTime()) / 1000));
+    attendances.forEach(att => {
+        if (att.duration && att.duration > 0) {
+            attendanceWorkTime += att.duration;
+        } else if (att.clockIn && !att.clockOut) {
+            attendanceWorkTime += Math.max(0, Math.floor((now - new Date(att.clockIn).getTime()) / 1000));
             hasLiveActiveSession = true;
-        } else if (dur === 0 && att.clockIn && att.clockOut) {
-            dur = Math.max(0, Math.floor((new Date(att.clockOut).getTime() - new Date(att.clockIn).getTime()) / 1000));
+        } else if (att.clockIn && att.clockOut) {
+            attendanceWorkTime += Math.max(0, Math.floor((new Date(att.clockOut).getTime() - new Date(att.clockIn).getTime()) / 1000));
         }
-        attendanceTime += dur;
     });
 
     if (!hasLiveActiveSession) {
@@ -99,48 +103,16 @@ async function calculateMetrics(organizationId, employeeId = null, teamId = null
         }
     }
 
-    if (attendanceTime > activeTime) {
-        const diff = attendanceTime - activeTime;
-        activeTime = attendanceTime;
-        productiveTime += diff;
-=======
-    // Incorporate persistent attendance sessions
-    const attWhere = {
-        organizationId,
-        OR: [
-            { date: dateFilter },
-            { clockIn: dateFilter }
-        ]
-    };
-    if (employeeId) attWhere.employeeId = employeeId;
-    if (teamId) attWhere.employee = { teamId };
-    if (role) {
-        attWhere.employee = { ...(attWhere.employee || {}), role };
-    }
-
-    const attendances = await prisma.attendance.findMany({ where: attWhere });
-    let attendanceWorkTime = 0;
-    attendances.forEach(att => {
-        if (att.duration && att.duration > 0) {
-            attendanceWorkTime += att.duration;
-        } else if (att.clockIn && !att.clockOut) {
-            attendanceWorkTime += Math.max(0, Math.floor((Date.now() - new Date(att.clockIn).getTime()) / 1000));
-        } else if (att.clockIn && att.clockOut) {
-            attendanceWorkTime += Math.max(0, Math.floor((new Date(att.clockOut).getTime() - new Date(att.clockIn).getTime()) / 1000));
-        }
-    });
-
     if (attendanceWorkTime > activeTime) {
         const delta = attendanceWorkTime - activeTime;
         activeTime = attendanceWorkTime;
         productiveTime += delta;
->>>>>>> 10fd1b815f401ac6169316346d3c0379e0bc7616
     }
 
     const workTime = activeTime + manualTime + idleTime;
-    
+
     const utilization = workTime > 0 ? Math.round((productiveTime / workTime) * 100) : 0;
-    
+
     return {
         workTime: formatToHM(workTime),
         activeTime: formatToHM(activeTime),
@@ -208,8 +180,15 @@ async function getMetricsComparison(organizationId, employeeId = null, teamId = 
         const durationMs = refRange.lte.getTime() - refRange.gte.getTime();
         const prevEnd = new Date(refRange.gte.getTime() - 1);
         const prevStart = new Date(prevEnd.getTime() - durationMs);
-        compStart = prevStart.toISOString();
-        compEnd = prevEnd.toISOString();
+        
+        const toLocalYMD = (d) => {
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${y}-${m}-${day}`;
+        };
+        compStart = toLocalYMD(prevStart);
+        compEnd = toLocalYMD(prevEnd);
     }
 
     const compMetrics = await calculateMetrics(organizationId, employeeId, teamId, compStart, compEnd, role);
@@ -294,9 +273,21 @@ async function getDailyProductivityBreakdown(organizationId, employeeId = null, 
         }
         const durHours = dur / 3600;
         if (durHours > dayMap[dayKey].productive) {
-            dayMap[dayKey].productive = Number(durHours.toFixed(2));
+            dayMap[dayKey].productive = Math.max(0.01, Number(durHours.toFixed(2)));
         }
     });
+
+    // Ensure today's date exists if there is an active session or agent
+    const todayKey = new Date().toISOString().split('T')[0];
+    if (!dayMap[todayKey]) {
+        const agentWhere = { status: 'active', lastSeen: { gte: new Date(Date.now() - 5 * 60 * 1000) } };
+        if (organizationId) agentWhere.employee = { organizationId };
+        if (employeeId) agentWhere.employeeId = employeeId;
+        const activeAgent = await prisma.agent.findFirst({ where: agentWhere });
+        if (activeAgent) {
+            dayMap[todayKey] = { productive: 0.01, unproductive: 0, neutral: 0 };
+        }
+    }
 
     const result = Object.keys(dayMap).sort().map(key => {
         const dateObj = new Date(key + 'T00:00:00');
@@ -330,14 +321,13 @@ async function getIntradayActivity(organizationId, employeeId = null, teamId = n
     }
 
     const logs = await prisma.activityLog.findMany({ where: whereClause });
-    
+
     const manualWhere = { organizationId, startTime: dateFilter };
     if (employeeId) manualWhere.employeeId = employeeId;
     if (teamId) manualWhere.employee = { teamId };
     if (role) {
         manualWhere.employee = { ...(manualWhere.employee || {}), role };
     }
-    
     const manualLogs = await prisma.manualTime.findMany({ where: manualWhere });
 
     const attWhere = {
@@ -413,7 +403,7 @@ async function getEmployeeRankings(organizationId, teamId = null, startDate = nu
         whereClause.employee = { ...(whereClause.employee || {}), role };
     }
 
-    const logs = await prisma.activityLog.findMany({ 
+    const logs = await prisma.activityLog.findMany({
         where: whereClause,
         include: { employee: { include: { team: true } } }
     });
@@ -424,13 +414,13 @@ async function getEmployeeRankings(organizationId, teamId = null, startDate = nu
         manualWhere.employee = { ...(manualWhere.employee || {}), role };
     }
 
-    const manualLogs = await prisma.manualTime.findMany({ 
+    const manualLogs = await prisma.manualTime.findMany({
         where: manualWhere,
         include: { employee: true }
     });
 
     const empStats = {};
-    
+
     const initEmp = (emp) => {
         if (!empStats[emp.id]) {
             empStats[emp.id] = {
@@ -441,8 +431,8 @@ async function getEmployeeRankings(organizationId, teamId = null, startDate = nu
                 active: 0,
                 idle: 0,
                 manual: 0,
-                productive: 0, 
-                unproductive: 0 
+                productive: 0,
+                unproductive: 0
             };
         }
     };
@@ -462,13 +452,6 @@ async function getEmployeeRankings(organizationId, teamId = null, startDate = nu
         empStats[log.employee.id].productive += log.duration; // manual assumed productive
     });
 
-<<<<<<< HEAD
-    // Also include attendance records for rankings
-    const attWhere = { organizationId, clockIn: dateFilter };
-    if (teamId) attWhere.employee = { teamId };
-
-    const attLogs = await prisma.attendance.findMany({
-=======
     const attWhere = {
         organizationId,
         OR: [
@@ -481,29 +464,12 @@ async function getEmployeeRankings(organizationId, teamId = null, startDate = nu
         attWhere.employee = { ...(attWhere.employee || {}), role };
     }
 
-    const attendances = await prisma.attendance.findMany({ 
->>>>>>> 10fd1b815f401ac6169316346d3c0379e0bc7616
+    const attendances = await prisma.attendance.findMany({
         where: attWhere,
         include: { employee: { include: { team: true } } }
     });
 
-<<<<<<< HEAD
     const now = Date.now();
-    attLogs.forEach(att => {
-        if (!att.employee) return;
-        initEmp(att.employee);
-        let dur = att.duration || 0;
-        if (!att.clockOut && att.clockIn) {
-            dur = Math.max(0, Math.floor((now - new Date(att.clockIn).getTime()) / 1000));
-            empStats[att.employee.id].status = 'ACTIVE';
-        } else if (dur === 0 && att.clockIn && att.clockOut) {
-            dur = Math.max(0, Math.floor((new Date(att.clockOut).getTime() - new Date(att.clockIn).getTime()) / 1000));
-        }
-        if (empStats[att.employee.id].active < dur) {
-            const diff = dur - empStats[att.employee.id].active;
-            empStats[att.employee.id].active = dur;
-            empStats[att.employee.id].productive += diff;
-=======
     attendances.forEach(att => {
         if (!att.employee) return;
         initEmp(att.employee);
@@ -511,7 +477,8 @@ async function getEmployeeRankings(organizationId, teamId = null, startDate = nu
         if (att.duration && att.duration > 0) {
             dur = att.duration;
         } else if (att.clockIn && !att.clockOut) {
-            dur = Math.max(0, Math.floor((Date.now() - new Date(att.clockIn).getTime()) / 1000));
+            dur = Math.max(0, Math.floor((now - new Date(att.clockIn).getTime()) / 1000));
+            empStats[att.employee.id].status = 'ACTIVE';
         } else if (att.clockIn && att.clockOut) {
             dur = Math.max(0, Math.floor((new Date(att.clockOut).getTime() - new Date(att.clockIn).getTime()) / 1000));
         }
@@ -519,7 +486,6 @@ async function getEmployeeRankings(organizationId, teamId = null, startDate = nu
             const delta = dur - empStats[att.employee.id].active;
             empStats[att.employee.id].active = dur;
             empStats[att.employee.id].productive += delta;
->>>>>>> 10fd1b815f401ac6169316346d3c0379e0bc7616
         }
     });
 
@@ -566,12 +532,12 @@ const getAdminDashboard = async (organizationId, startDate = null, endDate = nul
     const teamStats = teams.map(t => {
         const teamEmployees = rankings.topProductive.filter(emp => emp.team === t.name)
             .concat(rankings.topUnproductive.filter(emp => emp.team === t.name));
-        
+
         // Remove duplicates from rank concat
         const uniqueTeamEmps = Array.from(new Set(teamEmployees.map(e => e.id)))
             .map(id => teamEmployees.find(e => e.id === id));
 
-        const avgProductivity = uniqueTeamEmps.length > 0 
+        const avgProductivity = uniqueTeamEmps.length > 0
             ? Math.round(uniqueTeamEmps.reduce((acc, emp) => acc + emp.utilization, 0) / uniqueTeamEmps.length)
             : 0;
 
@@ -651,8 +617,8 @@ const getEmployeeDashboard = async (organizationId, employeeId, startDate = null
         }),
         prisma.task.findMany({ where: { organizationId, employeeId } }),
         prisma.screenshot.findMany({
-            where: { 
-                organizationId, 
+            where: {
+                organizationId,
                 employeeId,
                 imageUrl: {
                     startsWith: '/uploads' // Only fetch real screenshots, ignore simulator dummy data
@@ -688,7 +654,7 @@ const getEmployeeDashboard = async (organizationId, employeeId, startDate = null
 };
 
 module.exports = {
-  getAdminDashboard,
-  getManagerDashboard,
-  getEmployeeDashboard
+    getAdminDashboard,
+    getManagerDashboard,
+    getEmployeeDashboard
 };
