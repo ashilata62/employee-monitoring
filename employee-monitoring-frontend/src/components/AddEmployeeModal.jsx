@@ -101,19 +101,21 @@ export function AddEmployeeModal({ isOpen, onClose, initialTab = 'single' }) {
         setSingleForm(prev => ({ ...prev, password: retVal }));
     };
 
-    const isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-    const downloadAgentUrl = isLocal ? 'http://localhost:5000/api/agent/download' : `${API_BASE_URL}/agent/download`;
+    const liveBackendUrl = (API_BASE_URL && !API_BASE_URL.includes('localhost'))
+        ? `${API_BASE_URL}/agent/download`
+        : 'https://insight-pool-production.up.railway.app/api/agent/download';
+    const downloadAgentUrl = liveBackendUrl;
 
     const handleCopy = () => {
         navigator.clipboard.writeText(downloadAgentUrl);
         setCopied(true);
-        toast.success("Direct download link copied to clipboard!");
+        toast.success("Live direct download link copied to clipboard!");
         setTimeout(() => setCopied(false), 2000);
     };
 
     const handleDownloadWindows = () => {
         const link = document.createElement('a');
-        link.href = isLocal ? '/agent/EMS-Tracker-latest.exe' : downloadAgentUrl;
+        link.href = downloadAgentUrl;
         link.setAttribute('download', 'EMS-Tracker-latest.exe');
         link.target = '_blank';
         document.body.appendChild(link);
