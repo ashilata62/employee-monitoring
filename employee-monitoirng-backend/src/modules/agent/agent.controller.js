@@ -351,20 +351,23 @@ const getHealth = async (req, res) => {
     return successResponse(res, { status: 'healthy' }, 'Agent health checked successfully');
 };
 
+const GITHUB_AGENT_DOWNLOAD_URL = 'https://raw.githubusercontent.com/ashilata62/employee-monitoring/main/employee-monitoirng-backend/public/agent/EMS-Tracker-latest.exe';
+
 const downloadAgent = async (req, res) => {
     try {
         const primaryPath = path.join(__dirname, '../../../public/agent/EMS-Tracker-latest.exe');
         const altPath = path.join(__dirname, '../../../public/agent/Insightful Agent Setup 1.0.2.exe');
         const targetPath = fs.existsSync(primaryPath) ? primaryPath : (fs.existsSync(altPath) ? altPath : null);
         
-        if (!targetPath) {
-            return errorResponse(res, 'Agent installer not found. Please contact administrator.', 404);
+        if (targetPath) {
+            return res.download(targetPath, 'EMS-Tracker-latest.exe');
         }
         
-        res.download(targetPath, 'EMS-Tracker-latest.exe');
+        // If executable not present in local container disk, redirect to GitHub global CDN
+        return res.redirect(GITHUB_AGENT_DOWNLOAD_URL);
     } catch (error) {
         console.error('Agent download error:', error);
-        return errorResponse(res, 'Failed to download agent', 500);
+        return res.redirect(GITHUB_AGENT_DOWNLOAD_URL);
     }
 };
 
