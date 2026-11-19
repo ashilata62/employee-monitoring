@@ -3,7 +3,7 @@ import api from "./apiClient";
 const notificationService = {
     getNotifications: async (params = {}) => {
         try {
-            const response = await api.get("/notifications", { params });
+            const response = await api.get("/notifications", { params, skipToast: true });
             return response.data;
         } catch (e) {
             return { success: true, data: [] };
@@ -11,13 +11,17 @@ const notificationService = {
     },
 
     createNotification: async (data = {}) => {
-        // Ephemeral local notification - avoid firing unsupported POST to remote backend
-        return { success: true, data };
+        try {
+            const response = await api.post("/notifications", data, { skipToast: true });
+            return response.data;
+        } catch (e) {
+            return { success: true, data };
+        }
     },
 
     markAsRead: async (id) => {
         try {
-            const response = await api.patch(`/notifications/${id}/read`);
+            const response = await api.patch(`/notifications/${id}/read`, {}, { skipToast: true });
             return response.data;
         } catch (e) {
             return { success: true };
@@ -26,7 +30,7 @@ const notificationService = {
 
     markAllAsRead: async () => {
         try {
-            const response = await api.patch("/notifications/mark-all-read");
+            const response = await api.patch("/notifications/mark-all-read", {}, { skipToast: true });
             return response.data;
         } catch (e) {
             return { success: true };
@@ -35,7 +39,7 @@ const notificationService = {
 
     deleteNotification: async (id) => {
         try {
-            const response = await api.delete(`/notifications/${id}`);
+            const response = await api.delete(`/notifications/${id}`, { skipToast: true });
             return response.data;
         } catch (e) {
             return { success: true };
@@ -44,7 +48,7 @@ const notificationService = {
 
     deleteAllNotifications: async () => {
         try {
-            const response = await api.delete("/notifications/delete-all");
+            const response = await api.delete("/notifications/delete-all", { skipToast: true });
             return response.data;
         } catch (e) {
             return { success: true };
