@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../../store/authStore';
 import { ChevronLeft, Users, MoreVertical, Plus } from 'lucide-react';
 import { useUserStore } from '../../store/userStore';
 import { AddOrgGroupModal } from '../../components/users/AddOrgGroupModal';
@@ -51,6 +52,15 @@ function OrgGroupCard({ group, users, onDelete }) {
 
 export function ManageOrgGroups() {
     const navigate = useNavigate();
+    const { role } = useAuthStore();
+    const rolePath = role ? `/${role.toLowerCase()}` : '/admin';
+    const handleBack = () => {
+        if (window.history.length > 1) {
+            navigate(-1);
+        } else {
+            navigate(`${rolePath}/settings`);
+        }
+    };
     const { orgGroups, users, removeOrgGroup } = useUserStore();
     const [modalOpen, setModalOpen] = useState(false);
     const [confirmDelete, setConfirmDelete] = useState(null);
@@ -60,13 +70,13 @@ export function ManageOrgGroups() {
             {/* Header */}
             <div className="flex items-center justify-between pt-8 pb-6">
                 <div className="flex items-center gap-4">
-                    <button onClick={() => navigate('/settings')} className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-all hover:scale-105 shadow-sm">
+                    <button onClick={handleBack} className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-all hover:scale-105 shadow-sm">
                         <ChevronLeft size={20} />
                     </button>
                     <div>
                         <nav className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">
-                            <span className="cursor-pointer hover:text-slate-600 dark:hover:text-slate-300 transition-colors" onClick={() => navigate('/settings')}>Settings</span>
-                            <span>/</span><span className="cursor-pointer hover:text-primary-600 transition-colors" onClick={() => navigate('/settings/user-management/users')}>Manage Users</span>
+                            <span className="cursor-pointer hover:text-slate-600 dark:hover:text-slate-300 transition-colors" onClick={() => navigate(`${rolePath}/settings`)}>Settings</span>
+                            <span>/</span><span className="cursor-pointer hover:text-primary-600 transition-colors" onClick={() => navigate(`${rolePath}/settings/user-management/users`)}>Manage Users</span>
                             <span>/</span><span className="text-primary-600">Org Groups</span>
                         </nav>
                         <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Manage Users</h1>
@@ -80,8 +90,8 @@ export function ManageOrgGroups() {
             {/* Tabs */}
             <div className="flex items-center gap-1 border-b border-slate-200 dark:border-slate-800 mb-8">
                 {[
-                    { id: 'users', label: 'Manage Users', path: '/settings/user-management/users' },
-                    { id: 'orgGroups', label: 'Manage Org Groups', path: '/settings/user-management/org-groups' },
+                    { id: 'users', label: 'Manage Users', path: `${rolePath}/settings/user-management/users` },
+                    { id: 'orgGroups', label: 'Manage Org Groups', path: `${rolePath}/settings/user-management/org-groups` },
                 ].map((tab) => (
                     <button key={tab.id} onClick={() => navigate(tab.path)}
                         className={cn('px-4 py-3 text-sm font-black border-b-2 transition-all', tab.id === 'orgGroups' ? 'border-primary-600 text-primary-600 dark:text-primary-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300')}>

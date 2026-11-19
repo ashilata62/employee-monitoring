@@ -1,11 +1,21 @@
 import React, { useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../../store/authStore';
 import { ChevronLeft } from 'lucide-react';
 import { PersonalInfoTab } from '../../components/settings/PersonalInfoTab';
 import { LocalizationTab } from '../../components/settings/LocalizationTab';
 
 export function PersonalSettings() {
     const navigate = useNavigate();
+    const { role } = useAuthStore();
+    const rolePath = role ? `/${role.toLowerCase()}` : '/admin';
+    const handleBack = () => {
+        if (window.history.length > 1) {
+            navigate(-1);
+        } else {
+            navigate(`${rolePath}/settings`);
+        }
+    };
     const [searchParams, setSearchParams] = useSearchParams();
     const currentTab = searchParams.get('tab') || 'info';
 
@@ -18,7 +28,7 @@ export function PersonalSettings() {
             <div className="py-8 mb-4 border-b border-slate-200 dark:border-slate-800">
                 <div className="flex items-center gap-4">
                     <button
-                        onClick={() => navigate(-1)}
+                        onClick={handleBack}
                         className="h-10 w-10 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-400 hover:text-primary-600 hover:border-primary-200 transition-all shadow-sm group"
                     >
                         <ChevronLeft size={20} className="group-hover:-translate-x-0.5 transition-transform" />

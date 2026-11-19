@@ -17,6 +17,7 @@ import {
     Monitor
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../../store/authStore';
 import { useAuditLogStore } from '../../store/auditLogStore';
 import { UserFilterModal } from '../../components/filters/UserFilterModal';
 import { RoleFilterModal } from '../../components/filters/RoleFilterModal';
@@ -24,6 +25,15 @@ import { cn } from '../../utils/cn';
 
 export function AuditLogs() {
     const navigate = useNavigate();
+    const { role } = useAuthStore();
+    const rolePath = role ? `/${role.toLowerCase()}` : '/admin';
+    const handleBack = () => {
+        if (window.history.length > 1) {
+            navigate(-1);
+        } else {
+            navigate(`${rolePath}/settings`);
+        }
+    };
     const { auditLogs, isLoading, fetchAuditLogs, filters, setFilters, sortConfig, setSort, clearFilters } = useAuditLogStore();
 
     const [isUserModalOpen, setIsUserModalOpen] = useState(false);
@@ -121,14 +131,14 @@ export function AuditLogs() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div className="flex items-center gap-4">
                     <button
-                        onClick={() => navigate('/settings')}
+                        onClick={handleBack}
                         className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-all hover:scale-105 shadow-sm"
                     >
                         <ChevronLeft size={20} />
                     </button>
                     <div>
                         <nav className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">
-                            <span className="hover:text-slate-600 transition-colors cursor-pointer" onClick={() => navigate('/settings')}>Settings</span>
+                            <span className="hover:text-slate-600 transition-colors cursor-pointer" onClick={() => navigate(`${rolePath}/settings`)}>Settings</span>
                             <span>/</span>
                             <span className="text-primary-600">Audit Logs</span>
                         </nav>

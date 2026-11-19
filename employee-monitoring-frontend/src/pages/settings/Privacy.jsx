@@ -19,6 +19,13 @@ export function Privacy() {
     const [errors, setErrors] = useState({});
 
     const rolePath = role?.toLowerCase() === 'admin' ? '/admin' : '/manager';
+    const handleBack = () => {
+        if (window.history.length > 1) {
+            navigate(-1);
+        } else {
+            navigate(`${rolePath}/settings`);
+        }
+    };
 
     React.useEffect(() => {
         fetchPrivacySettings();
@@ -55,7 +62,7 @@ export function Privacy() {
             {/* Header */}
             <div className="flex items-center gap-4 pt-8 pb-4">
                 <button
-                    onClick={() => navigate(`${rolePath}/settings`)}
+                    onClick={handleBack}
                     className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-all hover:scale-105 shadow-sm"
                 >
                     <ChevronLeft size={20} />

@@ -114,6 +114,13 @@ export function ProductivityApps() {
     const navigate = useNavigate();
     const { user } = useAuthStore();
     const rolePath = user?.role === 'ADMIN' ? '/admin' : '/manager';
+    const handleBack = () => {
+        if (window.history.length > 1) {
+            navigate(-1);
+        } else {
+            navigate(`${rolePath}/settings`);
+        }
+    };
 
     const {
         apps, filters, tags, loading, error,
@@ -200,7 +207,7 @@ export function ProductivityApps() {
             {/* Header */}
             <div className="flex items-center justify-between pt-8 pb-5">
                 <div className="flex items-center gap-4">
-                    <button onClick={() => navigate(`${rolePath}/settings`)} className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-all hover:scale-105 shadow-sm">
+                    <button onClick={handleBack} className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-all hover:scale-105 shadow-sm">
                         <ChevronLeft size={20} />
                     </button>
                     <div>

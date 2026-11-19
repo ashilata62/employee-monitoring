@@ -28,7 +28,14 @@ export function LocationInsightsSettings() {
     const routerLocation = useLocation();
     const { locationSettings, updateThreshold, importLocations, addLocation, deleteLocation, toggleAutoDetection } = useLocationStore();
 
-    const rolePath = role ? `/${role.toLowerCase()}` : '';
+    const rolePath = role ? `/${role.toLowerCase()}` : '/admin';
+    const handleBack = () => {
+        if (window.history.length > 1) {
+            navigate(-1);
+        } else {
+            navigate(`${rolePath}/settings`);
+        }
+    };
 
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -87,7 +94,7 @@ export function LocationInsightsSettings() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
                     <button
-                        onClick={() => navigate(`${rolePath}/settings`)}
+                        onClick={handleBack}
                         className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-all hover:scale-105 shadow-sm"
                     >
                         <ChevronLeft size={20} />
