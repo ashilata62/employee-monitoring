@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sun, Moon, Bell, Menu, CheckCircle2, AlertCircle, Info, X } from 'lucide-react';
+import { Sun, Moon, Bell, Menu, CheckCircle2, AlertCircle, AlertTriangle, Info, X } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useTheme } from '../hooks/useTheme';
 import { useAuthStore } from '../store/authStore';
@@ -66,29 +66,35 @@ export function Header({ onMenuClick }) {
                     <button
                         onClick={() => setShowNotifications(!showNotifications)}
                         className={clsx(
-                            "relative flex h-9 w-9 items-center justify-center rounded-xl transition-all active:scale-95",
+                            "relative flex h-9 w-9 items-center justify-center rounded-xl transition-all active:scale-95 cursor-pointer",
                             showNotifications
                                 ? "bg-[#B9955B] text-white"
                                 : "text-[#777367] hover:bg-[#EEE8DD] hover:text-[#29291F] dark:text-[#B8B3A7] dark:hover:bg-[#283025]"
                         )}
-                        title="Notifications"
+                        title="Notifications & Alerts"
                     >
-                        <Bell size={18} className={unreadCount > 0 ? "animate-pulse" : ""} />
+                        <Bell size={18} className={unreadCount > 0 ? "text-[#C98A3C] dark:text-[#D3B98D]" : ""} />
                         {unreadCount > 0 && (
-                            <span className="absolute right-2 top-2 flex h-2 w-2">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#A84B4B] opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#A84B4B] ring-2 ring-[#F5F1E9] dark:ring-[#1A1F18]"></span>
+                            <span className="absolute -top-1 -right-1 flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-[#A84B4B] text-[9px] font-bold text-white shadow-sm ring-2 ring-[#F5F1E9] dark:ring-[#1A1F18]">
+                                {unreadCount > 9 ? '9+' : unreadCount}
                             </span>
                         )}
                     </button>
 
                     {showNotifications && (
-                        <div className="fixed left-4 right-4 top-[4.5rem] w-auto md:absolute md:right-0 md:top-full md:left-auto md:w-80 md:mt-2 origin-top-right rounded-2xl border border-[#E5DED2] bg-[#FBF9F5] shadow-xl dark:border-[#384232] dark:bg-[#252B20] animate-in fade-in slide-in-from-top-1 z-50 overflow-hidden">
+                        <div className="fixed left-4 right-4 top-[4.5rem] w-auto md:absolute md:right-0 md:top-full md:left-auto md:w-96 md:mt-2 origin-top-right rounded-2xl border border-[#E5DED2] bg-[#FBF9F5] shadow-2xl dark:border-[#384232] dark:bg-[#252B20] animate-in fade-in slide-in-from-top-1 z-50 overflow-hidden">
                             <div className="flex items-center justify-between border-b border-[#E5DED2] px-4 py-3 dark:border-[#384232]">
-                                <h3 className="text-sm font-semibold text-[#29291F] dark:text-[#F5F1E9]">Notifications</h3>
+                                <div className="flex items-center gap-2">
+                                    <h3 className="text-sm font-semibold text-[#29291F] dark:text-[#F5F1E9]">Notifications</h3>
+                                    {unreadCount > 0 && (
+                                        <span className="px-2 py-0.5 rounded-full bg-[#A84B4B]/15 text-[#A84B4B] text-[10px] font-bold">
+                                            {unreadCount} new
+                                        </span>
+                                    )}
+                                </div>
                                 <button
                                     onClick={markAllNotificationsRead}
-                                    className="text-xs font-semibold text-[#B9955B] hover:text-[#A17D45] transition-colors"
+                                    className="text-xs font-semibold text-[#B9955B] hover:text-[#A17D45] transition-colors cursor-pointer"
                                 >
                                     Mark all as read
                                 </button>
@@ -112,13 +118,15 @@ export function Header({ onMenuClick }) {
                                         >
                                             <div className={clsx(
                                                 "flex h-8 w-8 shrink-0 items-center justify-center rounded-xl mt-0.5",
-                                                n.type === 'alert' && "bg-[#FAF3F2] text-[#A84B4B]",
-                                                n.type === 'success' && "bg-[#F4F7F4] text-[#5E7D64]",
-                                                n.type === 'info' && "bg-[#F8F2E4] text-[#B9955B]"
+                                                (n.type === 'alert' || n.type === 'error') && "bg-[#FAF3F2] text-[#A84B4B] dark:bg-[#3D2525] dark:text-[#E58B8B]",
+                                                (n.type === 'warning' || n.type === 'idle') && "bg-[#FAF0E1] text-[#C98A3C] dark:bg-[#332717] dark:text-[#E5B56D]",
+                                                n.type === 'success' && "bg-[#F4F7F4] text-[#5E7D64] dark:bg-[#1E2B20] dark:text-[#8BB394]",
+                                                (n.type === 'info' || !n.type) && "bg-[#F8F2E4] text-[#B9955B] dark:bg-[#2C2417] dark:text-[#D3B98D]"
                                             )}>
-                                                {n.type === 'alert' && <AlertCircle size={16} />}
+                                                {(n.type === 'alert' || n.type === 'error') && <AlertCircle size={16} />}
+                                                {(n.type === 'warning' || n.type === 'idle') && <AlertTriangle size={16} />}
                                                 {n.type === 'success' && <CheckCircle2 size={16} />}
-                                                {n.type === 'info' && <Info size={16} />}
+                                                {(n.type === 'info' || !n.type) && <Info size={16} />}
                                             </div>
                                             <div className="flex-1">
                                                 <div className="flex items-start justify-between">

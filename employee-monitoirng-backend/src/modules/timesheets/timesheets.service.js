@@ -213,8 +213,9 @@ const timesheetsService = {
             employeeWhere.id = filters.employeeId;
         }
 
-        // If requester is a Manager, scope to their team
+        // If requester is a Manager, scope to role EMPLOYEE and their team
         if (requester.role === 'MANAGER') {
+            employeeWhere.role = 'EMPLOYEE';
             const manager = await prisma.employee.findUnique({
                 where: { id: requester.employeeId },
                 select: { teamId: true }
@@ -336,10 +337,15 @@ const timesheetsService = {
                 select: { teamId: true }
             });
 
-            where.employee = {
-                teamId: manager?.teamId || null,
+            const empCondition = {
+                role: 'EMPLOYEE',
                 id: { not: requester.employeeId } // Manager cannot approve self
             };
+            if (manager?.teamId) {
+                empCondition.teamId = manager.teamId;
+            }
+
+            where.employee = empCondition;
         }
 
         const submittedTimesheets = await prisma.timesheet.findMany({

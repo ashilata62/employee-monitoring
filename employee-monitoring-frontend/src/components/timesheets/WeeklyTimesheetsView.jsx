@@ -71,11 +71,23 @@ export function WeeklyTimesheetsView({ employees = [] }) {
         return '<1m';
     };
 
+    // Auto-select first managed employee for manager if none selected
+    useEffect(() => {
+        if (role === 'MANAGER' && !selectedEmployeeId && selectableEmployees.length > 0) {
+            setSelectedEmployeeId(selectableEmployees[0].id);
+        }
+    }, [role, selectedEmployeeId, selectableEmployees]);
+
     // Initial load and filter change
     const loadTimesheet = async () => {
+        if (role === 'MANAGER' && selectableEmployees.length === 0) {
+            setData(null);
+            return;
+        }
         setLoading(true);
         try {
-            const empId = role === 'EMPLOYEE' ? null : (selectedEmployeeId || null);
+            const defaultEmpId = role === 'MANAGER' ? (selectableEmployees[0]?.id || null) : null;
+            const empId = role === 'EMPLOYEE' ? null : (selectedEmployeeId || defaultEmpId);
             const res = await timesheetService.getWeek(weekStart, empId);
             if (res.success) {
                 let list = Array.isArray(res.data) ? res.data : (res.data ? [res.data] : []);
@@ -165,6 +177,7 @@ export function WeeklyTimesheetsView({ employees = [] }) {
 
                 <div className="flex items-center gap-3">
                     {/* Admin/Manager Employee Picker - Strictly non-admin employees */}
+                    {/* Admin/Manager Employee Picker */}
                     {(role === 'ADMIN' || role === 'MANAGER') && selectableEmployees.length > 0 && (
                         <select
                             value={selectedEmployeeId}

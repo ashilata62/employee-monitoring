@@ -51,13 +51,23 @@ const timesheetsController = {
                 }
 
                 // If requester is a Manager, enforce team-level authorization
+                // If requester is a Manager, enforce role and team-level authorization
                 if (role === 'MANAGER' && targetEmployeeId !== employeeId) {
+                    const targetEmpRole = await prisma.employee.findUnique({
+                        where: { id: targetEmployeeId },
+                        select: { role: true, teamId: true }
+                    });
+
+                    if (targetEmpRole?.role === 'ADMIN') {
+                        return errorResponse(res, 'Access denied: You cannot access admin timesheets', 403);
+                    }
+
                     const manager = await prisma.employee.findUnique({
                         where: { id: employeeId },
                         select: { teamId: true }
                     });
 
-                    if (!manager?.teamId || manager.teamId !== targetEmployee.teamId) {
+                    if (manager?.teamId && manager.teamId !== targetEmployee.teamId) {
                         return errorResponse(res, 'Access denied: You can only access timesheets for employees in your assigned team', 403);
                     }
                 }

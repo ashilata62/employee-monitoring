@@ -122,6 +122,7 @@ async function calculateMetrics(organizationId, employeeId = null, teamId = null
         unproductiveTime: formatToHM(unproductiveTime || idleTime), // Use actual UNPRODUCTIVE or fallback roughly to idle
         neutralTime: formatToHM(neutralTime),
         utilization,
+        productivity: utilization,
         totalWorkHours: Number((workTime / 3600).toFixed(2)),
         rawSeconds: {
             workTime,
@@ -565,37 +566,56 @@ const getAdminDashboard = async (organizationId, startDate = null, endDate = nul
 };
 
 const getManagerDashboard = async (organizationId, teamId, startDate = null, endDate = null, compareStartDate = null, compareEndDate = null, employeeId = null, role = null) => {
-    const empWhere = { organizationId };
-    if (teamId) empWhere.teamId = teamId;
+    const employeeWhere = { organizationId };
+    if (teamId) {
+        employeeWhere.teamId = teamId;
+    } else {
+        employeeWhere.role = 'EMPLOYEE';
+    }
 
-    const logWhere = { organizationId };
-    if (teamId) logWhere.employee = { teamId };
+    const activityWhere = { organizationId };
+    if (teamId) {
+        activityWhere.employee = { teamId };
+    } else {
+        activityWhere.employee = { role: 'EMPLOYEE' };
+    }
 
     const taskWhere = { organizationId };
-    if (teamId) taskWhere.employee = { teamId };
+    if (teamId) {
+        taskWhere.employee = { teamId };
+    } else {
+        taskWhere.employee = { role: 'EMPLOYEE' };
+    }
 
-    const attWhere = { organizationId };
-    if (teamId) attWhere.employee = { teamId };
+    const attendanceWhere = { organizationId };
+    if (teamId) {
+        attendanceWhere.employee = { teamId };
+    } else {
+        attendanceWhere.employee = { role: 'EMPLOYEE' };
+    }
 
     const [employees, activityLogs, tasks, attendance] = await Promise.all([
-        prisma.employee.findMany({ where: empWhere }),
+        prisma.employee.findMany({ where: employeeWhere }),
         prisma.activityLog.findMany({
-            where: logWhere,
+            where: activityWhere,
             take: 10,
             orderBy: { timestamp: 'desc' }
         }),
         prisma.task.findMany({ where: taskWhere }),
-        prisma.attendance.count({ where: attWhere })
+        prisma.attendance.count({ where: attendanceWhere })
     ]);
 
-    const summary = await calculateMetrics(organizationId, employeeId, teamId, startDate, endDate, role);
-    const intradayActivity = await getIntradayActivity(organizationId, employeeId, teamId, startDate, endDate, role);
-    const rankings = await getEmployeeRankings(organizationId, teamId, startDate, endDate, role);
-    const comparison = await getMetricsComparison(organizationId, employeeId, teamId, startDate, endDate, compareStartDate, compareEndDate, role);
-    const productivityBreakdown = await getDailyProductivityBreakdown(organizationId, employeeId, teamId, startDate, endDate, role);
+    const effectiveRole = role || (teamId ? null : 'EMPLOYEE');
+    const summary = await calculateMetrics(organizationId, employeeId, teamId, startDate, endDate, effectiveRole);
+    const intradayActivity = await getIntradayActivity(organizationId, employeeId, teamId, startDate, endDate, effectiveRole);
+    const rankings = await getEmployeeRankings(organizationId, teamId, startDate, endDate, effectiveRole);
+    const comparison = await getMetricsComparison(organizationId, employeeId, teamId, startDate, endDate, compareStartDate, compareEndDate, effectiveRole);
+    const productivityBreakdown = await getDailyProductivityBreakdown(organizationId, employeeId, teamId, startDate, endDate, effectiveRole);
 
     // Provide contextTeams for the manager UI to avoid crashes if UI expects an array
-    const contextTeams = await prisma.team.findMany({ where: teamId ? { id: teamId } : { organizationId } });
+    const contextTeams = teamId
+        ? await prisma.team.findMany({ where: { id: teamId } })
+        : await prisma.team.findMany({ where: { organizationId } });
 
     return {
         employees,
