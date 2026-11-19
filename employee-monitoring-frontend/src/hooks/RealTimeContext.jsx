@@ -127,18 +127,55 @@ export function RealTimeProvider({ children }) {
         employeesRef.current = state.employees;
     }, [state.employees]);
 
-    const addNotification = useCallback((title, type = 'info', description = '') => {
+    const addNotification = useCallback((title, type = 'info', description = '', options = {}) => {
+        if (!title) return;
         const n = {
-            id: `${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+            id: options.id || `${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
             title,
             description: description || '',
             time: 'Just now',
             type,
-            unread: true
+            unread: true,
+            link: options.link || null,
+            createdAt: new Date().toISOString()
         };
-        setState(prev => ({ ...prev, notifications: [n, ...prev.notifications].slice(0, 50) }));
-        // Note: Notifications are kept inside the Bell Icon dropdown to avoid screen-blocking popups
+        setState(prev => {
+            // Deduplicate if identical title exists within 3 seconds
+            const duplicate = prev.notifications.some(existing =>
+                existing.title === title &&
+                Math.abs(Date.now() - new Date(existing.createdAt || Date.now()).getTime()) < 3000
+            );
+            if (duplicate) return prev;
+            return {
+                ...prev,
+                notifications: [n, ...prev.notifications].slice(0, 50)
+            };
+        });
+
+        // Persist notification to backend database
+        try {
+            notificationService.createNotification({
+                title,
+                description: description || '',
+                type,
+                link: options.link || null
+            }).catch(() => {});
+        } catch (e) {}
     }, []);
+
+    // Listen to all toast notifications across the app and record them in the Bell dropdown
+    useEffect(() => {
+        const handleToastNotification = (event) => {
+            const { title, message, type = 'info', description = '', link = null, id } = event.detail || {};
+            const text = title || message;
+            if (text) {
+                addNotification(text, type, description, { id, link });
+            }
+        };
+
+        window.addEventListener('app:toast_notification', handleToastNotification);
+        return () => window.removeEventListener('app:toast_notification', handleToastNotification);
+    }, [addNotification]);
 
     // Initial Load — merge saved session data (timer, notifications, user-added records)
     useEffect(() => {
@@ -381,10 +418,15 @@ export function RealTimeProvider({ children }) {
         try {
             const res = await notificationService.getNotifications({ limit: 50 });
             if (res && res.notifications) {
-                setState(prev => ({
-                    ...prev,
-                    notifications: res.notifications
-                }));
+                setState(prev => {
+                    const serverIds = new Set(res.notifications.map(n => String(n.id)));
+                    // Preserve unread local notifications that might not yet be returned from the server
+                    const localPending = prev.notifications.filter(n => !serverIds.has(String(n.id)) && n.unread);
+                    return {
+                        ...prev,
+                        notifications: [...localPending, ...res.notifications].slice(0, 50)
+                    };
+                });
             }
         } catch (err) {
             console.error('Failed to sync notifications:', err);
@@ -580,17 +622,19 @@ export function RealTimeProvider({ children }) {
             syncLogs();
 
             const currentRole = useAuthStore.getState().role?.toUpperCase();
+            const currentEmps = employeesRef.current || [];
+            const emp = currentEmps.find(e => String(e.id) === String(data.employeeId));
+            const empName = emp ? (emp.fullName || emp.name) : 'An employee';
+            const normType = String(data.type || data.status || '').toLowerCase().replace(/_/g, '-');
+
             if (currentRole === 'ADMIN' || currentRole === 'MANAGER') {
-                const currentEmps = employeesRef.current || [];
-                const emp = currentEmps.find(e => String(e.id) === String(data.employeeId));
-                const empName = emp ? (emp.fullName || emp.name) : 'An employee';
-                if (data.type === 'clock-in') {
+                if (normType === 'clock-in') {
                     addNotification(`${empName} checked in`, 'info');
-                } else if (data.type === 'clock-out') {
+                } else if (normType === 'clock-out') {
                     addNotification(`${empName} clocked out`, 'info');
-                } else if (data.type === 'break-start') {
+                } else if (normType === 'break-start') {
                     addNotification(`${empName} went on break`, 'info');
-                } else if (data.type === 'break-end') {
+                } else if (normType === 'break-end') {
                     addNotification(`${empName} returned from break`, 'info');
                 }
             }

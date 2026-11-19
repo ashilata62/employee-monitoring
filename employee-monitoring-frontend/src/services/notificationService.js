@@ -6,6 +6,11 @@ const notificationService = {
         return response.data;
     },
 
+    createNotification: async (data = {}) => {
+        const response = await api.post("/notifications", data);
+        return response.data;
+    },
+
     markAsRead: async (id) => {
         const response = await api.patch(`/notifications/${id}/read`);
         return response.data;
