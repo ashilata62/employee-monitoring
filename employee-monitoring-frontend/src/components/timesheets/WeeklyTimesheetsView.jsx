@@ -18,10 +18,10 @@ import { useAuthStore } from '../../store/authStore';
 import { toast } from '../../utils/toastManager';
 
 const STATUS_BADGE = {
-    DRAFT: 'bg-[#E5DDCF] text-[#777367] border-[#D6CDBC]',
-    SUBMITTED: 'bg-[#FAF0E1] text-[#C98A3C] border-[#E8D4B8]',
-    APPROVED: 'bg-[#EAEFEA] text-[#5E7D64] border-[#C5D7C7]',
-    REJECTED: 'bg-[#FAF3F2] text-[#A84B4B] border-[#F2D6D3]'
+    DRAFT: 'bg-[#E5DDCF] dark:bg-[#252B20] text-[#777367] dark:text-[#B8B3A7] border-[#D6CDBC] dark:border-[#384232]',
+    SUBMITTED: 'bg-[#FAF0E1] dark:bg-[#2C2415] text-[#C98A3C] dark:text-[#E5B56D] border-[#E8D4B8] dark:border-[#5C4A28]',
+    APPROVED: 'bg-[#EAEFEA] dark:bg-[#1E2B20] text-[#5E7D64] dark:text-[#8BB394] border-[#C5D7C7] dark:border-[#325238]',
+    REJECTED: 'bg-[#FAF3F2] dark:bg-[#2E1E1E] text-[#A84B4B] dark:text-[#E07A7A] border-[#F2D6D3] dark:border-[#572E2E]'
 };
 
 export function WeeklyTimesheetsView({ employees = [] }) {
@@ -79,10 +79,6 @@ export function WeeklyTimesheetsView({ employees = [] }) {
 
     useEffect(() => {
         loadTimesheet();
-        const interval = setInterval(() => {
-            loadTimesheet();
-        }, 30000);
-        return () => clearInterval(interval);
     }, [weekStart, selectedEmployeeId]);
 
     const handleSubmit = async () => {
@@ -128,7 +124,7 @@ export function WeeklyTimesheetsView({ employees = [] }) {
                             Week of {weekStart}
                         </span>
                         {data && (
-                            <span className="text-[10px] text-[#777367]">
+                            <span className="text-[10px] text-[#777367] dark:text-[#B8B3A7]">
                                 ({data.weekStart} to {data.weekEnd})
                             </span>
                         )}
@@ -149,26 +145,19 @@ export function WeeklyTimesheetsView({ employees = [] }) {
                 </div>
 
                 <div className="flex items-center gap-3">
-                    {/* Admin/Manager Employee Picker: filter out ADMIN, team-scoped for MANAGER, show proper role and team */}
-                    {(role === 'ADMIN' || role === 'MANAGER') && (
+                    {/* Admin/Manager Employee Picker */}
+                    {(role === 'ADMIN' || role === 'MANAGER') && employees.length > 0 && (
                         <select
-                            value={selectedEmployeeId || (data?.employeeId || '')}
+                            value={selectedEmployeeId}
                             onChange={(e) => setSelectedEmployeeId(e.target.value)}
                             className="text-xs font-semibold bg-[#F5F1E9] dark:bg-[#1E2419] border border-[#D6CDBC] dark:border-[#384232] rounded-xl px-3.5 py-2 text-[#29291F] dark:text-[#F5F1E9] outline-none focus:border-[#B9955B] cursor-pointer"
                         >
-                            <option value="">{role === 'MANAGER' ? 'All Team Timesheets' : 'Select Employee...'}</option>
-                            {selectableEmployees.map(emp => {
-                                const team = typeof emp.team === 'object' ? emp.team?.name : emp.team;
-                                const teamLabel = team && team !== 'Unassigned' && team !== 'General' ? team : null;
-                                const roleUpper = (emp.role || 'EMPLOYEE').toUpperCase();
-                                const roleLabel = roleUpper === 'MANAGER' ? 'Manager' : 'Employee';
-                                const displayInfo = teamLabel ? `${roleLabel} • ${teamLabel}` : roleLabel;
-                                return (
-                                    <option key={emp.id} value={emp.id}>
-                                        {emp.fullName || emp.name} ({displayInfo})
-                                    </option>
-                                );
-                            })}
+                            <option value="">Select Employee...</option>
+                            {employees.map(emp => (
+                                <option key={emp.id} value={emp.id}>
+                                    {emp.fullName || emp.name} ({emp.team?.name || 'General'})
+                                </option>
+                            ))}
                         </select>
                     )}
 
@@ -206,12 +195,12 @@ export function WeeklyTimesheetsView({ employees = [] }) {
                                     {data.status}
                                 </span>
                                 {data.overThreshold && (
-                                    <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-[#FAF0E1] text-[#C98A3C] border border-[#E8D4B8]">
+                                    <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-[#FAF0E1] dark:bg-[#2C2415] text-[#C98A3C] dark:text-[#E5B56D] border border-[#E8D4B8] dark:border-[#5C4A28]">
                                         <AlertTriangle size={11} /> {fmtH(data.overtimeMinutes)} OT
                                     </span>
                                 )}
                             </div>
-                            <p className="text-xs text-[#777367] mt-1">
+                            <p className="text-xs text-[#777367] dark:text-[#B8B3A7] mt-1">
                                 Team: <span className="font-semibold text-[#29291F] dark:text-[#F5F1E9]">{data.teamName}</span> · Rate: <span className="font-semibold text-[#29291F] dark:text-[#F5F1E9]">{fmtMoney(data.hourlyRate)}/h</span>
                             </p>
                         </div>
@@ -221,16 +210,16 @@ export function WeeklyTimesheetsView({ employees = [] }) {
                             <div className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-[#F5F1E9] dark:bg-[#1E2419] border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs">
                                 <Clock size={16} className="text-[#B9955B]" />
                                 <div>
-                                    <div className="text-[10px] uppercase font-bold text-[#777367] tracking-wider">Total Hours</div>
+                                    <div className="text-[10px] uppercase font-bold text-[#777367] dark:text-[#B8B3A7] tracking-wider">Total Hours</div>
                                     <div className="text-sm font-bold text-[#29291F] dark:text-[#F5F1E9] tabular-nums">{fmtH(data.totalMinutes)}</div>
                                 </div>
                             </div>
 
                             <div className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-[#F5F1E9] dark:bg-[#1E2419] border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs">
-                                <DollarSign size={16} className="text-[#5E7D64]" />
+                                <DollarSign size={16} className="text-[#5E7D64] dark:text-[#8BB394]" />
                                 <div>
-                                    <div className="text-[10px] uppercase font-bold text-[#777367] tracking-wider">Total Pay</div>
-                                    <div className="text-sm font-bold text-[#5E7D64] tabular-nums">{fmtMoney(data.totalPay)}</div>
+                                    <div className="text-[10px] uppercase font-bold text-[#777367] dark:text-[#B8B3A7] tracking-wider">Total Pay</div>
+                                    <div className="text-sm font-bold text-[#5E7D64] dark:text-[#8BB394] tabular-nums">{fmtMoney(data.totalPay)}</div>
                                 </div>
                             </div>
 
@@ -247,14 +236,14 @@ export function WeeklyTimesheetsView({ employees = [] }) {
                             )}
 
                             {data.status === 'SUBMITTED' && (
-                                <span className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#FAF0E1] text-[#C98A3C] text-xs font-bold border border-[#E8D4B8]">
+                                <span className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#FAF0E1] dark:bg-[#2C2415] text-[#C98A3C] dark:text-[#E5B56D] text-xs font-bold border border-[#E8D4B8] dark:border-[#5C4A28]">
                                     <Clock size={13} />
                                     Submitted · Awaiting Review
                                 </span>
                             )}
 
                             {data.status === 'APPROVED' && (
-                                <span className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#EAEFEA] text-[#5E7D64] text-xs font-bold border border-[#C5D7C7]">
+                                <span className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#EAEFEA] dark:bg-[#1E2B20] text-[#5E7D64] dark:text-[#8BB394] text-xs font-bold border border-[#C5D7C7] dark:border-[#325238]">
                                     <CheckCircle2 size={13} />
                                     Approved & Locked
                                 </span>
@@ -264,13 +253,13 @@ export function WeeklyTimesheetsView({ employees = [] }) {
 
                     {/* Rejection Alert Banner */}
                     {data.status === 'REJECTED' && data.approvals && data.approvals.length > 0 && (
-                        <div className="p-4 rounded-xl bg-[#FAF3F2] border border-[#F2D6D3] flex items-start gap-3">
-                            <XCircle size={18} className="text-[#A84B4B] shrink-0 mt-0.5" />
+                        <div className="p-4 rounded-xl bg-[#FAF3F2] dark:bg-[#2E1E1E] border border-[#F2D6D3] dark:border-[#572E2E] flex items-start gap-3">
+                            <XCircle size={18} className="text-[#A84B4B] dark:text-[#E07A7A] shrink-0 mt-0.5" />
                             <div className="flex-1">
-                                <h4 className="text-xs font-bold uppercase tracking-wider text-[#A84B4B]">
+                                <h4 className="text-xs font-bold uppercase tracking-wider text-[#A84B4B] dark:text-[#E07A7A]">
                                     Timesheet Rejected by {data.approvals[0].approverName}
                                 </h4>
-                                <p className="text-xs text-[#A84B4B] mt-1 font-medium italic">
+                                <p className="text-xs text-[#A84B4B] dark:text-[#E8A5A5] mt-1 font-medium italic">
                                     “{data.approvals[0].comment || 'Please review your daily attendance and resubmit.'}”
                                 </p>
                             </div>
@@ -279,9 +268,9 @@ export function WeeklyTimesheetsView({ employees = [] }) {
 
                     {/* 7-Day Weekly Grid (Punchcard Layout) */}
                     <div>
-                        <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#777367] mb-3 flex items-center justify-between">
+                        <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#777367] dark:text-[#B8B3A7] mb-3 flex items-center justify-between">
                             <span>Daily Breakdown (Monday to Sunday)</span>
-                            <span className="text-[10px] text-[#777367] font-semibold">Regular: {fmtH(data.regularMinutes)} · OT: {fmtH(data.overtimeMinutes)}</span>
+                            <span className="text-[10px] text-[#777367] dark:text-[#B8B3A7] font-semibold">Regular: {fmtH(data.regularMinutes)} · OT: {fmtH(data.overtimeMinutes)}</span>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
                             {data.days.map((day) => {
@@ -298,7 +287,7 @@ export function WeeklyTimesheetsView({ employees = [] }) {
                                             day.sessions.length > 0 ? 'cursor-pointer hover:border-[#B9955B] hover:shadow-warm-xs' : ''
                                         } ${
                                             isHeavy
-                                                ? 'bg-[#FAF0E1] border-[#E8D4B8]'
+                                                ? 'bg-[#FAF0E1] dark:bg-[#2A2418] border-[#E8D4B8] dark:border-[#5C4A28] shadow-sm'
                                                 : day.minutes > 0
                                                 ? 'bg-[#F5F1E9] dark:bg-[#1E2419] border-[#D6CDBC] dark:border-[#384232]'
                                                 : 'bg-[#F5F1E9]/70 dark:bg-[#1E2419]/70 border-[#D6CDBC]/60 dark:border-[#384232]/60 opacity-80'
@@ -306,15 +295,15 @@ export function WeeklyTimesheetsView({ employees = [] }) {
                                     >
                                         <div className="flex items-center justify-between pb-2 border-b border-[#D6CDBC]/60 dark:border-[#384232]">
                                             <span className="font-serif text-xs font-bold text-[#29291F] dark:text-[#F5F1E9]">{dayName}</span>
-                                            <span className="text-[10px] font-bold text-[#777367]">{dateFormatted}</span>
+                                            <span className="text-[10px] font-bold text-[#777367] dark:text-[#B8B3A7]">{dateFormatted}</span>
                                         </div>
 
                                         <div className="my-2">
                                             <div className="text-base font-bold text-[#29291F] dark:text-[#F5F1E9] tabular-nums">
-                                                {day.minutes > 0 ? fmtH(day.minutes) : <span className="text-[#C5BEAF] text-sm">—</span>}
+                                                {day.minutes > 0 ? fmtH(day.minutes) : <span className="text-[#C5BEAF] dark:text-[#505A4A] text-sm">—</span>}
                                             </div>
                                             {isHeavy && (
-                                                <span className="text-[9px] font-bold text-[#C98A3C] flex items-center gap-0.5 mt-0.5">
+                                                <span className="text-[9px] font-bold text-[#C98A3C] dark:text-[#E5B56D] flex items-center gap-0.5 mt-0.5">
                                                     <AlertTriangle size={10} /> {fmtH(day.minutes - 480)} OT
                                                 </span>
                                             )}
@@ -326,7 +315,7 @@ export function WeeklyTimesheetsView({ employees = [] }) {
                                                 <div
                                                     key={idx}
                                                     onClick={(e) => { e.stopPropagation(); setActiveDayModal(day); }}
-                                                    className="text-[9px] font-medium text-[#777367] truncate flex items-center justify-between gap-1 bg-[#EEE8DD] dark:bg-[#252B20] px-1.5 py-0.5 rounded border border-[#D6CDBC]/70 dark:border-[#384232] hover:border-[#B9955B] transition cursor-pointer"
+                                                    className="text-[9px] font-medium text-[#777367] dark:text-[#B8B3A7] truncate flex items-center justify-between gap-1 bg-[#EEE8DD] dark:bg-[#252B20] px-1.5 py-0.5 rounded border border-[#D6CDBC]/70 dark:border-[#384232] hover:border-[#B9955B] transition cursor-pointer"
                                                     title={sess.type === 'attendance' ? `Clocked: ${fmtTimeShort(sess.clockIn)} - ${sess.clockOut ? fmtTimeShort(sess.clockOut) : 'Now'} (${fmtDurShort(sess)})` : `Manual: ${sess.note}`}
                                                 >
                                                     <div className="flex items-center gap-1 truncate">
@@ -336,7 +325,7 @@ export function WeeklyTimesheetsView({ employees = [] }) {
                                                             {sess.clockOut ? ` - ${fmtTimeShort(sess.clockOut)}` : (sess.isLive ? ' - Now' : '')}
                                                         </span>
                                                     </div>
-                                                    <span className="font-bold text-[#B9955B] shrink-0 text-[8px] tabular-nums">
+                                                    <span className="font-bold text-[#B9955B] dark:text-[#D3B98D] shrink-0 text-[8px] tabular-nums">
                                                         {fmtDurShort(sess)}
                                                     </span>
                                                 </div>
@@ -344,7 +333,7 @@ export function WeeklyTimesheetsView({ employees = [] }) {
                                             {day.sessions.length > 3 && (
                                                 <div
                                                     onClick={(e) => { e.stopPropagation(); setActiveDayModal(day); }}
-                                                    className="text-[8px] text-[#B9955B] hover:text-[#A17D45] font-bold text-center cursor-pointer pt-0.5"
+                                                    className="text-[8px] text-[#B9955B] hover:text-[#A17D45] dark:text-[#D3B98D] dark:hover:text-[#E5C79E] font-bold text-center cursor-pointer pt-0.5"
                                                 >
                                                     +{day.sessions.length - 3} more (View all)
                                                 </div>
@@ -365,17 +354,17 @@ export function WeeklyTimesheetsView({ employees = [] }) {
                                         <h3 className="font-serif text-lg font-bold text-[#29291F] dark:text-[#F5F1E9]">
                                             Real Database Sessions Breakdown
                                         </h3>
-                                        <p className="text-xs text-[#777367] mt-0.5">
+                                        <p className="text-xs text-[#777367] dark:text-[#B8B3A7] mt-0.5">
                                             {new Date(activeDayModal.date + 'T00:00:00Z').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}
                                             {' · '}
                                             <span className="font-bold text-[#29291F] dark:text-[#F5F1E9]">Total: {fmtH(activeDayModal.minutes)}</span>
                                             {' · '}
-                                            <span className="font-semibold text-[#5E7D64]">{activeDayModal.sessions.length} Recorded Sessions</span>
+                                            <span className="font-semibold text-[#5E7D64] dark:text-[#8BB394]">{activeDayModal.sessions.length} Recorded Sessions</span>
                                         </p>
                                     </div>
                                     <button
                                         onClick={() => setActiveDayModal(null)}
-                                        className="w-8 h-8 rounded-full hover:bg-[#E5DDCF] dark:hover:bg-[#252B20] flex items-center justify-center text-[#777367] font-bold cursor-pointer transition"
+                                        className="w-8 h-8 rounded-full hover:bg-[#E5DDCF] dark:hover:bg-[#252B20] flex items-center justify-center text-[#777367] dark:text-[#B8B3A7] font-bold cursor-pointer transition"
                                     >
                                         ✕
                                     </button>
@@ -383,7 +372,7 @@ export function WeeklyTimesheetsView({ employees = [] }) {
 
                                 <div className="overflow-y-auto flex-1 pr-1">
                                     <table className="w-full text-left text-xs">
-                                        <thead className="bg-[#EEE8DD] dark:bg-[#252B20] text-[#777367] text-[10px] uppercase tracking-wider font-bold border-b border-[#D6CDBC]/70 dark:border-[#384232]">
+                                        <thead className="bg-[#EEE8DD] dark:bg-[#252B20] text-[#777367] dark:text-[#B8B3A7] text-[10px] uppercase tracking-wider font-bold border-b border-[#D6CDBC]/70 dark:border-[#384232]">
                                             <tr>
                                                 <th className="p-2.5 rounded-l-lg">#</th>
                                                 <th className="p-2.5">Type</th>
@@ -400,17 +389,17 @@ export function WeeklyTimesheetsView({ employees = [] }) {
                                                 const durationStr = sess.isLive ? 'In Progress' : (sess.minutes >= 60 ? `${Math.floor(sess.minutes / 60)}h ${sess.minutes % 60}m` : (sess.minutes > 0 ? `${sess.minutes}m` : (sess.durationSeconds ? `${sess.durationSeconds}s` : '<1m')));
                                                 return (
                                                     <tr key={sess.id || idx} className="hover:bg-[#EEE8DD]/50 dark:hover:bg-[#252B20]/50 transition">
-                                                        <td className="p-2.5 font-bold text-[#777367]">{idx + 1}</td>
+                                                        <td className="p-2.5 font-bold text-[#777367] dark:text-[#B8B3A7]">{idx + 1}</td>
                                                         <td className="p-2.5">
-                                                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-bold uppercase ${sess.type === 'attendance' ? 'bg-[#EAEFEA] text-[#5E7D64]' : 'bg-[#FAF0E1] text-[#C98A3C]'}`}>
+                                                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-bold uppercase ${sess.type === 'attendance' ? 'bg-[#EAEFEA] dark:bg-[#1E2B20] text-[#5E7D64] dark:text-[#8BB394] border border-[#C5D7C7] dark:border-[#325238]' : 'bg-[#FAF0E1] dark:bg-[#2C2415] text-[#C98A3C] dark:text-[#E5B56D] border border-[#E8D4B8] dark:border-[#5C4A28]'}`}>
                                                                 {sess.type === 'attendance' ? 'Attendance' : (sess.note || 'Manual')}
                                                             </span>
                                                         </td>
                                                         <td className="p-2.5 font-semibold text-[#29291F] dark:text-[#F5F1E9] tabular-nums">{inTime}</td>
                                                         <td className="p-2.5 font-semibold text-[#29291F] dark:text-[#F5F1E9] tabular-nums">{outTime}</td>
-                                                        <td className="p-2.5 font-bold text-[#B9955B] tabular-nums">{durationStr}</td>
+                                                        <td className="p-2.5 font-bold text-[#B9955B] dark:text-[#D3B98D] tabular-nums">{durationStr}</td>
                                                         <td className="p-2.5">
-                                                            <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${sess.isLive ? 'bg-emerald-100 text-emerald-800' : 'bg-[#EEE8DD] text-[#777367]'}`}>
+                                                            <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${sess.isLive ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800' : 'bg-[#EEE8DD] dark:bg-[#252B20] text-[#777367] dark:text-[#B8B3A7]'}`}>
                                                                 {sess.isLive ? 'Working' : 'Completed'}
                                                             </span>
                                                         </td>
@@ -424,7 +413,7 @@ export function WeeklyTimesheetsView({ employees = [] }) {
                                 <div className="pt-3 border-t border-[#D6CDBC]/70 dark:border-[#384232] flex justify-end">
                                     <button
                                         onClick={() => setActiveDayModal(null)}
-                                        className="px-4 py-2 rounded-xl bg-[#30382B] text-white text-xs font-semibold hover:bg-[#3C4536] transition cursor-pointer"
+                                        className="px-4 py-2 rounded-xl bg-[#30382B] dark:bg-[#3C4536] hover:bg-[#3C4536] dark:hover:bg-[#495442] text-white text-xs font-semibold transition cursor-pointer"
                                     >
                                         Close
                                     </button>
@@ -436,7 +425,7 @@ export function WeeklyTimesheetsView({ employees = [] }) {
                     {/* Audit History Timeline */}
                     {data.approvals && data.approvals.length > 0 && (
                         <div className="pt-4 border-t border-[#D6CDBC]/70 dark:border-[#384232]">
-                            <h4 className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#777367] mb-3 flex items-center gap-1.5">
+                            <h4 className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#777367] dark:text-[#B8B3A7] mb-3 flex items-center gap-1.5">
                                 <History size={13} className="text-[#B9955B]" /> Approval & Audit History
                             </h4>
                             <div className="divide-y divide-[#D6CDBC]/50 dark:divide-[#384232]">
@@ -444,20 +433,20 @@ export function WeeklyTimesheetsView({ employees = [] }) {
                                     <div key={appr.id} className="py-2.5 flex flex-wrap items-center justify-between text-xs gap-2">
                                         <div className="flex items-center gap-2">
                                             {appr.decision === 'APPROVED' ? (
-                                                <CheckCircle2 size={14} className="text-[#5E7D64]" />
+                                                <CheckCircle2 size={14} className="text-[#5E7D64] dark:text-[#8BB394]" />
                                             ) : (
-                                                <XCircle size={14} className="text-[#A84B4B]" />
+                                                <XCircle size={14} className="text-[#A84B4B] dark:text-[#E07A7A]" />
                                             )}
                                             <span className="font-bold text-[#29291F] dark:text-[#F5F1E9]">
                                                 {appr.decision}
                                             </span>
-                                            <span className="text-[#777367]">by</span>
+                                            <span className="text-[#777367] dark:text-[#B8B3A7]">by</span>
                                             <span className="font-semibold text-[#29291F] dark:text-[#F5F1E9]">{appr.approverName}</span>
                                             {appr.comment && (
-                                                <span className="text-[#777367] italic">“{appr.comment}”</span>
+                                                <span className="text-[#777367] dark:text-[#B8B3A7] italic">“{appr.comment}”</span>
                                             )}
                                         </div>
-                                        <span className="text-[10px] text-[#777367]">
+                                        <span className="text-[10px] text-[#777367] dark:text-[#B8B3A7]">
                                             {new Date(appr.createdAt).toLocaleString()}
                                         </span>
                                     </div>

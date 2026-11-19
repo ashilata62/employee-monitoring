@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Users,
@@ -46,6 +46,7 @@ import { ComparativeKpiGrid } from '../components/dashboard/ComparativeKpiGrid';
 import { ProductivityStackedChart } from '../components/dashboard/ProductivityStackedChart';
 import { PeriodComparisonBar } from '../components/dashboard/PeriodComparisonBar';
 import { EmployeeWorkforceAnalytics } from '../components/dashboard/EmployeeWorkforceAnalytics';
+import { AdminExecutiveDashboard } from '../components/dashboard/AdminExecutiveDashboard';
 
 const LiveSummaryCard = ({ title, baseSeconds, live, trend, subValue, icon, color = 'primary' }) => {
     const value = useLiveTimeDisplay(baseSeconds, live);
@@ -215,7 +216,7 @@ const AppSection = ({ title }) => (
 import dashboardService from '../services/dashboardService';
 
 export function Dashboard() {
-    const { employees: contextEmployees, teams: contextTeams, stats: realTimeStats, notifications: contextNotifications, isLoading: isRealTimeLoading, socket } = useRealTime();
+    const { socket, employees: contextEmployees, teams: contextTeams, stats: realTimeStats, notifications: contextNotifications, isLoading: isRealTimeLoading } = useRealTime();
     const { role, isClockedIn, isOnBreak } = useAuthStore();
     const sessionSeconds = useSessionTimer();
     const { dateRange, setDateRange } = useFilterStore();
@@ -231,8 +232,14 @@ export function Dashboard() {
 
     const unreadCount = (contextNotifications || []).filter(n => n.unread).length;
 
-    const fetchDashboardData = React.useCallback(async () => {
-        if (!dashboardData) setIsLoading(true);
+    const isFetchingRef = useRef(false);
+
+    const fetchDashboardData = useCallback(async (isBackground = false) => {
+        if (isFetchingRef.current) return;
+        isFetchingRef.current = true;
+        // Only set loading spinner on initial fetch to avoid UI flicker during real-time updates
+        if (!isBackground && !dashboardData) setIsLoading(true);
+
         try {
             let data;
             if (role === 'ADMIN') {
@@ -258,37 +265,68 @@ export function Dashboard() {
             } else {
                 data = await dashboardService.getEmployeeDashboard(startDate, endDate, compareStartDate, compareEndDate);
             }
-            setDashboardData(data);
+            if (data) {
+                setDashboardData(data);
+            }
         } catch (error) {
             console.error('Error fetching dashboard data:', error);
         } finally {
-            setIsLoading(false);
+            isFetchingRef.current = false;
+            if (!isBackground && !dashboardData) setIsLoading(false);
         }
     }, [role, startDate, endDate, compareStartDate, compareEndDate, activeFilter.employeeId, activeFilter.teamId, activeFilter.role, dashboardData]);
 
-    React.useEffect(() => {
+    // Initial mount and 6-second resilient background refresh
+    useEffect(() => {
         fetchDashboardData();
 
-        // Auto-refresh every 30 seconds
-        const interval = setInterval(fetchDashboardData, 30000);
+        const interval = setInterval(() => {
+            fetchDashboardData(true);
+        }, 6000);
+
         return () => clearInterval(interval);
     }, [fetchDashboardData]);
 
-    // Instant real-time socket refresh on attendance/status updates
-    React.useEffect(() => {
+    // Real-Time Socket Event Listeners for Instant Live Updates
+    useEffect(() => {
         if (!socket) return;
-        const handleLiveUpdate = () => {
-            fetchDashboardData();
+
+        let debounceTimer = null;
+        const debouncedFetch = () => {
+            if (debounceTimer) clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                fetchDashboardData(true);
+            }, 600);
         };
 
-        socket.on('attendance:update', handleLiveUpdate);
-        socket.on('employee:status', handleLiveUpdate);
-        socket.on('activity:update', handleLiveUpdate);
+        const immediateFetch = () => {
+            fetchDashboardData(true);
+        };
+
+        // Instant triggers: status, attendance, department, shifts
+        socket.on('employee:status', immediateFetch);
+        socket.on('attendance:update', immediateFetch);
+        socket.on('team:update', immediateFetch);
+        socket.on('timesheet:new', immediateFetch);
+        socket.on('timesheet:submitted', immediateFetch);
+        socket.on('timesheet:update', immediateFetch);
+
+        // Telemetry triggers: app activity, screenshots, tasks
+        socket.on('activity:update', debouncedFetch);
+        socket.on('task:update', debouncedFetch);
+        socket.on('screenshot:new', debouncedFetch);
 
         return () => {
-            socket.off('attendance:update', handleLiveUpdate);
-            socket.off('employee:status', handleLiveUpdate);
-            socket.off('activity:update', handleLiveUpdate);
+            if (debounceTimer) clearTimeout(debounceTimer);
+            socket.off('employee:status', immediateFetch);
+            socket.off('attendance:update', immediateFetch);
+            socket.off('team:update', immediateFetch);
+            socket.off('timesheet:new', immediateFetch);
+            socket.off('timesheet:submitted', immediateFetch);
+            socket.off('timesheet:update', immediateFetch);
+            socket.off('activity:update', debouncedFetch);
+            socket.off('task:update', debouncedFetch);
+            socket.off('screenshot:new', debouncedFetch);
         };
     }, [socket, fetchDashboardData]);
 
@@ -343,6 +381,9 @@ export function Dashboard() {
 
     const sec = useMemo(() => {
         const rawSec = stats?.summarySeconds || {};
+        if (role === 'ADMIN') {
+            return rawSec;
+        }
         if (!isToday) {
             return rawSec;
         }
@@ -360,25 +401,14 @@ export function Dashboard() {
             activeTime: sessionSeconds,
             productiveTime: sessionSeconds,
         };
-    }, [stats?.summarySeconds, isToday, isClockedIn, sessionSeconds]);
+    }, [role, stats?.summarySeconds, isToday, isClockedIn, sessionSeconds]);
 
     const liveTick = useMemo(() => {
+        if (role === 'ADMIN') return false;
         if (!isToday) return false;
-        if (stats?.summary?.rawSeconds?.isLive || stats?.isLive || dashboardData?.isLive) {
-            return true;
-        }
-        if (role === 'EMPLOYEE') {
-            return isClockedIn && !isOnBreak;
-        }
-        const empList = (stats?.empMetrics?.length ? stats.empMetrics : null) ||
-            (contextEmployees?.length ? contextEmployees : null) ||
-            (stats?.employees?.length ? stats.employees : null) || [];
-        const someoneOnline = empList.some((e) => {
-            const s = String(e.status || '').toLowerCase();
-            return s === 'active' || s === 'online';
-        });
-        return someoneOnline;
-    }, [isToday, role, isClockedIn, isOnBreak, stats?.summary?.rawSeconds?.isLive, stats?.isLive, dashboardData?.isLive, stats?.empMetrics, stats?.employees, contextEmployees]);
+        // Only tick when clocked in and not on break
+        return isClockedIn && !isOnBreak;
+    }, [role, isToday, isClockedIn, isOnBreak]);
 
     const chartData = stats.intradayActivity?.length
         ? stats.intradayActivity
@@ -455,40 +485,56 @@ export function Dashboard() {
                 );
             })()}
 
-            {/* Reference Period vs Compared Period Bar (Insightful Image 1) */}
-            <PeriodComparisonBar
-                startDate={startDate}
-                endDate={endDate}
-                compareStartDate={compareStartDate || stats.comparison?.comparedPeriod?.startDate}
-                compareEndDate={compareEndDate || stats.comparison?.comparedPeriod?.endDate}
-                onDateRangeChange={(start, end) => setDateRange(start, end)}
-                onCompareRangeChange={(start, end) => {
-                    setCompareStartDate(start);
-                    setCompareEndDate(end);
-                }}
-                onFilterChange={(filters) => setActiveFilter(filters)}
-                onExport={handleDownload}
-                employees={dashboardData?.employees || []}
-                teams={dashboardData?.teams || []}
-                role={role}
-                unreadCount={unreadCount}
-            />
+            {/* Admin vs Manager/Employee View Routing */}
+            {role === 'ADMIN' ? (
+                <AdminExecutiveDashboard
+                    stats={stats}
+                    dashboardData={dashboardData}
+                    startDate={startDate}
+                    endDate={endDate}
+                    onDateRangeChange={(start, end) => setDateRange(start, end)}
+                    onExport={handleDownload}
+                    onRefresh={() => fetchDashboardData(true)}
+                />
+            ) : (
+                <>
+                    {/* Reference Period vs Compared Period Bar (Insightful Image 1) */}
+                    <PeriodComparisonBar
+                        startDate={startDate}
+                        endDate={endDate}
+                        compareStartDate={compareStartDate || stats.comparison?.comparedPeriod?.startDate}
+                        compareEndDate={compareEndDate || stats.comparison?.comparedPeriod?.endDate}
+                        onDateRangeChange={(start, end) => setDateRange(start, end)}
+                        onCompareRangeChange={(start, end) => {
+                            setCompareStartDate(start);
+                            setCompareEndDate(end);
+                        }}
+                        onFilterChange={(filters) => setActiveFilter(filters)}
+                        onExport={handleDownload}
+                        employees={dashboardData?.employees || []}
+                        teams={dashboardData?.teams || []}
+                        role={role}
+                        unreadCount={unreadCount}
+                    />
 
-            {/* 8 Comparative KPI Cards (Insightful Image 1) */}
-            <ComparativeKpiGrid
-                sec={sec}
-                stats={stats}
-                deltas={stats.comparison?.deltas}
-                liveTick={liveTick}
-                role={role}
-            />
+                    {/* 8 Comparative KPI Cards (Insightful Image 1) */}
+                    <ComparativeKpiGrid
+                        sec={sec}
+                        stats={stats}
+                        deltas={stats.comparison?.deltas}
+                        liveTick={liveTick}
+                        role={role}
+                        isToday={isToday}
+                    />
 
-            {/* Main Visualizations: Stacked Productivity, Activities & Timeline (Insightful Image 2) */}
-            <ProductivityStackedChart
-                intradayData={chartData}
-                productivityBreakdown={stats.productivityBreakdown}
-                onExport={handleDownload}
-            />
+                    {/* Main Visualizations: Stacked Productivity, Activities & Timeline (Insightful Image 2) */}
+                    <ProductivityStackedChart
+                        intradayData={chartData}
+                        productivityBreakdown={stats.productivityBreakdown}
+                        onExport={handleDownload}
+                    />
+                </>
+            )}
         </div>
     );
 }
