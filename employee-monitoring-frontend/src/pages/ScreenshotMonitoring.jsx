@@ -1226,6 +1226,26 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
               fetchVideos();
     }, [fetchVideos]);
 
+    // Listen for real-time video recordings added or deleted via socket
+    useEffect(() => {
+        if (!socket) return;
+        const handleNewVideo = (newVid) => {
+            setVideoRecordings(prev => {
+                if (prev.some(v => v.id === newVid.id)) return prev;
+                return [newVid, ...prev];
+            });
+        };
+        const handleDeletedVideo = ({ id }) => {
+            setVideoRecordings(prev => prev.filter(v => v.id !== id));
+        };
+        socket.on('video:new', handleNewVideo);
+        socket.on('video:deleted', handleDeletedVideo);
+        return () => {
+            socket.off('video:new', handleNewVideo);
+            socket.off('video:deleted', handleDeletedVideo);
+        };
+    }, [socket]);
+
     const handleOpenVideoPlayback = useCallback((video) => {
         const empChunks = videoRecordings
             .filter(v => v.employeeId === video.employeeId)
