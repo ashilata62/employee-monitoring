@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
     ChevronLeft,
     ChevronRight,
@@ -25,13 +25,20 @@ const STATUS_BADGE = {
 };
 
 export function WeeklyTimesheetsView({ employees = [] }) {
-    const { role } = useAuthStore();
+    const { role, user } = useAuthStore();
     const [weekStart, setWeekStart] = useState(() => mondayOf());
     const [selectedEmployeeId, setSelectedEmployeeId] = useState('');
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [activeDayModal, setActiveDayModal] = useState(null);
+
+    // Filter employees: If manager, only show employees in their assigned team
+    const managerTeamId = user?.teamId || user?.employee?.teamId;
+    const selectableEmployees = useMemo(() => {
+        if (role !== 'MANAGER' || !managerTeamId) return employees;
+        return employees.filter(emp => (emp.teamId === managerTeamId || emp.team?.id === managerTeamId));
+    }, [employees, role, managerTeamId]);
 
     const fmtTimeShort = (dateStr) => {
         if (!dateStr) return '--';
@@ -136,14 +143,14 @@ export function WeeklyTimesheetsView({ employees = [] }) {
 
                 <div className="flex items-center gap-3">
                     {/* Admin/Manager Employee Picker */}
-                    {(role === 'ADMIN' || role === 'MANAGER') && employees.length > 0 && (
+                    {(role === 'ADMIN' || role === 'MANAGER') && selectableEmployees.length > 0 && (
                         <select
                             value={selectedEmployeeId}
                             onChange={(e) => setSelectedEmployeeId(e.target.value)}
                             className="text-xs font-semibold bg-[#F5F1E9] dark:bg-[#1E2419] border border-[#D6CDBC] dark:border-[#384232] rounded-xl px-3.5 py-2 text-[#29291F] dark:text-[#F5F1E9] outline-none focus:border-[#B9955B] cursor-pointer"
                         >
-                            <option value="">Select Employee...</option>
-                            {employees.map(emp => (
+                            <option value="">{role === 'MANAGER' ? 'All Team Timesheets' : 'Select Employee...'}</option>
+                            {selectableEmployees.map(emp => (
                                 <option key={emp.id} value={emp.id}>
                                     {emp.fullName || emp.name} ({emp.team?.name || 'General'})
                                 </option>
