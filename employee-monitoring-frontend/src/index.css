@@ -193,8 +193,6 @@ body {
   }
 }
 
-<<<<<<< HEAD
-=======
 /* HearthLedger Luxury Warm Cream Palette Overrides: Eliminate all white */
 html:not(.dark) .bg-white,
 html:not(.dark) .bg-white\/50,
@@ -313,7 +311,6 @@ textarea {
   color: #F5F1E9 !important;
 }
 
->>>>>>> 77c0a9cd72e6f91b977be1dcc664cdb5381b3486
 /* Custom Luxury Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
