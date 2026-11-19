@@ -117,11 +117,7 @@ function App() {
                 <Router future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
                     <Routes>
                         {/* Public Routes */}
-                        <Route path="/login" element={
-                            <PublicRoute>
-                                <Login />
-                            </PublicRoute>
-                        } />
+                        <Route path="/login" element={<Login />} />
                         <Route path="/setup-password" element={<SetupPassword />} />
                         <Route path="/setup-agent" element={<SetupAgent />} />
 
@@ -133,7 +129,7 @@ function App() {
                         } />
 
                         {/* Protected Dashboard Routes */}
-                        <Route path="/" element={<ProtectedRoute><Navigate to="/" replace /></ProtectedRoute>} />
+                        <Route path="/" element={<Navigate to="/login" replace />} />
                         <Route path="/:rolePath/*" element={
                             <ProtectedRoute>
                                 <DashboardLayout>
