@@ -32,7 +32,7 @@ import { useFilterStore } from '../store/filterStore';
 import { GlobalCalendar } from '../components/GlobalCalendar';
 import { useRealTime } from '../hooks/RealTimeContext';
 import { useAuthStore } from '../store/authStore';
-import { useLiveTimeDisplay } from '../hooks/useLiveTime';
+import { useLiveTimeDisplay, useSessionTimer } from '../hooks/useLiveTime';
 import { parseTimeValueToSeconds } from '../utils/timeFormat';
 import { API_BASE_URL, BASE_URL } from '../config/api';
 
@@ -217,6 +217,7 @@ import dashboardService from '../services/dashboardService';
 export function Dashboard() {
     const { employees: contextEmployees, teams: contextTeams, stats: realTimeStats, isLoading: isRealTimeLoading } = useRealTime();
     const { role, isClockedIn, isOnBreak } = useAuthStore();
+    const sessionSeconds = useSessionTimer();
     const { dateRange, setDateRange } = useFilterStore();
     const { start: startDate, end: endDate } = dateRange || {};
     const [compareStartDate, setCompareStartDate] = useState(null);
@@ -305,20 +306,32 @@ export function Dashboard() {
         };
     }, [dashboardData, realTimeStats, isToday]);
 
-    const sec = stats?.summarySeconds || {};
+    const sec = useMemo(() => {
+        const rawSec = stats?.summarySeconds || {};
+        if (!isToday) {
+            return rawSec;
+        }
+        if (!isClockedIn) {
+            return {
+                ...rawSec,
+                workTime: 0,
+                activeTime: 0,
+                productiveTime: 0,
+            };
+        }
+        return {
+            ...rawSec,
+            workTime: sessionSeconds,
+            activeTime: sessionSeconds,
+            productiveTime: sessionSeconds,
+        };
+    }, [stats?.summarySeconds, isToday, isClockedIn, sessionSeconds]);
 
     const liveTick = useMemo(() => {
         if (!isToday) return false;
-        if (role === 'EMPLOYEE') {
-            return isClockedIn && !isOnBreak;
-        }
-        const list = stats?.empMetrics || contextEmployees || [];
-        const someoneOnline = list.some((e) => {
-            const s = String(e.status || '').toLowerCase();
-            return s === 'active' || s === 'online';
-        });
-        return someoneOnline || (sec.workTime > 0);
-    }, [isToday, role, isClockedIn, isOnBreak, stats?.empMetrics, contextEmployees, sec.workTime]);
+        // Only tick when clocked in and not on break
+        return isClockedIn && !isOnBreak;
+    }, [isToday, isClockedIn, isOnBreak]);
 
     const chartData = stats.intradayActivity?.length
         ? stats.intradayActivity

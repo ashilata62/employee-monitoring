@@ -7,9 +7,15 @@ import {
     Download,
     Bell,
     FileSpreadsheet,
-    FileText
+    FileText,
+    LogIn,
+    LogOut,
+    Clock
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../../store/authStore';
+import { useSessionTimer } from '../../hooks/useLiveTime';
+import { formatSecondsToHMS } from '../../utils/timeFormat';
 
 export function PeriodComparisonBar({
     startDate,
@@ -35,6 +41,44 @@ export function PeriodComparisonBar({
     const [selectedEmployee, setSelectedEmployee] = useState('');
     const [selectedTeam, setSelectedTeam] = useState('');
     const [selectedRole, setSelectedRole] = useState('');
+
+    // Attendance session for Manager / Admin
+    const { isClockedIn, isOnBreak, clockIn, clockOut, toggleBreak } = useAuthStore();
+    const sessionSeconds = useSessionTimer();
+    const [isSessionLoading, setIsSessionLoading] = useState(false);
+
+    const handleClockIn = async () => {
+        setIsSessionLoading(true);
+        try {
+            await clockIn();
+        } catch (e) {
+            console.error('Clock in error', e);
+        } finally {
+            setIsSessionLoading(false);
+        }
+    };
+
+    const handleClockOut = async () => {
+        setIsSessionLoading(true);
+        try {
+            await clockOut();
+        } catch (e) {
+            console.error('Clock out error', e);
+        } finally {
+            setIsSessionLoading(false);
+        }
+    };
+
+    const handleToggleBreak = async () => {
+        setIsSessionLoading(true);
+        try {
+            await toggleBreak();
+        } catch (e) {
+            console.error('Toggle break error', e);
+        } finally {
+            setIsSessionLoading(false);
+        }
+    };
 
     const refRef = useRef(null);
     const compRef = useRef(null);
@@ -282,6 +326,61 @@ export function PeriodComparisonBar({
                             </div>
                         )}
                     </div>
+
+                    {/* 4. Session Controls (Clock In / Clock Out / Take Break) for Manager / Admin */}
+                    {role !== 'EMPLOYEE' && (
+                        <div className="flex items-center gap-2 self-end">
+                            {!isClockedIn ? (
+                                <button
+                                    onClick={handleClockIn}
+                                    disabled={isSessionLoading}
+                                    className="flex items-center gap-2 px-4 py-2 bg-[#30382B] hover:bg-[#3C4536] text-white rounded-xl text-xs font-bold shadow-warm-xs transition-all hover:scale-[1.02] active:scale-95 cursor-pointer disabled:opacity-50"
+                                >
+                                    <LogIn size={13} className="text-[#D3B98D]" />
+                                    <span>Clock In</span>
+                                </button>
+                            ) : (
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    {/* Clock Out Button (Replaces Clock In) */}
+                                    <button
+                                        onClick={handleClockOut}
+                                        disabled={isSessionLoading}
+                                        className="flex items-center gap-1.5 px-3.5 py-2 bg-[#A84B4B] hover:bg-[#8E3B3B] text-white rounded-xl text-xs font-bold shadow-warm-xs transition-all hover:scale-[1.02] active:scale-95 cursor-pointer disabled:opacity-50"
+                                    >
+                                        <LogOut size={13} />
+                                        <span>Clock Out</span>
+                                    </button>
+
+                                    {/* Take a Break / Resume Work Button */}
+                                    <button
+                                        onClick={handleToggleBreak}
+                                        disabled={isSessionLoading}
+                                        className={`flex items-center gap-1.5 px-3.5 py-2 ${
+                                            isOnBreak
+                                                ? 'bg-[#5E7D64] hover:bg-[#4A6B53]'
+                                                : 'bg-[#B9955B] hover:bg-[#A17D45]'
+                                        } text-white rounded-xl text-xs font-bold shadow-warm-xs transition-all hover:scale-[1.02] active:scale-95 cursor-pointer disabled:opacity-50`}
+                                    >
+                                        <Clock size={13} />
+                                        <span>{isOnBreak ? 'Resume Work' : 'Take a Break'}</span>
+                                    </button>
+
+                                    {/* Persistent live session timer */}
+                                    <div className="flex items-center gap-2 px-3.5 py-2 bg-[#EEE8DD] dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] rounded-xl text-xs font-bold text-[#29291F] dark:text-[#F5F1E9] tabular-nums shadow-warm-xs">
+                                        <Clock size={13} className={isOnBreak ? 'text-amber-500' : 'text-[#B9955B] animate-pulse'} />
+                                        <span>{formatSecondsToHMS(sessionSeconds)}</span>
+                                        <span className={`text-[9px] uppercase px-1.5 py-0.5 rounded-md font-bold ${
+                                            isOnBreak 
+                                                ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-400' 
+                                                : 'bg-[#5E7D64]/15 text-[#5E7D64] dark:text-[#A4C2A8]'
+                                        }`}>
+                                            {isOnBreak ? 'Paused' : 'Active'}
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 {/* 4. Export Button */}

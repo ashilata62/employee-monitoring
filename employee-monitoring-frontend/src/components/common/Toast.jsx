@@ -34,7 +34,7 @@ const Toast = ({ id, message, type = 'info' }) => {
   };
 
   return (
-    <div className={`pointer-events-auto flex items-center gap-3 p-3.5 sm:p-4 rounded-xl border shadow-lg animate-in slide-in-from-top-4 fade-in duration-300 relative z-[10000] ${styles[type] || styles.info}`}>
+    <div className={`pointer-events-auto flex items-center gap-3 p-3.5 sm:p-4 rounded-xl border shadow-lg animate-in slide-in-from-right-4 fade-in duration-300 relative z-[10000] ${styles[type] || styles.info}`}>
       <div className="flex-shrink-0">{icons[type] || icons.info}</div>
       <div className="flex-1 text-sm font-medium pr-1 select-none leading-snug">{message}</div>
       <button
