@@ -1,0 +1,10 @@
+{
+  "name": "employee-monitoring-workspace",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix employee-monitoring-frontend run dev",
+    "dev:frontend": "npm --prefix employee-monitoring-frontend run dev",
+    "dev:backend": "npm --prefix employee-monitoirng-backend start",
+    "build": "npm --prefix employee-monitoring-frontend run build"
+  }
+}

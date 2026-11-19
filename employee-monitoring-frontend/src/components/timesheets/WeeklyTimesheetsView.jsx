@@ -70,11 +70,23 @@ export function WeeklyTimesheetsView({ employees = [] }) {
         return '<1m';
     };
 
+    // Auto-select first managed employee for manager if none selected
+    useEffect(() => {
+        if (role === 'MANAGER' && !selectedEmployeeId && selectableEmployees.length > 0) {
+            setSelectedEmployeeId(selectableEmployees[0].id);
+        }
+    }, [role, selectedEmployeeId, selectableEmployees]);
+
     // Initial load and filter change
     const loadTimesheet = async () => {
+        if (role === 'MANAGER' && selectableEmployees.length === 0) {
+            setData(null);
+            return;
+        }
         setLoading(true);
         try {
-            const empId = role === 'EMPLOYEE' ? null : (selectedEmployeeId || null);
+            const defaultEmpId = role === 'MANAGER' ? (selectableEmployees[0]?.id || null) : null;
+            const empId = role === 'EMPLOYEE' ? null : (selectedEmployeeId || defaultEmpId);
             const res = await timesheetService.getWeek(weekStart, empId);
             if (res.success) {
                 const payload = Array.isArray(res.data) ? res.data[0] : res.data;
@@ -156,14 +168,14 @@ export function WeeklyTimesheetsView({ employees = [] }) {
 
                 <div className="flex items-center gap-3">
                     {/* Admin/Manager Employee Picker */}
-                    {(role === 'ADMIN' || role === 'MANAGER') && employees.length > 0 && (
+                    {(role === 'ADMIN' || role === 'MANAGER') && selectableEmployees.length > 0 && (
                         <select
                             value={selectedEmployeeId}
                             onChange={(e) => setSelectedEmployeeId(e.target.value)}
                             className="text-xs font-semibold bg-[#F5F1E9] dark:bg-[#1E2419] border border-[#D6CDBC] dark:border-[#384232] rounded-xl px-3.5 py-2 text-[#29291F] dark:text-[#F5F1E9] outline-none focus:border-[#B9955B] cursor-pointer"
                         >
                             <option value="">Select Employee...</option>
-                            {employees.map(emp => (
+                            {selectableEmployees.map(emp => (
                                 <option key={emp.id} value={emp.id}>
                                     {emp.fullName || emp.name} ({emp.team?.name || 'General'})
                                 </option>
