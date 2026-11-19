@@ -39,7 +39,7 @@ class TasksController {
                 filter.employeeId = effectiveEmployeeId;
             }
 
-            const tasks = await tasksService.getTasks(organizationId, filter);
+            const tasks = await tasksService.getTasks(organizationId, filter, req.user);
             return successResponse(res, tasks, 'Tasks retrieved successfully');
         } catch (error) {
             return errorResponse(res, error.message);
@@ -67,7 +67,7 @@ class TasksController {
                 filter.employeeId = effectiveEmployeeId;
             }
 
-            const board = await tasksService.getBoardTasks(organizationId, filter);
+            const board = await tasksService.getBoardTasks(organizationId, filter, req.user);
             return successResponse(res, board, 'Board tasks retrieved successfully');
         } catch (error) {
             return errorResponse(res, error.message);
@@ -240,7 +240,7 @@ class TasksController {
             if (startDate) filter.startDate = startDate;
             if (endDate) filter.endDate = endDate;
 
-            const analytics = await tasksService.getCycleTimeAnalytics(organizationId, filter);
+            const analytics = await tasksService.getCycleTimeAnalytics(organizationId, filter, req.user);
             return successResponse(res, analytics, 'Cycle time and bottleneck analytics retrieved successfully');
         } catch (error) {
             console.error('Cycle time analytics error:', error);
