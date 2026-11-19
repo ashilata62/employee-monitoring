@@ -492,7 +492,7 @@ const activityService = {
         return summary;
     },
 
-    getTimelineReport: async (organizationId, dateStr = null, employeeId = null, teamId = null) => {
+    getTimelineReport: async (organizationId, dateStr = null, employeeId = null, teamId = null, requester = null) => {
         const targetDate = dateStr ? new Date(dateStr) : new Date();
         const startOfDay = new Date(targetDate);
         startOfDay.setHours(0, 0, 0, 0);
@@ -505,6 +505,20 @@ const activityService = {
         };
         if (employeeId) empWhere.id = employeeId;
         if (teamId) empWhere.teamId = teamId;
+
+        // RBAC: Managers cannot see Admin activity; filter by manager's team if assigned
+        if (requester?.role === 'MANAGER') {
+            empWhere.role = { not: 'ADMIN' };
+            const manager = await prisma.employee.findUnique({
+                where: { id: requester.employeeId },
+                select: { teamId: true }
+            });
+            if (manager && manager.teamId) {
+                empWhere.teamId = manager.teamId;
+            }
+        } else if (requester?.role === 'EMPLOYEE') {
+            empWhere.id = requester.employeeId;
+        }
 
         const employees = await prisma.employee.findMany({
             where: empWhere,
@@ -708,7 +722,8 @@ const activityService = {
                 name: emp.fullName || emp.user?.email || 'Employee',
                 initials: (emp.fullName || 'E').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase(),
                 team: emp.team?.name || 'General Team',
-                role: emp.role || emp.designation || 'Specialist',
+                role: emp.role || emp.user?.role || 'EMPLOYEE',
+                designation: emp.designation || 'Specialist',
                 activeHoursFormatted,
                 workHoursFormatted,
                 productivityPct,
