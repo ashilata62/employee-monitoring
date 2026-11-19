@@ -44,6 +44,7 @@ export function AddEmployeeModal({ isOpen, onClose, initialTab = 'single' }) {
     const [showPassword, setShowPassword] = useState(false);
     const [copied, setCopied] = useState(false);
     const [submitting, setSubmitting] = useState(false);
+    const [invitedSuccess, setInvitedSuccess] = useState(null);
 
     // Single Employee Form
     const [singleForm, setSingleForm] = useState({
@@ -55,7 +56,7 @@ export function AddEmployeeModal({ isOpen, onClose, initialTab = 'single' }) {
         role: 'EMPLOYEE',
         password: '',
         hourlyRate: '',
-        status: 'ACTIVE'
+        status: 'INVITED'
     });
 
     // Batch Employees Form
@@ -68,6 +69,7 @@ export function AddEmployeeModal({ isOpen, onClose, initialTab = 'single' }) {
     useEffect(() => {
         if (isOpen) {
             setActiveTab(initialTab || 'single');
+            setInvitedSuccess(null);
             fetchTeams();
             fetchOrganization();
         }
@@ -140,6 +142,8 @@ export function AddEmployeeModal({ isOpen, onClose, initialTab = 'single' }) {
 
         setSubmitting(true);
         try {
+            const hasPassword = singleForm.password && singleForm.password.trim().length >= 6;
+            const chosenStatus = hasPassword ? (singleForm.status || 'ACTIVE') : 'INVITED';
             const payload = {
                 fullName: singleForm.fullName.trim(),
                 email: singleForm.email.trim().toLowerCase(),
@@ -147,7 +151,7 @@ export function AddEmployeeModal({ isOpen, onClose, initialTab = 'single' }) {
                 location: singleForm.location || 'Office',
                 computerType: singleForm.computerType || 'PERSONAL',
                 role: singleForm.role || 'EMPLOYEE',
-                status: singleForm.status || 'ACTIVE',
+                status: chosenStatus,
                 organizationId: resolvedOrgId
             };
 
@@ -155,7 +159,7 @@ export function AddEmployeeModal({ isOpen, onClose, initialTab = 'single' }) {
                 payload.hourlyRate = Number(singleForm.hourlyRate);
             }
 
-            if (singleForm.password && singleForm.password.trim().length >= 6) {
+            if (hasPassword) {
                 payload.password = singleForm.password.trim();
             }
 
@@ -164,18 +168,30 @@ export function AddEmployeeModal({ isOpen, onClose, initialTab = 'single' }) {
             logAction(user?.name || 'Admin', 'Owner', 'Create', 'Employee', `Created employee: "${singleForm.fullName}"`);
             
             await fetchEmployees();
-            setSingleForm({
-                fullName: '',
-                email: '',
-                teamId: teams[0]?.id || '',
-                location: 'Office',
-                computerType: 'PERSONAL',
-                role: 'EMPLOYEE',
-                password: '',
-                hourlyRate: '',
-                status: 'ACTIVE'
-            });
-            onClose();
+
+            if (res?.setupLink) {
+                setInvitedSuccess({
+                    fullName: singleForm.fullName.trim(),
+                    email: singleForm.email.trim().toLowerCase(),
+                    setupLink: res.setupLink,
+                    emailSent: res.emailSent,
+                    emailSimulated: res.emailSimulated,
+                    status: chosenStatus
+                });
+            } else {
+                setSingleForm({
+                    fullName: '',
+                    email: '',
+                    teamId: teams[0]?.id || '',
+                    location: 'Office',
+                    computerType: 'PERSONAL',
+                    role: 'EMPLOYEE',
+                    password: '',
+                    hourlyRate: '',
+                    status: 'INVITED'
+                });
+                onClose();
+            }
         } catch (err) {
             console.error('[AddEmployeeModal] Submit failed:', err);
             const msg = err.response?.data?.message || err.message || "Failed to add employee";
@@ -206,7 +222,7 @@ export function AddEmployeeModal({ isOpen, onClose, initialTab = 'single' }) {
                     teamId: selectedTeamId,
                     location: emp.location || 'Remote',
                     computerType: 'PERSONAL',
-                    status: 'ACTIVE',
+                    status: 'INVITED',
                     organizationId: resolvedOrgId
                 });
                 successCount++;
@@ -251,33 +267,124 @@ export function AddEmployeeModal({ isOpen, onClose, initialTab = 'single' }) {
                 </div>
 
                 {/* Tab Navigation */}
-                <div className="flex items-center gap-1 sm:gap-2 px-3 sm:px-6 pt-3 sm:pt-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 overflow-x-auto scrollbar-none">
-                    {[
-                        { id: 'single', label: 'Manual Add Employee', icon: UserPlus },
-                        { id: 'batch', label: 'Batch Invite', icon: Users },
-                        { id: 'agent', label: 'Agent Installer', icon: Monitor }
-                    ].map(tab => {
-                        const Icon = tab.icon;
-                        const isActive = activeTab === tab.id;
-                        return (
-                            <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
-                                className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-t-xl text-xs font-black transition-all border-b-2 -mb-px whitespace-nowrap ${
-                                    isActive
-                                        ? 'border-primary-600 text-primary-600 bg-white dark:bg-slate-900'
-                                        : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
-                                }`}
-                            >
-                                <Icon size={14} />
-                                <span>{tab.label}</span>
-                            </button>
-                        );
-                    })}
-                </div>
+                {!invitedSuccess && (
+                    <div className="flex items-center gap-1 sm:gap-2 px-3 sm:px-6 pt-3 sm:pt-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 overflow-x-auto scrollbar-none">
+                        {[
+                            { id: 'single', label: 'Manual Add Employee', icon: UserPlus },
+                            { id: 'batch', label: 'Batch Invite', icon: Users },
+                            { id: 'agent', label: 'Agent Installer', icon: Monitor }
+                        ].map(tab => {
+                            const Icon = tab.icon;
+                            const isActive = activeTab === tab.id;
+                            return (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setActiveTab(tab.id)}
+                                    className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-t-xl text-xs font-black transition-all border-b-2 -mb-px whitespace-nowrap ${
+                                        isActive
+                                            ? 'border-primary-600 text-primary-600 bg-white dark:bg-slate-900'
+                                            : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                                    }`}
+                                >
+                                    <Icon size={14} />
+                                    <span>{tab.label}</span>
+                                </button>
+                            );
+                        })}
+                    </div>
+                )}
 
                 {/* Body Content */}
                 <div className="overflow-y-auto px-4 sm:px-6 py-4 sm:py-6 space-y-6">
+                    {invitedSuccess ? (
+                        <div className="space-y-5 py-2 animate-in fade-in zoom-in-95 duration-200">
+                            <div className="flex flex-col items-center text-center p-6 rounded-2xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30">
+                                <div className="w-12 h-12 rounded-full bg-emerald-500 text-white flex items-center justify-center mb-3 shadow-lg shadow-emerald-500/20">
+                                    <Check size={24} />
+                                </div>
+                                <h3 className="text-base font-black text-slate-900 dark:text-white">
+                                    Employee Added &amp; Saved
+                                </h3>
+                                <p className="text-xs text-slate-500 mt-1">
+                                    <strong>{invitedSuccess.fullName}</strong> ({invitedSuccess.email}) has been added to your database with status{' '}
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
+                                        {invitedSuccess.status || 'INVITED'} (Pending)
+                                    </span>.
+                                </p>
+                            </div>
+
+                            <div className="space-y-2 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                                <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 flex items-center justify-between">
+                                    <span>Agent Setup &amp; Invitation Link</span>
+                                    <span className="text-emerald-600 font-bold">Valid for 7 days</span>
+                                </label>
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="text"
+                                        readOnly
+                                        value={invitedSuccess.setupLink}
+                                        className="flex-1 h-10 px-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-mono font-medium text-slate-800 dark:text-slate-100 select-all"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(invitedSuccess.setupLink);
+                                            toast.success("Invitation link copied to clipboard!");
+                                        }}
+                                        className="h-10 px-4 rounded-xl bg-primary-600 hover:bg-primary-700 text-white text-xs font-bold flex items-center gap-1.5 shrink-0 transition-all cursor-pointer"
+                                    >
+                                        <Copy size={14} />
+                                        <span>Copy Link</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            {invitedSuccess.emailSimulated ? (
+                                <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 text-[11px] text-amber-800 dark:text-amber-300 space-y-1">
+                                    <p className="font-bold flex items-center gap-1.5">
+                                        <Info size={14} /> Live SMTP Not Configured (Simulation Mode)
+                                    </p>
+                                    <p className="text-[10px] text-amber-700/90 dark:text-amber-400/90 leading-relaxed">
+                                        The backend is currently running with placeholder SMTP credentials in <code className="font-mono bg-amber-100 dark:bg-amber-900/40 px-1 rounded">.env</code>. The email invite was simulated in the server console. You can copy the setup link above and send it directly to the employee or open it to complete agent setup. For automated emails, configure your Gmail App Password in <code className="font-mono bg-amber-100 dark:bg-amber-900/40 px-1 rounded">.env</code>.
+                                    </p>
+                                </div>
+                            ) : (
+                                <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/40 text-[11px] text-emerald-800 dark:text-emerald-300">
+                                    <p className="font-bold flex items-center gap-1.5">
+                                        <Check size={14} /> Invitation Email Sent
+                                    </p>
+                                    <p className="text-[10px] text-emerald-700/80 dark:text-emerald-400/80">
+                                        An email with agent installation steps has been dispatched to {invitedSuccess.email}.
+                                    </p>
+                                </div>
+                            )}
+
+                            <div className="flex justify-end pt-2">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setInvitedSuccess(null);
+                                        setSingleForm({
+                                            fullName: '',
+                                            email: '',
+                                            teamId: teams[0]?.id || '',
+                                            location: 'Office',
+                                            computerType: 'PERSONAL',
+                                            role: 'EMPLOYEE',
+                                            password: '',
+                                            hourlyRate: '',
+                                            status: 'INVITED'
+                                        });
+                                        onClose();
+                                    }}
+                                    className="w-full sm:w-auto px-8 py-2.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-black uppercase tracking-wider hover:opacity-90 transition-all cursor-pointer"
+                                >
+                                    Done
+                                </button>
+                            </div>
+                        </div>
+                    ) : (
+                        <>
                     {/* ── 1. Single Employee Form (Direct Add) ─────────────────── */}
                     {activeTab === 'single' && (
                         <form onSubmit={handleSingleSubmit} className="space-y-4">
@@ -595,6 +702,8 @@ export function AddEmployeeModal({ isOpen, onClose, initialTab = 'single' }) {
                                 </div>
                             </div>
                         </div>
+                    )}
+                    </>
                     )}
                 </div>
             </div>
