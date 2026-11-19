@@ -353,13 +353,15 @@ const getHealth = async (req, res) => {
 
 const downloadAgent = async (req, res) => {
     try {
-        const filePath = path.join(__dirname, '../../../public/agent/EMS-Tracker-latest.exe');
+        const primaryPath = path.join(__dirname, '../../../public/agent/EMS-Tracker-latest.exe');
+        const altPath = path.join(__dirname, '../../../public/agent/Insightful Agent Setup 1.0.2.exe');
+        const targetPath = fs.existsSync(primaryPath) ? primaryPath : (fs.existsSync(altPath) ? altPath : null);
         
-        if (!fs.existsSync(filePath)) {
+        if (!targetPath) {
             return errorResponse(res, 'Agent installer not found. Please contact administrator.', 404);
         }
         
-        res.download(filePath, 'EMS-Tracker-latest.exe');
+        res.download(targetPath, 'EMS-Tracker-latest.exe');
     } catch (error) {
         console.error('Agent download error:', error);
         return errorResponse(res, 'Failed to download agent', 500);

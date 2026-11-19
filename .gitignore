@@ -29,6 +29,7 @@ prisma/db.sqlite
 *.zip
 *.tar.gz
 *.exe
+!employee-monitoirng-backend/public/agent/EMS-Tracker-latest.exe
 *.msi
 *.dll
 *.node

@@ -7,65 +7,56 @@
 
 ---
 
-## 1. Initial Git Status & Discovery
+## 1. Synchronization Summary
 
-Prior to any pull action, a full status and remote fetch were conducted:
-
-- **Active Branch:** `main`
-- **Local HEAD Commit Hash:** `dba2b0a` (*Merge remote-tracking branch 'origin/main'*)
+- **Status:** **FULLY SYNCHRONIZED WITH LATEST GITHUB COMMITS**
+- **Local HEAD Commit Hash:** `5ce7321` (*Merge branch 'main' of https://github.com/ashilata62/employee-monitoring*)
 - **Remote `origin/main` Commit Hash:** `92b66b1` (*merge: integrate remote updates with timesheet and profile ui fixes*)
-- **History Divergence:**
-  - Local `main` is **ahead of `origin/main` by 8 commits** (including local resolutions and features).
-  - Local `main` is **behind `origin/main` by 7 incoming commits** pushed recently by teammates (`b36b5e5`, `1081184`, `3dafb3c`, `cc057c2`, `c53bda3`, `b106515`, `92b66b1`).
+- **Remaining Unpulled Commits:** `0` (`git log HEAD..origin/main` is empty).
+- **Working Tree:** Clean (`nothing to commit, working tree clean`).
+- **Production Build:** Verified cleanly via `npm --prefix employee-monitoring-frontend run build` (3,214 modules, 0 errors).
 
 ---
 
-## 2. Uncommitted Working Changes Detected
+## 2. Issue Analysis: Why Did `git pull` Throw a Conflict?
 
-The following 6 files currently have active local modifications:
-1. `agent-source/agent-runner.js` (Multi-target daemon configuration)
-2. `employee-monitoirng-backend/src/modules/agent/agent.controller.js` (Reconnect timeout guard)
-3. `employee-monitoirng-backend/src/modules/dashboard/dashboard.service.js` (Local calendar date parsing & attendance calculations)
-4. `employee-monitoring-frontend/src/components/AddEmployeeModal.jsx` (Dynamic live host URL link generation)
-5. `employee-monitoring-frontend/src/components/dashboard/ComparativeKpiGrid.jsx` (Live ratio calculation & standard 00:00 h formatting)
-6. `employee-monitoring-frontend/src/components/dashboard/PeriodComparisonBar.jsx` (Local calendar date parser eliminating UTC boundary shifts)
-
----
-
-## 3. Pull Operation Status: PAUSED FOR SAFETY
-
-In accordance with **Step 2 (Safety Check Before Pull)** and **Strict Permission Rules**:
-- A fast-forward pull (`git merge --ff-only origin/main`) is mathematically impossible because the branches have diverged (both have new commits).
-- A non-fast-forward merge (`git merge origin/main`) would encounter working directory conflicts because 3 of our locally modified files (`agent-runner.js`, `dashboard.service.js`, and `ComparativeKpiGrid.jsx`) are also modified in the 7 incoming remote commits.
-- **Action Taken:** Per the explicit safety rules, the pull operation was **NOT forced or automatically merged**, protecting all local work from being overwritten or lost.
-
----
-
-## 4. Incoming Remote Commits Identified
-
+When you executed `git pull` in PowerShell:
 ```
-92b66b1 merge: integrate remote updates with timesheet and profile ui fixes
-b106515 fix(ui & timesheets): theme alignment for employee profile and team-scoped timesheets dropdown
-c53bda3 Merge branch 'main' of https://github.com/ashilata62/employee-monitoring
-cc057c2 rohit
-3dafb3c feat: implement real-time auto-refresh polling across all 6 admin report modules
-1081184 feat: add real-time auto-refresh polling on WeeklyTimesheets, ActivitiesTimeline, and Projects
-b36b5e5 rohit
+Auto-merging employee-monitoring-frontend/src/pages/Dashboard.jsx
+CONFLICT (content): Merge conflict in employee-monitoring-frontend/src/pages/Dashboard.jsx
+Automatic merge failed; fix conflicts and then commit the result.
 ```
 
-### Key Incoming Changes from Teammates:
-- Real-time polling across Report modules (`AppsWebsites.jsx`, `LocationInsights.jsx`, `ScheduleAdherence.jsx`, `WorkType.jsx`, `WorkloadDistribution.jsx`).
-- Auto-refresh polling on `WeeklyTimesheetsView.jsx`, `ActivitiesTimeline.jsx`, `Projects.jsx`, and `TimeAndAttendance.jsx`.
-- Employee profile UI and timesheet scoping fixes by Divyansh Pal and Rohit.
+### Root Cause:
+1. **Teammates' Remote Commits:** Teammates pushed commit `92b66b1` (and earlier commits) which altered lines 215–285 and 350–375 in `Dashboard.jsx` (adjusting how `useRealTime`, `unreadCount`, and dashboard fetching were structured).
+2. **Local Commit History:** Locally, our branch had previously committed the real-time socket listeners and role-aware `liveTick` stopwatch logic in those exact same lines.
+3. **Git Auto-Merge Limitation:** Because the changes touched the exact same lines of code, Git could not guess which developer's version to prioritize and paused the merge for resolution.
 
 ---
 
-## 5. Synchronization Verification & Remaining Requirements
+## 3. How the Conflict Was Resolved
 
-1. **Local Repository State:** Cleanly compiled, with all previous merge conflicts resolved and verified (`npm run build` passed with 0 errors).
-2. **Current Difference:** Local code has not yet merged the 7 latest remote commits (`92b66b1`).
-3. **What Requires Permission to Complete Synchronization:**
-   - Protecting the 6 uncommitted files (via `git stash` or a checkpoint commit).
-   - Merging the 7 new remote commits into local `main`.
-   - Applying local work back cleanly.
-   - Pushing the consolidated history to GitHub when you are ready.
+The conflict was resolved cleanly by preserving both developers' work:
+- **Preserved from Remote (Teammates):** All filter parameters (`activeFilter.employeeId`, `teamId`, `role`), unread notification count badge bindings, and updated UI logic.
+- **Preserved from Local:** Real-time socket event listeners (`attendance:update`, `employee:status`, `activity:update`) and live role-aware stopwatch ticking.
+- **Syntax Verification:** Tested and built with Vite production build (`✓ built in 32.21s`).
+
+---
+
+## 4. Incoming Changes Successfully Merged from GitHub
+
+All 7 commits (`b36b5e5` through `92b66b1`) from GitHub are now merged into your workspace:
+- Real-time auto-refresh polling across all 6 admin report modules (`AppsWebsites.jsx`, `LocationInsights.jsx`, `ScheduleAdherence.jsx`, `WorkType.jsx`, `WorkloadDistribution.jsx`, `ProcessMining.jsx`).
+- Real-time polling on `WeeklyTimesheetsView.jsx`, `ActivitiesTimeline.jsx`, `Projects.jsx`, and `TimeAndAttendance.jsx`.
+- Employee profile UI styling alignments and team-scoped timesheets dropdown fixes.
+- Backend invitation and employee validation updates.
+
+---
+
+## 5. Next Steps
+
+- Both Frontend and Backend now contain all the latest code from GitHub.
+- If you wish to publish the merged branch back to GitHub, run:
+  ```powershell
+  git push origin main
+  ```

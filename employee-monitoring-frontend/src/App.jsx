@@ -35,7 +35,6 @@ import { AttendanceAlerts } from './pages/settings/alerts/AttendanceAlerts';
 import { SecurityAlerts } from './pages/settings/alerts/SecurityAlerts';
 import { ShiftScheduling } from './pages/settings/alerts/ShiftScheduling';
 import { OtherAlerts } from './pages/settings/alerts/OtherAlerts';
-import { ApiTokens } from './pages/settings/ApiTokens';
 import { AuditLogs } from './pages/settings/AuditLogs';
 import { EmailReports } from './pages/settings/EmailReports';
 import { BillingLayout } from './pages/settings/billing/BillingLayout';
@@ -54,10 +53,6 @@ import { ManageOrgGroups } from './pages/settings/ManageOrgGroups';
 import { Utilization } from './pages/settings/Utilization';
 import { Plans } from './pages/settings/billing/Plans';
 import { AddOns } from './pages/settings/billing/AddOns';
-import { IntegrationsLayout } from './pages/settings/integrations/IntegrationsLayout';
-import { OrgChart } from './pages/settings/integrations/OrgChart';
-import { IntegrationTabPage } from './pages/settings/integrations/IntegrationTabPage';
-import { INTEGRATION_TABS } from './store/integrationStore';
 import ProcessMining from './pages/reports/ProcessMining';
 import ComplianceReadiness from './pages/compliance/ComplianceReadiness';
 import { ProtectedRoute, PublicRoute, RoleRoute } from './components/ProtectedRoute';
@@ -192,7 +187,6 @@ function App() {
                                         </Route>
                                         <Route path="settings/productivity/apps" element={<ProductivityApps />} />
 
-                                        <Route path="settings/api-tokens" element={<ApiTokens />} />
                                         <Route path="settings/audit-logs" element={<AuditLogs />} />
                                         <Route path="settings/email-reports" element={<EmailReports />} />
                                         <Route path="settings/manual-time" element={<ManualTime />} />
@@ -209,17 +203,6 @@ function App() {
                                             <Route index element={<Navigate to="overview" replace />} />
                                             <Route path="overview" element={<PrivacyOverview />} />
                                             <Route path="compliance" element={<PrivacyCompliance />} />
-                                        </Route>
-                                        <Route path="settings/integrations" element={<IntegrationsLayout />}>
-                                            <Route index element={<Navigate to="project-management" replace />} />
-                                            <Route path="project-management" element={<IntegrationTabPage integrationKeys={INTEGRATION_TABS[0].keys} />} />
-                                            <Route path="developer-tools" element={<IntegrationTabPage integrationKeys={INTEGRATION_TABS[1].keys} />} />
-                                            <Route path="communication" element={<IntegrationTabPage integrationKeys={INTEGRATION_TABS[2].keys} />} />
-                                            <Route path="hr-identity" element={<IntegrationTabPage integrationKeys={INTEGRATION_TABS[3].keys} />} />
-                                            <Route path="payroll-accounting" element={<IntegrationTabPage integrationKeys={INTEGRATION_TABS[4].keys} />} />
-                                            <Route path="productivity-docs" element={<IntegrationTabPage integrationKeys={INTEGRATION_TABS[5].keys} />} />
-                                            <Route path="overview/org-chart" element={<OrgChart />} />
-                                            <Route path="overview/project-management" element={<IntegrationTabPage integrationKeys={INTEGRATION_TABS[0].keys} />} />
                                         </Route>
 
                                         <Route path="settings/billing" element={<BillingLayout />}>
