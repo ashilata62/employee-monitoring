@@ -49,7 +49,7 @@ export function FormulaStepScope({ form, onChange }) {
                     onChange={(e) => onChange({ name: e.target.value })}
                     className={cn(
                         'w-full h-11 px-4 rounded-xl border-2 bg-white dark:bg-slate-800 text-sm font-medium text-slate-900 dark:text-white outline-none transition-all',
-                        !form.name.trim() ? 'border-rose-300' : 'border-slate-200 dark:border-slate-700 focus:border-violet-500'
+                        !form.name.trim() ? 'border-rose-300' : 'border-slate-200 dark:border-slate-700 focus:border-primary-500'
                     )}
                 />
             </div>
@@ -61,14 +61,14 @@ export function FormulaStepScope({ form, onChange }) {
                     <button
                         onClick={() => onChange({ teams: 'all' })}
                         className={cn('flex-1 py-2.5 rounded-xl text-xs font-black border-2 transition-all',
-                            form.teams === 'all' ? 'border-violet-500 bg-violet-50 dark:bg-violet-900/10 text-violet-700 dark:text-violet-400' : 'border-slate-200 dark:border-slate-700 text-slate-500 hover:border-violet-300')}
+                            form.teams === 'all' ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/10 text-primary-700 dark:text-primary-400' : 'border-slate-200 dark:border-slate-700 text-slate-500 hover:border-primary-300')}
                     >
                         All Teams
                     </button>
                     <button
                         onClick={() => form.teams === 'all' && onChange({ teams: [] })}
                         className={cn('flex-1 py-2.5 rounded-xl text-xs font-black border-2 transition-all',
-                            form.teams !== 'all' ? 'border-violet-500 bg-violet-50 dark:bg-violet-900/10 text-violet-700 dark:text-violet-400' : 'border-slate-200 dark:border-slate-700 text-slate-500 hover:border-violet-300')}
+                            form.teams !== 'all' ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/10 text-primary-700 dark:text-primary-400' : 'border-slate-200 dark:border-slate-700 text-slate-500 hover:border-primary-300')}
                     >
                         Selected Teams
                     </button>
@@ -80,7 +80,7 @@ export function FormulaStepScope({ form, onChange }) {
                             return (
                                 <button key={team} onClick={() => toggleTeam(team)} className={cn(
                                     'px-3 py-1.5 rounded-xl text-xs font-bold border-2 transition-all',
-                                    selected ? 'border-violet-500 bg-violet-600 text-white' : 'border-slate-200 dark:border-slate-700 text-slate-500 hover:border-violet-300'
+                                    selected ? 'border-primary-500 bg-primary-600 text-white' : 'border-slate-200 dark:border-slate-700 text-slate-500 hover:border-primary-300'
                                 )}>
                                     {team}
                                 </button>

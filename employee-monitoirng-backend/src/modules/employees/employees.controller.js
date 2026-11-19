@@ -8,11 +8,14 @@ const getEmployees = async (req, res, next) => {
         const orgId = await getOrganizationId(req);
         const { role, employeeId: currentEmployeeId } = req.user;
 
-        let filter = { role: 'EMPLOYEE' };
+        let filter = {};
         if (role === 'EMPLOYEE') {
-            // Employees see only themselves (and they should have role EMPLOYEE anyway)
-            filter.id = currentEmployeeId;
+            // Employees see only themselves
+            filter = { id: currentEmployeeId };
+        } else if (role === 'MANAGER') {
+            filter = { role: 'EMPLOYEE' };
         }
+        // ADMIN sees all members in the organization
 
         const employees = await employeesService.getEmployees(orgId, filter);
 

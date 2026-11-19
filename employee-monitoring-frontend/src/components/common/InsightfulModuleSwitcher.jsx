@@ -6,7 +6,7 @@ import { useAuthStore } from '../../store/authStore';
 export function InsightfulModuleSwitcher({ activeTab = 'trends' }) {
     const navigate = useNavigate();
     const { role } = useAuthStore();
-    const rolePrefix = role === 'EMPLOYEE' ? '/employee' : '/admin';
+    const rolePrefix = `/${(role || 'manager').toLowerCase()}`;
 
     const tabs = [
         {

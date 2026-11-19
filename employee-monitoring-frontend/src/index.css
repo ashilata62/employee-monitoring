@@ -183,7 +183,7 @@ body {
   }
 
   body {
-    @apply bg-[#F5F1E9] text-[#29291F] dark:bg-[#1A1F18] dark:text-[#F5F1E9] transition-colors duration-200;
+    @apply bg-slate-50 text-slate-900 dark:bg-[#1A1F18] dark:text-[#F5F1E9] transition-colors duration-200;
   }
 
   /* Elegant serif styling for page titles and main headings */
@@ -193,31 +193,33 @@ body {
   }
 }
 
+<<<<<<< HEAD
+=======
 /* HearthLedger Luxury Warm Cream Palette Overrides: Eliminate all white */
-.bg-white,
-.bg-white\/50,
-.bg-white\/60,
-.bg-white\/70,
-.bg-white\/80,
-.bg-white\/90,
-.bg-white\/95,
-.bg-slate-50,
-.bg-slate-50\/40,
-.bg-slate-50\/50,
-.bg-slate-50\/60,
-.bg-slate-50\/80,
-.bg-slate-100,
-.bg-gray-50,
-.bg-gray-100,
-.bg-\[\#f8fafc\],
-.bg-\[\#f1f5f9\],
-.bg-\[\#f3f4f6\],
-.bg-\[\#FBF9F5\],
-.bg-\[\#fbf9f5\],
-.bg-\[\#FAF6EF\],
-.bg-\[\#faf6ef\],
-.bg-\[\#FAF3F0\],
-.bg-\[\#faf3f0\] {
+html:not(.dark) .bg-white,
+html:not(.dark) .bg-white\/50,
+html:not(.dark) .bg-white\/60,
+html:not(.dark) .bg-white\/70,
+html:not(.dark) .bg-white\/80,
+html:not(.dark) .bg-white\/90,
+html:not(.dark) .bg-white\/95,
+html:not(.dark) .bg-slate-50,
+html:not(.dark) .bg-slate-50\/40,
+html:not(.dark) .bg-slate-50\/50,
+html:not(.dark) .bg-slate-50\/60,
+html:not(.dark) .bg-slate-50\/80,
+html:not(.dark) .bg-slate-100,
+html:not(.dark) .bg-gray-50,
+html:not(.dark) .bg-gray-100,
+html:not(.dark) .bg-\[\#f8fafc\],
+html:not(.dark) .bg-\[\#f1f5f9\],
+html:not(.dark) .bg-\[\#f3f4f6\],
+html:not(.dark) .bg-\[\#FBF9F5\],
+html:not(.dark) .bg-\[\#fbf9f5\],
+html:not(.dark) .bg-\[\#FAF6EF\],
+html:not(.dark) .bg-\[\#faf6ef\],
+html:not(.dark) .bg-\[\#FAF3F0\],
+html:not(.dark) .bg-\[\#faf3f0\] {
   background-color: #EEE8DD !important;
 }
 
@@ -228,6 +230,14 @@ body {
 .dark .bg-white\/80,
 .dark .bg-white\/90,
 .dark .bg-white\/95,
+.dark .bg-slate-50,
+.dark .bg-slate-50\/40,
+.dark .bg-slate-50\/50,
+.dark .bg-slate-50\/60,
+.dark .bg-slate-50\/80,
+.dark .bg-slate-100,
+.dark .bg-gray-50,
+.dark .bg-gray-100,
 .dark .bg-slate-900,
 .dark .bg-slate-900\/40,
 .dark .bg-slate-900\/60,
@@ -247,7 +257,7 @@ body {
   background-color: #252B20 !important;
 }
 
-.bg-\[\#fcfdfe\] {
+html:not(.dark) .bg-\[\#fcfdfe\] {
   background-color: #F5F1E9 !important;
 }
 
@@ -303,6 +313,7 @@ textarea {
   color: #F5F1E9 !important;
 }
 
+>>>>>>> 77c0a9cd72e6f91b977be1dcc664cdb5381b3486
 /* Custom Luxury Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;

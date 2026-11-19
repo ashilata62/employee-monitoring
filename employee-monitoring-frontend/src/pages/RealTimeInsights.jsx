@@ -61,18 +61,18 @@ const LiveTimer = ({ startTime, status }) => {
 };
 
 const InsightStatCard = ({ title, value, total, icon: Icon, subLabel }) => (
-    <div className="bg-[#FBF9F5] dark:bg-[#252B20] p-4 rounded-xl sm:rounded-2xl border border-[#E5DED2] dark:border-[#384232] shadow-warm-xs flex flex-col justify-between flex-1 min-w-[170px] hover:border-[#B9955B]/60 transition-all">
-        <div className="flex justify-between items-center mb-2">
-            <span className="text-[10px] sm:text-[11px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-[0.12em]">{title}</span>
-            <div className="h-7 w-7 rounded-lg bg-[#EEE8DD]/70 dark:bg-[#30382B] flex items-center justify-center text-[#B9955B]">
-                <Icon size={14} strokeWidth={2} />
+    <div className="bg-[#FBF9F5] dark:bg-[#252B20] p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-[#E5DED2] dark:border-[#384232] shadow-warm-xs flex flex-col justify-between hover:border-[#B9955B]/60 transition-all">
+        <div className="flex justify-between items-center mb-1.5 sm:mb-2 gap-1.5">
+            <span className="text-[10px] sm:text-[11px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-wider truncate">{title}</span>
+            <div className="h-6 w-6 sm:h-7 sm:w-7 rounded-lg bg-[#EEE8DD]/70 dark:bg-[#30382B] flex items-center justify-center text-[#B9955B] shrink-0">
+                <Icon size={13} strokeWidth={2} />
             </div>
         </div>
-        <div className="my-1 flex items-baseline gap-1">
-            <h3 className="font-sans text-xl sm:text-2xl font-bold text-[#29291F] dark:text-[#F5F1E9] tabular-nums tracking-tight">{value}</h3>
+        <div className="my-0.5 sm:my-1 flex items-baseline gap-1">
+            <h3 className="font-sans text-lg sm:text-2xl font-bold text-[#29291F] dark:text-[#F5F1E9] tabular-nums tracking-tight">{value}</h3>
             {total && <span className="text-xs font-semibold text-[#777367] dark:text-[#9E988A]">/ {total}</span>}
         </div>
-        {subLabel && <p className="text-[10px] text-[#777367] dark:text-[#B8B3A7] font-medium pt-1.5 border-t border-[#E5DED2]/60 dark:border-[#384232]/60 mt-1">{subLabel}</p>}
+        {subLabel && <p className="text-[10px] text-[#777367] dark:text-[#B8B3A7] font-medium pt-1.5 border-t border-[#E5DED2]/60 dark:border-[#384232]/60 mt-1 truncate">{subLabel}</p>}
     </div>
 );
 
@@ -204,7 +204,7 @@ export function RealTimeInsights() {
             </div>
 
             {/* Stat Cards */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5 sm:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4">
                 <InsightStatCard title="Present Today" value={presentToday} total={employees.length} icon={Users} subLabel={`${employees.length} total team`} />
                 <InsightStatCard title="Currently Active" value={onlineEmps.length} icon={Zap} subLabel={`${stats.online} online`} />
                 <InsightStatCard title="Idle" value={idleEmps.length} icon={Clock} subLabel="Inactive now" />
@@ -269,16 +269,16 @@ export function RealTimeInsights() {
                                 <table className="w-full text-left text-xs">
                                     <thead className="text-[#777367] dark:text-[#B8B3A7] font-semibold border-b border-[#E5DED2] dark:border-[#384232] bg-[#EEE8DD]/40 dark:bg-[#1E2419]">
                                         <tr>
-                                            <th className="px-6 py-3.5 text-[10px] font-bold uppercase tracking-wider">Employee Name</th>
-                                            <th className="px-6 py-3.5 text-center text-[10px] font-bold uppercase tracking-wider">Work Time</th>
-                                            <th className="px-6 py-3.5 text-center text-[10px] font-bold uppercase tracking-wider">Manual</th>
-                                            <th className="px-6 py-3.5 text-center text-[10px] font-bold uppercase tracking-wider">Computer</th>
-                                            <th className="px-6 py-3.5 text-[10px] font-bold uppercase tracking-wider">Team</th>
-                                            <th className="px-6 py-3.5 text-[10px] font-bold uppercase tracking-wider">Status</th>
-                                            <th className="px-6 py-3.5 text-center text-[10px] font-bold uppercase tracking-wider">Breaks</th>
-                                            <th className="px-6 py-3.5 text-center text-[10px] font-bold uppercase tracking-wider">Productivity</th>
-                                            <th className="px-6 py-3.5 text-center text-[10px] font-bold uppercase tracking-wider">Utilization</th>
-                                            <th className="px-6 py-3.5 text-right text-[10px] font-bold uppercase tracking-wider">Actions</th>
+                                            <th className="px-6 py-3.5 text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">Employee Name</th>
+                                            <th className="px-6 py-3.5 text-center text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">Work Time</th>
+                                            <th className="px-6 py-3.5 text-center text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">Manual</th>
+                                            <th className="px-6 py-3.5 text-center text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">Computer</th>
+                                            <th className="px-6 py-3.5 text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">Team</th>
+                                            <th className="px-6 py-3.5 text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">Status</th>
+                                            <th className="px-6 py-3.5 text-center text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">Breaks</th>
+                                            <th className="px-6 py-3.5 text-center text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">Productivity</th>
+                                            <th className="px-6 py-3.5 text-center text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">Utilization</th>
+                                            <th className="px-6 py-3.5 text-right text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-[#E5DED2]/60 dark:divide-[#384232]/60">
@@ -300,7 +300,7 @@ export function RealTimeInsights() {
                                                 <tr key={emp.id} className="hover:bg-[#EEE8DD]/30 dark:hover:bg-[#1E2419] transition-colors">
                                                     <td className="px-6 py-4">
                                                         <div className="flex items-center gap-3">
-                                                            <div className="h-9 w-9 rounded-xl bg-[#EEE8DD] text-[#30382B] flex items-center justify-center font-bold text-xs border border-[#E5DED2]">
+                                                            <div className="h-9 w-9 rounded-xl bg-[#EEE8DD] dark:bg-[#384232] text-[#30382B] dark:text-[#F5F1E9] flex items-center justify-center font-bold text-xs border border-[#E5DED2] dark:border-[#4A5742]">
                                                                 {emp.initials || (emp.name || '?').split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
                                                             </div>
                                                             <div>
@@ -312,8 +312,8 @@ export function RealTimeInsights() {
                                                     <td className="px-6 py-4 text-center">{formatHours(emp.totalWorkHours || 0)}</td>
                                                     <td className="px-6 py-4 text-center">{formatHours(emp.manualHours || 0)}</td>
                                                     <td className="px-6 py-4 text-center">{formatHours(emp.computerActivityHours || 0)}</td>
-                                                    <td className="px-6 py-4">
-                                                        <span className="px-2.5 py-1 rounded-lg bg-[#EEE8DD]/60 text-[11px] font-medium text-[#29291F]">
+                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                        <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-[#EEE8DD]/70 dark:bg-[#384232]/60 text-[11px] font-semibold text-[#29291F] dark:text-[#F5F1E9] border border-[#E5DED2]/60 dark:border-[#384232] whitespace-nowrap">
                                                             {emp.team || '—'}
                                                         </span>
                                                     </td>
@@ -352,34 +352,37 @@ export function RealTimeInsights() {
                             </div>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-5">
                             {filtered.length === 0 ? (
                                 <div className="col-span-full py-16 text-center text-[#777367] font-medium text-sm">No employees match your search.</div>
                             ) : filtered.map((emp) => (
                                 <div key={emp.id} className="bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl border border-[#E5DED2] dark:border-[#384232] shadow-warm-xs p-4 sm:p-5 flex flex-col gap-3.5 hover:shadow-warm-md hover:border-[#B9955B]/60 transition-all">
-                                    <div className="flex items-center gap-3">
-                                        <div className="relative">
-                                            <div className="h-11 w-11 rounded-xl bg-[#EEE8DD] text-[#30382B] border border-[#E5DED2] flex items-center justify-center font-bold text-xs">
-                                                {emp.avatar ? (
-                                                    <img src={emp.avatar} alt={emp.name} className="w-full h-full object-cover rounded-xl"
-                                                        onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
-                                                    />
-                                                ) : null}
-                                                <span className={`${emp.avatar ? 'hidden' : 'flex'}`}>
-                                                    {emp.initials || (emp.name || '?').split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
-                                                </span>
+                                    <div className="flex items-start justify-between gap-2.5">
+                                        <div className="flex items-center gap-3 min-w-0">
+                                            <div className="relative shrink-0">
+                                                <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-xl bg-[#EEE8DD] dark:bg-[#384232] text-[#30382B] dark:text-[#F5F1E9] border border-[#E5DED2] dark:border-[#4A5742] flex items-center justify-center font-bold text-xs shrink-0">
+                                                    {emp.avatar ? (
+                                                        <img src={emp.avatar} alt={emp.name} className="w-full h-full object-cover rounded-xl"
+                                                            onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
+                                                        />
+                                                    ) : null}
+                                                    <span className={`${emp.avatar ? 'hidden' : 'flex'}`}>
+                                                        {emp.initials || (emp.name || '?').split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                                                    </span>
+                                                </div>
+                                                <span className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-[#FBF9F5] dark:border-[#252B20] ${statusColors[emp.status] || statusColors.offline}`} />
                                             </div>
-                                            <span className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-[#FBF9F5] dark:border-[#252B20] ${statusColors[emp.status] || statusColors.offline}`} />
+                                            <div className="min-w-0">
+                                                <p className="font-bold text-xs sm:text-sm text-[#29291F] dark:text-[#F5F1E9] truncate" title={emp.name}>{emp.name}</p>
+                                                <p className="text-[11px] font-medium text-[#777367] dark:text-[#A8A295] truncate" title={emp.team}>{emp.team || 'No Team'}</p>
+                                            </div>
                                         </div>
-                                        <div className="min-w-0 flex-1">
-                                            <p className="font-semibold text-xs sm:text-sm text-[#29291F] dark:text-[#F5F1E9] truncate">{emp.name}</p>
-                                            <p className="text-[11px] font-medium text-[#777367] truncate">{emp.team || 'No Team'}</p>
-                                        </div>
-                                        <span className={`shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${emp.status === 'online' ? 'bg-[#5E7D64]/10 text-[#5E7D64]' :
-                                            emp.status === 'idle' ? 'bg-[#C98A3C]/10 text-[#C98A3C]' :
-                                                emp.status === 'break' ? 'bg-[#B9955B]/15 text-[#A17D45]' :
-                                                    'bg-[#777367]/10 text-[#777367]'
-                                            }`}>
+                                        <span className={`shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${
+                                            emp.status === 'online' ? 'bg-[#5E7D64]/10 text-[#5E7D64] dark:bg-[#5E7D64]/20' :
+                                            emp.status === 'idle' ? 'bg-[#C98A3C]/10 text-[#C98A3C] dark:bg-[#C98A3C]/20' :
+                                            emp.status === 'break' ? 'bg-[#B9955B]/15 text-[#A17D45] dark:bg-[#B9955B]/25 dark:text-[#D3B98D]' :
+                                            'bg-[#777367]/10 text-[#777367] dark:bg-[#777367]/20 dark:text-[#A8A295]'
+                                        }`}>
                                             <span className={`h-1.5 w-1.5 rounded-full ${statusColors[emp.status] || statusColors.offline}`} />
                                             {emp.status}
                                         </span>
@@ -387,14 +390,19 @@ export function RealTimeInsights() {
 
                                     {/* Activity and Location */}
                                     <div className="bg-[#EEE8DD]/40 dark:bg-[#1E2419] rounded-xl p-2.5 flex flex-col gap-1 border border-[#E5DED2]/60 dark:border-[#384232]/60">
-                                        <div className="flex items-center gap-2 text-[10px] font-bold text-[#777367] uppercase tracking-wider">
-                                            <Activity size={11} className="text-[#B9955B]" />
-                                            <span className="truncate max-w-[100px]">{emp.status === 'offline' ? 'Offline' : (emp.activeApp || 'Idle')}</span>
-                                            <span className="text-[#E5DED2]">|</span>
-                                            <MapPin size={11} className="text-[#777367]" />
-                                            <span className="truncate max-w-[70px]">{emp.location || 'Remote'}</span>
+                                        <div className="flex items-center justify-between text-[10px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-wider gap-2">
+                                            <div className="flex items-center gap-1.5 min-w-0">
+                                                <Activity size={11} className="text-[#B9955B] shrink-0" />
+                                                <span className="truncate" title={emp.activeApp || 'Idle'}>
+                                                    {emp.status === 'offline' ? 'Offline' : (emp.activeApp || 'Idle')}
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center gap-1 shrink-0 text-[#777367] dark:text-[#9E988A]">
+                                                <MapPin size={11} className="shrink-0" />
+                                                <span>{emp.location || 'Remote'}</span>
+                                            </div>
                                         </div>
-                                        <p className="text-[10px] text-[#777367] truncate italic px-0.5">
+                                        <p className="text-[10px] text-[#777367] dark:text-[#A8A295] truncate italic px-0.5" title={emp.activeWindow}>
                                             {emp.status === 'offline' ? 'No recent activity' : (emp.activeWindow || 'Waiting for activity...')}
                                         </p>
                                     </div>
@@ -402,7 +410,7 @@ export function RealTimeInsights() {
                                     {/* Progress Bars */}
                                     <div className="space-y-2 pt-1">
                                         <div>
-                                            <div className="flex justify-between text-[10px] font-bold text-[#777367] mb-1">
+                                            <div className="flex justify-between text-[10px] font-bold text-[#777367] dark:text-[#B8B3A7] mb-1">
                                                 <span>Productivity</span><span className="text-[#B9955B] font-bold">{emp.productivityScore || 0}%</span>
                                             </div>
                                             <div className="h-1.5 bg-[#EEE8DD] dark:bg-[#1E2419] rounded-full overflow-hidden">
@@ -410,7 +418,7 @@ export function RealTimeInsights() {
                                             </div>
                                         </div>
                                         <div>
-                                            <div className="flex justify-between text-[10px] font-bold text-[#777367] mb-1">
+                                            <div className="flex justify-between text-[10px] font-bold text-[#777367] dark:text-[#B8B3A7] mb-1">
                                                 <span>Utilization</span><span className="text-[#5E7D64] font-bold">{emp.utilizationScore || 0}%</span>
                                             </div>
                                             <div className="h-1.5 bg-[#EEE8DD] dark:bg-[#1E2419] rounded-full overflow-hidden">

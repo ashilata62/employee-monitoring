@@ -60,17 +60,17 @@ export function TrackingTable({ profiles, search, onEdit, onDelete, onSetDefault
                         ))}
                     </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-50 dark:divide-slate-800/60">
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
                     {filtered.map((p) => (
-                        <tr key={p.id} className="hover:bg-violet-50/20 dark:hover:bg-violet-900/5 transition-all group">
+                        <tr key={p.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-all group">
                             {/* Title */}
                             <td className="px-6 py-5">
                                 <div>
                                     <div className="flex items-center gap-2">
                                         <span className="text-sm font-black text-slate-900 dark:text-white">{p.title}</span>
                                         {p.isDefault && (
-                                            <span className="flex items-center gap-1 text-[10px] font-black text-violet-600 dark:text-violet-400">
-                                                <span className="h-1.5 w-1.5 rounded-full bg-violet-600" />Default
+                                            <span className="flex items-center gap-1 text-[10px] font-black text-primary-700 dark:text-primary-400">
+                                                <span className="h-1.5 w-1.5 rounded-full bg-primary-600 dark:bg-primary-400" />Default
                                             </span>
                                         )}
                                     </div>
