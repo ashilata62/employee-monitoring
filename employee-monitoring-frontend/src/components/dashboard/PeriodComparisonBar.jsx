@@ -7,9 +7,15 @@ import {
     Download,
     Bell,
     FileSpreadsheet,
-    FileText
+    FileText,
+    LogIn,
+    LogOut,
+    Clock
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../../store/authStore';
+import { useSessionTimer } from '../../hooks/useLiveTime';
+import { formatSecondsToHMS } from '../../utils/timeFormat';
 
 export function PeriodComparisonBar({
     startDate,
@@ -22,7 +28,8 @@ export function PeriodComparisonBar({
     onExport,
     employees = [],
     teams = [],
-    role = 'admin'
+    role = 'admin',
+    unreadCount = 0
 }) {
     const navigate = useNavigate();
     const rolePrefix = role ? `/${role.toLowerCase()}` : '/admin';
@@ -36,10 +43,62 @@ export function PeriodComparisonBar({
     const [selectedTeam, setSelectedTeam] = useState('');
     const [selectedRole, setSelectedRole] = useState('');
 
+    // Attendance session for Manager / Admin
+    const { isClockedIn, isOnBreak, clockIn, clockOut, toggleBreak } = useAuthStore();
+    const sessionSeconds = useSessionTimer();
+    const [isSessionLoading, setIsSessionLoading] = useState(false);
+
+    const handleClockIn = async () => {
+        setIsSessionLoading(true);
+        try {
+            await clockIn();
+        } catch (e) {
+            console.error('Clock in error', e);
+        } finally {
+            setIsSessionLoading(false);
+        }
+    };
+
+    const handleClockOut = async () => {
+        setIsSessionLoading(true);
+        try {
+            await clockOut();
+        } catch (e) {
+            console.error('Clock out error', e);
+        } finally {
+            setIsSessionLoading(false);
+        }
+    };
+
+    const handleToggleBreak = async () => {
+        setIsSessionLoading(true);
+        try {
+            await toggleBreak();
+        } catch (e) {
+            console.error('Toggle break error', e);
+        } finally {
+            setIsSessionLoading(false);
+        }
+    };
+
     const refRef = useRef(null);
     const compRef = useRef(null);
     const filterRef = useRef(null);
     const exportRef = useRef(null);
+
+    const toLocalDateStr = (d) => {
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+    const todayStr = toLocalDateStr(new Date());
+    const last7Str = toLocalDateStr(new Date(Date.now() - 6 * 86400000));
+    const firstOfMonthStr = toLocalDateStr(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+    const last30Str = toLocalDateStr(new Date(Date.now() - 29 * 86400000));
+    const yesterdayStr = toLocalDateStr(new Date(Date.now() - 86400000));
+    const firstOfPrevMonthStr = toLocalDateStr(new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1));
+    const lastOfPrevMonthStr = toLocalDateStr(new Date(new Date().getFullYear(), new Date().getMonth(), 0));
 
     useEffect(() => {
         const handleClickOutside = (e) => {
@@ -107,9 +166,11 @@ export function PeriodComparisonBar({
                         title="Alerts & Notifications"
                     >
                         <Bell size={17} className="text-[#777367]" />
-                        <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#A84B4B] text-white text-[9px] font-bold rounded-full flex items-center justify-center border-2 border-[#F5F1E9] dark:border-[#1A1F18]">
-                            2
-                        </span>
+                        {unreadCount > 0 && (
+                            <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 bg-[#A84B4B] text-white text-[9px] font-bold rounded-full flex items-center justify-center border-2 border-[#F5F1E9] dark:border-[#1A1F18]">
+                                {unreadCount > 99 ? '99+' : unreadCount}
+                            </span>
+                        )}
                     </button>
                 </div>
             </div>
@@ -134,10 +195,10 @@ export function PeriodComparisonBar({
                             <div className="absolute top-full left-0 mt-2 w-64 bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl shadow-xl border border-[#D6CDBC] dark:border-[#384232] p-2 z-50 animate-in fade-in duration-150">
                                 <p className="px-3 py-1.5 text-[9px] font-bold text-[#777367] uppercase tracking-[0.15em]">Select Range</p>
                                 {[
-                                    { label: 'Today', start: new Date().toISOString().slice(0, 10), end: new Date().toISOString().slice(0, 10) },
-                                    { label: 'Last 7 Days', start: new Date(Date.now() - 6 * 86400000).toISOString().slice(0, 10), end: new Date().toISOString().slice(0, 10) },
-                                    { label: 'This Month', start: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().slice(0, 10), end: new Date().toISOString().slice(0, 10) },
-                                    { label: 'Last 30 Days', start: new Date(Date.now() - 29 * 86400000).toISOString().slice(0, 10), end: new Date().toISOString().slice(0, 10) }
+                                    { label: 'Today', start: todayStr, end: todayStr },
+                                    { label: 'Last 7 Days', start: last7Str, end: todayStr },
+                                    { label: 'This Month', start: firstOfMonthStr, end: todayStr },
+                                    { label: 'Last 30 Days', start: last30Str, end: todayStr }
                                 ].map(p => (
                                     <button
                                         key={p.label}
@@ -177,8 +238,8 @@ export function PeriodComparisonBar({
                                 <p className="px-3 py-1.5 text-[9px] font-bold text-[#777367] uppercase tracking-[0.15em]">Select Comparison Range</p>
                                 {[
                                     { label: 'Prior Period (Equal Duration)', start: null, end: null },
-                                    { label: 'Yesterday', start: new Date(Date.now() - 86400000).toISOString().slice(0, 10), end: new Date(Date.now() - 86400000).toISOString().slice(0, 10) },
-                                    { label: 'Previous Month', start: new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1).toISOString().slice(0, 10), end: new Date(new Date().getFullYear(), new Date().getMonth(), 0).toISOString().slice(0, 10) }
+                                    { label: 'Yesterday', start: yesterdayStr, end: yesterdayStr },
+                                    { label: 'Previous Month', start: firstOfPrevMonthStr, end: lastOfPrevMonthStr }
                                 ].map(p => (
                                     <button
                                         key={p.label}
@@ -282,6 +343,61 @@ export function PeriodComparisonBar({
                             </div>
                         )}
                     </div>
+
+                    {/* 4. Session Controls (Clock In / Clock Out / Take Break) for Manager / Admin */}
+                    {role !== 'EMPLOYEE' && (
+                        <div className="flex items-center gap-2 self-end">
+                            {!isClockedIn ? (
+                                <button
+                                    onClick={handleClockIn}
+                                    disabled={isSessionLoading}
+                                    className="flex items-center gap-2 px-4 py-2 bg-[#30382B] hover:bg-[#3C4536] text-white rounded-xl text-xs font-bold shadow-warm-xs transition-all hover:scale-[1.02] active:scale-95 cursor-pointer disabled:opacity-50"
+                                >
+                                    <LogIn size={13} className="text-[#D3B98D]" />
+                                    <span>Clock In</span>
+                                </button>
+                            ) : (
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    {/* Clock Out Button (Replaces Clock In) */}
+                                    <button
+                                        onClick={handleClockOut}
+                                        disabled={isSessionLoading}
+                                        className="flex items-center gap-1.5 px-3.5 py-2 bg-[#A84B4B] hover:bg-[#8E3B3B] text-white rounded-xl text-xs font-bold shadow-warm-xs transition-all hover:scale-[1.02] active:scale-95 cursor-pointer disabled:opacity-50"
+                                    >
+                                        <LogOut size={13} />
+                                        <span>Clock Out</span>
+                                    </button>
+
+                                    {/* Take a Break / Resume Work Button */}
+                                    <button
+                                        onClick={handleToggleBreak}
+                                        disabled={isSessionLoading}
+                                        className={`flex items-center gap-1.5 px-3.5 py-2 ${
+                                            isOnBreak
+                                                ? 'bg-[#5E7D64] hover:bg-[#4A6B53]'
+                                                : 'bg-[#B9955B] hover:bg-[#A17D45]'
+                                        } text-white rounded-xl text-xs font-bold shadow-warm-xs transition-all hover:scale-[1.02] active:scale-95 cursor-pointer disabled:opacity-50`}
+                                    >
+                                        <Clock size={13} />
+                                        <span>{isOnBreak ? 'Resume Work' : 'Take a Break'}</span>
+                                    </button>
+
+                                    {/* Persistent live session timer */}
+                                    <div className="flex items-center gap-2 px-3.5 py-2 bg-[#EEE8DD] dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] rounded-xl text-xs font-bold text-[#29291F] dark:text-[#F5F1E9] tabular-nums shadow-warm-xs">
+                                        <Clock size={13} className={isOnBreak ? 'text-amber-500' : 'text-[#B9955B] animate-pulse'} />
+                                        <span>{formatSecondsToHMS(sessionSeconds)}</span>
+                                        <span className={`text-[9px] uppercase px-1.5 py-0.5 rounded-md font-bold ${
+                                            isOnBreak 
+                                                ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-400' 
+                                                : 'bg-[#5E7D64]/15 text-[#5E7D64] dark:text-[#A4C2A8]'
+                                        }`}>
+                                            {isOnBreak ? 'Paused' : 'Active'}
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 {/* 4. Export Button */}

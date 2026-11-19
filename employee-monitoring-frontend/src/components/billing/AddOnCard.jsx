@@ -16,7 +16,7 @@ export function AddOnCard({ addOnId }) {
         <div className={cn(
             'relative flex flex-col rounded-[2rem] border-2 bg-white dark:bg-slate-900 transition-all duration-300',
             isEnabled && !isTrial
-                ? 'border-violet-400 dark:border-violet-700 shadow-xl shadow-violet-50 dark:shadow-violet-900/10'
+                ? 'border-primary-400 dark:border-primary-700 shadow-xl shadow-warm-xs dark:shadow-none'
                 : 'border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md hover:-translate-y-0.5'
         )}>
             {/* Card Body */}
@@ -24,11 +24,11 @@ export function AddOnCard({ addOnId }) {
                 {/* Icon + Name + Price */}
                 <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-3">
-                        <div className="h-9 w-9 rounded-xl bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center text-violet-600 dark:text-violet-400 shrink-0">
+                        <div className="h-9 w-9 rounded-xl bg-primary-100 dark:bg-primary-950/40 flex items-center justify-center text-primary-600 dark:text-primary-400 shrink-0">
                             <IconComponent size={18} />
                         </div>
                         <div>
-                            <h3 className="text-sm font-black text-violet-600 dark:text-violet-400 leading-tight">
+                            <h3 className="text-sm font-black text-primary-600 dark:text-primary-400 leading-tight">
                                 {addOn.name}
                             </h3>
                         </div>
@@ -71,7 +71,7 @@ export function AddOnCard({ addOnId }) {
                     <>
                         <span className={cn(
                             'text-xs font-black uppercase tracking-widest',
-                            isEnabled ? 'text-violet-600 dark:text-violet-400' : 'text-slate-400'
+                            isEnabled ? 'text-primary-600 dark:text-primary-400' : 'text-slate-400'
                         )}>
                             {isEnabled ? 'Enabled' : 'Disabled'}
                         </span>
@@ -81,7 +81,7 @@ export function AddOnCard({ addOnId }) {
                             aria-label={`Toggle ${addOn.name}`}
                         >
                             {isEnabled ? (
-                                <ToggleRight size={34} className="text-violet-500" />
+                                <ToggleRight size={34} className="text-primary-600" />
                             ) : (
                                 <ToggleLeft size={34} className="text-slate-300 dark:text-slate-600" />
                             )}

@@ -100,7 +100,7 @@ const inviteEmployee = async (data) => {
     }
 
     const workMode = data.location || 'Remote';
-    const status = data.status || 'ACTIVE';
+    const status = data.status || (data.password ? 'ACTIVE' : 'INVITED');
 
     const employee = await prisma.employee.create({
         data: {

@@ -66,10 +66,10 @@ export function Privacy() {
                             Settings
                         </span>
                         <span>/</span>
-                        <span className="text-violet-600">Privacy</span>
+                        <span className="text-primary-600">Privacy</span>
                     </nav>
                     <div className="flex items-center gap-3">
-                        {/* <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-violet-200 dark:shadow-none">
+                        {/* <div className="h-9 w-9 rounded-xl bg-[#30382B] dark:bg-[#B9955B] text-white flex items-center justify-center text-white shadow-lg shadow-warm-xs dark:shadow-none">
                             <ShieldCheck size={18} />
                         </div> */}
                         <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Privacy</h1>
@@ -87,7 +87,7 @@ export function Privacy() {
                             cn(
                                 'relative px-5 py-4 text-sm font-bold whitespace-nowrap transition-all',
                                 isActive
-                                    ? 'text-violet-600 dark:text-violet-400'
+                                    ? 'text-primary-600 dark:text-primary-400'
                                     : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
                             )
                         }
@@ -96,7 +96,7 @@ export function Privacy() {
                             <>
                                 {tab.label}
                                 {isActive && (
-                                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-violet-600 to-indigo-600 rounded-full animate-in fade-in duration-200" />
+                                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#30382B] hover:bg-[#3C4536] dark:bg-[#B9955B] dark:hover:bg-[#A17D45] text-white shadow-warm-sm rounded-full animate-in fade-in duration-200" />
                                 )}
                             </>
                         )}
@@ -121,7 +121,7 @@ export function Privacy() {
                 </button>
                 <button
                     onClick={handleSave}
-                    className="px-8 py-3 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-violet-200 dark:shadow-none hover:from-violet-700 hover:to-indigo-700 hover:scale-[1.02] active:scale-95 transition-all"
+                    className="px-8 py-3 rounded-2xl bg-[#30382B] hover:bg-[#3C4536] dark:bg-[#B9955B] dark:hover:bg-[#A17D45] text-white shadow-warm-sm text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-warm-xs dark:shadow-none  hover:scale-[1.02] active:scale-95 transition-all"
                 >
                     Save Changes
                 </button>

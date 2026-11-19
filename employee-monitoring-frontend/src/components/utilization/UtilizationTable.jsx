@@ -21,7 +21,7 @@ function ActionMenu({ formula, onEdit, onDelete, onSetDefault }) {
                 <div className="absolute right-0 top-full mt-1 z-50 w-44 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
                     <button onClick={() => { onEdit(formula); setOpen(false); }} className="w-full px-4 py-3 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-left transition-all">Edit</button>
                     {!formula.isDefault && (
-                        <button onClick={() => { onSetDefault(formula.id); setOpen(false); }} className="w-full px-4 py-3 text-sm font-semibold text-violet-700 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/10 text-left transition-all">Set as Default</button>
+                        <button onClick={() => { onSetDefault(formula.id); setOpen(false); }} className="w-full px-4 py-3 text-sm font-semibold text-primary-700 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/10 text-left transition-all">Set as Default</button>
                     )}
                     <div className="border-t border-slate-100 dark:border-slate-800" />
                     <button
@@ -67,20 +67,20 @@ export function UtilizationTable({ formulas, onEdit, onDelete, onSetDefault }) {
                         ))}
                     </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-50 dark:divide-slate-800/60">
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
                     {formulas.map((f) => (
-                        <tr key={f.id} className="hover:bg-violet-50/20 dark:hover:bg-violet-900/5 transition-all group">
+                        <tr key={f.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-all group">
                             {/* Formula Name */}
                             <td className="px-5 py-4">
                                 <div className="flex items-center gap-2">
                                     {f.isDefault && (
-                                        <Pin size={13} className="text-violet-600 dark:text-violet-400 shrink-0 rotate-45" />
+                                        <Pin size={13} className="text-primary-600 dark:text-primary-400 shrink-0 rotate-45" />
                                     )}
-                                    <span className={cn('text-sm font-black', f.isDefault ? 'text-violet-700 dark:text-violet-400' : 'text-slate-900 dark:text-white')}>
+                                    <span className={cn('text-sm font-black', f.isDefault ? 'text-primary-700 dark:text-primary-400' : 'text-slate-900 dark:text-white')}>
                                         {f.name}
                                     </span>
                                     {f.isDefault && (
-                                        <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-violet-100 dark:bg-violet-900/20 text-violet-700 dark:text-violet-400">
+                                        <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-primary-50 dark:bg-primary-950/40 text-primary-700 dark:text-primary-300 border border-primary-200/60 dark:border-primary-800/50">
                                             Default
                                         </span>
                                     )}

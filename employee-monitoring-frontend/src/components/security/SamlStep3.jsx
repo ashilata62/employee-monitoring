@@ -50,7 +50,7 @@ export function SamlStep3({ onError }) {
                         <button
                             onClick={handleVerify}
                             disabled={loading}
-                            className="flex items-center gap-2 px-8 py-3.5 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-violet-200 dark:shadow-none hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-60"
+                            className="flex items-center gap-2 px-8 py-3.5 rounded-2xl bg-[#30382B] hover:bg-[#3C4536] dark:bg-[#B9955B] dark:hover:bg-[#A17D45] text-white shadow-warm-sm text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-warm-xs dark:shadow-none hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-60"
                         >
                             {loading && <Loader2 size={15} className="animate-spin" />}
                             {loading ? 'Verifying...' : 'Verify SAML'}

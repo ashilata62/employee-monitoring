@@ -12,8 +12,8 @@ export function Login() {
     const location = useLocation();
     const { login } = useAuthStore();
     const { toast } = useToast();
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const [email, setEmail] = useState('admin@gmail.com');
+    const [password, setPassword] = useState('123456');
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
@@ -38,10 +38,12 @@ export function Login() {
         setError('');
         try {
             const roleKey = role.toLowerCase();
-            let quickEmail = 'admin@example.com';
-            if (roleKey === 'manager') quickEmail = 'manager@example.com';
-            if (roleKey === 'employee') quickEmail = 'demo1@gmail.com';
+            let quickEmail = 'admin@gmail.com';
+            if (roleKey === 'manager') quickEmail = 'rahul@gmail.com';
+            if (roleKey === 'employee') quickEmail = 'test@gmail.com';
             const quickPass = '123456';
+            setEmail(quickEmail);
+            setPassword(quickPass);
             const res = await login(quickEmail, quickPass);
             const targetRole = res?.user?.role?.toLowerCase() || roleKey;
             navigate(`/${targetRole}`, { replace: true });
@@ -178,34 +180,37 @@ export function Login() {
                         <button
                             type="button"
                             onClick={() => handleQuickLogin('Admin')}
-                            className="flex flex-col items-center gap-1.5 rounded-2xl border border-[#E5DED2] dark:border-[#384232] bg-[#F5F1E9] dark:bg-[#1E2419] p-2.5 text-center transition-all hover:border-[#B9955B] group cursor-pointer"
+                            className="flex flex-col items-center gap-1 rounded-2xl border border-[#E5DED2] dark:border-[#384232] bg-[#F5F1E9] dark:bg-[#1E2419] p-2.5 text-center transition-all hover:border-[#B9955B] group cursor-pointer"
                         >
                             <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#30382B] text-[#D3B98D] transition-transform group-hover:scale-105">
                                 <Shield size={16} />
                             </div>
                             <span className="text-[9px] font-bold uppercase tracking-wider text-[#29291F] dark:text-[#F5F1E9] leading-tight">Admin Portal</span>
+                            <span className="text-[8px] text-[#777367] dark:text-[#A8A29E] leading-none truncate max-w-full">admin@gmail.com</span>
                         </button>
 
                         <button
                             type="button"
                             onClick={() => handleQuickLogin('Manager')}
-                            className="flex flex-col items-center gap-1.5 rounded-2xl border border-[#E5DED2] dark:border-[#384232] bg-[#F5F1E9] dark:bg-[#1E2419] p-2.5 text-center transition-all hover:border-[#B9955B] group cursor-pointer"
+                            className="flex flex-col items-center gap-1 rounded-2xl border border-[#E5DED2] dark:border-[#384232] bg-[#F5F1E9] dark:bg-[#1E2419] p-2.5 text-center transition-all hover:border-[#B9955B] group cursor-pointer"
                         >
                             <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#5E7D64] text-white transition-transform group-hover:scale-105">
                                 <Briefcase size={16} />
                             </div>
                             <span className="text-[9px] font-bold uppercase tracking-wider text-[#29291F] dark:text-[#F5F1E9] leading-tight">Manager Portal</span>
+                            <span className="text-[8px] text-[#777367] dark:text-[#A8A29E] leading-none truncate max-w-full">rahul@gmail.com</span>
                         </button>
 
                         <button
                             type="button"
                             onClick={() => handleQuickLogin('Employee')}
-                            className="flex flex-col items-center gap-1.5 rounded-2xl border border-[#E5DED2] dark:border-[#384232] bg-[#F5F1E9] dark:bg-[#1E2419] p-2.5 text-center transition-all hover:border-[#B9955B] group cursor-pointer"
+                            className="flex flex-col items-center gap-1 rounded-2xl border border-[#E5DED2] dark:border-[#384232] bg-[#F5F1E9] dark:bg-[#1E2419] p-2.5 text-center transition-all hover:border-[#B9955B] group cursor-pointer"
                         >
                             <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#B9955B] text-white transition-transform group-hover:scale-105">
                                 <User size={16} />
                             </div>
                             <span className="text-[9px] font-bold uppercase tracking-wider text-[#29291F] dark:text-[#F5F1E9] leading-tight">Employee Portal</span>
+                            <span className="text-[8px] text-[#777367] dark:text-[#A8A29E] leading-none truncate max-w-full">test@gmail.com</span>
                         </button>
                     </div>
 

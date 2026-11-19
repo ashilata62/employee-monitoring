@@ -75,23 +75,23 @@ export function ExportDropdown({
                 disabled={disabled || isBusy}
                 title="Export Report Data"
                 className={cn(
-                    "flex h-9 items-center gap-1.5 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 shadow-xs transition-all hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-95 text-xs font-semibold cursor-pointer",
+                    "flex h-9 items-center gap-1.5 px-3.5 rounded-xl border border-[#D6CDBC] dark:border-[#384232] bg-[#EEE8DD] dark:bg-[#252B20] text-[#29291F] dark:text-[#F5F1E9] shadow-warm-xs transition-all hover:bg-[#E5DDCF] dark:hover:bg-[#1E2419] active:scale-95 text-xs font-semibold cursor-pointer",
                     (disabled || isBusy) && "opacity-50 cursor-not-allowed",
-                    isOpen && "ring-2 ring-indigo-500/20 border-indigo-500",
+                    isOpen && "ring-2 ring-primary-500/20 border-primary-500",
                     buttonClassName
                 )}
             >
                 {isBusy ? (
                     <Loader2 size={16} className="animate-spin text-primary-600" />
                 ) : (
-                    <Download size={16} className="text-slate-500 dark:text-slate-400" />
+                    <Download size={16} className="text-[#29291F] dark:text-[#F5F1E9]" />
                 )}
                 <span className="hidden sm:inline">Export</span>
             </button>
 
             {isOpen && (
-                <div className="absolute right-0 mt-2 w-48 rounded-2xl bg-white dark:bg-slate-900 shadow-2xl border border-slate-100 dark:border-slate-800 py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150">
-                    <div className="px-3 py-1.5 border-b border-slate-100 dark:border-slate-800 text-[10px] font-black uppercase tracking-wider text-slate-400">
+                <div className="absolute right-0 mt-2 w-48 rounded-2xl bg-[#EEE8DD] dark:bg-[#252B20] shadow-2xl border border-[#D6CDBC] dark:border-[#384232] py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150">
+                    <div className="px-3 py-1.5 border-b border-[#D6CDBC] dark:border-[#384232] text-[10px] font-black uppercase tracking-wider text-[#777367] dark:text-[#B8B3A7]">
                         Choose Format ({data.length} rows)
                     </div>
 
@@ -99,9 +99,9 @@ export function ExportDropdown({
                         type="button"
                         onClick={() => handleExport('csv')}
                         disabled={isBusy}
-                        className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left"
+                        className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-bold text-[#29291F] dark:text-[#F5F1E9] hover:bg-[#E5DDCF] dark:hover:bg-[#1E2419] transition-colors text-left cursor-pointer"
                     >
-                        <Table size={15} className="text-emerald-500" />
+                        <Table size={15} className="text-emerald-600" />
                         <span>CSV Spreadsheet (.csv)</span>
                     </button>
 
@@ -109,9 +109,9 @@ export function ExportDropdown({
                         type="button"
                         onClick={() => handleExport('xlsx')}
                         disabled={isBusy}
-                        className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left"
+                        className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-bold text-[#29291F] dark:text-[#F5F1E9] hover:bg-[#E5DDCF] dark:hover:bg-[#1E2419] transition-colors text-left cursor-pointer"
                     >
-                        <FileSpreadsheet size={15} className="text-blue-500" />
+                        <FileSpreadsheet size={15} className="text-emerald-600" />
                         <span>Excel Workbook (.xlsx)</span>
                     </button>
 
@@ -119,9 +119,9 @@ export function ExportDropdown({
                         type="button"
                         onClick={() => handleExport('pdf')}
                         disabled={isBusy}
-                        className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left"
+                        className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-bold text-[#29291F] dark:text-[#F5F1E9] hover:bg-[#E5DDCF] dark:hover:bg-[#1E2419] transition-colors text-left cursor-pointer"
                     >
-                        <FileText size={15} className="text-rose-500" />
+                        <FileText size={15} className="text-rose-600" />
                         <span>PDF Document (.pdf)</span>
                     </button>
                 </div>

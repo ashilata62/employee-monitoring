@@ -26,7 +26,7 @@ function OrgGroupCard({ group, users, onDelete }) {
                 </div>
             </div>
 
-            <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white mb-4 shadow-lg shadow-violet-200 dark:shadow-none">
+            <div className="h-12 w-12 rounded-2xl bg-[#30382B] dark:bg-[#B9955B] text-white flex items-center justify-center text-white mb-4 shadow-lg shadow-warm-xs dark:shadow-none">
                 <Users size={22} />
             </div>
             <h3 className="text-base font-black text-slate-900 dark:text-white mb-1">{group.name}</h3>
@@ -66,13 +66,13 @@ export function ManageOrgGroups() {
                     <div>
                         <nav className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">
                             <span className="cursor-pointer hover:text-slate-600 dark:hover:text-slate-300 transition-colors" onClick={() => navigate('/settings')}>Settings</span>
-                            <span>/</span><span className="cursor-pointer hover:text-violet-600 transition-colors" onClick={() => navigate('/settings/user-management/users')}>Manage Users</span>
-                            <span>/</span><span className="text-violet-600">Org Groups</span>
+                            <span>/</span><span className="cursor-pointer hover:text-primary-600 transition-colors" onClick={() => navigate('/settings/user-management/users')}>Manage Users</span>
+                            <span>/</span><span className="text-primary-600">Org Groups</span>
                         </nav>
                         <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Manage Users</h1>
                     </div>
                 </div>
-                <button onClick={() => setModalOpen(true)} className="flex items-center gap-2 h-10 px-5 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-xs font-black shadow-lg shadow-violet-200 dark:shadow-none hover:scale-[1.02] active:scale-95 transition-all">
+                <button onClick={() => setModalOpen(true)} className="flex items-center gap-2 h-10 px-5 rounded-2xl bg-[#30382B] hover:bg-[#3C4536] dark:bg-[#B9955B] dark:hover:bg-[#A17D45] text-white shadow-warm-sm text-white text-xs font-black shadow-lg shadow-warm-xs dark:shadow-none hover:scale-[1.02] active:scale-95 transition-all">
                     <Plus size={14} strokeWidth={3} /> Add New
                 </button>
             </div>
@@ -84,7 +84,7 @@ export function ManageOrgGroups() {
                     { id: 'orgGroups', label: 'Manage Org Groups', path: '/settings/user-management/org-groups' },
                 ].map((tab) => (
                     <button key={tab.id} onClick={() => navigate(tab.path)}
-                        className={cn('px-4 py-3 text-sm font-black border-b-2 transition-all', tab.id === 'orgGroups' ? 'border-violet-600 text-violet-600 dark:text-violet-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300')}>
+                        className={cn('px-4 py-3 text-sm font-black border-b-2 transition-all', tab.id === 'orgGroups' ? 'border-primary-600 text-primary-600 dark:text-primary-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300')}>
                         {tab.label}
                     </button>
                 ))}
@@ -98,7 +98,7 @@ export function ManageOrgGroups() {
                     </div>
                     <h3 className="text-lg font-black text-slate-400 mb-2">No Org Groups Yet</h3>
                     <p className="text-sm font-medium text-slate-400 mb-6">Create your first org group to organize employees into teams.</p>
-                    <button onClick={() => setModalOpen(true)} className="flex items-center gap-2 h-10 px-6 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-xs font-black shadow-lg shadow-violet-200 dark:shadow-none hover:scale-[1.02] transition-all">
+                    <button onClick={() => setModalOpen(true)} className="flex items-center gap-2 h-10 px-6 rounded-2xl bg-[#30382B] hover:bg-[#3C4536] dark:bg-[#B9955B] dark:hover:bg-[#A17D45] text-white shadow-warm-sm text-white text-xs font-black shadow-lg shadow-warm-xs dark:shadow-none hover:scale-[1.02] transition-all">
                         <Plus size={14} strokeWidth={3} /> Create Org Group
                     </button>
                 </div>

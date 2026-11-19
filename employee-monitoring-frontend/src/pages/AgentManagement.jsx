@@ -58,9 +58,15 @@ export function AgentManagement() {
     useEffect(() => {
         fetchAgents();
         
+        // Auto-refresh every 30 seconds for real-time agent heartbeat & online status
+        const interval = setInterval(fetchAgents, 30000);
+
         const handleClickOutside = () => setActiveDropdown(null);
         window.addEventListener('click', handleClickOutside);
-        return () => window.removeEventListener('click', handleClickOutside);
+        return () => {
+            clearInterval(interval);
+            window.removeEventListener('click', handleClickOutside);
+        };
     }, []);
 
     const filteredAgents = agents.filter(agent => 
@@ -189,7 +195,9 @@ export function AgentManagement() {
                         </div>
                         <div>
                             <p className="text-[10px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-[0.14em]">Active Status</p>
-                            <h3 className="font-serif text-2xl font-bold text-[#29291F] dark:text-[#F5F1E9] mt-0.5">{agents.filter(a => a.status === 'active').length}</h3>
+                            <h3 className="font-serif text-2xl font-bold text-[#29291F] dark:text-[#F5F1E9] mt-0.5">
+                                {agents.filter(a => (a.status || '').toLowerCase() === 'active').length}
+                            </h3>
                         </div>
                     </div>
                 </div>
@@ -266,13 +274,21 @@ export function AgentManagement() {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <div className="flex flex-col gap-1">
-                                                <p className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1">
-                                                    <Smartphone size={12} />
-                                                    {agent.systemInfo?.platform} {agent.systemInfo?.arch}
-                                                </p>
-                                                <p className="text-[10px] text-slate-500 font-medium">{agent.systemInfo?.release}</p>
-                                            </div>
+                                            {(() => {
+                                                let sys = agent.systemInfo;
+                                                if (typeof sys === 'string') {
+                                                    try { sys = JSON.parse(sys); } catch (e) { sys = {}; }
+                                                }
+                                                return (
+                                                    <div className="flex flex-col gap-1">
+                                                        <p className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1">
+                                                            <Smartphone size={12} />
+                                                            {sys?.platform || 'Unknown'} {sys?.arch || ''}
+                                                        </p>
+                                                        <p className="text-[10px] text-slate-500 font-medium">{sys?.release || sys?.hostname || 'Desktop Client'}</p>
+                                                    </div>
+                                                );
+                                            })()}
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">

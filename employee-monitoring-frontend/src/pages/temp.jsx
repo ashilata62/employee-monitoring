@@ -1,10 +1,10 @@
-                                                        <div className="h-9 w-9 rounded-full overflow-hidden border border-slate-200 dark:border-slate-700 shrink-0 bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
+                                                        <div className="h-9 w-9 rounded-full overflow-hidden border border-slate-200 dark:border-slate-700 shrink-0 bg-primary-100 dark:bg-primary-950/40 flex items-center justify-center">
                                                             {emp.avatar ? (
                                                                 <img src={emp.avatar} alt={emp.name} className="w-full h-full object-cover"
                                                                     onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }}
                                                                 />
                                                             ) : null}
-                                                            <span className={`text-[10px] font-black text-violet-700 dark:text-violet-300 ${emp.avatar ? 'hidden' : 'flex'}`}>
+                                                            <span className={`text-[10px] font-black text-primary-700 dark:text-primary-300 ${emp.avatar ? 'hidden' : 'flex'}`}>
                                                                 {emp.initials || (emp.name || '?').split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2)}
                                                             </span>
                                                         </div>
@@ -45,7 +45,7 @@
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-3">
                                                         <div className="flex-1 max-w-[80px] h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                                                            <div className="h-full bg-violet-500 rounded-full transition-all" style={{ width: `${emp.productivityScore || 0}%` }} />
+                                                            <div className="h-full bg-primary-500 rounded-full transition-all" style={{ width: `${emp.productivityScore || 0}%` }} />
                                                         </div>
                                                         <span className="font-black text-slate-700 dark:text-slate-300 min-w-[32px]">{emp.productivityScore || 0}%</span>
                                                     </div>
@@ -87,13 +87,13 @@
                                 <div key={emp.id} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 flex flex-col gap-4 hover:shadow-md transition-shadow">
                                     <div className="flex items-center gap-3">
                                         <div className="relative">
-                                            <div className="h-12 w-12 rounded-full overflow-hidden border-2 border-slate-200 dark:border-slate-700 bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
+                                            <div className="h-12 w-12 rounded-full overflow-hidden border-2 border-slate-200 dark:border-slate-700 bg-primary-100 dark:bg-primary-950/40 flex items-center justify-center">
                                                 {emp.avatar ? (
                                                     <img src={emp.avatar} alt={emp.name} className="w-full h-full object-cover"
                                                         onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }}
                                                     />
                                                 ) : null}
-                                                <span className={`text-[10px] font-black text-violet-700 dark:text-violet-300 ${emp.avatar ? 'hidden' : 'flex'}`}>
+                                                <span className={`text-[10px] font-black text-primary-700 dark:text-primary-300 ${emp.avatar ? 'hidden' : 'flex'}`}>
                                                     {emp.initials || (emp.name || '?').split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2)}
                                                 </span>
                                             </div>
@@ -117,7 +117,7 @@
                                     {/* Activity and Location */}
                                     <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-2 flex flex-col gap-1.5 border border-slate-100 dark:border-slate-800">
                                         <div className="flex items-center gap-2 text-[10px] font-bold text-slate-500 uppercase tracking-tight">
-                                            <Activity size={10} className="text-violet-500" />
+                                            <Activity size={10} className="text-primary-600" />
                                             <span className="truncate max-w-[100px]">{emp.status === 'offline' ? 'Offline' : (emp.activeApp || 'Idle')}</span>
                                             <span className="text-slate-300 dark:text-slate-700">|</span>
                                             <MapPin size={10} className="text-rose-400" />
@@ -132,10 +132,10 @@
                                     <div className="space-y-2">
                                         <div>
                                             <div className="flex justify-between text-[10px] font-bold text-slate-500 mb-1">
-                                                <span>Productivity</span><span className="text-violet-600">{emp.productivityScore || 0}%</span>
+                                                <span>Productivity</span><span className="text-primary-600">{emp.productivityScore || 0}%</span>
                                             </div>
                                             <div className="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                                                <div className="h-full bg-violet-500 rounded-full transition-all" style={{ width: `${emp.productivityScore || 0}%` }} />
+                                                <div className="h-full bg-primary-500 rounded-full transition-all" style={{ width: `${emp.productivityScore || 0}%` }} />
                                             </div>
                                         </div>
                                         <div>

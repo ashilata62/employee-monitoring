@@ -75,7 +75,7 @@ function RecommendationsModal({ isOpen, onClose }) {
                         </div>
                     ))}
                 </div>
-                <button onClick={onClose} className="mt-7 w-full py-3.5 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-xs font-black uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-violet-200 dark:shadow-none">
+                <button onClick={onClose} className="mt-7 w-full py-3.5 rounded-2xl bg-[#30382B] hover:bg-[#3C4536] dark:bg-[#B9955B] dark:hover:bg-[#A17D45] text-white shadow-warm-sm text-white text-xs font-black uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-warm-xs dark:shadow-none">
                     Got it
                 </button>
             </div>
@@ -100,7 +100,7 @@ function TagChangePopover({ app, tags, onSelect, onClose }) {
                         >
                             <span className="h-3 w-3 rounded-full shrink-0" style={{ backgroundColor: t.color }} />
                             {t.name}
-                            {app?.tagId === t.id && <span className="ml-auto text-violet-500 text-xs">✓</span>}
+                            {app?.tagId === t.id && <span className="ml-auto text-primary-600 text-xs">✓</span>}
                         </button>
                     ))}
                 </div>
@@ -190,7 +190,7 @@ export function ProductivityApps() {
     if (loading && apps.length === 0) {
         return (
             <div className="flex h-[400px] items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-violet-600" />
+                <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
             </div>
         );
     }
@@ -207,18 +207,18 @@ export function ProductivityApps() {
                         <nav className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">
                             <span className="hover:text-slate-600 cursor-pointer transition-colors dark:hover:text-slate-300" onClick={() => navigate(`${rolePath}/settings`)}>Settings</span>
                             <span>/</span>
-                            <span className="text-violet-600">Productivity</span>
+                            <span className="text-primary-600">Productivity</span>
                         </nav>
                         <div className="flex items-center gap-3">
-                            {/* <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-violet-200 dark:shadow-none">
+                            {/* <div className="h-9 w-9 rounded-xl bg-[#30382B] dark:bg-[#B9955B] text-white flex items-center justify-center text-white shadow-lg shadow-warm-xs dark:shadow-none">
                                 <SlidersHorizontal size={18} />
                             </div> */}
                             <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Productivity</h1>
                             {filters.thresholdEnabled && (
-                                <span className="px-2.5 py-1 rounded-xl bg-violet-100 dark:bg-violet-900/20 text-violet-700 dark:text-violet-400 text-[10px] font-black uppercase tracking-widest">Threshold Active</span>
+                                <span className="px-2.5 py-1 rounded-xl bg-primary-100 dark:bg-primary-950/40 text-primary-700 dark:text-primary-400 text-[10px] font-black uppercase tracking-widest">Threshold Active</span>
                             )}
                             {filters.selectedTeamId && (
-                                <span className="px-2.5 py-1 rounded-xl bg-indigo-100 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400 text-[10px] font-black uppercase tracking-widest flex items-center gap-1">
+                                <span className="px-2.5 py-1 rounded-xl bg-primary-100 dark:bg-primary-950/40 text-primary-700 dark:text-primary-400 text-[10px] font-black uppercase tracking-widest flex items-center gap-1">
                                     <Building2 size={10} />
                                     Dept Rules
                                 </span>
@@ -229,10 +229,10 @@ export function ProductivityApps() {
 
                 {/* Top right ghost buttons */}
                 <div className="flex items-center gap-2">
-                    <button onClick={handleAutoLabel} className="flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-slate-200 dark:border-slate-700 text-xs font-black text-slate-600 dark:text-slate-300 hover:border-violet-400 hover:text-violet-600 transition-all shadow-sm active:scale-95">
+                    <button onClick={handleAutoLabel} className="flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-slate-200 dark:border-slate-700 text-xs font-black text-slate-600 dark:text-slate-300 hover:border-primary-400 hover:text-primary-600 transition-all shadow-sm active:scale-95">
                         <Zap size={14} /> Auto-Labeling
                     </button>
-                    <button onClick={() => setRecommendOpen(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-slate-200 dark:border-slate-700 text-xs font-black text-slate-600 dark:text-slate-300 hover:border-violet-400 hover:text-violet-600 transition-all shadow-sm active:scale-95">
+                    <button onClick={() => setRecommendOpen(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-slate-200 dark:border-slate-700 text-xs font-black text-slate-600 dark:text-slate-300 hover:border-primary-400 hover:text-primary-600 transition-all shadow-sm active:scale-95">
                         <Lightbulb size={14} /> Recommendations
                     </button>
                 </div>
@@ -249,12 +249,12 @@ export function ProductivityApps() {
                         onClick={() => setActiveSubTab(tab.id)}
                         className={cn(
                             "relative py-4 text-sm font-bold transition-all",
-                            activeSubTab === tab.id ? "text-violet-600 dark:text-violet-400" : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                            activeSubTab === tab.id ? "text-primary-600 dark:text-primary-400" : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
                         )}
                     >
                         {tab.name}
                         {activeSubTab === tab.id && (
-                            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-violet-600 to-indigo-600 rounded-full animate-in fade-in slide-in-from-left-2 duration-300" />
+                            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#30382B] hover:bg-[#3C4536] dark:bg-[#B9955B] dark:hover:bg-[#A17D45] text-white shadow-warm-sm rounded-full animate-in fade-in slide-in-from-left-2 duration-300" />
                         )}
                     </button>
                 ))}
@@ -270,7 +270,7 @@ export function ProductivityApps() {
                             <select
                                 value={filters.selectedTeamId || ''}
                                 onChange={(e) => setDepartmentFilter(e.target.value || null)}
-                                className="h-9 pl-9 pr-8 rounded-xl border-2 border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/10 text-xs font-black text-indigo-700 dark:text-indigo-400 outline-none appearance-none cursor-pointer transition-all hover:bg-indigo-100/50 min-w-[180px]"
+                                className="h-9 pl-9 pr-8 rounded-xl border-2 border-primary-200 dark:border-primary-800 bg-primary-50 dark:bg-primary-950/40 text-xs font-black text-primary-700 dark:text-primary-400 outline-none appearance-none cursor-pointer transition-all hover:bg-primary-100/50 min-w-[180px]"
                             >
                                 <option value="">All Departments (Global)</option>
                                 {teams.map((t) => (
@@ -285,7 +285,7 @@ export function ProductivityApps() {
                             <select
                                 value={filters.view}
                                 onChange={(e) => updateFilter('view', e.target.value)}
-                                className="h-9 pl-4 pr-8 rounded-xl border-2 border-violet-200 dark:border-violet-800 bg-violet-50 dark:bg-violet-900/10 text-xs font-black text-violet-700 dark:text-violet-400 outline-none appearance-none cursor-pointer transition-all hover:bg-violet-100/50 min-w-[200px]"
+                                className="h-9 pl-4 pr-8 rounded-xl border-2 border-primary-200 dark:border-primary-800 bg-primary-50 dark:bg-primary-950/40 text-xs font-black text-primary-700 dark:text-primary-400 outline-none appearance-none cursor-pointer transition-all hover:bg-primary-100/50 min-w-[200px]"
                             >
                                 {VIEW_OPTIONS.map((o) => (
                                     <option key={o} value={o}>
@@ -293,7 +293,7 @@ export function ProductivityApps() {
                                     </option>
                                 ))}
                             </select>
-                            <svg className="absolute right-2.5 top-1/2 -translate-y-1/2 text-violet-400 pointer-events-none" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="6 9 12 15 18 9" /></svg>
+                            <svg className="absolute right-2.5 top-1/2 -translate-y-1/2 text-primary-400 pointer-events-none" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="6 9 12 15 18 9" /></svg>
                         </div>
 
                         <div className="relative">
@@ -303,14 +303,14 @@ export function ProductivityApps() {
                                 placeholder="Search apps and websites"
                                 value={filters.search}
                                 onChange={(e) => updateFilter('search', e.target.value)}
-                                className="h-9 w-52 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl pl-9 pr-3 text-xs font-bold text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-violet-500/20 outline-none transition-all shadow-sm"
+                                className="h-9 w-52 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl pl-9 pr-3 text-xs font-bold text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-primary-500/20 outline-none transition-all shadow-sm"
                             />
                         </div>
 
                         <button
                             type="button"
                             onClick={() => setDrawerOpen(true)}
-                            className="flex items-center gap-2 h-9 px-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 text-xs font-black text-slate-600 dark:text-slate-300 hover:border-violet-400 hover:text-violet-600 transition-all whitespace-nowrap shadow-sm"
+                            className="flex items-center gap-2 h-9 px-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 text-xs font-black text-slate-600 dark:text-slate-300 hover:border-primary-400 hover:text-primary-600 transition-all whitespace-nowrap shadow-sm"
                         >
                             <Settings2 size={14} /> Tags Settings
                         </button>
@@ -327,21 +327,21 @@ export function ProductivityApps() {
 
                         {/* Threshold slider (visible when enabled) */}
                         {filters.thresholdEnabled && (
-                            <div className="flex items-center gap-3 px-4 h-9 rounded-xl border-2 border-violet-200 dark:border-violet-800 bg-violet-50 dark:bg-violet-900/10 animate-in fade-in slide-in-from-left-2 duration-200">
-                                <span className="text-[10px] font-black text-violet-700 dark:text-violet-400 whitespace-nowrap">{filters.thresholdHours}h</span>
+                            <div className="flex items-center gap-3 px-4 h-9 rounded-xl border-2 border-primary-200 dark:border-primary-800 bg-primary-50 dark:bg-primary-950/40 animate-in fade-in slide-in-from-left-2 duration-200">
+                                <span className="text-[10px] font-black text-primary-700 dark:text-primary-400 whitespace-nowrap">{filters.thresholdHours}h</span>
                                 <input
                                     type="range" min={0} max={8} step={0.5}
                                     value={filters.thresholdHours}
                                     onChange={(e) => updateFilter('thresholdHours', Number(e.target.value))}
-                                    className="w-24 accent-violet-600"
+                                    className="w-24 accent-primary-600"
                                 />
-                                <span className="text-[10px] font-black text-violet-700 dark:text-violet-400">8h</span>
+                                <span className="text-[10px] font-black text-primary-700 dark:text-primary-400">8h</span>
                             </div>
                         )}
 
                         {selectedCount > 0 && (
-                            <div className="flex items-center gap-2 h-9 px-3 rounded-xl border-2 border-violet-200 bg-violet-50 dark:bg-violet-900/20 dark:border-violet-800">
-                                <span className="text-[10px] font-black text-violet-700 dark:text-violet-300">{selectedCount} selected →</span>
+                            <div className="flex items-center gap-2 h-9 px-3 rounded-xl border-2 border-primary-200 bg-primary-50 dark:bg-primary-950/40 dark:border-primary-800">
+                                <span className="text-[10px] font-black text-primary-700 dark:text-primary-300">{selectedCount} selected →</span>
                                 {tags.map((t) => (
                                     <button
                                         key={t.id}
@@ -390,7 +390,7 @@ export function ProductivityApps() {
                                 { name: 'Neutral', desc: 'Tools that are neither strictly work nor distraction.', color: 'text-slate-600 bg-slate-50 dark:bg-slate-800/50', tagNames: ['Collaborative'] },
                                 { name: 'Unproductive', desc: 'Social media, entertainment, and non-work sites.', color: 'text-rose-600 bg-rose-50 dark:bg-rose-900/20', tagNames: ['Distraction'] }
                             ].map(label => (
-                                <div key={label.name} className="p-5 rounded-2xl border border-slate-100 dark:border-slate-800 hover:border-violet-200 dark:hover:border-violet-800 transition-all shadow-sm">
+                                <div key={label.name} className="p-5 rounded-2xl border border-slate-100 dark:border-slate-800 hover:border-primary-200 dark:hover:border-primary-800 transition-all shadow-sm">
                                     <div className="flex items-center justify-between gap-4">
                                         <div className="flex items-center gap-4">
                                             <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center font-black text-xs", label.color)}>
@@ -404,7 +404,7 @@ export function ProductivityApps() {
                                         <button
                                             type="button"
                                             onClick={() => { setActiveSubTab('apps'); updateFilter('view', label.name === 'Productive' ? 'Productive' : label.name === 'Unproductive' ? 'Unproductive' : label.name === 'Neutral' ? 'Neutral' : 'All apps & websites'); }}
-                                            className="text-[10px] font-black uppercase text-violet-600 dark:text-violet-400 hover:underline"
+                                            className="text-[10px] font-black uppercase text-primary-600 dark:text-primary-400 hover:underline"
                                         >
                                             View apps
                                         </button>
@@ -424,11 +424,11 @@ export function ProductivityApps() {
                             ))}
                         </div>
 
-                        <div className="mt-12 p-6 rounded-3xl bg-violet-50 dark:bg-violet-900/10 border border-violet-100 dark:border-violet-800/50">
-                            <h5 className="text-xs font-black text-violet-900 dark:text-violet-200 uppercase tracking-widest mb-2 flex items-center gap-2">
+                        <div className="mt-12 p-6 rounded-3xl bg-primary-50 dark:bg-primary-950/40 border border-primary-100 dark:border-primary-800/50">
+                            <h5 className="text-xs font-black text-violet-900 dark:text-primary-200 uppercase tracking-widest mb-2 flex items-center gap-2">
                                 <Zap size={14} /> Efficiency Impact
                             </h5>
-                            <p className="text-xs font-medium text-violet-700 dark:text-violet-400 leading-relaxed">
+                            <p className="text-xs font-medium text-primary-700 dark:text-primary-400 leading-relaxed">
                                 Unproductive activities detected for more than 15 minutes trigger an "Inefficiency Alert" in the real-time stream.
                             </p>
                         </div>

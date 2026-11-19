@@ -62,13 +62,13 @@ export function AdvancedTrackingSettings() {
                 <div className="flex items-center justify-between px-8 py-4 border-b border-slate-100 dark:border-slate-800 shrink-0">
                     <div>
                         <nav className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-0.5">
-                            <span className="text-violet-600 cursor-pointer hover:underline" onClick={handleCancel}>Tracking Settings</span>
+                            <span className="text-primary-600 dark:text-primary-400 cursor-pointer hover:underline" onClick={handleCancel}>Tracking Settings</span>
                             {' › '} Advanced Settings
                         </nav>
                     </div>
                     <div className="flex items-center gap-3">
                         <button onClick={handleCancel} className="px-5 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 text-xs font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">Cancel</button>
-                        <button onClick={handleSave} disabled={!isDirty} className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-xs font-black uppercase tracking-widest disabled:opacity-40 hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-violet-200 dark:shadow-none">Save</button>
+                        <button onClick={handleSave} disabled={!isDirty} className="px-6 py-2.5 rounded-2xl bg-[#30382B] hover:bg-[#3C4536] dark:bg-[#B9955B] dark:hover:bg-[#A17D45] text-white text-xs font-black uppercase tracking-widest disabled:opacity-40 hover:scale-[1.02] active:scale-95 transition-all shadow-warm-sm">Save</button>
                     </div>
                 </div>
 
@@ -78,7 +78,7 @@ export function AdvancedTrackingSettings() {
                         <AdvancedForm settings={localSettings} onChange={handleChange} />
                     ) : (
                         <div className="flex items-center justify-center h-40">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600"></div>
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
                         </div>
                     )}
                 </div>

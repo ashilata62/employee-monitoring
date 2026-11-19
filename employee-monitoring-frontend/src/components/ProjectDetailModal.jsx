@@ -25,17 +25,17 @@ export function ProjectDetailModal({ isOpen, onClose, project }) {
     };
 
     return (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             {/* Backdrop */}
             <div 
-                className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300" 
+                className="fixed inset-0 bg-black/60 dark:bg-black/75 backdrop-blur-md transition-opacity duration-300" 
                 onClick={onClose}
             />
 
             {/* Modal Content */}
-            <div className="relative w-full max-w-3xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden border border-slate-100 dark:border-slate-800 animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+            <div className="relative w-full max-w-3xl bg-[#FBF9F5] dark:bg-[#252B20] text-[#29291F] dark:text-[#F5F1E9] rounded-2xl shadow-warm-xl overflow-hidden border border-[#E5DED2] dark:border-[#384232] animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
                 {/* Header */}
-                <div className="p-4 md:p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-white dark:bg-slate-900 sticky top-0 z-10">
+                <div className="p-4 md:p-6 border-b border-[#E5DED2] dark:border-[#384232] flex items-center justify-between bg-[#F5F1E9]/50 dark:bg-[#1E2419]/50 sticky top-0 z-10">
                     <div className="flex items-center gap-4">
                         <div className="h-10 w-10 rounded-xl bg-primary-600 flex items-center justify-center text-sm font-black text-white shadow-lg shadow-primary-200 dark:shadow-none">
                             {(project.projectName || project.name || 'PR').substring(0, 2).toUpperCase()}

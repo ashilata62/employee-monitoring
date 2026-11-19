@@ -147,7 +147,7 @@ export function CreateEmailReportModal({ isOpen, onClose, onSave, existingReport
                                 'w-full h-12 px-4 rounded-xl border-2 bg-white dark:bg-slate-800 text-sm font-medium text-slate-900 dark:text-white outline-none transition-all',
                                 errors.title
                                     ? 'border-rose-400 focus:border-rose-500'
-                                    : 'border-slate-200 dark:border-slate-700 focus:border-violet-500'
+                                    : 'border-slate-200 dark:border-slate-700 focus:border-primary-500'
                             )}
                         />
                         {errors.title && (
@@ -170,7 +170,7 @@ export function CreateEmailReportModal({ isOpen, onClose, onSave, existingReport
                                     className={cn(
                                         'flex items-center gap-2.5 px-5 py-3 rounded-xl border-2 cursor-pointer transition-all text-sm font-bold',
                                         form.frequency === freq.id
-                                            ? 'border-violet-500 bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300'
+                                            ? 'border-primary-500 bg-primary-50 dark:bg-primary-950/40 text-primary-700 dark:text-primary-300'
                                             : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600'
                                     )}
                                 >
@@ -180,7 +180,7 @@ export function CreateEmailReportModal({ isOpen, onClose, onSave, existingReport
                                         value={freq.id}
                                         checked={form.frequency === freq.id}
                                         onChange={() => setForm((f) => ({ ...f, frequency: freq.id }))}
-                                        className="accent-violet-600"
+                                        className="accent-primary-600"
                                     />
                                     {freq.label}
                                 </label>
@@ -211,13 +211,13 @@ export function CreateEmailReportModal({ isOpen, onClose, onSave, existingReport
                                     'flex-1 h-11 px-4 rounded-xl border-2 bg-white dark:bg-slate-800 text-sm font-medium text-slate-900 dark:text-white outline-none transition-all',
                                     errors.emailInput
                                         ? 'border-rose-400 focus:border-rose-500'
-                                        : 'border-slate-200 dark:border-slate-700 focus:border-violet-500'
+                                        : 'border-slate-200 dark:border-slate-700 focus:border-primary-500'
                                 )}
                             />
                             <button
                                 type="button"
                                 onClick={addEmail}
-                                className="h-11 px-4 rounded-xl bg-violet-600 text-white hover:bg-violet-700 transition-all flex items-center gap-1.5 text-xs font-black uppercase tracking-widest shrink-0"
+                                className="h-11 px-4 rounded-xl bg-[#30382B] dark:bg-[#B9955B] text-white hover:bg-[#3C4536] transition-all flex items-center gap-1.5 text-xs font-black uppercase tracking-widest shrink-0"
                             >
                                 <Plus size={16} /> Add
                             </button>
@@ -232,12 +232,12 @@ export function CreateEmailReportModal({ isOpen, onClose, onSave, existingReport
                                 {form.recipients.map((email) => (
                                     <span
                                         key={email}
-                                        className="inline-flex items-center gap-2 px-3 py-1.5 bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800/30 rounded-xl text-xs font-bold text-violet-700 dark:text-violet-300"
+                                        className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary-50 dark:bg-primary-950/40 border border-primary-200 dark:border-primary-800/30 rounded-xl text-xs font-bold text-primary-700 dark:text-primary-300"
                                     >
                                         {email}
                                         <button
                                             onClick={() => removeEmail(email)}
-                                            className="text-violet-400 hover:text-rose-500 transition-colors"
+                                            className="text-primary-400 hover:text-rose-500 transition-colors"
                                         >
                                             <X size={13} />
                                         </button>
@@ -262,7 +262,7 @@ export function CreateEmailReportModal({ isOpen, onClose, onSave, existingReport
                                 <div className={cn(
                                     'h-5 w-5 rounded-md border-2 transition-all',
                                     form.sendToSelf
-                                        ? 'bg-violet-600 border-violet-600'
+                                        ? 'bg-[#30382B] dark:bg-[#B9955B] border-primary-600'
                                         : 'border-slate-300 dark:border-slate-600'
                                 )} />
                                 {form.sendToSelf && (
@@ -295,13 +295,13 @@ export function CreateEmailReportModal({ isOpen, onClose, onSave, existingReport
                                         className={cn(
                                             'flex items-center gap-3 px-4 py-3 rounded-xl border-2 cursor-pointer transition-all',
                                             checked
-                                                ? 'border-violet-500 bg-violet-50 dark:bg-violet-900/20'
+                                                ? 'border-primary-500 bg-primary-50 dark:bg-primary-950/40'
                                                 : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
                                         )}
                                     >
                                         <div className={cn(
                                             'h-5 w-5 rounded-md border-2 transition-all flex items-center justify-center shrink-0',
-                                            checked ? 'bg-violet-600 border-violet-600' : 'border-slate-300 dark:border-slate-600'
+                                            checked ? 'bg-[#30382B] dark:bg-[#B9955B] border-primary-600' : 'border-slate-300 dark:border-slate-600'
                                         )}>
                                             {checked && (
                                                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
@@ -311,7 +311,7 @@ export function CreateEmailReportModal({ isOpen, onClose, onSave, existingReport
                                         </div>
                                         <span className={cn(
                                             'text-sm font-semibold',
-                                            checked ? 'text-violet-700 dark:text-violet-300' : 'text-slate-600 dark:text-slate-400'
+                                            checked ? 'text-primary-700 dark:text-primary-300' : 'text-slate-600 dark:text-slate-400'
                                         )}>
                                             {opt.label}
                                         </span>
@@ -335,7 +335,7 @@ export function CreateEmailReportModal({ isOpen, onClose, onSave, existingReport
                     </button>
                     <button
                         onClick={handleSave}
-                        className="w-full sm:w-auto px-10 py-3.5 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-violet-200 dark:shadow-none hover:from-violet-700 hover:to-indigo-700 hover:scale-[1.02] active:scale-95 transition-all"
+                        className="w-full sm:w-auto px-10 py-3.5 rounded-2xl bg-[#30382B] hover:bg-[#3C4536] dark:bg-[#B9955B] dark:hover:bg-[#A17D45] text-white shadow-warm-sm text-xs font-black uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all cursor-pointer"
                     >
                         Save
                     </button>

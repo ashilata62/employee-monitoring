@@ -45,14 +45,14 @@ function AddNewDropdown({ onSelect }) {
     const items = ['Admin', 'Manager', 'Client', 'Org Group'];
     return (
         <div className="relative" ref={ref}>
-            <button onClick={() => setOpen(!open)} className="flex items-center gap-2 h-10 px-5 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-xs font-black shadow-lg shadow-violet-200 dark:shadow-none hover:scale-[1.02] active:scale-95 transition-all">
+            <button onClick={() => setOpen(!open)} className="flex items-center gap-2 h-10 px-5 rounded-2xl bg-[#30382B] hover:bg-[#3C4536] dark:bg-[#B9955B] dark:hover:bg-[#A17D45] text-white shadow-warm-sm text-white text-xs font-black shadow-lg shadow-warm-xs dark:shadow-none hover:scale-[1.02] active:scale-95 transition-all">
                 Add New <ChevronDown size={14} className={cn('transition-transform duration-200', open && 'rotate-180')} />
             </button>
             {open && (
                 <div className="absolute right-0 top-full mt-2 z-50 w-40 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
                     {items.map((item) => (
                         <button key={item} onClick={() => { onSelect(item); setOpen(false); }} className="w-full flex items-center gap-2 px-4 py-3 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all text-left">
-                            <Plus size={13} className="text-violet-500" /> {item}
+                            <Plus size={13} className="text-primary-600" /> {item}
                         </button>
                     ))}
                 </div>
@@ -107,7 +107,7 @@ export function ManageUsers() {
                     <div>
                         <nav className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">
                             <span className="cursor-pointer hover:text-slate-600 dark:hover:text-slate-300 transition-colors" onClick={() => navigate('/settings')}>Settings</span>
-                            <span>/</span><span className="text-violet-600">Manage Users</span>
+                            <span>/</span><span className="text-primary-600">Manage Users</span>
                         </nav>
                         <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Manage Users</h1>
                     </div>
@@ -119,7 +119,7 @@ export function ManageUsers() {
             <div className="flex items-center gap-1 border-b border-slate-200 dark:border-slate-800 mb-6">
                 {[{ id: 'users', label: 'Manage Users', path: '/settings/user-management/users' }, { id: 'orgGroups', label: 'Manage Org Groups', path: '/settings/user-management/org-groups' }].map((tab) => (
                     <button key={tab.id} onClick={() => { setActiveTab(tab.id); navigate(tab.path); }}
-                        className={cn('px-4 py-3 text-sm font-black border-b-2 transition-all', activeTab === tab.id ? 'border-violet-600 text-violet-600 dark:text-violet-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300')}>
+                        className={cn('px-4 py-3 text-sm font-black border-b-2 transition-all', activeTab === tab.id ? 'border-primary-600 text-primary-600 dark:text-primary-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300')}>
                         {tab.label}
                     </button>
                 ))}
@@ -128,7 +128,7 @@ export function ManageUsers() {
             {/* Controls */}
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
-                    <button className="flex items-center gap-2 h-9 px-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-600 dark:text-slate-300 hover:border-violet-400 transition-all shadow-sm">
+                    <button className="flex items-center gap-2 h-9 px-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-600 dark:text-slate-300 hover:border-primary-400 transition-all shadow-sm">
                         <Users size={13} /> Organization <ChevronDown size={13} className="text-slate-400" />
                     </button>
                 </div>
@@ -138,7 +138,7 @@ export function ManageUsers() {
                         <input type="text" placeholder="Search" value={search} onChange={(e) => setSearch(e.target.value)}
                             className="h-9 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl pl-9 pr-3 text-xs font-bold text-slate-900 dark:text-white placeholder:text-slate-400 outline-none shadow-sm" />
                     </div>
-                    <button onClick={handleDownload} className="flex items-center gap-2 h-9 px-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-600 dark:text-slate-300 hover:border-violet-400 transition-all shadow-sm">
+                    <button onClick={handleDownload} className="flex items-center gap-2 h-9 px-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-600 dark:text-slate-300 hover:border-primary-400 transition-all shadow-sm">
                         <Download size={13} /> Download
                     </button>
                 </div>

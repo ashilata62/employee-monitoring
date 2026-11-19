@@ -42,7 +42,7 @@ export function SubscribeModal({ isOpen, onClose, targetPlanId }) {
 
     const iconBg = isDowngrade
         ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400'
-        : 'bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400';
+        : 'bg-primary-100 dark:bg-primary-950/40 text-primary-600 dark:text-primary-400';
 
     return (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-200">
@@ -109,7 +109,7 @@ export function SubscribeModal({ isOpen, onClose, targetPlanId }) {
                                 'flex items-center justify-between p-4 rounded-xl border-2',
                                 isDowngrade
                                     ? 'bg-amber-50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-800/30'
-                                    : 'bg-violet-50 dark:bg-violet-900/10 border-violet-200 dark:border-violet-800/30'
+                                    : 'bg-primary-50 dark:bg-primary-950/40 border-primary-200 dark:border-primary-800/30'
                             )}>
                                 <div>
                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
@@ -117,7 +117,7 @@ export function SubscribeModal({ isOpen, onClose, targetPlanId }) {
                                     </p>
                                     <p className="text-sm font-black text-slate-900 dark:text-white">{plan.name}</p>
                                 </div>
-                                <Check size={18} className={isDowngrade ? 'text-amber-500' : 'text-violet-500'} />
+                                <Check size={18} className={isDowngrade ? 'text-amber-500' : 'text-primary-600'} />
                             </div>
 
                             {isDowngrade && (
@@ -146,7 +146,7 @@ export function SubscribeModal({ isOpen, onClose, targetPlanId }) {
                                     'flex-1 py-4 rounded-2xl text-xs font-black uppercase tracking-widest text-white flex items-center justify-center gap-2 shadow-xl transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-70 disabled:scale-100',
                                     isDowngrade
                                         ? 'bg-amber-500 hover:bg-amber-600 shadow-amber-200 dark:shadow-none'
-                                        : 'bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 shadow-violet-200 dark:shadow-none'
+                                        : 'bg-[#30382B] hover:bg-[#3C4536] dark:bg-[#B9955B] dark:hover:bg-[#A17D45] text-white shadow-warm-sm  shadow-warm-xs dark:shadow-none'
                                 )}
                             >
                                 {loading ? (

@@ -18,9 +18,9 @@ export function ToggleSwitch({ checked, onChange, label, disabled = false, size 
                 disabled={disabled}
                 onClick={() => !disabled && onChange(!checked)}
                 className={cn(
-                    'relative shrink-0 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-violet-500/30',
+                    'relative shrink-0 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary-500/30',
                     s.track,
-                    checked ? 'bg-violet-600' : 'bg-slate-200 dark:bg-slate-700'
+                    checked ? 'bg-[#30382B] dark:bg-[#B9955B]' : 'bg-slate-200 dark:bg-slate-700'
                 )}
             >
                 <span className={cn(

@@ -107,7 +107,7 @@ export const AddTimeOffModal = ({ isOpen, onClose, onSave }) => {
                                                 onClick={() => toggleEmployee(emp)}
                                                 className={`w-full px-4 py-2.5 flex items-center gap-3 text-xs font-bold transition-colors hover:bg-slate-50 ${selectedEmployees.find(e => e.id === emp.id) ? 'text-primary-600 bg-primary-50/50' : 'text-slate-700'}`}
                                             >
-                                                <div className="h-7 w-7 rounded-full bg-violet-100 text-violet-600 flex items-center justify-center font-black text-[10px] shrink-0">
+                                                <div className="h-7 w-7 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center font-black text-[10px] shrink-0">
                                                     {(emp.fullName || emp.name || '?').split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
                                                 </div>
                                                 {emp.fullName || emp.name}

@@ -100,9 +100,9 @@ function MergeModal({ isOpen, sourceTag, tags, onMerge, onClose }) {
                     {otherTags.map((t) => (
                         <label key={t.id} className={cn(
                             'flex items-center gap-3 px-4 py-3 rounded-xl border-2 cursor-pointer transition-all',
-                            targetId === t.id ? 'border-violet-500 bg-violet-50 dark:bg-violet-900/10' : 'border-slate-200 dark:border-slate-700'
+                            targetId === t.id ? 'border-primary-500 bg-primary-50 dark:bg-primary-950/40' : 'border-slate-200 dark:border-slate-700'
                         )}>
-                            <input type="radio" name="mergeTarget" checked={targetId === t.id} onChange={() => setTargetId(t.id)} className="accent-violet-600" />
+                            <input type="radio" name="mergeTarget" checked={targetId === t.id} onChange={() => setTargetId(t.id)} className="accent-primary-600" />
                             <TagBadge tag={t} />
                         </label>
                     ))}
@@ -112,7 +112,7 @@ function MergeModal({ isOpen, sourceTag, tags, onMerge, onClose }) {
                     <button
                         disabled={!targetId}
                         onClick={() => { if (targetId) { onMerge(sourceTag.id, targetId); onClose(); } }}
-                        className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-xs font-black uppercase tracking-widest disabled:opacity-40 hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-violet-200 dark:shadow-none"
+                        className="flex-1 py-3 rounded-2xl bg-[#30382B] hover:bg-[#3C4536] dark:bg-[#B9955B] dark:hover:bg-[#A17D45] text-white shadow-warm-sm text-white text-xs font-black uppercase tracking-widest disabled:opacity-40 hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-warm-xs dark:shadow-none"
                     >
                         Merge
                     </button>
@@ -196,12 +196,12 @@ export function TagsDrawer({ isOpen, onClose }) {
                                 onKeyDown={(e) => e.key === 'Enter' && handleAddTag()}
                                 className={cn(
                                     'w-full h-11 px-4 rounded-xl border-2 bg-white dark:bg-slate-800 text-sm font-medium text-slate-900 dark:text-white outline-none transition-all',
-                                    newTagError ? 'border-rose-400' : 'border-slate-200 dark:border-slate-700 focus:border-violet-500'
+                                    newTagError ? 'border-rose-400' : 'border-slate-200 dark:border-slate-700 focus:border-primary-500'
                                 )}
                             />
                             {newTagError && <p className="text-xs font-bold text-rose-500 mt-1">{newTagError}</p>}
                         </div>
-                        <button onClick={handleAddTag} className="h-11 w-11 flex items-center justify-center rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white hover:scale-[1.05] active:scale-95 transition-all shadow-lg shadow-violet-200 dark:shadow-none shrink-0">
+                        <button onClick={handleAddTag} className="h-11 w-11 flex items-center justify-center rounded-xl bg-[#30382B] hover:bg-[#3C4536] dark:bg-[#B9955B] dark:hover:bg-[#A17D45] text-white shadow-warm-sm text-white hover:scale-[1.05] active:scale-95 transition-all shadow-lg shadow-warm-xs dark:shadow-none shrink-0">
                             <Plus size={18} strokeWidth={3} />
                         </button>
                     </div>

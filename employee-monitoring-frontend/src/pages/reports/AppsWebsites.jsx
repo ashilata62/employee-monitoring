@@ -340,9 +340,9 @@ export function AppsWebsites() {
                 <div className="flex items-center gap-3">
                     <button
                         onClick={handleExport}
-                        className="px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 transition-all shadow-sm flex items-center gap-1.5"
+                        className="px-4 py-2 text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] bg-[#EEE8DD] dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] rounded-xl hover:bg-[#E5DDCF] dark:hover:bg-[#1E2419] transition-all shadow-warm-xs flex items-center gap-1.5 cursor-pointer"
                     >
-                        <Download size={14} /> Export
+                        <Download size={14} className="text-[#29291F] dark:text-[#F5F1E9]" /> Export
                     </button>
                 </div>
             </div>
@@ -353,23 +353,23 @@ export function AppsWebsites() {
                 <div className="relative" ref={dateRef}>
                     <button
                         onClick={() => setIsDateOpen(!isDateOpen)}
-                        className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 transition-colors"
+                        className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-[#EEE8DD] dark:bg-[#252B20] text-[#29291F] dark:text-[#F5F1E9] border border-[#D6CDBC] dark:border-[#384232] hover:bg-[#E5DDCF] dark:hover:bg-[#1E2419] transition-colors cursor-pointer"
                     >
-                        <CalendarIcon size={14} className="text-primary-600" />
+                        <CalendarIcon size={14} className="text-[#B9955B]" />
                         <span>{dateRange.display}</span>
-                        <ChevronDown size={14} className="text-slate-400" />
+                        <ChevronDown size={14} className="text-[#777367] dark:text-[#B8B3A7]" />
                     </button>
 
                     {isDateOpen && (
-                        <div className="absolute left-0 top-full mt-2 w-56 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-100 dark:border-slate-800 py-1.5 z-50">
+                        <div className="absolute left-0 top-full mt-2 w-56 bg-[#EEE8DD] dark:bg-[#252B20] rounded-xl shadow-xl border border-[#D6CDBC] dark:border-[#384232] py-1.5 z-50">
                             {['Today', 'Yesterday', 'Last 7 Days', 'This Month'].map((p) => (
                                 <button
                                     key={p}
                                     onClick={() => handleDatePresetSelect(p)}
-                                    className="w-full text-left px-3.5 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-between"
+                                    className="w-full text-left px-3.5 py-2 text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] hover:bg-[#E5DDCF] dark:hover:bg-[#1E2419] flex items-center justify-between cursor-pointer"
                                 >
                                     <span>{p}</span>
-                                    {selectedDatePreset === p && <Check size={13} className="text-primary-600" />}
+                                    {selectedDatePreset === p && <Check size={13} className="text-[#B9955B]" />}
                                 </button>
                             ))}
                         </div>
@@ -380,15 +380,15 @@ export function AppsWebsites() {
                 <div className="relative" ref={filterRef}>
                     <button
                         onClick={() => setIsFilterOpen(!isFilterOpen)}
-                        className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 transition-colors"
+                        className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-[#EEE8DD] dark:bg-[#252B20] text-[#29291F] dark:text-[#F5F1E9] border border-[#D6CDBC] dark:border-[#384232] hover:bg-[#E5DDCF] dark:hover:bg-[#1E2419] transition-colors cursor-pointer"
                     >
-                        <Filter size={14} className="text-slate-500" />
+                        <Filter size={14} className="text-[#777367] dark:text-[#B8B3A7]" />
                         <span>Filter: {productivityFilter}</span>
-                        <ChevronDown size={14} className="text-slate-400" />
+                        <ChevronDown size={14} className="text-[#777367] dark:text-[#B8B3A7]" />
                     </button>
 
                     {isFilterOpen && (
-                        <div className="absolute left-0 top-full mt-2 w-48 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-100 dark:border-slate-800 py-1.5 z-50">
+                        <div className="absolute left-0 top-full mt-2 w-48 bg-[#EEE8DD] dark:bg-[#252B20] rounded-xl shadow-xl border border-[#D6CDBC] dark:border-[#384232] py-1.5 z-50">
                             {['ALL', 'PRODUCTIVE', 'NEUTRAL', 'UNPRODUCTIVE'].map((f) => (
                                 <button
                                     key={f}
@@ -396,10 +396,10 @@ export function AppsWebsites() {
                                         setProductivityFilter(f);
                                         setIsFilterOpen(false);
                                     }}
-                                    className="w-full text-left px-3.5 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-between"
+                                    className="w-full text-left px-3.5 py-2 text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] hover:bg-[#E5DDCF] dark:hover:bg-[#1E2419] flex items-center justify-between cursor-pointer"
                                 >
                                     <span>{f}</span>
-                                    {productivityFilter === f && <Check size={13} className="text-primary-600" />}
+                                    {productivityFilter === f && <Check size={13} className="text-[#B9955B]" />}
                                 </button>
                             ))}
                         </div>
@@ -408,13 +408,13 @@ export function AppsWebsites() {
 
                 {/* Search */}
                 <div className="relative flex-1 min-w-[200px]">
-                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#777367]" />
                     <input
                         type="text"
                         placeholder="Search applications & websites..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-8 pr-3 py-1.5 text-xs font-medium bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-primary-500/20"
+                        className="w-full pl-8 pr-3 py-1.5 text-xs font-medium bg-[#F5F1E9] dark:bg-[#1E2419] text-[#29291F] dark:text-[#F5F1E9] placeholder-[#777367] rounded-xl border border-[#D6CDBC] dark:border-[#384232] outline-none focus:ring-2 focus:ring-primary-500/20"
                     />
                 </div>
             </div>

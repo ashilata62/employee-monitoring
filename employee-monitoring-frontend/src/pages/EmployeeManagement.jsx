@@ -1015,6 +1015,12 @@ export function EmployeeManagement() {
     useEffect(() => {
         fetchEmployees();
         fetchTeams();
+
+        const interval = setInterval(() => {
+            fetchEmployees();
+            fetchTeams();
+        }, 30000);
+        return () => clearInterval(interval);
     }, [fetchEmployees, fetchTeams]);
 
     // Filtering Logic

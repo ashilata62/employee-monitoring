@@ -38,7 +38,7 @@ export function CopyField({ label, value, className }) {
                         'h-11 px-4 rounded-xl text-xs font-black flex items-center gap-2 whitespace-nowrap transition-all border-2',
                         copied
                             ? 'bg-emerald-500 border-emerald-500 text-white'
-                            : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-violet-400 hover:text-violet-600'
+                            : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-primary-400 hover:text-primary-600'
                     )}
                 >
                     {copied ? <Check size={14} strokeWidth={3} /> : <Copy size={14} />}
