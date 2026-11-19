@@ -9,7 +9,9 @@ import {
     Activity,
     PieChart
 } from 'lucide-react';
-import { useLiveTimeDisplay } from '../../hooks/useLiveTime';
+import { useAuthStore } from '../../store/authStore';
+import { useSessionTimer } from '../../hooks/useLiveTime';
+import { formatSecondsToHMS } from '../../utils/timeFormat';
 
 const formatSecondsToHoursMins = (secs) => {
     if (secs === null || secs === undefined || isNaN(secs) || secs < 0) return '00:00 h';
@@ -59,22 +61,11 @@ const FormattedDisplayValue = ({ value }) => {
 
 const KpiCard = ({
     title,
-    value,
-    baseSeconds,
-    liveTick,
+    displayValue,
     delta,
     inverse = false,
     icon: Icon
 }) => {
-    const liveSecsDisplay = useLiveTimeDisplay(baseSeconds, liveTick);
-    
-    let displayValue = '00h 00m 00s';
-    if (value !== undefined && value !== null) {
-        displayValue = liveTick ? (liveSecsDisplay || value) : value;
-    } else if (baseSeconds !== undefined && baseSeconds !== null) {
-        displayValue = liveTick ? (liveSecsDisplay || formatSecondsToHoursMins(baseSeconds)) : formatSecondsToHoursMins(baseSeconds);
-    }
-
     const activeDelta = delta?.percent !== undefined
         ? delta
         : { percent: 0, percentFormatted: '0%', diffHoursFormatted: '', direction: 'up' };
@@ -127,38 +118,67 @@ const KpiCard = ({
     );
 };
 
-export function ComparativeKpiGrid({ sec, stats, deltas, liveTick }) {
+export function ComparativeKpiGrid({ sec, stats, deltas, role, isToday = true }) {
     const d = deltas || {};
+    const { isClockedIn } = useAuthStore();
+    const sessionSeconds = useSessionTimer();
 
-    const utilizationVal = stats?.summary?.utilization !== undefined
-        ? `${stats.summary.utilization}%`
-        : '0%';
+    const isManagerOrEmp = role?.toUpperCase() !== 'ADMIN';
+
+    // When Manager / Employee is viewing Today:
+    // If clocked out: ALL cards reset to 00h 00m 00s and 0% immediately with zero latency!
+    // If clocked in: session timer ticks live from 00h 00m 00s upwards!
+    const effectiveWorkTime = isManagerOrEmp && isToday
+        ? (isClockedIn ? formatSecondsToHMS(sessionSeconds) : '00h 00m 00s')
+        : (stats?.summary?.workTime || formatSecondsToHoursMins(sec?.workTime));
+
+    const effectiveActiveTime = isManagerOrEmp && isToday
+        ? (isClockedIn ? formatSecondsToHMS(sessionSeconds) : '00h 00m 00s')
+        : (stats?.summary?.activeTime || formatSecondsToHoursMins(sec?.activeTime));
+
+    const effectiveProductiveTime = isManagerOrEmp && isToday
+        ? (isClockedIn ? formatSecondsToHMS(sessionSeconds) : '00h 00m 00s')
+        : (stats?.summary?.productiveTime || formatSecondsToHoursMins(sec?.productiveTime));
+
+    const effectiveIdleTime = isManagerOrEmp && isToday
+        ? '00h 00m 00s'
+        : (stats?.summary?.idleTime || formatSecondsToHoursMins(sec?.idleTime));
+
+    const effectiveManualTime = isManagerOrEmp && isToday
+        ? '00h 00m 00s'
+        : (stats?.summary?.manualTime || formatSecondsToHoursMins(sec?.manualTime));
+
+    const effectiveUnproductiveTime = isManagerOrEmp && isToday
+        ? '00h 00m 00s'
+        : (stats?.summary?.unproductiveTime || formatSecondsToHoursMins(sec?.unproductiveTime));
+
+    const effectiveNeutralTime = isManagerOrEmp && isToday
+        ? '00h 00m 00s'
+        : (stats?.summary?.neutralTime || formatSecondsToHoursMins(sec?.neutralTime));
+
+    const effectiveProductivity = isManagerOrEmp && isToday
+        ? (isClockedIn ? '100%' : '0%')
+        : (stats?.summary?.utilization !== undefined ? `${stats.summary.utilization}%` : '0%');
 
     return (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 sm:gap-4 lg:gap-5 mb-6 sm:mb-8">
             <KpiCard
                 title="Work Time"
-                value={stats?.summary?.workTime}
-                baseSeconds={sec?.workTime}
-                liveTick={liveTick}
+                displayValue={effectiveWorkTime}
                 delta={d.workTime}
                 icon={Briefcase}
             />
 
             <KpiCard
                 title="Active Time"
-                value={stats?.summary?.activeTime}
-                baseSeconds={sec?.activeTime}
-                liveTick={liveTick}
+                displayValue={effectiveActiveTime}
                 delta={d.activeTime}
                 icon={Monitor}
             />
 
             <KpiCard
                 title="Idle Time"
-                value={stats?.summary?.idleTime}
-                baseSeconds={sec?.idleTime}
-                liveTick={false}
+                displayValue={effectiveIdleTime}
                 delta={d.idleTime}
                 inverse={true}
                 icon={MonitorOff}
@@ -166,27 +186,21 @@ export function ComparativeKpiGrid({ sec, stats, deltas, liveTick }) {
 
             <KpiCard
                 title="Manual Time"
-                value={stats?.summary?.manualTime}
-                baseSeconds={sec?.manualTime}
-                liveTick={false}
+                displayValue={effectiveManualTime}
                 delta={d.manualTime}
                 icon={Clock}
             />
 
             <KpiCard
                 title="Productive Time"
-                value={stats?.summary?.productiveTime}
-                baseSeconds={sec?.productiveTime}
-                liveTick={false}
+                displayValue={effectiveProductiveTime}
                 delta={d.productiveTime}
                 icon={Award}
             />
 
             <KpiCard
                 title="Unproductive Time"
-                value={stats?.summary?.unproductiveTime}
-                baseSeconds={sec?.unproductiveTime}
-                liveTick={false}
+                displayValue={effectiveUnproductiveTime}
                 delta={d.unproductiveTime}
                 inverse={true}
                 icon={Activity}
@@ -194,16 +208,14 @@ export function ComparativeKpiGrid({ sec, stats, deltas, liveTick }) {
 
             <KpiCard
                 title="Neutral Time"
-                value={stats?.summary?.neutralTime}
-                baseSeconds={sec?.neutralTime}
-                liveTick={false}
+                displayValue={effectiveNeutralTime}
                 delta={d.neutralTime}
                 icon={PieChart}
             />
 
             <KpiCard
                 title="Productivity"
-                value={utilizationVal}
+                displayValue={effectiveProductivity}
                 delta={d.productivity || d.utilization}
                 icon={TrendingUp}
             />

@@ -42,6 +42,8 @@ export default function ComplianceReadiness() {
 
     useEffect(() => {
         fetchAssessment();
+        const interval = setInterval(fetchAssessment, 60000);
+        return () => clearInterval(interval);
     }, []);
 
     const handleDownloadEvidence = async () => {
