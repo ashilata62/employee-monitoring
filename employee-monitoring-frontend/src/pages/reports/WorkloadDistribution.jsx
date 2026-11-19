@@ -138,9 +138,9 @@ export function WorkloadDistribution() {
                         <button
                             ref={calendarBtnRef}
                             onClick={() => setIsCalendarOpen(v => !v)}
-                            className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold shadow-sm ring-1 transition-all ${isCalendarOpen ? 'bg-primary-50 text-primary-600 ring-primary-100 dark:bg-primary-900/20 dark:text-primary-400' : 'bg-white text-slate-700 ring-slate-200 hover:bg-slate-50 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-800'}`}
+                            className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold border transition-all cursor-pointer ${isCalendarOpen ? 'bg-[#30382B] text-white border-[#30382B] dark:bg-[#B9955B]' : 'bg-[#EEE8DD] dark:bg-[#252B20] border-[#D6CDBC] dark:border-[#384232] text-[#29291F] dark:text-[#F5F1E9] hover:bg-[#E5DDCF] dark:hover:bg-[#1E2419]'}`}
                         >
-                            <CalendarIcon size={16} className={isCalendarOpen ? 'text-primary-600' : 'text-slate-400'} />
+                            <CalendarIcon size={14} className={isCalendarOpen ? 'text-[#D3B98D] dark:text-white' : 'text-[#B9955B]'} />
                             <span>{selectedPreset}</span>
                         </button>
 

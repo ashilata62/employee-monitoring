@@ -68,11 +68,11 @@ const KpiCard = ({
 }) => {
     const liveSecsDisplay = useLiveTimeDisplay(baseSeconds, liveTick);
     
-    let displayValue = '00:00 h';
+    let displayValue = '00h 00m 00s';
     if (value !== undefined && value !== null) {
-        displayValue = value;
+        displayValue = liveTick ? (liveSecsDisplay || value) : value;
     } else if (baseSeconds !== undefined && baseSeconds !== null) {
-        displayValue = liveSecsDisplay || formatSecondsToHoursMins(baseSeconds);
+        displayValue = liveTick ? (liveSecsDisplay || formatSecondsToHoursMins(baseSeconds)) : formatSecondsToHoursMins(baseSeconds);
     }
 
     const activeDelta = delta?.percent !== undefined
@@ -146,6 +146,7 @@ export function ComparativeKpiGrid({ sec, stats, deltas, liveTick }) {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 sm:gap-4 lg:gap-5 mb-6 sm:mb-8">
             <KpiCard
                 title="Work Time"
+                value={stats?.summary?.workTime}
                 baseSeconds={sec?.workTime}
                 liveTick={liveTick}
                 delta={d.workTime}
@@ -154,6 +155,7 @@ export function ComparativeKpiGrid({ sec, stats, deltas, liveTick }) {
 
             <KpiCard
                 title="Active Time"
+                value={stats?.summary?.activeTime}
                 baseSeconds={sec?.activeTime}
                 liveTick={liveTick}
                 delta={d.activeTime}
@@ -162,6 +164,7 @@ export function ComparativeKpiGrid({ sec, stats, deltas, liveTick }) {
 
             <KpiCard
                 title="Idle Time"
+                value={stats?.summary?.idleTime}
                 baseSeconds={sec?.idleTime}
                 liveTick={false}
                 delta={d.idleTime}
@@ -171,6 +174,7 @@ export function ComparativeKpiGrid({ sec, stats, deltas, liveTick }) {
 
             <KpiCard
                 title="Manual Time"
+                value={stats?.summary?.manualTime}
                 baseSeconds={sec?.manualTime}
                 liveTick={false}
                 delta={d.manualTime}
@@ -179,14 +183,16 @@ export function ComparativeKpiGrid({ sec, stats, deltas, liveTick }) {
 
             <KpiCard
                 title="Productive Time"
+                value={stats?.summary?.productiveTime}
                 baseSeconds={sec?.productiveTime}
-                liveTick={liveTick}
+                liveTick={false}
                 delta={d.productiveTime}
                 icon={Award}
             />
 
             <KpiCard
                 title="Unproductive Time"
+                value={stats?.summary?.unproductiveTime}
                 baseSeconds={sec?.unproductiveTime}
                 liveTick={false}
                 delta={d.unproductiveTime}
@@ -196,6 +202,7 @@ export function ComparativeKpiGrid({ sec, stats, deltas, liveTick }) {
 
             <KpiCard
                 title="Neutral Time"
+                value={stats?.summary?.neutralTime}
                 baseSeconds={sec?.neutralTime}
                 liveTick={false}
                 delta={d.neutralTime}
@@ -205,7 +212,7 @@ export function ComparativeKpiGrid({ sec, stats, deltas, liveTick }) {
             <KpiCard
                 title="Productivity"
                 value={utilizationVal}
-                delta={d.productivity}
+                delta={d.productivity || d.utilization}
                 icon={TrendingUp}
             />
         </div>

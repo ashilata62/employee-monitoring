@@ -26,12 +26,15 @@ function formatToHM(seconds) {
 }
 
 // Calculate summary metrics
-async function calculateMetrics(organizationId, employeeId = null, teamId = null, startDate = null, endDate = null) {
+async function calculateMetrics(organizationId, employeeId = null, teamId = null, startDate = null, endDate = null, role = null) {
     const dateFilter = getDateRangeFilter(startDate, endDate);
 
     const whereClause = { organizationId, timestamp: dateFilter };
     if (employeeId) whereClause.employeeId = employeeId;
     if (teamId) whereClause.employee = { teamId };
+    if (role) {
+        whereClause.employee = { ...(whereClause.employee || {}), role };
+    }
 
     const logs = await prisma.activityLog.findMany({ where: whereClause });
     
@@ -53,6 +56,9 @@ async function calculateMetrics(organizationId, employeeId = null, teamId = null
     const manualWhere = { organizationId, startTime: dateFilter };
     if (employeeId) manualWhere.employeeId = employeeId;
     if (teamId) manualWhere.employee = { teamId };
+    if (role) {
+        manualWhere.employee = { ...(manualWhere.employee || {}), role };
+    }
     
     const manualLogs = await prisma.manualTime.findMany({ where: manualWhere });
     const manualTime = manualLogs.reduce((acc, log) => acc + log.duration, 0);
@@ -108,6 +114,9 @@ async function calculateMetrics(organizationId, employeeId = null, teamId = null
     };
     if (employeeId) attWhere.employeeId = employeeId;
     if (teamId) attWhere.employee = { teamId };
+    if (role) {
+        attWhere.employee = { ...(attWhere.employee || {}), role };
+    }
 
     const attendances = await prisma.attendance.findMany({ where: attWhere });
     let attendanceWorkTime = 0;
@@ -188,8 +197,8 @@ function calculateDeltaKPI(currentVal, previousVal, isPercentage = false) {
 }
 
 // Compute comprehensive comparison across all 8 KPIs
-async function getMetricsComparison(organizationId, employeeId = null, teamId = null, startDate = null, endDate = null, compareStartDate = null, compareEndDate = null) {
-    const refMetrics = await calculateMetrics(organizationId, employeeId, teamId, startDate, endDate);
+async function getMetricsComparison(organizationId, employeeId = null, teamId = null, startDate = null, endDate = null, compareStartDate = null, compareEndDate = null, role = null) {
+    const refMetrics = await calculateMetrics(organizationId, employeeId, teamId, startDate, endDate, role);
 
     // If explicit compare range not given, compute prior duration of equal length
     let compStart = compareStartDate;
@@ -203,7 +212,7 @@ async function getMetricsComparison(organizationId, employeeId = null, teamId = 
         compEnd = prevEnd.toISOString();
     }
 
-    const compMetrics = await calculateMetrics(organizationId, employeeId, teamId, compStart, compEnd);
+    const compMetrics = await calculateMetrics(organizationId, employeeId, teamId, compStart, compEnd, role);
 
     const ref = refMetrics.rawSeconds;
     const comp = compMetrics.rawSeconds;
@@ -219,17 +228,21 @@ async function getMetricsComparison(organizationId, employeeId = null, teamId = 
             productiveTime: calculateDeltaKPI(ref.productiveTime, comp.productiveTime),
             unproductiveTime: calculateDeltaKPI(ref.unproductiveTime, comp.unproductiveTime),
             neutralTime: calculateDeltaKPI(ref.neutralTime, comp.neutralTime),
-            utilization: calculateDeltaKPI(ref.utilization, comp.utilization, true)
+            utilization: calculateDeltaKPI(ref.utilization, comp.utilization, true),
+            productivity: calculateDeltaKPI(ref.utilization, comp.utilization, true)
         }
     };
 }
 
 // Compute daily stacked productivity breakdown (Productive, Unproductive, Neutral)
-async function getDailyProductivityBreakdown(organizationId, employeeId = null, teamId = null, startDate = null, endDate = null) {
+async function getDailyProductivityBreakdown(organizationId, employeeId = null, teamId = null, startDate = null, endDate = null, role = null) {
     const dateFilter = getDateRangeFilter(startDate, endDate);
     const whereClause = { organizationId, timestamp: dateFilter };
     if (employeeId) whereClause.employeeId = employeeId;
     if (teamId) whereClause.employee = { teamId };
+    if (role) {
+        whereClause.employee = { ...(whereClause.employee || {}), role };
+    }
 
     const logs = await prisma.activityLog.findMany({
         where: whereClause,
@@ -260,6 +273,9 @@ async function getDailyProductivityBreakdown(organizationId, employeeId = null, 
     };
     if (employeeId) attWhere.employeeId = employeeId;
     if (teamId) attWhere.employee = { teamId };
+    if (role) {
+        attWhere.employee = { ...(attWhere.employee || {}), role };
+    }
 
     const attendances = await prisma.attendance.findMany({ where: attWhere });
     attendances.forEach(att => {
@@ -303,18 +319,24 @@ async function getDailyProductivityBreakdown(organizationId, employeeId = null, 
 }
 
 // Calculate intraday chart data
-async function getIntradayActivity(organizationId, employeeId = null, teamId = null, startDate = null, endDate = null) {
+async function getIntradayActivity(organizationId, employeeId = null, teamId = null, startDate = null, endDate = null, role = null) {
     const dateFilter = getDateRangeFilter(startDate, endDate);
 
     const whereClause = { organizationId, timestamp: dateFilter };
     if (employeeId) whereClause.employeeId = employeeId;
     if (teamId) whereClause.employee = { teamId };
+    if (role) {
+        whereClause.employee = { ...(whereClause.employee || {}), role };
+    }
 
     const logs = await prisma.activityLog.findMany({ where: whereClause });
     
     const manualWhere = { organizationId, startTime: dateFilter };
     if (employeeId) manualWhere.employeeId = employeeId;
     if (teamId) manualWhere.employee = { teamId };
+    if (role) {
+        manualWhere.employee = { ...(manualWhere.employee || {}), role };
+    }
     
     const manualLogs = await prisma.manualTime.findMany({ where: manualWhere });
 
@@ -327,6 +349,9 @@ async function getIntradayActivity(organizationId, employeeId = null, teamId = n
     };
     if (employeeId) attWhere.employeeId = employeeId;
     if (teamId) attWhere.employee = { teamId };
+    if (role) {
+        attWhere.employee = { ...(attWhere.employee || {}), role };
+    }
     const attendances = await prisma.attendance.findMany({ where: attWhere });
 
     // Group by hour
@@ -379,11 +404,14 @@ async function getIntradayActivity(organizationId, employeeId = null, teamId = n
 }
 
 // Calculate top/bottom employees
-async function getEmployeeRankings(organizationId, teamId = null, startDate = null, endDate = null) {
+async function getEmployeeRankings(organizationId, teamId = null, startDate = null, endDate = null, role = null) {
     const dateFilter = getDateRangeFilter(startDate, endDate);
 
     const whereClause = { organizationId, timestamp: dateFilter };
     if (teamId) whereClause.employee = { teamId };
+    if (role) {
+        whereClause.employee = { ...(whereClause.employee || {}), role };
+    }
 
     const logs = await prisma.activityLog.findMany({ 
         where: whereClause,
@@ -392,6 +420,9 @@ async function getEmployeeRankings(organizationId, teamId = null, startDate = nu
 
     const manualWhere = { organizationId, startTime: dateFilter };
     if (teamId) manualWhere.employee = { teamId };
+    if (role) {
+        manualWhere.employee = { ...(manualWhere.employee || {}), role };
+    }
 
     const manualLogs = await prisma.manualTime.findMany({ 
         where: manualWhere,
@@ -446,6 +477,9 @@ async function getEmployeeRankings(organizationId, teamId = null, startDate = nu
         ]
     };
     if (teamId) attWhere.employee = { teamId };
+    if (role) {
+        attWhere.employee = { ...(attWhere.employee || {}), role };
+    }
 
     const attendances = await prisma.attendance.findMany({ 
 >>>>>>> 10fd1b815f401ac6169316346d3c0379e0bc7616
@@ -509,18 +543,24 @@ async function getEmployeeRankings(organizationId, teamId = null, startDate = nu
     };
 }
 
-const getAdminDashboard = async (organizationId, startDate = null, endDate = null, compareStartDate = null, compareEndDate = null) => {
+const getAdminDashboard = async (organizationId, startDate = null, endDate = null, compareStartDate = null, compareEndDate = null, employeeId = null, teamId = null, role = null) => {
     const [employees, teams, totalAttendance] = await Promise.all([
-        prisma.employee.findMany({ where: { organizationId } }),
-        prisma.team.findMany({ where: { organizationId } }),
+        prisma.employee.findMany({ 
+            where: { organizationId },
+            select: { id: true, fullName: true, email: true, role: true, teamId: true, status: true }
+        }),
+        prisma.team.findMany({ 
+            where: { organizationId },
+            select: { id: true, name: true }
+        }),
         prisma.attendance.count({ where: { organizationId } })
     ]);
 
-    const summary = await calculateMetrics(organizationId, null, null, startDate, endDate);
-    const intradayActivity = await getIntradayActivity(organizationId, null, null, startDate, endDate);
-    const rankings = await getEmployeeRankings(organizationId, null, startDate, endDate);
-    const comparison = await getMetricsComparison(organizationId, null, null, startDate, endDate, compareStartDate, compareEndDate);
-    const productivityBreakdown = await getDailyProductivityBreakdown(organizationId, null, null, startDate, endDate);
+    const summary = await calculateMetrics(organizationId, employeeId, teamId, startDate, endDate, role);
+    const intradayActivity = await getIntradayActivity(organizationId, employeeId, teamId, startDate, endDate, role);
+    const rankings = await getEmployeeRankings(organizationId, teamId, startDate, endDate, role);
+    const comparison = await getMetricsComparison(organizationId, employeeId, teamId, startDate, endDate, compareStartDate, compareEndDate, role);
+    const productivityBreakdown = await getDailyProductivityBreakdown(organizationId, employeeId, teamId, startDate, endDate, role);
 
     // Calculate real team stats
     const teamStats = teams.map(t => {
@@ -558,7 +598,7 @@ const getAdminDashboard = async (organizationId, startDate = null, endDate = nul
     };
 };
 
-const getManagerDashboard = async (organizationId, teamId, startDate = null, endDate = null, compareStartDate = null, compareEndDate = null) => {
+const getManagerDashboard = async (organizationId, teamId, startDate = null, endDate = null, compareStartDate = null, compareEndDate = null, employeeId = null, role = null) => {
     const [employees, activityLogs, tasks, attendance] = await Promise.all([
         prisma.employee.findMany({ where: { organizationId, teamId } }),
         prisma.activityLog.findMany({
@@ -570,11 +610,11 @@ const getManagerDashboard = async (organizationId, teamId, startDate = null, end
         prisma.attendance.count({ where: { organizationId, employee: { teamId } } })
     ]);
 
-    const summary = await calculateMetrics(organizationId, null, teamId, startDate, endDate);
-    const intradayActivity = await getIntradayActivity(organizationId, null, teamId, startDate, endDate);
-    const rankings = await getEmployeeRankings(organizationId, teamId, startDate, endDate);
-    const comparison = await getMetricsComparison(organizationId, null, teamId, startDate, endDate, compareStartDate, compareEndDate);
-    const productivityBreakdown = await getDailyProductivityBreakdown(organizationId, null, teamId, startDate, endDate);
+    const summary = await calculateMetrics(organizationId, employeeId, teamId, startDate, endDate, role);
+    const intradayActivity = await getIntradayActivity(organizationId, employeeId, teamId, startDate, endDate, role);
+    const rankings = await getEmployeeRankings(organizationId, teamId, startDate, endDate, role);
+    const comparison = await getMetricsComparison(organizationId, employeeId, teamId, startDate, endDate, compareStartDate, compareEndDate, role);
+    const productivityBreakdown = await getDailyProductivityBreakdown(organizationId, employeeId, teamId, startDate, endDate, role);
 
     // Provide contextTeams for the manager UI to avoid crashes if UI expects an array
     const contextTeams = await prisma.team.findMany({ where: { id: teamId } });

@@ -62,8 +62,10 @@ const cn = (...inputs) => twMerge(clsx(inputs));
 
 const getImageUrl = (url) => {
   if (!url) return '';
-  if (url.startsWith('http') || url.startsWith('data:')) return url;
-  return `${BASE_URL}${url.startsWith('/') ? '' : '/'}${url}`;
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:') || url.startsWith('blob:')) return url;
+  const cleanBase = BASE_URL.replace(/\/+$/, '');
+  const cleanPath = url.startsWith('/') ? url : `/${url}`;
+  return `${cleanBase}${cleanPath}`;
 };
 
 // ─── Live Stream Viewer Component ───────────────────────────────────────────
@@ -1224,6 +1226,26 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
               fetchVideos();
     }, [fetchVideos]);
 
+    // Listen for real-time video recordings added or deleted via socket
+    useEffect(() => {
+        if (!socket) return;
+        const handleNewVideo = (newVid) => {
+            setVideoRecordings(prev => {
+                if (prev.some(v => v.id === newVid.id)) return prev;
+                return [newVid, ...prev];
+            });
+        };
+        const handleDeletedVideo = ({ id }) => {
+            setVideoRecordings(prev => prev.filter(v => v.id !== id));
+        };
+        socket.on('video:new', handleNewVideo);
+        socket.on('video:deleted', handleDeletedVideo);
+        return () => {
+            socket.off('video:new', handleNewVideo);
+            socket.off('video:deleted', handleDeletedVideo);
+        };
+    }, [socket]);
+
     const handleOpenVideoPlayback = useCallback((video) => {
         const empChunks = videoRecordings
             .filter(v => v.employeeId === video.employeeId)
@@ -1545,15 +1567,18 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
   const localScreenshots = useMemo(() => {
               let filtered = backendScreenshots;
 
-    // We only want to show REAL screenshots (ignore simulator dummy Picsum data)
-    // Allow: /uploads (local), blob:, data:image/, https:// (Cloudinary), http://
+    // Only show real screenshots from DB/uploads/Cloudinary/blobs (no mock picsum data)
     filtered = filtered.filter(s =>
-            s.imageUrl?.startsWith('/uploads') ||
-            s.imageUrl?.startsWith('blob:') ||
-            s.imageUrl?.startsWith('data:image/') ||
-            s.imageUrl?.startsWith('https://') ||
-            s.imageUrl?.startsWith('http://')
-            );
+      s.imageUrl &&
+      !s.imageUrl.includes('picsum.photos') &&
+      (
+        s.imageUrl.startsWith('/uploads') ||
+        s.imageUrl.startsWith('blob:') ||
+        s.imageUrl.startsWith('data:image/') ||
+        s.imageUrl.startsWith('https://') ||
+        s.imageUrl.startsWith('http://')
+      )
+    );
 
     return filtered.map(s => ({
               ...s,
@@ -1893,23 +1918,28 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
             const formData = new FormData();
             formData.append('image', blob, 'real-screenshot.png');
          
-         const validEmployeeId = employeesList.length > 0 ? employeesList[0].id : 
-                                 (contextEmployees.length > 0 ? contextEmployees[0].id : null);
+         const validEmployeeId = 
+           (selectedFilters.employees.length > 0 && selectedFilters.employees[0]) ||
+           user?.employeeId ||
+           (employeesList.length > 0 ? employeesList[0].id : null) ||
+           (contextEmployees.length > 0 ? contextEmployees[0].id : null);
 
-            if (!validEmployeeId) {
-              alert('No employees found in the system to attach this screenshot to!');
-            return;
+         if (!validEmployeeId) {
+           toast.error('No employee found to attach this screenshot to!');
+           return;
          }
 
-            formData.append('employeeId', validEmployeeId);
-            formData.append('productivity', 'PRODUCTIVE');
+         formData.append('employeeId', validEmployeeId);
+         formData.append('productivity', 'PRODUCTIVE');
+         formData.append('blurred', 'false');
 
-            const res = await screenshotService.uploadRealScreenshot(formData);
-            if (res && res.success) {
-             if (addNotification) addNotification('Success', 'Real screenshot uploaded as WebP!', 'success');
-            fetchScreenshots(0);
+         const res = await screenshotService.uploadRealScreenshot(formData);
+         if (res && res.success) {
+           toast.success('Real screen captured and saved to database!');
+           if (addNotification) addNotification('Success', 'Real screenshot saved!', 'success');
+           fetchScreenshots(0);
          } else {
-              alert(res.message || 'Error saving screenshot.');
+           toast.error(res?.message || 'Error saving screenshot.');
          }
       }, 'image/png');
     } catch (err) {
@@ -2930,7 +2960,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
 
                           {/* Image */}
                           <img
-                            src={selectedScreenshot.image || selectedScreenshot.url || selectedScreenshot.imageUrl}
+                            src={getImageUrl(selectedScreenshot.image || selectedScreenshot.url || selectedScreenshot.imageUrl)}
                             alt="Full View"
                             className={cn(
                               "w-full h-full object-contain transition-all duration-1000",

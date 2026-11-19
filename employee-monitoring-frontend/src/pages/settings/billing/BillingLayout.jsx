@@ -49,10 +49,10 @@ export function BillingLayout() {
                                 Settings
                             </span>
                             <span>/</span>
-                            <span className="text-violet-600">Billing</span>
+                            <span className="text-primary-600">Billing</span>
                         </nav>
                         <div className="flex items-center gap-3">
-                            {/* <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-violet-200 dark:shadow-none">
+                            {/* <div className="h-9 w-9 rounded-xl bg-[#30382B] dark:bg-[#B9955B] text-white flex items-center justify-center text-white shadow-lg shadow-warm-xs dark:shadow-none">
                                 <CreditCard size={18} />
                             </div> */}
                             <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
@@ -77,7 +77,7 @@ export function BillingLayout() {
                                     cn(
                                         'px-5 py-4 text-sm font-black transition-all relative',
                                         isActive
-                                            ? 'text-violet-600 dark:text-violet-400'
+                                            ? 'text-primary-600 dark:text-primary-400'
                                             : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
                                     )
                                 }
@@ -86,7 +86,7 @@ export function BillingLayout() {
                                     <>
                                         {label}
                                         {isActive && (
-                                            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-violet-600 to-indigo-600 rounded-full animate-in fade-in duration-200" />
+                                            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#30382B] hover:bg-[#3C4536] dark:bg-[#B9955B] dark:hover:bg-[#A17D45] text-white shadow-warm-sm rounded-full animate-in fade-in duration-200" />
                                         )}
                                     </>
                                 )}
@@ -103,7 +103,7 @@ export function BillingLayout() {
                                 className={cn(
                                     'px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all duration-200',
                                     billingCycle === cycle
-                                        ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md shadow-violet-200 dark:shadow-none'
+                                        ? 'bg-[#30382B] hover:bg-[#3C4536] dark:bg-[#B9955B] dark:hover:bg-[#A17D45] text-white shadow-warm-sm text-white shadow-md shadow-warm-xs dark:shadow-none'
                                         : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
                                 )}
                             >

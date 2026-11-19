@@ -9,7 +9,7 @@ const ComplianceToggle = ({ title, desc, icon: Icon, enabled, onToggle }) => (
         <div className="flex items-center gap-4">
             <div className={cn(
                 "h-12 w-12 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110",
-                enabled ? "bg-indigo-50 text-indigo-600 dark:bg-indigo-900/20" : "bg-slate-50 text-slate-400 dark:bg-slate-800"
+                enabled ? "bg-primary-50 text-primary-600 dark:bg-primary-950/40" : "bg-slate-50 text-slate-400 dark:bg-slate-800"
             )}>
                 <Icon size={24} />
             </div>
@@ -22,7 +22,7 @@ const ComplianceToggle = ({ title, desc, icon: Icon, enabled, onToggle }) => (
             onClick={onToggle}
             className={cn(
                 "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none",
-                enabled ? "bg-indigo-600" : "bg-slate-200 dark:bg-slate-700"
+                enabled ? "bg-[#30382B] dark:bg-[#B9955B]" : "bg-slate-200 dark:bg-slate-700"
             )}
         >
             <span
@@ -57,7 +57,7 @@ export default function Compliance() {
             </div>
 
             <div className="grid grid-cols-1 gap-6">
-                <div className="bg-indigo-600 rounded-[2rem] p-8 text-white relative overflow-hidden shadow-2xl">
+                <div className="bg-[#30382B] dark:bg-[#B9955B] rounded-[2rem] p-8 text-white relative overflow-hidden shadow-2xl">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -mr-20 -mt-20 blur-3xl" />
                     <div className="flex items-start gap-6 relative z-10">
                         <div className="h-14 w-14 rounded-2xl bg-white/20 flex items-center justify-center backdrop-blur-md">

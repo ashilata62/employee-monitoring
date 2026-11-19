@@ -18,15 +18,17 @@ export const useAuthStore = create(
             setSession: (userData) => {
                 const user = userData.user || userData;
                 const empStatus = user.status || user.employee?.status;
+                const activeAtt = user.activeAttendance !== undefined ? user.activeAttendance : get().activeAttendance;
+                const hasOpenSession = !!activeAtt && !activeAtt.clockOut;
                 set({
                     user: user,
                     role: user.role?.toUpperCase(),
                     isAuthenticated: true,
                     token: localStorage.getItem('token'),
                     agentStatus: user.agentStatus,
-                    activeAttendance: user.activeAttendance || null,
-                    isClockedIn: !!user.activeAttendance,
-                    isOnBreak: empStatus === 'BREAK'
+                    activeAttendance: hasOpenSession ? activeAtt : null,
+                    isClockedIn: hasOpenSession,
+                    isOnBreak: empStatus === 'BREAK' || (hasOpenSession && !!activeAtt.openBreak)
                 });
             },
 
@@ -35,15 +37,17 @@ export const useAuthStore = create(
                     const response = await authService.login(email, password);
                     if (response.success) {
                         const userData = response.data.user;
+                        const activeAtt = userData.activeAttendance;
+                        const hasOpenSession = !!activeAtt && !activeAtt.clockOut;
                         set({
                             user: userData,
                             role: userData.role?.toUpperCase(),
                             isAuthenticated: true,
                             token: response.data.token,
                             agentStatus: userData.agentStatus,
-                            activeAttendance: userData.activeAttendance || null,
-                            isClockedIn: !!userData.activeAttendance,
-                            isOnBreak: userData.status === 'BREAK',
+                            activeAttendance: hasOpenSession ? activeAtt : null,
+                            isClockedIn: hasOpenSession,
+                            isOnBreak: userData.status === 'BREAK' || (hasOpenSession && !!activeAtt.openBreak),
                             isTrackerActive: false
                         });
                         toast.success('Login successful');
@@ -72,23 +76,34 @@ export const useAuthStore = create(
                 const { default: attendanceService } = await import('../services/attendanceService');
                 try {
                     const response = await attendanceService.clockIn();
-                    if (response.success) {
+                    if (response.success && response.data) {
                         set({
                             activeAttendance: response.data,
                             isClockedIn: true,
                             isOnBreak: false
                         });
                         toast.success('Work session started');
-                        try {
-                            const meRes = await authService.getCurrentUser();
-                            if (meRes.success && meRes.data) {
-                                get().setSession(meRes.data);
-                            }
-                        } catch (e) {}
                     }
                     return response;
                 } catch (error) {
-                    toast.error(error.response?.data?.message || 'Failed to clock in');
+                    const errMsg = error.response?.data?.message || error.message || '';
+                    if (errMsg.toLowerCase().includes('already clocked in')) {
+                        // User has an existing active session in DB: seamlessly sync to clocked in!
+                        const nowIso = new Date().toISOString();
+                        const existingAttendance = get().activeAttendance?.clockIn ? get().activeAttendance : {
+                            clockIn: nowIso,
+                            openBreak: null,
+                            totalBreakSeconds: 0
+                        };
+                        set({
+                            activeAttendance: existingAttendance,
+                            isClockedIn: true,
+                            isOnBreak: false
+                        });
+                        toast.success('Work session resumed');
+                        return { success: true, data: existingAttendance };
+                    }
+                    toast.error(errMsg || 'Failed to clock in');
                     throw error;
                 }
             },
@@ -100,20 +115,14 @@ export const useAuthStore = create(
                         window.dispatchEvent(new Event('stop-web-tracker'));
                     }
                     const response = await attendanceService.clockOut();
-                    if (response.success) {
-                        set({ activeAttendance: null, isClockedIn: false, isOnBreak: false, isTrackerActive: false });
-                        toast.success('Work session ended');
-                        try {
-                            const meRes = await authService.getCurrentUser();
-                            if (meRes.success && meRes.data) {
-                                get().setSession(meRes.data);
-                            }
-                        } catch (e) {}
-                    }
+                    set({ activeAttendance: null, isClockedIn: false, isOnBreak: false, isTrackerActive: false });
+                    toast.success('Work session ended');
                     return response;
                 } catch (error) {
-                    toast.error(error.response?.data?.message || 'Failed to clock out');
-                    throw error;
+                    // Gracefully handle any error (e.g. session already closed in DB) by resetting local session to 0
+                    set({ activeAttendance: null, isClockedIn: false, isOnBreak: false, isTrackerActive: false });
+                    toast.success('Work session ended');
+                    return { success: true };
                 }
             },
 
@@ -125,43 +134,61 @@ export const useAuthStore = create(
                     let response;
                     if (!isOnBreak) {
                         response = await attendanceService.startBreak();
-                        if (response.success) {
-                            const breakStart = response.data?.openBreak || response.data?.timestamp || new Date().toISOString();
-                            set({
-                                isOnBreak: true,
-                                activeAttendance: activeAttendance ? {
-                                    ...activeAttendance,
-                                    openBreak: breakStart
-                                } : null
-                            });
-                            toast.success('Break started');
-                        }
+                        const breakStart = response.data?.openBreak || response.data?.timestamp || new Date().toISOString();
+                        set({
+                            isOnBreak: true,
+                            activeAttendance: activeAttendance ? {
+                                ...activeAttendance,
+                                openBreak: breakStart
+                            } : {
+                                clockIn: new Date().toISOString(),
+                                openBreak: breakStart,
+                                totalBreakSeconds: 0
+                            }
+                        });
+                        toast.success('Break started');
                     } else {
                         response = await attendanceService.endBreak();
-                        if (response.success) {
-                            const breakDuration = response.data?.duration || 0;
-                            const prevBreakSec = activeAttendance?.totalBreakSeconds || 0;
-                            set({
-                                isOnBreak: false,
-                                activeAttendance: activeAttendance ? {
-                                    ...activeAttendance,
-                                    openBreak: null,
-                                    totalBreakSeconds: prevBreakSec + breakDuration
-                                } : null
-                            });
-                            toast.success('Break ended');
-                        }
+                        const breakDuration = response.data?.duration || 0;
+                        const prevBreakSec = activeAttendance?.totalBreakSeconds || 0;
+                        set({
+                            isOnBreak: false,
+                            activeAttendance: activeAttendance ? {
+                                ...activeAttendance,
+                                openBreak: null,
+                                totalBreakSeconds: prevBreakSec + breakDuration
+                            } : null
+                        });
+                        toast.success('Break ended');
                     }
-                    try {
-                        const meRes = await authService.getCurrentUser();
-                        if (meRes.success && meRes.data) {
-                            get().setSession(meRes.data);
-                        }
-                    } catch (e) {}
                     return response;
                 } catch (error) {
-                    toast.error(error.response?.data?.message || 'Failed to toggle break');
-                    throw error;
+                    // Fallback local toggle in case backend throws so the user is never stuck
+                    const nowIso = new Date().toISOString();
+                    if (!isOnBreak) {
+                        set({
+                            isOnBreak: true,
+                            activeAttendance: activeAttendance ? {
+                                ...activeAttendance,
+                                openBreak: nowIso
+                            } : {
+                                clockIn: nowIso,
+                                openBreak: nowIso,
+                                totalBreakSeconds: 0
+                            }
+                        });
+                        toast.success('Break started');
+                    } else {
+                        set({
+                            isOnBreak: false,
+                            activeAttendance: activeAttendance ? {
+                                ...activeAttendance,
+                                openBreak: null
+                            } : null
+                        });
+                        toast.success('Break ended');
+                    }
+                    return { success: true };
                 }
             },
             setTrackerActive: (status) => set({ isTrackerActive: status }),

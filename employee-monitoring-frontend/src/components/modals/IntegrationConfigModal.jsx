@@ -117,7 +117,7 @@ export function IntegrationConfigModal({ isOpen, integrationId, existingConfig, 
                                     onChange={(e) => update('apiKey', e.target.value)}
                                     className={cn(
                                         'w-full h-11 px-4 rounded-xl border-2 bg-white dark:bg-slate-800 text-sm font-medium text-slate-900 dark:text-white outline-none transition-all',
-                                        errors.apiKey ? 'border-rose-400' : 'border-slate-200 dark:border-slate-700 focus:border-violet-500'
+                                        errors.apiKey ? 'border-rose-400' : 'border-slate-200 dark:border-slate-700 focus:border-primary-500'
                                     )}
                                 />
                                 {errors.apiKey && <p className="text-xs font-bold text-rose-500">{errors.apiKey}</p>}
@@ -130,7 +130,7 @@ export function IntegrationConfigModal({ isOpen, integrationId, existingConfig, 
                                 <select
                                     value={config.syncFrequency || 'Daily'}
                                     onChange={(e) => update('syncFrequency', e.target.value)}
-                                    className="w-full h-11 px-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-medium text-slate-900 dark:text-white outline-none focus:border-violet-500 transition-all appearance-none"
+                                    className="w-full h-11 px-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-medium text-slate-900 dark:text-white outline-none focus:border-primary-500 transition-all appearance-none"
                                 >
                                     {SYNC_OPTIONS.map(o => <option key={o}>{o}</option>)}
                                 </select>
@@ -138,7 +138,7 @@ export function IntegrationConfigModal({ isOpen, integrationId, existingConfig, 
 
                             <label className="flex items-center gap-3 cursor-pointer">
                                 <div className={cn('h-5 w-5 rounded-md border-2 transition-all flex items-center justify-center shrink-0',
-                                    config.importExisting ? 'bg-violet-600 border-violet-600' : 'border-slate-300 dark:border-slate-600')}
+                                    config.importExisting ? 'bg-[#30382B] dark:bg-[#B9955B] border-[#30382B] dark:border-[#B9955B]' : 'border-slate-300 dark:border-slate-600')}
                                     onClick={() => update('importExisting', !config.importExisting)}>
                                     {config.importExisting && <Check size={12} color="white" strokeWidth={3} />}
                                 </div>
@@ -150,9 +150,9 @@ export function IntegrationConfigModal({ isOpen, integrationId, existingConfig, 
                     {/* Project Management */}
                     {meta.configType === 'project' && (
                         <>
-                            <div className="p-5 rounded-2xl bg-violet-50 dark:bg-violet-900/10 border border-violet-100 dark:border-violet-800/30 text-center">
-                                <Link size={20} className="mx-auto text-violet-500 mb-3" />
-                                <p className="text-sm font-bold text-violet-700 dark:text-violet-300 mb-4">
+                            <div className="p-5 rounded-2xl bg-primary-50 dark:bg-primary-950/40 border border-primary-100 dark:border-primary-800/30 text-center">
+                                <Link size={20} className="mx-auto text-primary-600 mb-3" />
+                                <p className="text-sm font-bold text-primary-700 dark:text-primary-300 mb-4">
                                     Connect your {meta.name} account via OAuth
                                 </p>
                                 <button
@@ -161,7 +161,7 @@ export function IntegrationConfigModal({ isOpen, integrationId, existingConfig, 
                                         'px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all',
                                         config.oauthDone
                                             ? 'bg-emerald-100 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border-2 border-emerald-200 dark:border-emerald-700 cursor-default'
-                                            : 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white hover:scale-[1.02] active:scale-95'
+                                            : 'bg-[#30382B] hover:bg-[#3C4536] dark:bg-[#B9955B] dark:hover:bg-[#A17D45] text-white shadow-warm-sm text-white hover:scale-[1.02] active:scale-95'
                                     )}
                                 >
                                     {config.oauthDone ? '✓ Connected' : `Connect ${meta.name}`}
@@ -175,7 +175,7 @@ export function IntegrationConfigModal({ isOpen, integrationId, existingConfig, 
                                         placeholder="All projects (type to filter)"
                                         value={config.projects || ''}
                                         onChange={(e) => update('projects', e.target.value)}
-                                        className="w-full h-11 px-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-medium text-slate-900 dark:text-white outline-none focus:border-violet-500 transition-all"
+                                        className="w-full h-11 px-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-medium text-slate-900 dark:text-white outline-none focus:border-primary-500 transition-all"
                                     />
                                 </div>
                             )}
@@ -194,7 +194,7 @@ export function IntegrationConfigModal({ isOpen, integrationId, existingConfig, 
                                     onChange={(e) => update('connectionString', e.target.value)}
                                     className={cn(
                                         'w-full px-4 py-3 rounded-xl border-2 bg-white dark:bg-slate-800 text-sm font-mono font-medium text-slate-900 dark:text-white outline-none transition-all resize-none',
-                                        errors.connectionString ? 'border-rose-400' : 'border-slate-200 dark:border-slate-700 focus:border-violet-500'
+                                        errors.connectionString ? 'border-rose-400' : 'border-slate-200 dark:border-slate-700 focus:border-primary-500'
                                     )}
                                 />
                                 {errors.connectionString && <p className="text-xs font-bold text-rose-500">{errors.connectionString}</p>}
@@ -206,7 +206,7 @@ export function IntegrationConfigModal({ isOpen, integrationId, existingConfig, 
                                     'flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all',
                                     testOk
                                         ? 'bg-emerald-100 text-emerald-700 border-2 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-700'
-                                        : 'border-2 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-violet-400 hover:text-violet-600 disabled:opacity-40 disabled:cursor-not-allowed'
+                                        : 'border-2 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-primary-400 hover:text-primary-600 disabled:opacity-40 disabled:cursor-not-allowed'
                                 )}
                             >
                                 {testLoading ? <Loader2 size={13} className="animate-spin" /> : testOk ? <Check size={13} /> : <TestTube size={13} />}
@@ -231,7 +231,7 @@ export function IntegrationConfigModal({ isOpen, integrationId, existingConfig, 
                                     'px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all',
                                     config.accountConnected
                                         ? 'bg-emerald-100 text-emerald-700 border-2 border-emerald-200 cursor-default dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-700'
-                                        : 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white hover:scale-[1.02] active:scale-95 shadow-lg shadow-violet-200 dark:shadow-none'
+                                        : 'bg-[#30382B] hover:bg-[#3C4536] dark:bg-[#B9955B] dark:hover:bg-[#A17D45] text-white shadow-warm-sm text-white hover:scale-[1.02] active:scale-95 shadow-lg shadow-warm-xs dark:shadow-none'
                                 )}
                             >
                                 {config.accountConnected ? '✓ Account Connected' : 'Connect Account'}
@@ -251,7 +251,7 @@ export function IntegrationConfigModal({ isOpen, integrationId, existingConfig, 
                     <button
                         onClick={handleSave}
                         disabled={loading}
-                        className="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-violet-200 dark:shadow-none hover:from-violet-700 hover:to-indigo-700 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:scale-100"
+                        className="flex-1 py-3.5 rounded-2xl bg-[#30382B] hover:bg-[#3C4536] dark:bg-[#B9955B] dark:hover:bg-[#A17D45] text-white shadow-warm-sm text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-warm-xs dark:shadow-none  hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:scale-100"
                     >
                         {loading ? <Loader2 size={15} className="animate-spin" /> : 'Save & Connect'}
                     </button>

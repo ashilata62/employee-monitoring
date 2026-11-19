@@ -26,7 +26,7 @@ export function AddOrgGroupModal({ isOpen, onClose }) {
         onClose();
     };
 
-    const inputClass = (err) => cn('w-full h-11 px-4 rounded-xl border-2 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white outline-none transition-all', err ? 'border-rose-400' : 'border-slate-200 dark:border-slate-700 focus:border-violet-500');
+    const inputClass = (err) => cn('w-full h-11 px-4 rounded-xl border-2 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white outline-none transition-all', err ? 'border-rose-400' : 'border-slate-200 dark:border-slate-700 focus:border-primary-500');
     const managers = users.filter((u) => u.role === 'admin' || u.role === 'manager');
 
     return (
@@ -47,13 +47,13 @@ export function AddOrgGroupModal({ isOpen, onClose }) {
                     <div className="space-y-1.5">
                         <label className="text-xs font-black text-slate-700 dark:text-slate-300">Description <span className="text-slate-400 font-medium">(optional)</span></label>
                         <textarea placeholder="Enter description..." rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })}
-                            className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 focus:border-violet-500 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white outline-none transition-all resize-none" />
+                            className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 focus:border-primary-500 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white outline-none transition-all resize-none" />
                     </div>
                     <div className="space-y-1.5">
                         <label className="text-xs font-black text-slate-700 dark:text-slate-300">Manager <span className="text-slate-400 font-medium">(optional)</span></label>
                         <div className="relative">
                             <select value={form.managerId ?? ''} onChange={(e) => setForm({ ...form, managerId: e.target.value || null })}
-                                className="w-full h-11 pl-4 pr-8 rounded-xl border-2 border-slate-200 dark:border-slate-700 focus:border-violet-500 bg-white dark:bg-slate-800 text-sm text-slate-700 dark:text-slate-200 outline-none appearance-none transition-all">
+                                className="w-full h-11 pl-4 pr-8 rounded-xl border-2 border-slate-200 dark:border-slate-700 focus:border-primary-500 bg-white dark:bg-slate-800 text-sm text-slate-700 dark:text-slate-200 outline-none appearance-none transition-all">
                                 <option value="">No manager</option>
                                 {managers.map((u) => (<option key={u.id} value={u.id}>{u.name}</option>))}
                             </select>
@@ -70,7 +70,7 @@ export function AddOrgGroupModal({ isOpen, onClose }) {
 
                 <div className="flex items-center justify-end gap-3 px-7 py-5 shrink-0 bg-slate-50/70 dark:bg-slate-800/20 border-t border-slate-100 dark:border-slate-800 rounded-b-[2rem]">
                     <button onClick={onClose} className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">Cancel</button>
-                    <button onClick={handleSave} className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-xs font-black uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-violet-200 dark:shadow-none">Create Group</button>
+                    <button onClick={handleSave} className="px-6 py-2.5 rounded-xl bg-[#30382B] hover:bg-[#3C4536] dark:bg-[#B9955B] dark:hover:bg-[#A17D45] text-white shadow-warm-sm text-white text-xs font-black uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-warm-xs dark:shadow-none">Create Group</button>
                 </div>
             </div>
         </div>

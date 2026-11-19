@@ -109,8 +109,7 @@ const attendanceService = {
                     productivity: 'PRODUCTIVE',
                     duration: 0,
                     timestamp: now,
-                    appWebsite: 'Work Session',
-                    title: 'Active Work Session'
+                    appWebsite: 'Work Session'
                 }
             });
         } catch (actErr) {

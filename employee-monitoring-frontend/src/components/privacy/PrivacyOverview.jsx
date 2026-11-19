@@ -8,7 +8,7 @@ import { cn } from '../../utils/cn';
 function SectionLabel({ title, description }) {
     return (
         <div className="min-w-[200px] max-w-[220px] shrink-0">
-            <h3 className="text-sm font-black text-violet-600 dark:text-violet-400 mb-1">{title}</h3>
+            <h3 className="text-sm font-black text-primary-600 dark:text-primary-400 mb-1">{title}</h3>
             <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 leading-relaxed">{description}</p>
         </div>
     );
@@ -33,7 +33,7 @@ export function PrivacyOverview() {
                             <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                                 Show <span className="font-black text-slate-900 dark:text-white">URLs</span> and{' '}
                                 <span className="font-black text-slate-900 dark:text-white">Titles</span> for{' '}
-                                <span className="font-black text-violet-600">Activity Logs</span>
+                                <span className="font-black text-primary-600">Activity Logs</span>
                             </span>
                         }
                     />
@@ -64,7 +64,7 @@ export function PrivacyOverview() {
                                     step={1}
                                     value={privacy.blurLevel}
                                     onChange={(e) => updateField('blurLevel', Number(e.target.value))}
-                                    className="w-full h-2 rounded-full appearance-none cursor-pointer accent-violet-600"
+                                    className="w-full h-2 rounded-full appearance-none cursor-pointer accent-primary-600"
                                 />
                                 <div className="flex justify-between text-[10px] font-bold text-slate-400">
                                     {[0, 1, 2, 3, 4, 5].map((n) => <span key={n}>{n}</span>)}
@@ -86,7 +86,7 @@ export function PrivacyOverview() {
                         >
                             <div className={cn(
                                 'h-5 w-5 rounded-md border-2 transition-all flex items-center justify-center shrink-0',
-                                privacy.saveOriginalScreenshots ? 'bg-violet-600 border-violet-600' : 'border-slate-300 dark:border-slate-600'
+                                privacy.saveOriginalScreenshots ? 'bg-[#30382B] dark:bg-[#B9955B] border-primary-600' : 'border-slate-300 dark:border-slate-600'
                             )}>
                                 {privacy.saveOriginalScreenshots && (
                                     <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
