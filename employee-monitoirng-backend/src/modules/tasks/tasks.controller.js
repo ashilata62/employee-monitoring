@@ -217,10 +217,25 @@ class TasksController {
     async getCycleTimeAnalytics(req, res) {
         try {
             const organizationId = await getOrganizationId(req);
+            let { role, employeeId: userEmployeeId, userId } = req.user;
             const { projectId, employeeId, status, startDate, endDate } = req.query;
+
+            let effectiveEmployeeId = (employeeId && employeeId !== 'null' && employeeId !== 'undefined') ? employeeId : userEmployeeId;
+            if (!effectiveEmployeeId && role === 'EMPLOYEE') {
+                const user = await require('../../config/db').user.findUnique({
+                    where: { id: userId },
+                    select: { employeeId: true }
+                });
+                effectiveEmployeeId = user?.employeeId;
+            }
+
             const filter = {};
             if (projectId) filter.projectId = projectId;
-            if (employeeId) filter.employeeId = employeeId;
+            if (role === 'EMPLOYEE') {
+                filter.employeeId = effectiveEmployeeId;
+            } else if (employeeId) {
+                filter.employeeId = employeeId;
+            }
             if (status) filter.status = status;
             if (startDate) filter.startDate = startDate;
             if (endDate) filter.endDate = endDate;
