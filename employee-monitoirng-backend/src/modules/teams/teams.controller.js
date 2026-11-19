@@ -14,9 +14,6 @@ const getTeams = async (req, res, next) => {
         }
 
         let filter = {};
-        if (role === 'EMPLOYEE') {
-            return res.status(403).json({ success: false, message: "Access denied" });
-        }
 
         const teams = await teamsService.getTeams(orgId, filter);
 

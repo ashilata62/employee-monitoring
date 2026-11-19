@@ -141,6 +141,7 @@ function buildDailyBreakdown(attendanceRecords = [], manualRecords = [], breakRe
                     type: 'attendance',
                     clockIn: att.clockIn,
                     clockOut: att.clockOut,
+                    durationSeconds: att.duration || Math.max(0, Math.floor((eMs - sMs) / 1000)),
                     minutes: Math.round((we - ws) / 60000),
                     isLive,
                     crossMidnight
@@ -175,6 +176,7 @@ function buildDailyBreakdown(attendanceRecords = [], manualRecords = [], breakRe
                         note: man.note || man.type,
                         startTime: man.startTime,
                         endTime: man.endTime,
+                        durationSeconds: man.duration || Math.max(0, Math.floor((we - ws) / 1000)),
                         minutes: Math.round((we - ws) / 60000)
                     });
                 }

@@ -86,106 +86,106 @@ export default function ComplianceReadiness() {
         : [...soc2Controls, ...iso27001Controls];
 
     return (
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-fade-in pb-24">
+        <div className="space-y-5 sm:space-y-6 animate-fade-in pb-16">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-4">
                 <div>
-                    <div className="flex items-center gap-3">
-                        <div className="p-2.5 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-200 dark:shadow-none">
-                            <ShieldCheck size={22} />
+                    <div className="flex items-center gap-2.5">
+                        <div className="p-2 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-md shadow-emerald-200 dark:shadow-none">
+                            <ShieldCheck size={18} />
                         </div>
                         <div>
-                            <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
                                 SOC 2 & ISO 27001 Technical Readiness
                             </h1>
-                            <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-0.5">
+                            <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5">
                                 Automated technical controls assessment, access boundary checks, and live audit trail verification.
                             </p>
                         </div>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2.5">
                     <button
                         onClick={fetchAssessment}
-                        className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 transition-all shadow-sm"
+                        className="inline-flex items-center gap-1.5 h-9 px-3 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 transition-all shadow-sm"
                     >
-                        <RefreshCw size={14} /> Re-evaluate Controls
+                        <RefreshCw size={13} /> Re-evaluate Controls
                     </button>
                     <button
                         onClick={handleDownloadEvidence}
                         disabled={downloading}
-                        className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-600 rounded-xl hover:shadow-lg hover:shadow-emerald-500/20 transition-all"
+                        className="inline-flex items-center gap-1.5 h-9 px-3.5 text-xs font-semibold text-white bg-gradient-to-r from-emerald-600 to-teal-600 rounded-lg hover:shadow-md hover:shadow-emerald-500/20 transition-all"
                     >
-                        <Download size={14} /> {downloading ? 'Generating Pack...' : 'Download Evidence Package'}
+                        <Download size={13} /> {downloading ? 'Generating Pack...' : 'Download Evidence Package'}
                     </button>
                 </div>
             </div>
 
             {/* MANDATORY LEGAL DISCLAIMER BANNER */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-amber-50/80 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 flex items-start gap-3.5">
-                <AlertTriangle className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" size={20} />
-                <div className="space-y-1">
-                    <h4 className="text-xs font-black uppercase tracking-wider text-amber-900 dark:text-amber-300">
+            <div className="p-3 sm:p-3.5 rounded-xl bg-amber-50/80 dark:bg-amber-950/20 border border-amber-200/80 dark:border-amber-900/40 flex items-start gap-3">
+                <AlertTriangle className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" size={17} />
+                <div className="space-y-0.5 min-w-0 flex-1">
+                    <h4 className="text-[11px] font-bold uppercase tracking-wider text-amber-900 dark:text-amber-300">
                         {disclaimer.title || 'Legal & Regulatory Compliance Disclaimer'}
                     </h4>
-                    <p className="text-xs text-amber-800 dark:text-amber-200 leading-relaxed font-medium">
+                    <p className="text-[11px] sm:text-xs text-amber-800/90 dark:text-amber-200/90 leading-relaxed font-medium">
                         {disclaimer.message || 'This system evaluates internal technical readiness against standard security controls. This does not constitute formal certification. Formal SOC 2 Type II attestation and ISO 27001 certification require independent examination by an accredited third-party CPA firm or certification body.'}
                     </p>
                 </div>
             </div>
 
             {/* Scorecard Overview */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4">
-                    <div className="h-16 w-16 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center text-emerald-600 dark:text-emerald-400 font-black text-2xl">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                <div className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center gap-3.5 hover:shadow-md transition-all min-w-0">
+                    <div className="h-11 w-11 sm:h-12 sm:w-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/80 flex items-center justify-center text-emerald-600 dark:text-emerald-400 font-bold text-sm sm:text-base shrink-0">
                         {summary.readinessScore || 100}%
                     </div>
-                    <div>
-                        <span className="text-xs font-black uppercase tracking-wider text-slate-400 block">Overall Readiness</span>
-                        <span className="text-base font-black text-slate-900 dark:text-white block mt-0.5">
+                    <div className="min-w-0 flex-1">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block truncate">Overall Readiness</span>
+                        <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white block mt-0.5 truncate">
                             {summary.passedControls} of {summary.totalControls} Passing
                         </span>
-                        <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">Technical baseline satisfied</span>
+                        <span className="text-[10px] sm:text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold block truncate mt-0.5">Technical baseline satisfied</span>
                     </div>
                 </div>
 
-                <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4">
-                    <div className="h-16 w-16 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-black text-2xl">
+                <div className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center gap-3.5 hover:shadow-md transition-all min-w-0">
+                    <div className="h-11 w-11 sm:h-12 sm:w-12 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200/80 dark:border-indigo-800/80 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold text-sm sm:text-base shrink-0">
                         {summary.soc2Score || 100}%
                     </div>
-                    <div>
-                        <span className="text-xs font-black uppercase tracking-wider text-slate-400 block">SOC 2 Type II</span>
-                        <span className="text-base font-black text-slate-900 dark:text-white block mt-0.5">
+                    <div className="min-w-0 flex-1">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block truncate">SOC 2 Type II</span>
+                        <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white block mt-0.5 truncate">
                             Trust Services Criteria
                         </span>
-                        <span className="text-[11px] text-slate-500 font-medium">CC6, CC7, P1.1 Controls</span>
+                        <span className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 font-medium block truncate mt-0.5">CC6, CC7, P1.1 Controls</span>
                     </div>
                 </div>
 
-                <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4">
-                    <div className="h-16 w-16 rounded-2xl bg-violet-50 dark:bg-violet-950/40 border border-violet-200 dark:border-violet-800 flex items-center justify-center text-violet-600 dark:text-violet-400 font-black text-2xl">
+                <div className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center gap-3.5 hover:shadow-md transition-all min-w-0">
+                    <div className="h-11 w-11 sm:h-12 sm:w-12 rounded-xl bg-violet-50 dark:bg-violet-950/40 border border-violet-200/80 dark:border-violet-800/80 flex items-center justify-center text-violet-600 dark:text-violet-400 font-bold text-sm sm:text-base shrink-0">
                         {summary.iso27001Score || 100}%
                     </div>
-                    <div>
-                        <span className="text-xs font-black uppercase tracking-wider text-slate-400 block">ISO/IEC 27001:2022</span>
-                        <span className="text-base font-black text-slate-900 dark:text-white block mt-0.5">
+                    <div className="min-w-0 flex-1">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block truncate">ISO/IEC 27001:2022</span>
+                        <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white block mt-0.5 truncate">
                             Annex A Controls
                         </span>
-                        <span className="text-[11px] text-slate-500 font-medium">A.5, A.8 Technological</span>
+                        <span className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 font-medium block truncate mt-0.5">A.5, A.8 Technological</span>
                     </div>
                 </div>
 
-                <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-4">
-                    <div className="h-16 w-16 rounded-2xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 flex items-center justify-center text-blue-600 dark:text-blue-400 font-black text-2xl">
+                <div className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center gap-3.5 hover:shadow-md transition-all min-w-0">
+                    <div className="h-11 w-11 sm:h-12 sm:w-12 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200/80 dark:border-blue-800/80 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-sm sm:text-base shrink-0">
                         {summary.auditLogCount || 0}
                     </div>
-                    <div>
-                        <span className="text-xs font-black uppercase tracking-wider text-slate-400 block">Audit Trail Depth</span>
-                        <span className="text-base font-black text-slate-900 dark:text-white block mt-0.5">
+                    <div className="min-w-0 flex-1">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block truncate">Audit Trail Depth</span>
+                        <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white block mt-0.5 truncate">
                             Immutable Events
                         </span>
-                        <span className="text-[11px] text-slate-500 font-medium">{summary.retentionPeriodDays} days retention policy</span>
+                        <span className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 font-medium block truncate mt-0.5">{summary.retentionPeriodDays} days retention policy</span>
                     </div>
                 </div>
             </div>
@@ -201,7 +201,7 @@ export default function ComplianceReadiness() {
                         key={tab.id}
                         onClick={() => setFilterTab(tab.id)}
                         className={cn(
-                            'px-4 py-3 text-xs font-bold transition-all relative',
+                            'px-3.5 py-2.5 text-xs font-bold transition-all relative',
                             filterTab === tab.id
                                 ? 'text-emerald-600 dark:text-emerald-400 border-b-2 border-emerald-600'
                                 : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'
@@ -213,24 +213,24 @@ export default function ComplianceReadiness() {
             </div>
 
             {/* Controls Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {displayedControls.map((c) => (
                     <div 
                         key={c.id} 
-                        className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-4"
+                        className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-3 hover:shadow-md transition-all"
                     >
                         <div>
-                            <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center justify-between mb-2">
                                 <div className="flex items-center gap-2">
-                                    <span className="px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-[10px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                                    <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-[10px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                                         {c.id}
                                     </span>
-                                    <span className="text-[11px] font-bold text-slate-400">
+                                    <span className="text-[11px] font-semibold text-slate-400">
                                         {c.framework}
                                     </span>
                                 </div>
                                 <span className={cn(
-                                    "px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider inline-flex items-center gap-1",
+                                    "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1",
                                     c.status === 'PASS' ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300" :
                                     c.status === 'ACTION_REQUIRED' ? "bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300" :
                                     "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300"
@@ -239,15 +239,15 @@ export default function ComplianceReadiness() {
                                 </span>
                             </div>
 
-                            <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                            <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
                                 {c.title}
                             </h3>
-                            <span className="text-xs text-slate-400 block mt-0.5">
+                            <span className="text-[11px] text-slate-400 block mt-0.5">
                                 Category: {c.category} • Ref: {c.reference}
                             </span>
 
-                            <div className="mt-4 p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-medium">
-                                <strong className="text-slate-900 dark:text-white block mb-0.5">Automated Technical Evidence:</strong>
+                            <div className="mt-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-medium">
+                                <strong className="text-slate-900 dark:text-white block mb-0.5 text-[11px]">Automated Technical Evidence:</strong>
                                 {c.evidence}
                             </div>
                         </div>
@@ -261,17 +261,17 @@ export default function ComplianceReadiness() {
             </div>
 
             {/* Live Audit Trail Proof */}
-            <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-sm">
-                <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+            <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-sm">
+                <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
                     <div>
-                        <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                        <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
                             Immutable Audit Trail Evidence (Sample Verified Events)
                         </h3>
-                        <p className="text-xs text-slate-500 mt-0.5">
+                        <p className="text-[11px] text-slate-500 mt-0.5">
                             Live events extracted from the MySQL database verifying tamper-evident administrative logging.
                         </p>
                     </div>
-                    <span className="px-3 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 text-xs font-black">
+                    <span className="px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 text-[11px] font-bold">
                         Active Database Logging
                     </span>
                 </div>
@@ -280,23 +280,23 @@ export default function ComplianceReadiness() {
                     <table className="w-full text-left text-xs">
                         <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-400 font-bold uppercase tracking-wider">
                             <tr>
-                                <th className="py-3 px-6">Event ID</th>
-                                <th className="py-3 px-6">Action / Event</th>
-                                <th className="py-3 px-6">Result Status</th>
-                                <th className="py-3 px-6">Timestamp (UTC)</th>
+                                <th className="py-2.5 px-5">Event ID</th>
+                                <th className="py-2.5 px-5">Action / Event</th>
+                                <th className="py-2.5 px-5">Result Status</th>
+                                <th className="py-2.5 px-5">Timestamp (UTC)</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                             {recentAudit.map((log) => (
                                 <tr key={log.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 font-mono">
-                                    <td className="py-3 px-6 text-slate-500 text-[11px]">{log.id.slice(0, 13)}...</td>
-                                    <td className="py-3 px-6 font-bold text-slate-900 dark:text-white font-sans">{log.action}</td>
-                                    <td className="py-3 px-6">
-                                        <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300">
+                                    <td className="py-2.5 px-5 text-slate-500 text-[11px]">{log.id.slice(0, 13)}...</td>
+                                    <td className="py-2.5 px-5 font-bold text-slate-900 dark:text-white font-sans">{log.action}</td>
+                                    <td className="py-2.5 px-5">
+                                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300">
                                             {log.status}
                                         </span>
                                     </td>
-                                    <td className="py-3 px-6 text-slate-500 text-[11px]">{new Date(log.createdAt).toLocaleString()}</td>
+                                    <td className="py-2.5 px-5 text-slate-500 text-[11px]">{new Date(log.createdAt).toLocaleString()}</td>
                                 </tr>
                             ))}
                         </tbody>

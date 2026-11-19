@@ -40,10 +40,11 @@ export function Login() {
             const roleKey = role.toLowerCase();
             let quickEmail = 'admin@example.com';
             if (roleKey === 'manager') quickEmail = 'manager@example.com';
-            if (roleKey === 'employee') quickEmail = 'employee@example.com';
+            if (roleKey === 'employee') quickEmail = 'demo1@gmail.com';
             const quickPass = '123456';
-            await login(quickEmail, quickPass);
-            navigate(`/${roleKey}`, { replace: true });
+            const res = await login(quickEmail, quickPass);
+            const targetRole = res?.user?.role?.toLowerCase() || roleKey;
+            navigate(`/${targetRole}`, { replace: true });
         } catch (err) {
             setError(getErrorMessage(err));
         } finally {

@@ -768,10 +768,14 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
           <button onClick={handleDownloadClick} className="p-2 sm:p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
             <Download size={16} />
           </button>
-          <div className="hidden sm:block h-4 w-[1px] bg-slate-100 dark:bg-slate-800 mx-1" />
-          <button onClick={handleDeleteClick} className="p-2 sm:p-2 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg text-slate-400 hover:text-rose-500 transition-colors">
-            <Trash2 size={16} />
-          </button>
+          {onDelete && (
+            <>
+              <div className="hidden sm:block h-4 w-[1px] bg-slate-100 dark:bg-slate-800 mx-1" />
+              <button onClick={handleDeleteClick} className="p-2 sm:p-2 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg text-slate-400 hover:text-rose-500 transition-colors">
+                <Trash2 size={16} />
+              </button>
+            </>
+          )}
         </div>
       </div>
     );
@@ -825,13 +829,15 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
           )}>
             {productivity}
           </span>
-          <button
-            onClick={handleDeleteClick}
-            className="p-1 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded text-slate-400 hover:text-rose-500 transition-colors"
-            title="Delete Screenshot"
-          >
-            <Trash2 size={13} />
-          </button>
+          {onDelete && (
+            <button
+              onClick={handleDeleteClick}
+              className="p-1 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded text-slate-400 hover:text-rose-500 transition-colors"
+              title="Delete Screenshot"
+            >
+              <Trash2 size={13} />
+            </button>
+          )}
         </div>
       </div>
 
@@ -878,13 +884,15 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                 <Download size={16} />
               </button>
             </div>
-            <button
-              onClick={handleDeleteClick}
-              className="h-9 w-9 sm:h-8 sm:w-8 flex items-center justify-center rounded-lg bg-red-500/80 hover:bg-red-500 text-white backdrop-blur-sm transition-colors"
-              title="Delete"
-            >
-              <Trash2 size={16} />
-            </button>
+            {onDelete && (
+              <button
+                onClick={handleDeleteClick}
+                className="h-9 w-9 sm:h-8 sm:w-8 flex items-center justify-center rounded-lg bg-red-500/80 hover:bg-red-500 text-white backdrop-blur-sm transition-colors"
+                title="Delete"
+              >
+                <Trash2 size={16} />
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -2295,40 +2303,44 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                     {/* Selection & Bulk Actions Bar */}
                     {role !== 'EMPLOYEE' && (
                       <div className="flex flex-wrap items-center gap-4 bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-[1.5rem] border border-slate-200 dark:border-slate-800 shadow-sm animate-in slide-in-from-top duration-300">
-                        <button
-                          onClick={toggleSelectionMode}
-                          className={cn(
-                            "px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 border",
-                            isSelectionMode
-                              ? "bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-500/20 shadow-inner"
-                              : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 shadow-sm"
-                          )}
-                        >
-                          <CheckSquare size={18} />
-                          <span>{isSelectionMode ? 'Cancel Selection' : 'Select Mode'}</span>
-                        </button>
+                        {role === 'ADMIN' && (
+                          <>
+                            <button
+                              onClick={toggleSelectionMode}
+                              className={cn(
+                                "px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 border",
+                                isSelectionMode
+                                  ? "bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-500/20 shadow-inner"
+                                  : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 shadow-sm"
+                              )}
+                            >
+                              <CheckSquare size={18} />
+                              <span>{isSelectionMode ? 'Cancel Selection' : 'Select Mode'}</span>
+                            </button>
 
-                        {isSelectionMode && (
-                          <div className="flex items-center gap-3 animate-in fade-in slide-in-from-left duration-300 w-full sm:w-auto">
-                            <button
-                              onClick={handleSelectAllScreenshots}
-                              className="px-5 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-sm font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-all border border-transparent shadow-sm"
-                            >
-                              Select All
-                            </button>
-                            <div className="h-6 w-[1px] bg-slate-200 dark:bg-slate-800 mx-1" />
-                            <span className="text-sm font-bold text-slate-500 dark:text-slate-400">
-                              {selectedIds.length} Selected
-                            </span>
-                            <button
-                              onClick={handleBulkDelete}
-                              disabled={selectedIds.length === 0 || isBulkDeleting}
-                              className="ml-auto px-6 py-2.5 bg-rose-500 hover:bg-rose-600 disabled:opacity-50 text-white rounded-xl text-sm font-bold shadow-lg shadow-rose-500/20 transition-all flex items-center gap-2 active:scale-95"
-                            >
-                              {isBulkDeleting ? <RefreshCw size={18} className="animate-spin" /> : <Trash2 size={18} />}
-                              <span>Delete Selected</span>
-                            </button>
-                          </div>
+                            {isSelectionMode && (
+                              <div className="flex items-center gap-3 animate-in fade-in slide-in-from-left duration-300 w-full sm:w-auto">
+                                <button
+                                  onClick={handleSelectAllScreenshots}
+                                  className="px-5 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-sm font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-all border border-transparent shadow-sm"
+                                >
+                                  Select All
+                                </button>
+                                <div className="h-6 w-[1px] bg-slate-200 dark:bg-slate-800 mx-1" />
+                                <span className="text-sm font-bold text-slate-500 dark:text-slate-400">
+                                  {selectedIds.length} Selected
+                                </span>
+                                <button
+                                  onClick={handleBulkDelete}
+                                  disabled={selectedIds.length === 0 || isBulkDeleting}
+                                  className="ml-auto px-6 py-2.5 bg-rose-500 hover:bg-rose-600 disabled:opacity-50 text-white rounded-xl text-sm font-bold shadow-lg shadow-rose-500/20 transition-all flex items-center gap-2 active:scale-95"
+                                >
+                                  {isBulkDeleting ? <RefreshCw size={18} className="animate-spin" /> : <Trash2 size={18} />}
+                                  <span>Delete Selected</span>
+                                </button>
+                              </div>
+                            )}
+                          </>
                         )}
 
                         {role !== 'EMPLOYEE' && (
@@ -2422,7 +2434,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                                             {...s}
                                             viewMode={viewMode}
                                             globalBlur={globalBlur}
-                                            onDelete={handleDelete}
+                                            onDelete={role === 'ADMIN' ? handleDelete : null}
                                             onDownload={handleDownload}
                                             onBlurToggle={handleBlurToggleBackend}
                                             onView={(data) => handleViewScreenshot(data, index)}
@@ -2698,7 +2710,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                                               <Download size={15} />
                                             </a>
 
-                                            {(role === 'ADMIN' || role === 'MANAGER') && (
+                                            {role === 'ADMIN' && (
                                               <button
                                                 onClick={() => {
                                                   if (window.confirm("Are you sure you want to delete this video recording?")) {
@@ -2742,7 +2754,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                       playlist={activeVideoPlaylist}
                       initialIndex={activeVideoIndex}
                       onDeleteVideo={handleDeleteVideo}
-                      canDelete={role === 'ADMIN' || role === 'MANAGER'}
+                      canDelete={role === 'ADMIN'}
                     />
 
                     {/* Generic Selection Modal (Handles all filter types) */}

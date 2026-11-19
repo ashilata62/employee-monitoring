@@ -148,8 +148,30 @@ async function autoLabelOrganization(organizationId) {
         _max: { category: true },
     });
 
+    const candidateApps = logs.map((l) => ({
+        appName: l.appName,
+        domain: l.domain,
+        category: l._max?.category || 'Uncategorized',
+    }));
+
+    // If no app logs exist yet, seed from standard catalog so auto-labeling works immediately
+    if (candidateApps.length === 0) {
+        candidateApps.push(
+            { appName: 'Visual Studio Code', domain: 'visualstudio.com', category: 'Development' },
+            { appName: 'GitHub', domain: 'github.com', category: 'Development' },
+            { appName: 'Slack', domain: 'slack.com', category: 'Communication' },
+            { appName: 'Zoom', domain: 'zoom.us', category: 'Meeting' },
+            { appName: 'Google Chrome', domain: 'google.com', category: 'Productivity' },
+            { appName: 'YouTube', domain: 'youtube.com', category: 'Entertainment' },
+            { appName: 'Figma', domain: 'figma.com', category: 'Design' },
+            { appName: 'Notion', domain: 'notion.so', category: 'Productivity' },
+            { appName: 'Spotify', domain: 'spotify.com', category: 'Entertainment' },
+            { appName: 'Terminal', domain: 'terminal.app', category: 'Development' }
+        );
+    }
+
     let updated = 0;
-    for (const log of logs) {
+    for (const log of candidateApps) {
         const nameLower = (log.appName || '').toLowerCase();
         const domainLower = (log.domain || '').toLowerCase();
         let matchedTag = null;
@@ -164,7 +186,7 @@ async function autoLabelOrganization(organizationId) {
 
         const productivity = productivityFromTagName(matchedTag.name);
         const domain = ruleDomainKey(log.domain, log.appName);
-        const category = log._max?.category || 'Uncategorized';
+        const category = log.category || 'Uncategorized';
 
         const existingRule = await prisma.productivityRule.findFirst({
             where: { organizationId, domain, teamId: null },

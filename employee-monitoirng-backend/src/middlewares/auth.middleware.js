@@ -46,23 +46,39 @@ const authMiddleware = async (req, res, next) => {
 
         // Ensure fresh employee & organization mapping so cached/stale tokens don't desync
         try {
-            const emp = await prisma.employee.findFirst({
-                where: {
-                    OR: [
-                        ...(decoded.employeeId ? [{ id: decoded.employeeId }] : []),
-                        ...(decoded.email ? [{ email: decoded.email }] : [])
-                    ]
-                },
-                select: { id: true, organizationId: true, role: true }
-            });
+            // Build lookup conditions — always search by userId too so users with
+            // null employeeId in the token are still resolved correctly.
+            const orConditions = [];
+            if (decoded.employeeId) orConditions.push({ id: decoded.employeeId });
+            if (decoded.email)      orConditions.push({ email: decoded.email });
+
+            // Fallback: look up the linked employee via the User record
+            if (orConditions.length === 0 && decoded.userId) {
+                const userRecord = await prisma.user.findUnique({
+                    where: { id: decoded.userId },
+                    select: { employeeId: true, email: true }
+                });
+                if (userRecord?.employeeId) orConditions.push({ id: userRecord.employeeId });
+                else if (userRecord?.email)  orConditions.push({ email: userRecord.email });
+            }
+
+            const emp = orConditions.length > 0
+                ? await prisma.employee.findFirst({
+                    where: { OR: orConditions },
+                    select: { id: true, organizationId: true, role: true }
+                })
+                : null;
+
             if (emp) {
-                req.user.employeeId = emp.id;
+                req.user.employeeId   = emp.id;
                 req.user.organizationId = emp.organizationId || 'default-org-id';
+                // Always use the DB role so stale tokens can't bypass role-based filters
+                req.user.role = emp.role;
             } else if (!req.user.organizationId) {
                 req.user.organizationId = 'default-org-id';
             }
         } catch (e) {
-            // Fallback to decoded token
+            // Fallback to decoded token values
         }
 
         next();

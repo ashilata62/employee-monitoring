@@ -120,17 +120,30 @@ export function ActivitiesTimeline() {
   // Sync elapsed seconds from real persistent attendance session
   useEffect(() => {
     let timer;
-    if (isClockedIn && activeAttendance?.clockIn && !isOnBreak) {
-      const startTime = new Date(activeAttendance.clockIn).getTime();
-      setTrackerSeconds(Math.max(0, Math.floor((Date.now() - startTime) / 1000)));
-      timer = setInterval(() => {
-        setTrackerSeconds(Math.max(0, Math.floor((Date.now() - startTime) / 1000)));
-      }, 1000);
+    if (isClockedIn && activeAttendance?.clockIn) {
+      const clockInMs = new Date(activeAttendance.clockIn).getTime();
+      const breakSec = activeAttendance.totalBreakSeconds || 0;
+
+      const calculateWorkSeconds = () => {
+        if (isOnBreak && activeAttendance.openBreak) {
+          const breakStartMs = new Date(activeAttendance.openBreak).getTime();
+          return Math.max(0, Math.floor((breakStartMs - clockInMs) / 1000) - breakSec);
+        }
+        return Math.max(0, Math.floor((Date.now() - clockInMs) / 1000) - breakSec);
+      };
+
+      setTrackerSeconds(calculateWorkSeconds());
+
+      if (!isOnBreak) {
+        timer = setInterval(() => {
+          setTrackerSeconds(calculateWorkSeconds());
+        }, 1000);
+      }
     } else if (!isClockedIn) {
       setTrackerSeconds(0);
     }
     return () => clearInterval(timer);
-  }, [isClockedIn, activeAttendance?.clockIn, isOnBreak]);
+  }, [isClockedIn, activeAttendance?.clockIn, activeAttendance?.openBreak, activeAttendance?.totalBreakSeconds, isOnBreak]);
 
   const handleToggleClock = async () => {
     try {
@@ -140,8 +153,11 @@ export function ActivitiesTimeline() {
         await clockOut();
       } else {
         await clockIn();
-        window.dispatchEvent(new Event('start-web-tracker'));
+        if (!useAuthStore.getState().isTrackerActive) {
+          window.dispatchEvent(new Event('start-web-tracker'));
+        }
       }
+      fetchTimeline();
     } catch (err) {
       console.error('Attendance action failed:', err);
     } finally {
@@ -154,6 +170,7 @@ export function ActivitiesTimeline() {
     try {
       setIsActionLoading(true);
       await toggleBreak();
+      fetchTimeline();
     } catch (err) {
       console.error('Break action failed:', err);
     } finally {

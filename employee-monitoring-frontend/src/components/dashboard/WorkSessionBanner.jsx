@@ -13,13 +13,30 @@ export function WorkSessionBanner() {
     // ── Elapsed timer ──────────────────────────────────────────────────────────
     useEffect(() => {
         let timer;
-        if (isClockedIn && activeAttendance?.clockIn && !isOnBreak) {
-            const start = new Date(activeAttendance.clockIn).getTime();
-            setElapsedSeconds(Math.floor((Date.now() - start) / 1000));
-            timer = setInterval(() => setElapsedSeconds(prev => prev + 1), 1000);
+        if (isClockedIn && activeAttendance?.clockIn) {
+            const clockInMs = new Date(activeAttendance.clockIn).getTime();
+            const breakSec = activeAttendance.totalBreakSeconds || 0;
+
+            const calculateWorkSeconds = () => {
+                if (isOnBreak && activeAttendance.openBreak) {
+                    const breakStartMs = new Date(activeAttendance.openBreak).getTime();
+                    return Math.max(0, Math.floor((breakStartMs - clockInMs) / 1000) - breakSec);
+                }
+                return Math.max(0, Math.floor((Date.now() - clockInMs) / 1000) - breakSec);
+            };
+
+            setElapsedSeconds(calculateWorkSeconds());
+
+            if (!isOnBreak) {
+                timer = setInterval(() => {
+                    setElapsedSeconds(calculateWorkSeconds());
+                }, 1000);
+            }
+        } else if (!isClockedIn) {
+            setElapsedSeconds(0);
         }
         return () => clearInterval(timer);
-    }, [isClockedIn, activeAttendance, isOnBreak]);
+    }, [isClockedIn, activeAttendance?.clockIn, activeAttendance?.openBreak, activeAttendance?.totalBreakSeconds, isOnBreak]);
 
     const formatTime = (totalSeconds) => {
         const h = Math.floor(totalSeconds / 3600);
@@ -33,9 +50,14 @@ export function WorkSessionBanner() {
         setIsLoading(true);
         try {
             await clockIn();
-            // Automatically start screen tracking & recording upon clock in
-            window.dispatchEvent(new Event('start-web-tracker'));
-            toast.success('Clocked in successfully. Screen tracking started.');
+            // Automatically start screen tracking upon clock in only if not already active
+            const isAlreadyTracking = isTrackerActive || (user?.agentStatus === 'active');
+            if (!isAlreadyTracking) {
+                window.dispatchEvent(new Event('start-web-tracker'));
+                toast.success('Clocked in successfully. Screen tracking started.');
+            } else {
+                toast.success('Clocked in successfully. Active tracking linked.');
+            }
         } catch (err) {
             console.error('Clock in failed', err);
         } finally {
@@ -55,6 +77,10 @@ export function WorkSessionBanner() {
 
     // ── Tracker Start / Stop ───────────────────────────────────────────────────
     const handleStartTracker = () => {
+        if (isTrackerActive || isAgentActive) {
+            toast.info('Screen tracking is already running.');
+            return;
+        }
         window.dispatchEvent(new Event('start-web-tracker'));
         toast.success('Screen tracker starting… Allow screen sharing when prompted.');
     };
@@ -93,9 +119,13 @@ export function WorkSessionBanner() {
                         </span>
                     )}
                     {isClockedIn && (
-                        <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FDFBF7] text-[#B9955B] border border-[#D6CDBC] text-xs font-bold uppercase tracking-wider">
+                        <span className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+                            isOnBreak
+                                ? 'bg-amber-100 text-amber-800 border border-amber-300 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800'
+                                : 'bg-[#FDFBF7] text-[#B9955B] border border-[#D6CDBC]'
+                        }`}>
                             <Clock size={12} />
-                            Clocked In
+                            {isOnBreak ? 'On Break' : 'Clocked In'}
                         </span>
                     )}
                 </div>
@@ -122,6 +152,31 @@ export function WorkSessionBanner() {
                     >
                         <LogOut size={15} />
                         Clock Out
+                    </button>
+                )}
+
+                {/* Take Break / Resume Work */}
+                {isClockedIn && (
+                    <button
+                        onClick={async () => {
+                            try {
+                                setIsLoading(true);
+                                await toggleBreak();
+                            } catch (e) {
+                                console.error('Failed to toggle break', e);
+                            } finally {
+                                setIsLoading(false);
+                            }
+                        }}
+                        disabled={isLoading}
+                        className={`flex items-center gap-2 px-5 py-2.5 ${
+                            isOnBreak
+                                ? 'bg-[#5E7D64] hover:bg-[#4A6B53]'
+                                : 'bg-[#B9955B] hover:bg-[#A17D45]'
+                        } disabled:opacity-50 text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-warm-xs transition-all hover:scale-[1.02] active:scale-95 cursor-pointer`}
+                    >
+                        <Clock size={15} />
+                        {isOnBreak ? 'Resume Work' : 'Take a Break'}
                     </button>
                 )}
 

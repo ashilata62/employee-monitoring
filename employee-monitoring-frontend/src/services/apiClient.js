@@ -42,8 +42,13 @@ api.interceptors.response.use(
     (error) => {
         const message = getErrorMessage(error);
         
-        // Don't show toast for 401 Unauthorized or when explicitly skipped by caller
-        if (error.response?.status !== 401 && !error.config?.skipToast) {
+        // Handle 401 Unauthorized (expired or invalid token)
+        if (error.response?.status === 401 && !error.config?.url?.includes('/auth/login')) {
+            localStorage.removeItem('token');
+            if (window.location.pathname !== '/login') {
+                window.location.href = '/login';
+            }
+        } else if (error.response?.status !== 401 && !error.config?.skipToast) {
             toast.error(message);
         }
         

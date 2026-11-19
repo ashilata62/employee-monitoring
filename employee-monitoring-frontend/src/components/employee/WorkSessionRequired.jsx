@@ -11,6 +11,9 @@ export const WorkSessionRequired = () => {
         setLoading(true);
         try {
             await clockIn();
+            if (!useAuthStore.getState().isTrackerActive) {
+                window.dispatchEvent(new Event('start-web-tracker'));
+            }
         } catch (error) {
             console.error('Clock-in failed:', error);
         } finally {
