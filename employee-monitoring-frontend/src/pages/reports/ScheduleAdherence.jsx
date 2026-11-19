@@ -166,7 +166,16 @@ export function ScheduleAdherence() {
                         <h3 className="text-xl font-black text-slate-900 dark:text-white">Employee Adherence</h3>
                     </div>
                     <div className="divide-y divide-slate-100 dark:divide-slate-800">
-                        {data.map((item) => (
+                        {data.length === 0 ? (
+                            <div className="p-16 flex flex-col items-center justify-center text-center">
+                                <div className="h-16 w-16 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4 text-slate-300">
+                                    <User size={32} />
+                                </div>
+                                <h4 className="text-base font-bold text-slate-800 dark:text-slate-200">No Attendance Records</h4>
+                                <p className="text-xs text-slate-400 max-w-sm mt-1">Shift adherence scores will automatically populate from real-time employee attendance punch-ins.</p>
+                            </div>
+                        ) : (
+                            data.map((item) => (
                             <div key={item.id || item.employee} className="flex items-center justify-between p-8 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                                 <div className="flex items-center gap-6">
                                     <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${item.isOnline ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30' : 'bg-slate-50 text-slate-400 dark:bg-slate-800 dark:text-slate-500'}`}>
@@ -183,7 +192,7 @@ export function ScheduleAdherence() {
                                             )}
                                         </div>
                                         <div className="flex items-center gap-2 mt-1 flex-wrap">
-                                            <div className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${item.adherence >= 90 ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : item.adherence >= 80 ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-rose-50 text-rose-600 border-rose-100'}`}>
+                                            <div className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${item.status === 'No Attendance' ? 'bg-slate-50 text-slate-500 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700' : item.adherence >= 90 ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : item.adherence >= 80 ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-rose-50 text-rose-600 border-rose-100'}`}>
                                                 {item.status}
                                             </div>
                                             <span className="text-xs font-bold text-slate-400">Shift Adherence</span>
@@ -206,7 +215,8 @@ export function ScheduleAdherence() {
                                     </div>
                                 </div>
                             </div>
-                        ))}
+                        ))
+                        )}
                     </div>
                 </div>
             </div>
