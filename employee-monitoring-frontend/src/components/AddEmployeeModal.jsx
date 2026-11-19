@@ -101,7 +101,8 @@ export function AddEmployeeModal({ isOpen, onClose, initialTab = 'single' }) {
         setSingleForm(prev => ({ ...prev, password: retVal }));
     };
 
-    const downloadAgentUrl = `${API_BASE_URL}/agent/download`;
+    const isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+    const downloadAgentUrl = isLocal ? 'http://localhost:5000/api/agent/download' : `${API_BASE_URL}/agent/download`;
 
     const handleCopy = () => {
         navigator.clipboard.writeText(downloadAgentUrl);
@@ -112,8 +113,9 @@ export function AddEmployeeModal({ isOpen, onClose, initialTab = 'single' }) {
 
     const handleDownloadWindows = () => {
         const link = document.createElement('a');
-        link.href = downloadAgentUrl;
+        link.href = isLocal ? '/agent/EMS-Tracker-latest.exe' : downloadAgentUrl;
         link.setAttribute('download', 'EMS-Tracker-latest.exe');
+        link.target = '_blank';
         document.body.appendChild(link);
         link.click();
         link.remove();
