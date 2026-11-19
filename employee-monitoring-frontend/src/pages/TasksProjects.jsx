@@ -129,22 +129,29 @@ const CreateTaskModal = ({ isOpen, onClose, onSave, defaultStatus = 'To Do', emp
     };
 
     return createPortal(
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-md animate-in fade-in duration-200 p-3 sm:p-4">
-            <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-5 sm:p-6 w-full max-w-sm max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-100 dark:border-slate-800 animate-in zoom-in-95 duration-200">
-                <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-black text-slate-900 dark:text-white">{role === 'ADMIN' || role === 'MANAGER' ? 'New Task' : 'Request Task'}</h3>
-                    <button onClick={onClose} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
-                        <X size={18} className="text-slate-500" />
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 backdrop-blur-md animate-in fade-in duration-200 p-3 sm:p-4">
+            <div className="bg-[#FBF9F5] dark:bg-[#1C2419] rounded-[2rem] p-6 sm:p-7 w-full max-w-md max-h-[90vh] overflow-y-auto custom-scrollbar shadow-2xl border border-[#D6CDBC] dark:border-[#384232] animate-in zoom-in-95 duration-200 text-left">
+                <div className="flex justify-between items-center mb-5 pb-3.5 border-b border-[#D6CDBC]/60 dark:border-[#384232]">
+                    <div>
+                        <h3 className="font-serif text-xl sm:text-2xl font-bold text-[#29291F] dark:text-[#F5F1E9] tracking-tight">
+                            {role === 'ADMIN' || role === 'MANAGER' ? 'New Task' : 'Request Task'}
+                        </h3>
+                        <p className="text-xs text-[#777367] dark:text-[#A8A295] mt-0.5 font-medium">
+                            Assign work item to employee with priority & timeline
+                        </p>
+                    </div>
+                    <button onClick={onClose} className="p-2 hover:bg-[#EEE8DD] dark:hover:bg-[#252B20] text-[#777367] hover:text-[#29291F] dark:hover:text-[#F5F1E9] rounded-xl transition-colors cursor-pointer">
+                        <X size={18} />
                     </button>
                 </div>
-                <form onSubmit={handleSubmit} className="space-y-3">
+                <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Title</label>
-                        <input autoFocus type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-sm" placeholder="Task name..." required />
+                        <label className="block text-[10px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-[0.14em] mb-1.5">Title</label>
+                        <input autoFocus type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full h-11 px-3.5 rounded-xl bg-[#EEE8DD]/70 dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] placeholder-[#777367] outline-none focus:border-[#B9955B] focus:ring-1 focus:ring-[#B9955B] transition-all" placeholder="Task name..." required />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                         <div className="relative">
-                            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Assignee</label>
+                            <label className="block text-[10px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-[0.14em] mb-1.5">Assignee</label>
                             <input
                                 type="text"
                                 value={assignee}
@@ -154,13 +161,13 @@ const CreateTaskModal = ({ isOpen, onClose, onSave, defaultStatus = 'To Do', emp
                                 }}
                                 onFocus={() => setShowSuggestions(true)}
                                 onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                                className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-sm"
+                                className="w-full h-11 px-3.5 rounded-xl bg-[#EEE8DD]/70 dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] placeholder-[#777367] outline-none focus:border-[#B9955B] focus:ring-1 focus:ring-[#B9955B] transition-all"
                                 placeholder="Type or select assignee..."
                             />
                             {showSuggestions && (
                                 <div 
                                     onMouseDown={(e) => e.preventDefault()}
-                                    className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl shadow-xl max-h-40 overflow-y-auto z-50"
+                                    className="absolute top-full left-0 right-0 mt-1.5 bg-[#FBF9F5] dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] rounded-xl shadow-xl max-h-48 overflow-y-auto z-50 p-1 divide-y divide-[#D6CDBC]/30 dark:divide-[#384232]/50 custom-scrollbar"
                                 >
                                     {employees.filter(e => e.status?.toLowerCase() !== 'deactivated' && (e.name || e.fullName || '').toLowerCase().includes((assignee || '').toLowerCase())).map(e => (
                                         <div
@@ -178,23 +185,27 @@ const CreateTaskModal = ({ isOpen, onClose, onSave, defaultStatus = 'To Do', emp
                                                 setAssigneeId(e.id);
                                                 setShowSuggestions(false);
                                             }}
-                                            className="p-2.5 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 cursor-pointer flex items-center gap-2 transition-colors"
+                                            className="p-2.5 hover:bg-[#EEE8DD] dark:hover:bg-[#30382B] cursor-pointer flex items-center gap-2.5 rounded-lg transition-colors"
                                         >
-                                            <div className="h-6 w-6 rounded-full bg-slate-200 overflow-hidden flex-shrink-0">
-                                                <img src={e.avatar || `https://ui-avatars.com/api/?background=6366f1&color=fff&name=${encodeURIComponent(e.name || e.fullName || 'User')}`} alt="" className="h-full w-full object-cover" />
+                                            <div className="h-6 w-6 rounded-full bg-[#D6CDBC] dark:bg-[#384232] overflow-hidden flex-shrink-0 flex items-center justify-center font-bold text-[10px] text-[#30382B] dark:text-[#F5F1E9]">
+                                                {e.avatar ? (
+                                                    <img src={e.avatar} alt="" className="h-full w-full object-cover" />
+                                                ) : (
+                                                    (e.name || e.fullName || 'U').charAt(0).toUpperCase()
+                                                )}
                                             </div>
-                                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{e.name || e.fullName}</span>
+                                            <span className="text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9]">{e.name || e.fullName}</span>
                                         </div>
                                     ))}
                                     {employees.filter(e => (e.name || e.fullName || '').toLowerCase().includes((assignee || '').toLowerCase())).length === 0 && (
-                                        <div className="p-2.5 text-xs text-slate-400 font-bold text-center">No matches found</div>
+                                        <div className="p-2.5 text-xs text-[#777367] font-medium text-center">No matches found</div>
                                     )}
                                 </div>
                             )}
                         </div>
                         <div>
-                            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Priority</label>
-                            <select value={priority} onChange={e => setPriority(e.target.value)} className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-sm">
+                            <label className="block text-[10px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-[0.14em] mb-1.5">Priority</label>
+                            <select value={priority} onChange={e => setPriority(e.target.value)} className="w-full h-11 px-3 rounded-xl bg-[#EEE8DD]/70 dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] outline-none focus:border-[#B9955B] focus:ring-1 focus:ring-[#B9955B] transition-all cursor-pointer">
                                 <option>Low</option>
                                 <option>Medium</option>
                                 <option>High</option>
@@ -204,8 +215,8 @@ const CreateTaskModal = ({ isOpen, onClose, onSave, defaultStatus = 'To Do', emp
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                         <div>
-                            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Status</label>
-                            <select value={status} onChange={e => setStatus(e.target.value)} className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-sm text-slate-700 dark:text-slate-300">
+                            <label className="block text-[10px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-[0.14em] mb-1.5">Status</label>
+                            <select value={status} onChange={e => setStatus(e.target.value)} className="w-full h-11 px-3 rounded-xl bg-[#EEE8DD]/70 dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] outline-none focus:border-[#B9955B] focus:ring-1 focus:ring-[#B9955B] transition-all cursor-pointer">
                                 <option value="BACKLOG">Backlog</option>
                                 <option value="IN_OPERATIONS">In Operations</option>
                                 <option value="QUALITY_ASSURANCE">Quality Assurance</option>
@@ -213,28 +224,28 @@ const CreateTaskModal = ({ isOpen, onClose, onSave, defaultStatus = 'To Do', emp
                             </select>
                         </div>
                         <div>
-                            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Due Date</label>
-                            <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-sm" required />
+                            <label className="block text-[10px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-[0.14em] mb-1.5">Due Date</label>
+                            <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} className="w-full h-11 px-3.5 rounded-xl bg-[#EEE8DD]/70 dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] outline-none focus:border-[#B9955B] focus:ring-1 focus:ring-[#B9955B] transition-all cursor-pointer" required />
                         </div>
                     </div>
                     <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Estimated Hours (Optional)</label>
+                        <label className="block text-[10px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-[0.14em] mb-1.5">Estimated Hours (Optional)</label>
                         <input 
                             type="number" 
                             step="0.5" 
                             min="0.1" 
                             value={estimatedHours} 
                             onChange={e => setEstimatedHours(e.target.value)} 
-                            className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-sm" 
+                            className="w-full h-11 px-3.5 rounded-xl bg-[#EEE8DD]/70 dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] placeholder-[#777367] outline-none focus:border-[#B9955B] focus:ring-1 focus:ring-[#B9955B] transition-all" 
                             placeholder="e.g. 8" 
                         />
                     </div>
                     <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Project</label>
+                        <label className="block text-[10px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-[0.14em] mb-1.5">Project</label>
                         <select
                             value={selectedProjectId}
                             onChange={e => setSelectedProjectId(e.target.value)}
-                            className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-sm"
+                            className="w-full h-11 px-3 rounded-xl bg-[#EEE8DD]/70 dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] outline-none focus:border-[#B9955B] focus:ring-1 focus:ring-[#B9955B] transition-all cursor-pointer"
                             required
                         >
                             <option value="">Select a project...</option>
@@ -243,9 +254,13 @@ const CreateTaskModal = ({ isOpen, onClose, onSave, defaultStatus = 'To Do', emp
                             ))}
                         </select>
                     </div>
-                    <div className="pt-2 flex gap-2">
-                        <button type="button" onClick={onClose} className="flex-1 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">Cancel</button>
-                        <button type="submit" className="flex-1 py-2.5 rounded-xl bg-indigo-600 text-white font-black text-[10px] uppercase tracking-widest shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-colors">Create Task</button>
+                    <div className="pt-3 flex gap-3">
+                        <button type="button" onClick={onClose} className="flex-1 py-3 px-4 rounded-xl font-bold text-xs uppercase tracking-wider text-[#777367] dark:text-[#A8A295] hover:text-[#29291F] dark:hover:text-[#F5F1E9] hover:bg-[#EEE8DD] dark:hover:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] transition-all cursor-pointer">
+                            Cancel
+                        </button>
+                        <button type="submit" className="flex-1 py-3 px-4 rounded-xl bg-[#30382B] hover:bg-[#3C4536] text-[#FDFBF7] dark:bg-[#C9A96E] dark:hover:bg-[#d8b87d] dark:text-[#161C14] font-bold text-xs uppercase tracking-wider shadow-warm-xs transition-all hover:scale-[1.01] active:scale-95 cursor-pointer">
+                            Create Task
+                        </button>
                     </div>
                 </form>
             </div>
@@ -308,60 +323,67 @@ const CreateGoalModal = ({ isOpen, onClose, onSave, employees = [], initialData 
     };
 
     return createPortal(
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-md animate-in fade-in duration-200 p-3 sm:p-4">
-            <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-5 sm:p-6 w-full max-w-sm max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-100 dark:border-slate-800 animate-in zoom-in-95 duration-200">
-                <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-black text-slate-900 dark:text-white">Define Objective</h3>
-                    <button onClick={onClose} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
-                        <X size={18} className="text-slate-500" />
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 backdrop-blur-md animate-in fade-in duration-200 p-3 sm:p-4">
+            <div className="bg-[#FBF9F5] dark:bg-[#1C2419] rounded-[2rem] p-6 sm:p-7 w-full max-w-md max-h-[90vh] overflow-y-auto custom-scrollbar shadow-2xl border border-[#D6CDBC] dark:border-[#384232] animate-in zoom-in-95 duration-200 text-left">
+                <div className="flex justify-between items-center mb-5 pb-3.5 border-b border-[#D6CDBC]/60 dark:border-[#384232]">
+                    <div>
+                        <h3 className="font-serif text-xl sm:text-2xl font-bold text-[#29291F] dark:text-[#F5F1E9] tracking-tight">Define Objective</h3>
+                        <p className="text-xs text-[#777367] dark:text-[#A8A295] mt-0.5 font-medium">Set high-level project milestones & targets</p>
+                    </div>
+                    <button onClick={onClose} className="p-2 hover:bg-[#EEE8DD] dark:hover:bg-[#252B20] text-[#777367] hover:text-[#29291F] dark:hover:text-[#F5F1E9] rounded-xl transition-colors cursor-pointer">
+                        <X size={18} />
                     </button>
                 </div>
-                <form onSubmit={handleSubmit} className="space-y-3">
+                <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Goal Title</label>
-                        <input autoFocus type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-sm" placeholder="e.g. Q4 Revenue Target" required />
+                        <label className="block text-[10px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-[0.14em] mb-1.5">Goal Title</label>
+                        <input autoFocus type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full h-11 px-3.5 rounded-xl bg-[#EEE8DD]/70 dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] placeholder-[#777367] outline-none focus:border-[#B9955B] focus:ring-1 focus:ring-[#B9955B] transition-all" placeholder="e.g. Q4 Revenue Target" required />
                     </div>
                     <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Category / Subtitle</label>
-                        <input type="text" value={sub} onChange={e => setSub(e.target.value)} className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-sm" placeholder="e.g. Financial Growth" required />
+                        <label className="block text-[10px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-[0.14em] mb-1.5">Category / Subtitle</label>
+                        <input type="text" value={sub} onChange={e => setSub(e.target.value)} className="w-full h-11 px-3.5 rounded-xl bg-[#EEE8DD]/70 dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] placeholder-[#777367] outline-none focus:border-[#B9955B] focus:ring-1 focus:ring-[#B9955B] transition-all" placeholder="e.g. Financial Growth" required />
                     </div>
                     <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Target Date</label>
-                        <input type="text" value={date} onChange={e => setDate(e.target.value)} className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-sm" placeholder="e.g. End of Q4" required />
+                        <label className="block text-[10px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-[0.14em] mb-1.5">Target Date</label>
+                        <input type="text" value={date} onChange={e => setDate(e.target.value)} className="w-full h-11 px-3.5 rounded-xl bg-[#EEE8DD]/70 dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] placeholder-[#777367] outline-none focus:border-[#B9955B] focus:ring-1 focus:ring-[#B9955B] transition-all" placeholder="e.g. End of Q4" required />
                     </div>
                     <div className="relative">
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Stakeholders</label>
+                        <label className="block text-[10px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-[0.14em] mb-1.5">Stakeholders</label>
                         <button 
                             type="button"
                             onClick={() => setShowStakeholderMenu(!showStakeholderMenu)}
-                            className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-xs text-left text-slate-600 dark:text-slate-400 flex justify-between items-center"
+                            className="w-full h-11 px-3.5 rounded-xl bg-[#EEE8DD]/70 dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] text-xs font-semibold text-left text-[#29291F] dark:text-[#F5F1E9] outline-none focus:border-[#B9955B] focus:ring-1 focus:ring-[#B9955B] transition-all flex justify-between items-center cursor-pointer"
                         >
-                            {selectedStakeholders.length === 0 ? 'Select Team Members' : `${selectedStakeholders.length} Stakeholders`}
-                            <ChevronDown size={14} />
+                            <span>{selectedStakeholders.length === 0 ? 'Select Team Members' : `${selectedStakeholders.length} Stakeholders selected`}</span>
+                            <ChevronDown size={14} className="text-[#777367]" />
                         </button>
                         {showStakeholderMenu && (
-                            <div className="absolute bottom-full left-0 right-0 mb-1 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl shadow-2xl max-h-40 overflow-y-auto z-50 p-1">
+                            <div className="absolute bottom-full left-0 right-0 mb-1.5 bg-[#FBF9F5] dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] rounded-xl shadow-2xl max-h-48 overflow-y-auto z-50 p-1.5 divide-y divide-[#D6CDBC]/30 dark:divide-[#384232]/50 custom-scrollbar">
                                 {employees.map(emp => (
                                     <div 
                                         key={emp.id} 
                                         onClick={() => toggleStakeholder(emp.id)}
                                         className={cn(
-                                            "flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-colors",
-                                            selectedStakeholders.includes(emp.id) ? "bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600" : "hover:bg-slate-50 dark:hover:bg-slate-700/50"
+                                            "flex items-center gap-2.5 p-2 rounded-lg cursor-pointer transition-colors",
+                                            selectedStakeholders.includes(emp.id) ? "bg-[#30382B]/10 dark:bg-[#C9A96E]/20 text-[#30382B] dark:text-[#C9A96E]" : "hover:bg-[#EEE8DD] dark:hover:bg-[#30382B]"
                                         )}
                                     >
-                                        <div className="h-4 w-4 rounded border flex items-center justify-center">
-                                            {selectedStakeholders.includes(emp.id) && <div className="h-2 w-2 rounded-sm bg-indigo-600" />}
+                                        <div className="h-4 w-4 rounded border border-[#D6CDBC] dark:border-[#384232] flex items-center justify-center">
+                                            {selectedStakeholders.includes(emp.id) && <div className="h-2 w-2 rounded-sm bg-[#B9955B]" />}
                                         </div>
-                                        <span className="text-[10px] font-bold">{emp.fullName || emp.name}</span>
+                                        <span className="text-xs font-semibold">{emp.fullName || emp.name}</span>
                                     </div>
                                 ))}
                             </div>
                         )}
                     </div>
-                    <div className="pt-2 flex gap-2">
-                        <button type="button" onClick={onClose} className="flex-1 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">Cancel</button>
-                        <button type="submit" className="flex-1 py-2.5 rounded-xl bg-indigo-600 text-white font-black text-[10px] uppercase tracking-widest shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-colors">Set Goal</button>
+                    <div className="pt-3 flex gap-3">
+                        <button type="button" onClick={onClose} className="flex-1 py-3 px-4 rounded-xl font-bold text-xs uppercase tracking-wider text-[#777367] dark:text-[#A8A295] hover:text-[#29291F] dark:hover:text-[#F5F1E9] hover:bg-[#EEE8DD] dark:hover:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] transition-all cursor-pointer">
+                            Cancel
+                        </button>
+                        <button type="submit" className="flex-1 py-3 px-4 rounded-xl bg-[#30382B] hover:bg-[#3C4536] text-[#FDFBF7] dark:bg-[#C9A96E] dark:hover:bg-[#d8b87d] dark:text-[#161C14] font-bold text-xs uppercase tracking-wider shadow-warm-xs transition-all hover:scale-[1.01] active:scale-95 cursor-pointer">
+                            Set Goal
+                        </button>
                     </div>
                 </form>
             </div>
@@ -433,35 +455,38 @@ const EditTaskModal = ({ isOpen, onClose, onSave, task, employees = [], projects
     };
 
     return createPortal(
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-md animate-in fade-in duration-200 p-3 sm:p-4">
-            <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-5 sm:p-6 w-full max-w-sm max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-100 dark:border-slate-800 animate-in zoom-in-95 duration-200">
-                <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-black text-slate-900 dark:text-white">Edit Task</h3>
-                    <button onClick={onClose} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
-                        <X size={18} className="text-slate-500" />
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 backdrop-blur-md animate-in fade-in duration-200 p-3 sm:p-4">
+            <div className="bg-[#FBF9F5] dark:bg-[#1C2419] rounded-[2rem] p-6 sm:p-7 w-full max-w-md max-h-[90vh] overflow-y-auto custom-scrollbar shadow-2xl border border-[#D6CDBC] dark:border-[#384232] animate-in zoom-in-95 duration-200 text-left">
+                <div className="flex justify-between items-center mb-5 pb-3.5 border-b border-[#D6CDBC]/60 dark:border-[#384232]">
+                    <div>
+                        <h3 className="font-serif text-xl sm:text-2xl font-bold text-[#29291F] dark:text-[#F5F1E9] tracking-tight">Edit Task</h3>
+                        <p className="text-xs text-[#777367] dark:text-[#A8A295] mt-0.5 font-medium">Update task properties, assignee or timeline</p>
+                    </div>
+                    <button onClick={onClose} className="p-2 hover:bg-[#EEE8DD] dark:hover:bg-[#252B20] text-[#777367] hover:text-[#29291F] dark:hover:text-[#F5F1E9] rounded-xl transition-colors cursor-pointer">
+                        <X size={18} />
                     </button>
                 </div>
-                <form onSubmit={handleSubmit} className="space-y-3">
+                <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Title</label>
-                        <input autoFocus type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-sm" placeholder="Task name..." required />
+                        <label className="block text-[10px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-[0.14em] mb-1.5">Title</label>
+                        <input autoFocus type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full h-11 px-3.5 rounded-xl bg-[#EEE8DD]/70 dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] placeholder-[#777367] outline-none focus:border-[#B9955B] focus:ring-1 focus:ring-[#B9955B] transition-all" placeholder="Task name..." required />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                         <div className="relative">
-                            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Assignee</label>
+                            <label className="block text-[10px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-[0.14em] mb-1.5">Assignee</label>
                             <input
                                 type="text"
                                 value={assignee}
                                 onChange={e => { setAssignee(e.target.value); setShowSuggestions(true); }}
                                 onFocus={() => setShowSuggestions(true)}
                                 onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                                className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-sm"
+                                className="w-full h-11 px-3.5 rounded-xl bg-[#EEE8DD]/70 dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] placeholder-[#777367] outline-none focus:border-[#B9955B] focus:ring-1 focus:ring-[#B9955B] transition-all"
                                 placeholder="Assignee..."
                             />
                             {showSuggestions && (
                                 <div 
                                     onMouseDown={(e) => e.preventDefault()}
-                                    className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl shadow-xl max-h-40 overflow-y-auto z-50"
+                                    className="absolute top-full left-0 right-0 mt-1.5 bg-[#FBF9F5] dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] rounded-xl shadow-xl max-h-48 overflow-y-auto z-50 p-1 divide-y divide-[#D6CDBC]/30 dark:divide-[#384232]/50 custom-scrollbar"
                                 >
                                     {employees.filter(e => e.status?.toLowerCase() !== 'deactivated' && (e.name || e.fullName || '').toLowerCase().includes((assignee || '').toLowerCase())).map(e => (
                                         <div 
@@ -479,23 +504,27 @@ const EditTaskModal = ({ isOpen, onClose, onSave, task, employees = [], projects
                                                 setAssigneeId(e.id);
                                                 setShowSuggestions(false);
                                             }}
-                                            className="p-2.5 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 cursor-pointer flex items-center gap-2 transition-colors"
+                                            className="p-2.5 hover:bg-[#EEE8DD] dark:hover:bg-[#30382B] cursor-pointer flex items-center gap-2.5 rounded-lg transition-colors"
                                         >
-                                            <div className="h-6 w-6 rounded-full bg-slate-200 overflow-hidden flex-shrink-0">
-                                                <img src={e.avatar || `https://ui-avatars.com/api/?background=6366f1&color=fff&name=${encodeURIComponent(e.name || e.fullName || 'User')}`} alt="" className="h-full w-full object-cover" />
+                                            <div className="h-6 w-6 rounded-full bg-[#D6CDBC] dark:bg-[#384232] overflow-hidden flex-shrink-0 flex items-center justify-center font-bold text-[10px] text-[#30382B] dark:text-[#F5F1E9]">
+                                                {e.avatar ? (
+                                                    <img src={e.avatar} alt="" className="h-full w-full object-cover" />
+                                                ) : (
+                                                    (e.name || e.fullName || 'U').charAt(0).toUpperCase()
+                                                )}
                                             </div>
-                                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{e.name || e.fullName}</span>
+                                            <span className="text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9]">{e.name || e.fullName}</span>
                                         </div>
                                     ))}
                                     {employees.filter(e => (e.name || e.fullName || '').toLowerCase().includes((assignee || '').toLowerCase())).length === 0 && (
-                                        <div className="p-2.5 text-xs text-slate-400 font-bold text-center">No matches found</div>
+                                        <div className="p-2.5 text-xs text-[#777367] font-medium text-center">No matches found</div>
                                     )}
                                 </div>
                             )}
                         </div>
                         <div>
-                            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Priority</label>
-                            <select value={priority} onChange={e => setPriority(e.target.value)} className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-sm">
+                            <label className="block text-[10px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-[0.14em] mb-1.5">Priority</label>
+                            <select value={priority} onChange={e => setPriority(e.target.value)} className="w-full h-11 px-3 rounded-xl bg-[#EEE8DD]/70 dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] outline-none focus:border-[#B9955B] focus:ring-1 focus:ring-[#B9955B] transition-all cursor-pointer">
                                 <option>Low</option>
                                 <option>Medium</option>
                                 <option>High</option>
@@ -505,8 +534,8 @@ const EditTaskModal = ({ isOpen, onClose, onSave, task, employees = [], projects
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                         <div>
-                            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Status</label>
-                            <select value={status} onChange={e => setStatus(e.target.value)} className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-sm text-slate-700 dark:text-slate-300">
+                            <label className="block text-[10px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-[0.14em] mb-1.5">Status</label>
+                            <select value={status} onChange={e => setStatus(e.target.value)} className="w-full h-11 px-3 rounded-xl bg-[#EEE8DD]/70 dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] outline-none focus:border-[#B9955B] focus:ring-1 focus:ring-[#B9955B] transition-all cursor-pointer">
                                 <option value="BACKLOG">Backlog</option>
                                 <option value="IN_OPERATIONS">In Operations</option>
                                 <option value="QUALITY_ASSURANCE">Quality Assurance</option>
@@ -514,25 +543,29 @@ const EditTaskModal = ({ isOpen, onClose, onSave, task, employees = [], projects
                             </select>
                         </div>
                         <div>
-                            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Due Date</label>
-                            <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-sm" />
+                            <label className="block text-[10px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-[0.14em] mb-1.5">Due Date</label>
+                            <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} className="w-full h-11 px-3.5 rounded-xl bg-[#EEE8DD]/70 dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] outline-none focus:border-[#B9955B] focus:ring-1 focus:ring-[#B9955B] transition-all cursor-pointer" />
                         </div>
                     </div>
                     <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Estimated Hours</label>
+                        <label className="block text-[10px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-[0.14em] mb-1.5">Estimated Hours</label>
                         <input 
                             type="number" 
                             step="0.5" 
                             min="0.1" 
                             value={estimatedHours} 
                             onChange={e => setEstimatedHours(e.target.value)} 
-                            className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-sm" 
+                            className="w-full h-11 px-3.5 rounded-xl bg-[#EEE8DD]/70 dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] placeholder-[#777367] outline-none focus:border-[#B9955B] focus:ring-1 focus:ring-[#B9955B] transition-all" 
                             placeholder="e.g. 8" 
                         />
                     </div>
-                    <div className="pt-2 flex gap-2">
-                        <button type="button" onClick={onClose} className="flex-1 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">Cancel</button>
-                        <button type="submit" className="flex-1 py-2.5 rounded-xl bg-indigo-600 text-white font-black text-[10px] uppercase tracking-widest shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-colors">Update Task</button>
+                    <div className="pt-3 flex gap-3">
+                        <button type="button" onClick={onClose} className="flex-1 py-3 px-4 rounded-xl font-bold text-xs uppercase tracking-wider text-[#777367] dark:text-[#A8A295] hover:text-[#29291F] dark:hover:text-[#F5F1E9] hover:bg-[#EEE8DD] dark:hover:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] transition-all cursor-pointer">
+                            Cancel
+                        </button>
+                        <button type="submit" className="flex-1 py-3 px-4 rounded-xl bg-[#30382B] hover:bg-[#3C4536] text-[#FDFBF7] dark:bg-[#C9A96E] dark:hover:bg-[#d8b87d] dark:text-[#161C14] font-bold text-xs uppercase tracking-wider shadow-warm-xs transition-all hover:scale-[1.01] active:scale-95 cursor-pointer">
+                            Update Task
+                        </button>
                     </div>
                 </form>
             </div>
@@ -551,22 +584,22 @@ const GoalStreamModal = ({ goal, onClose }) => {
     ];
 
     return createPortal(
-        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-lg animate-in fade-in duration-300 p-3 sm:p-4">
-            <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-[3rem] p-5 sm:p-10 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-100 dark:border-slate-800 animate-in zoom-in-95 duration-300 relative overflow-hidden">
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/75 backdrop-blur-lg animate-in fade-in duration-300 p-3 sm:p-4">
+            <div className="bg-[#FBF9F5] dark:bg-[#1C2419] rounded-2xl sm:rounded-[2.5rem] p-5 sm:p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto custom-scrollbar shadow-2xl border border-[#D6CDBC] dark:border-[#384232] animate-in zoom-in-95 duration-300 relative overflow-hidden text-left">
                 <div className={cn("absolute top-0 right-0 h-48 w-48 translate-x-16 -translate-y-16 rounded-full opacity-[0.03] animate-pulse", goal.color)} />
 
-                <div className="flex justify-between items-start mb-10">
-                    <div className="flex items-center gap-6">
-                        <div className={cn("h-16 w-16 rounded-3xl flex items-center justify-center shadow-xl", goal.color || "bg-indigo-600 text-white")}>
-                            <Target size={32} />
+                <div className="flex justify-between items-start mb-8 pb-4 border-b border-[#D6CDBC]/60 dark:border-[#384232]">
+                    <div className="flex items-center gap-4 sm:gap-5">
+                        <div className={cn("h-14 w-14 rounded-2xl flex items-center justify-center shadow-warm-xs text-white", goal.color || "bg-[#30382B] text-white")}>
+                            <Target size={28} />
                         </div>
                         <div>
-                            <h3 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{goal.title}</h3>
-                            <p className="text-xs font-black uppercase text-indigo-500 tracking-widest mt-1">{goal.sub}</p>
+                            <h3 className="font-serif text-2xl sm:text-3xl font-bold text-[#29291F] dark:text-[#F5F1E9] tracking-tight">{goal.title}</h3>
+                            <p className="text-xs font-bold uppercase text-[#B9955B] tracking-widest mt-0.5">{goal.sub}</p>
                         </div>
                     </div>
-                    <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-2xl transition-all">
-                        <X size={24} className="text-slate-400" />
+                    <button onClick={onClose} className="p-2 hover:bg-[#EEE8DD] dark:hover:bg-[#252B20] text-[#777367] hover:text-[#29291F] dark:hover:text-[#F5F1E9] rounded-xl transition-all cursor-pointer">
+                        <X size={20} />
                     </button>
                 </div>
 
