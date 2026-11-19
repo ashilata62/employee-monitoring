@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../../store/authStore';
 import { ChevronLeft, Building2, X, AlertTriangle } from 'lucide-react';
 import {
     useOrganizationStore,
@@ -95,6 +96,15 @@ function StyledSelect({ value, onChange, options, placeholder, error }) {
 // ── Main page ─────────────────────────────────────────────────────────────────
 export function Organization() {
     const navigate = useNavigate();
+    const { role } = useAuthStore();
+    const rolePath = role ? `/${role.toLowerCase()}` : '/admin';
+    const handleBack = () => {
+        if (window.history.length > 1) {
+            navigate(-1);
+        } else {
+            navigate(`${rolePath}/settings`);
+        }
+    };
     const { organization, originalOrganization, updateField, saveOrganization, fetchOrganization, resetChanges, hasChanges, isLoading } = useOrganizationStore();
 
     const [errors, setErrors] = useState({});
@@ -163,14 +173,14 @@ export function Organization() {
             {/* Header */}
             <div className="flex items-center gap-4 pt-8 pb-10">
                 <button
-                    onClick={() => navigate('/settings')}
+                    onClick={handleBack}
                     className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-all hover:scale-105 shadow-sm"
                 >
                     <ChevronLeft size={20} />
                 </button>
                 <div>
                     <nav className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">
-                        <span className="hover:text-slate-600 dark:hover:text-slate-300 cursor-pointer transition-colors" onClick={() => navigate('/settings')}>
+                        <span className="hover:text-slate-600 dark:hover:text-slate-300 cursor-pointer transition-colors" onClick={() => navigate(`${rolePath}/settings`)}>
                             Settings
                         </span>
                         <span>/</span>

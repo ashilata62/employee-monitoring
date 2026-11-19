@@ -113,6 +113,11 @@ export function PeriodComparisonBar({
 
     const formatDate = (dStr) => {
         if (!dStr) return '';
+        if (typeof dStr === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dStr)) {
+            const [y, m, day] = dStr.split('-');
+            const d = new Date(Number(y), Number(m) - 1, Number(day));
+            return d.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+        }
         const d = new Date(dStr);
         if (isNaN(d.getTime())) return dStr;
         return d.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });

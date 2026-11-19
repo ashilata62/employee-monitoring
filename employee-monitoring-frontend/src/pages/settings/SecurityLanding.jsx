@@ -1,11 +1,21 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../../store/authStore';
 import { ChevronLeft, ShieldCheck, Lock } from 'lucide-react';
 import { useSecurityStore } from '../../store/securityStore';
 import { ToggleSwitch } from '../../components/ui/ToggleSwitch';
 
 export function SecurityLanding() {
     const navigate = useNavigate();
+    const { role } = useAuthStore();
+    const rolePath = role ? `/${role.toLowerCase()}` : '/admin';
+    const handleBack = () => {
+        if (window.history.length > 1) {
+            navigate(-1);
+        } else {
+            navigate(`${rolePath}/settings`);
+        }
+    };
     const { saml, isConfigured, toggleEnforceSso } = useSecurityStore();
     const configured = isConfigured();
 
@@ -14,14 +24,14 @@ export function SecurityLanding() {
             {/* Header */}
             <div className="flex items-center gap-4 pt-8 pb-10">
                 <button
-                    onClick={() => navigate('/settings')}
+                    onClick={handleBack}
                     className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-all hover:scale-105 shadow-sm"
                 >
                     <ChevronLeft size={20} />
                 </button>
                 <div>
                     <nav className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">
-                        <span className="hover:text-slate-600 dark:hover:text-slate-300 cursor-pointer transition-colors" onClick={() => navigate('/settings')}>Settings</span>
+                        <span className="hover:text-slate-600 dark:hover:text-slate-300 cursor-pointer transition-colors" onClick={() => navigate(`${rolePath}/settings`)}>Settings</span>
                         <span>/</span>
                         <span className="text-primary-600">Security and Identity</span>
                     </nav>
@@ -86,7 +96,7 @@ export function SecurityLanding() {
                             Configure SAML to enable <span className="text-primary-600 font-bold">SSO</span> for your team
                         </p>
                         <button
-                            onClick={() => navigate('/settings/security/saml')}
+                            onClick={() => navigate(`${rolePath}/settings/security/saml`)}
                             className="px-5 py-2.5 rounded-xl border-2 border-primary-300 dark:border-primary-700 text-sm font-black text-primary-700 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-950/30 transition-all hover:scale-[1.02] active:scale-95"
                         >
                             {configured ? 'Edit Configuration' : 'Configure SAML'}

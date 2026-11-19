@@ -33,6 +33,20 @@ export function Login() {
         }
     };
 
+    const handleDownloadAgent = (e) => {
+        if (e) e.preventDefault();
+        const isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+        const downloadUrl = isLocal ? '/agent/EMS-Tracker-latest.exe' : `${BASE_URL}/api/agent/download`;
+
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.setAttribute('download', 'EMS-Tracker-latest.exe');
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+    };
+
     const handleQuickLogin = async (role) => {
         setIsLoading(true);
         setError('');
@@ -224,13 +238,13 @@ export function Login() {
                                 </h4>
                                 <p className="text-[10px] text-[#B8C2B3] mt-0.5">Windows desktop tracking client (.exe)</p>
                             </div>
-                            <a
-                                href={`${BASE_URL}/api/agent/download`}
-                                download="EMS-Tracker-latest.exe"
-                                className="px-3.5 py-1.5 bg-[#B9955B] hover:bg-[#A17D45] text-white rounded-xl text-[10px] font-bold transition-all shadow-xs uppercase tracking-wider shrink-0 text-center cursor-pointer"
+                            <button
+                                type="button"
+                                onClick={handleDownloadAgent}
+                                className="px-3.5 py-1.5 bg-[#B9955B] hover:bg-[#A17D45] text-white rounded-xl text-[10px] font-bold transition-all shadow-xs uppercase tracking-wider shrink-0 text-center cursor-pointer active:scale-95"
                             >
                                 Download
-                            </a>
+                            </button>
                         </div>
                     </div>
                 </div>

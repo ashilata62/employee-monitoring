@@ -101,19 +101,23 @@ export function AddEmployeeModal({ isOpen, onClose, initialTab = 'single' }) {
         setSingleForm(prev => ({ ...prev, password: retVal }));
     };
 
+    const liveBackendUrl = (API_BASE_URL && !API_BASE_URL.includes('localhost'))
+        ? `${API_BASE_URL}/agent/download`
+        : 'https://insight-pool-production.up.railway.app/api/agent/download';
+    const downloadAgentUrl = liveBackendUrl;
+
     const handleCopy = () => {
-        const url = `${window.location.origin}/setup-agent`;
-        navigator.clipboard.writeText(url);
+        navigator.clipboard.writeText(downloadAgentUrl);
         setCopied(true);
-        toast.success("Agent Setup URL copied to clipboard!");
+        toast.success("Live direct download link copied to clipboard!");
         setTimeout(() => setCopied(false), 2000);
     };
 
     const handleDownloadWindows = () => {
-        const downloadUrl = `${API_BASE_URL}/agent/download`;
         const link = document.createElement('a');
-        link.href = downloadUrl;
+        link.href = downloadAgentUrl;
         link.setAttribute('download', 'EMS-Tracker-latest.exe');
+        link.target = '_blank';
         document.body.appendChild(link);
         link.click();
         link.remove();
@@ -685,11 +689,11 @@ export function AddEmployeeModal({ isOpen, onClose, initialTab = 'single' }) {
 
                             <div className="space-y-1.5 pt-2">
                                 <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 px-1">
-                                    Agent Setup Web URL
+                                    Direct Installer Download URL (.exe)
                                 </label>
                                 <div className="flex gap-2">
                                     <div className="flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3.5 py-2 text-xs font-mono text-slate-600 dark:text-slate-300 truncate">
-                                        {window.location.origin}/setup-agent
+                                        {downloadAgentUrl}
                                     </div>
                                     <button
                                         type="button"

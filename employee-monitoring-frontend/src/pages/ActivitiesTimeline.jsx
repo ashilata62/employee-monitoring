@@ -316,9 +316,9 @@ export function ActivitiesTimeline() {
   const activityLogs = useMemo(() => {
     const logs = [];
     (data?.employeeTimelines || []).forEach(emp => {
-      (emp.segments || []).forEach(seg => {
+      (emp.segments || []).forEach((seg, sIdx) => {
         logs.push({
-          id: seg.id || `${emp.id}-${Math.random()}`,
+          id: seg.id || `${emp.id}-seg-${sIdx}`,
           time: seg.timeFormatted || '09:00',
           employeeName: emp.name,
           employeeInitials: emp.initials,
@@ -450,12 +450,25 @@ export function ActivitiesTimeline() {
             {showDatePicker && (
               <div className="absolute top-full right-0 mt-2 w-64 bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl shadow-warm-lg border border-[#D6CDBC] dark:border-[#384232] p-3 z-50 animate-in fade-in duration-200 space-y-2">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider px-2">Select Activity Date</p>
-                {[
-                  { label: 'Today (Nov 17, 2026)', date: '2026-11-17' },
-                  { label: 'Yesterday (Nov 16, 2026)', date: '2026-11-16' },
-                  { label: 'Nov 15, 2026', date: '2026-11-15' },
-                  { label: 'Nov 14, 2026', date: '2026-11-14' }
-                ].map(p => (
+                {(() => {
+                  const now = new Date();
+                  const getPreset = (daysAgo, labelPrefix) => {
+                    const d = new Date(now.getTime() - daysAgo * 86400000);
+                    const yyyy = d.getFullYear();
+                    const mm = String(d.getMonth() + 1).padStart(2, '0');
+                    const dd = String(d.getDate()).padStart(2, '0');
+                    const dateStr = `${yyyy}-${mm}-${dd}`;
+                    const monthName = d.toLocaleDateString('en-US', { month: 'short' });
+                    const label = labelPrefix ? `${labelPrefix} (${monthName} ${dd}, ${yyyy})` : `${monthName} ${dd}, ${yyyy}`;
+                    return { label, date: dateStr };
+                  };
+                  return [
+                    getPreset(0, 'Today'),
+                    getPreset(1, 'Yesterday'),
+                    getPreset(2, null),
+                    getPreset(3, null)
+                  ];
+                })().map(p => (
                   <button
                     key={p.date}
                     onClick={() => {
