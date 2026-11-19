@@ -8,9 +8,13 @@ const getEmployees = async (req, res, next) => {
         const orgId = await getOrganizationId(req);
         const { role, employeeId: currentEmployeeId } = req.user;
 
-        let filter = { role: 'EMPLOYEE' };
+        let filter = {};
+        if (req.query.role) {
+            filter.role = req.query.role.toUpperCase();
+        }
+
         if (role === 'EMPLOYEE') {
-            // Employees see only themselves (and they should have role EMPLOYEE anyway)
+            // Employees see only themselves
             filter.id = currentEmployeeId;
         }
 
@@ -139,7 +143,8 @@ const inviteEmployee = async (req, res, next) => {
                     validatedData.email,
                     role,
                     validatedData.organizationId,
-                    validatedData.fullName
+                    validatedData.fullName,
+                    employee.id
                 );
                 inviteResult = { setupLink };
             }

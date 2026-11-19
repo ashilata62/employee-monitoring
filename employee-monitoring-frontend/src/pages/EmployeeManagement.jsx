@@ -228,6 +228,7 @@ const EditEmployeeModal = ({ isOpen, onClose, employee, onUpdate }) => {
     const [formData, setFormData] = useState({
         fullName: '',
         email: '',
+        role: 'EMPLOYEE',
         teamId: '',
         location: '',
         hourlyRate: 0,
@@ -244,6 +245,7 @@ const EditEmployeeModal = ({ isOpen, onClose, employee, onUpdate }) => {
             setFormData({
                 fullName: employee.name || employee.fullName || '',
                 email: employee.email || '',
+                role: employee.role || 'EMPLOYEE',
                 teamId: employee.teamId || '',
                 location: initialLocation,
                 hourlyRate: employee.hourlyRate || 0,
@@ -323,14 +325,14 @@ const EditEmployeeModal = ({ isOpen, onClose, employee, onUpdate }) => {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Team</label>
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Role</label>
                         <select
-                            value={formData.teamId}
-                            onChange={(e) => setFormData({ ...formData, teamId: e.target.value })}
-                            className="w-full h-11 px-4 rounded-xl border-2 border-slate-100 bg-slate-50 text-xs font-bold outline-none focus:border-primary-500 transition-all appearance-none"
+                            value={formData.role?.toUpperCase() || 'EMPLOYEE'}
+                            onChange={(e) => setFormData({ ...formData, role: e.target.value.toUpperCase() })}
+                            className="w-full h-11 px-4 rounded-xl border-2 border-slate-100 bg-slate-50 text-xs font-bold outline-none focus:border-primary-500 transition-all appearance-none cursor-pointer"
                         >
-                            <option value="">Select Team</option>
-                            {teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                            <option value="EMPLOYEE">Employee</option>
+                            <option value="MANAGER">Manager</option>
                         </select>
                     </div>
                     <div className="space-y-1.5">
@@ -338,7 +340,7 @@ const EditEmployeeModal = ({ isOpen, onClose, employee, onUpdate }) => {
                         <select
                             value={formData.status.toUpperCase()}
                             onChange={(e) => setFormData({ ...formData, status: e.target.value.toUpperCase() })}
-                            className="w-full h-11 px-4 rounded-xl border-2 border-slate-100 bg-slate-50 text-xs font-bold outline-none focus:border-primary-500 transition-all appearance-none"
+                            className="w-full h-11 px-4 rounded-xl border-2 border-slate-100 bg-slate-50 text-xs font-bold outline-none focus:border-primary-500 transition-all appearance-none cursor-pointer"
                         >
                             <option value="ACTIVE">Active</option>
                             <option value="IDLE">Idle</option>
@@ -347,6 +349,17 @@ const EditEmployeeModal = ({ isOpen, onClose, employee, onUpdate }) => {
                             <option value="DEACTIVATED">Deactivated</option>
                         </select>
                     </div>
+                </div>
+                <div className="space-y-1.5">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Team</label>
+                    <select
+                        value={formData.teamId}
+                        onChange={(e) => setFormData({ ...formData, teamId: e.target.value })}
+                        className="w-full h-11 px-4 rounded-xl border-2 border-slate-100 bg-slate-50 text-xs font-bold outline-none focus:border-primary-500 transition-all appearance-none cursor-pointer"
+                    >
+                        <option value="">Select Team</option>
+                        {teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                    </select>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
@@ -507,6 +520,16 @@ const EmployeeActionsDrawer = ({ isOpen, onClose, employee, onUpdateStatus }) =>
                                     employee.status === 'active' ? "bg-emerald-500" : "bg-slate-400"
                                 )}></div>
                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{employee.status}</p>
+                                <span className={cn(
+                                    "px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border",
+                                    (employee.role || 'EMPLOYEE').toUpperCase() === 'ADMIN'
+                                        ? "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 border-purple-200 dark:border-purple-800"
+                                        : (employee.role || 'EMPLOYEE').toUpperCase() === 'MANAGER'
+                                        ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800"
+                                        : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700"
+                                )}>
+                                    {(employee.role || 'EMPLOYEE').toUpperCase()}
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -776,7 +799,19 @@ const EmployeeRow = ({ employee, onEdit, onDelete, onTransparencyClick, visibleC
                                 <img src={employee.avatar} className="h-full w-full object-cover" alt="" />
                             </div>
                             <div className="flex-1 min-w-0">
-                                <h4 className="text-base font-black text-slate-900 dark:text-white truncate leading-tight">{employee.name}</h4>
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                    <h4 className="text-base font-black text-slate-900 dark:text-white truncate leading-tight">{employee.name}</h4>
+                                    <span className={cn(
+                                        "px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider border",
+                                        (employee.role || 'EMPLOYEE').toUpperCase() === 'ADMIN'
+                                            ? "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 border-purple-200 dark:border-purple-800"
+                                            : (employee.role || 'EMPLOYEE').toUpperCase() === 'MANAGER'
+                                            ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800"
+                                            : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700"
+                                    )}>
+                                        {(employee.role || 'EMPLOYEE').toUpperCase()}
+                                    </span>
+                                </div>
                                 <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wide truncate mt-0.5">{employee.email}</p>
                                 <div className="mt-1.5 inline-flex items-center px-2 py-0.5 rounded-md bg-primary-50 dark:bg-primary-900/20 text-[9px] font-black text-primary-600 dark:text-primary-400 uppercase tracking-tighter">
                                     {typeof employee.team === 'object' ? employee.team?.name : employee.team}
@@ -855,7 +890,19 @@ const EmployeeRow = ({ employee, onEdit, onDelete, onTransparencyClick, visibleC
                                 )}
                             </div>
                             <div className="min-w-0 flex-1">
-                                <p className="text-sm font-semibold text-[#29291F] dark:text-[#F5F1E9] truncate">{employee.name}</p>
+                                <div className="flex items-center gap-2">
+                                    <p className="text-sm font-semibold text-[#29291F] dark:text-[#F5F1E9] truncate">{employee.name}</p>
+                                    <span className={cn(
+                                        "px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border",
+                                        (employee.role || 'EMPLOYEE').toUpperCase() === 'ADMIN'
+                                            ? "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 border-purple-200 dark:border-purple-800"
+                                            : (employee.role || 'EMPLOYEE').toUpperCase() === 'MANAGER'
+                                            ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800"
+                                            : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700"
+                                    )}>
+                                        {(employee.role || 'EMPLOYEE').toUpperCase()}
+                                    </span>
+                                </div>
                                 <p className="text-[11px] font-medium text-[#777367]">{employee.email}</p>
                             </div>
                         </div>
