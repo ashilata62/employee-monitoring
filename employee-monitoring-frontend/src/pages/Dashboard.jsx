@@ -233,12 +233,13 @@ export function Dashboard() {
     const unreadCount = (contextNotifications || []).filter(n => n.unread).length;
 
     const isFetchingRef = useRef(false);
+    const hasLoadedRef = useRef(false);
 
     const fetchDashboardData = useCallback(async (isBackground = false) => {
         if (isFetchingRef.current) return;
         isFetchingRef.current = true;
-        // Only set loading spinner on initial fetch to avoid UI flicker during real-time updates
-        if (!isBackground && !dashboardData) setIsLoading(true);
+        // Only set loading spinner on initial fetch to avoid UI flicker during background updates
+        if (!isBackground && !hasLoadedRef.current) setIsLoading(true);
 
         try {
             let data;
@@ -266,23 +267,27 @@ export function Dashboard() {
                 data = await dashboardService.getEmployeeDashboard(startDate, endDate, compareStartDate, compareEndDate);
             }
             if (data) {
+                hasLoadedRef.current = true;
                 setDashboardData(data);
             }
         } catch (error) {
             console.error('Error fetching dashboard data:', error);
         } finally {
             isFetchingRef.current = false;
-            if (!isBackground && !dashboardData) setIsLoading(false);
+            setIsLoading(false);
         }
-    }, [role, startDate, endDate, compareStartDate, compareEndDate, activeFilter.employeeId, activeFilter.teamId, activeFilter.role, dashboardData]);
+    }, [role, startDate, endDate, compareStartDate, compareEndDate, activeFilter.employeeId, activeFilter.teamId, activeFilter.role]);
 
-    // Initial mount and 6-second resilient background refresh
+    const fetchRef = useRef(fetchDashboardData);
+    fetchRef.current = fetchDashboardData;
+
+    // Initial mount and 30-second resilient background refresh
     useEffect(() => {
         fetchDashboardData();
 
         const interval = setInterval(() => {
             fetchDashboardData(true);
-        }, 6000);
+        }, 30000);
 
         return () => clearInterval(interval);
     }, [fetchDashboardData]);
@@ -295,12 +300,12 @@ export function Dashboard() {
         const debouncedFetch = () => {
             if (debounceTimer) clearTimeout(debounceTimer);
             debounceTimer = setTimeout(() => {
-                fetchDashboardData(true);
+                fetchRef.current(true);
             }, 600);
         };
 
         const immediateFetch = () => {
-            fetchDashboardData(true);
+            fetchRef.current(true);
         };
 
         // Instant triggers: status, attendance, department, shifts
@@ -328,7 +333,7 @@ export function Dashboard() {
             socket.off('task:update', debouncedFetch);
             socket.off('screenshot:new', debouncedFetch);
         };
-    }, [socket, fetchDashboardData]);
+    }, [socket]);
 
     const handleDownload = () => {
         const empMetricsData = realTimeStats.empMetrics || [];
@@ -381,7 +386,7 @@ export function Dashboard() {
 
     const sec = useMemo(() => {
         const rawSec = stats?.summarySeconds || {};
-        if (role === 'ADMIN') {
+        if (role !== 'EMPLOYEE') {
             return rawSec;
         }
         if (!isToday) {
@@ -404,7 +409,7 @@ export function Dashboard() {
     }, [role, stats?.summarySeconds, isToday, isClockedIn, sessionSeconds]);
 
     const liveTick = useMemo(() => {
-        if (role === 'ADMIN') return false;
+        if (role !== 'EMPLOYEE') return false;
         if (!isToday) return false;
         // Only tick when clocked in and not on break
         return isClockedIn && !isOnBreak;

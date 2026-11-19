@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import {
     ChevronLeft,
     ChevronRight,
@@ -28,9 +29,9 @@ export function WeeklyTimesheetsView({ employees = [] }) {
     const { role, user } = useAuthStore();
     const [weekStart, setWeekStart] = useState(() => mondayOf());
     const [selectedEmployeeId, setSelectedEmployeeId] = useState('');
-    const [data, setData] = useState(null);
+    const [timesheetsList, setTimesheetsList] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [submitting, setSubmitting] = useState(false);
+    const [submittingId, setSubmittingId] = useState(null);
     const [activeDayModal, setActiveDayModal] = useState(null);
 
     // Filter employees: If manager, only show employees in their assigned team. Filter out ADMIN role.
@@ -70,18 +71,38 @@ export function WeeklyTimesheetsView({ employees = [] }) {
         return '<1m';
     };
 
+    // Auto-select first managed employee for manager if none selected
+    useEffect(() => {
+        if (role === 'MANAGER' && !selectedEmployeeId && selectableEmployees.length > 0) {
+            setSelectedEmployeeId(selectableEmployees[0].id);
+        }
+    }, [role, selectedEmployeeId, selectableEmployees]);
+
     // Initial load and filter change
     const loadTimesheet = async () => {
+        if (role === 'MANAGER' && selectableEmployees.length === 0) {
+            setData(null);
+            return;
+        }
         setLoading(true);
         try {
-            const empId = role === 'EMPLOYEE' ? null : (selectedEmployeeId || null);
+            const defaultEmpId = role === 'MANAGER' ? (selectableEmployees[0]?.id || null) : null;
+            const empId = role === 'EMPLOYEE' ? null : (selectedEmployeeId || defaultEmpId);
             const res = await timesheetService.getWeek(weekStart, empId);
             if (res.success) {
-                const payload = Array.isArray(res.data) ? res.data[0] : res.data;
-                setData(payload || null);
+                let list = Array.isArray(res.data) ? res.data : (res.data ? [res.data] : []);
+                // Exclude any ADMIN records
+                list = list.filter(item => {
+                    const empObj = employees.find(e => e.id === item.employeeId);
+                    return (empObj?.role || '').toUpperCase() !== 'ADMIN' && (item.role || '').toUpperCase() !== 'ADMIN';
+                });
+                setTimesheetsList(list);
+            } else {
+                setTimesheetsList([]);
             }
         } catch (err) {
-            console.error('Failed to load weekly timesheet:', err);
+            console.error('Failed to load weekly timesheets:', err);
+            setTimesheetsList([]);
         } finally {
             setLoading(false);
         }
@@ -91,11 +112,11 @@ export function WeeklyTimesheetsView({ employees = [] }) {
         loadTimesheet();
     }, [weekStart, selectedEmployeeId]);
 
-    const handleSubmit = async () => {
-        if (!data) return;
-        setSubmitting(true);
+    const handleSubmit = async (targetEmpId) => {
+        if (!targetEmpId) return;
+        setSubmittingId(targetEmpId);
         try {
-            const res = await timesheetService.submit(weekStart, data.employeeId);
+            const res = await timesheetService.submit(weekStart, targetEmpId);
             if (res.success) {
                 toast.success('Timesheet submitted for manager approval!');
                 loadTimesheet();
@@ -103,7 +124,7 @@ export function WeeklyTimesheetsView({ employees = [] }) {
         } catch (err) {
             toast.error(err.response?.data?.message || err.message || 'Submission failed');
         } finally {
-            setSubmitting(false);
+            setSubmittingId(null);
         }
     };
 
@@ -133,9 +154,9 @@ export function WeeklyTimesheetsView({ employees = [] }) {
                         <span className="text-xs font-bold text-[#29291F] dark:text-[#F5F1E9] uppercase tracking-wider">
                             Week of {weekStart}
                         </span>
-                        {data && (
+                        {timesheetsList.length > 0 && timesheetsList[0].weekEnd && (
                             <span className="text-[10px] text-[#777367] dark:text-[#B8B3A7]">
-                                ({data.weekStart} to {data.weekEnd})
+                                ({weekStart} to {timesheetsList[0].weekEnd})
                             </span>
                         )}
                     </div>
@@ -155,17 +176,18 @@ export function WeeklyTimesheetsView({ employees = [] }) {
                 </div>
 
                 <div className="flex items-center gap-3">
+                    {/* Admin/Manager Employee Picker - Strictly non-admin employees */}
                     {/* Admin/Manager Employee Picker */}
-                    {(role === 'ADMIN' || role === 'MANAGER') && employees.length > 0 && (
+                    {(role === 'ADMIN' || role === 'MANAGER') && selectableEmployees.length > 0 && (
                         <select
                             value={selectedEmployeeId}
                             onChange={(e) => setSelectedEmployeeId(e.target.value)}
                             className="text-xs font-semibold bg-[#F5F1E9] dark:bg-[#1E2419] border border-[#D6CDBC] dark:border-[#384232] rounded-xl px-3.5 py-2 text-[#29291F] dark:text-[#F5F1E9] outline-none focus:border-[#B9955B] cursor-pointer"
                         >
-                            <option value="">Select Employee...</option>
-                            {employees.map(emp => (
+                            <option value="">All Roles / Employees ({selectableEmployees.length})</option>
+                            {selectableEmployees.map(emp => (
                                 <option key={emp.id} value={emp.id}>
-                                    {emp.fullName || emp.name} ({emp.team?.name || 'General'})
+                                    {emp.fullName || emp.name} ({emp.team?.name || emp.role || 'General'})
                                 </option>
                             ))}
                         </select>
@@ -188,62 +210,64 @@ export function WeeklyTimesheetsView({ employees = [] }) {
                     <Loader2 size={28} className="animate-spin text-[#B9955B]" />
                     <span className="text-xs font-bold">Calculating timesheet hours...</span>
                 </div>
-            ) : !data ? (
+            ) : timesheetsList.length === 0 ? (
                 <div className="p-12 text-center text-[#777367] bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl border border-[#D6CDBC] dark:border-[#384232]">
                     No timesheet records found for this period.
                 </div>
             ) : (
-                <div className="bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs p-6 space-y-6">
-                    {/* Header: Employee Info + Status + Metrics + Action */}
-                    <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-6 border-b border-[#D6CDBC]/70 dark:border-[#384232]">
-                        <div>
-                            <div className="flex items-center gap-3">
-                                <h2 className="font-serif text-2xl font-bold text-[#29291F] dark:text-[#F5F1E9]">
-                                    {data.employeeName}
-                                </h2>
-                                <span className={`px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider border ${STATUS_BADGE[data.status] || STATUS_BADGE.DRAFT}`}>
-                                    {data.status}
-                                </span>
-                                {data.overThreshold && (
-                                    <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-[#FAF0E1] dark:bg-[#2C2415] text-[#C98A3C] dark:text-[#E5B56D] border border-[#E8D4B8] dark:border-[#5C4A28]">
-                                        <AlertTriangle size={11} /> {fmtH(data.overtimeMinutes)} OT
-                                    </span>
-                                )}
-                            </div>
-                            <p className="text-xs text-[#777367] dark:text-[#B8B3A7] mt-1">
-                                Team: <span className="font-semibold text-[#29291F] dark:text-[#F5F1E9]">{data.teamName}</span> · Rate: <span className="font-semibold text-[#29291F] dark:text-[#F5F1E9]">{fmtMoney(data.hourlyRate)}/h</span>
-                            </p>
-                        </div>
-
-                        {/* Top Metrics Rollup */}
-                        <div className="flex flex-wrap items-center gap-3">
-                            <div className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-[#F5F1E9] dark:bg-[#1E2419] border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs">
-                                <Clock size={16} className="text-[#B9955B]" />
+                <div className="space-y-6">
+                    {timesheetsList.map((data) => (
+                        <div key={data.employeeId || data.timesheetId} className="bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs p-6 space-y-6">
+                            {/* Header: Employee Info + Status + Metrics + Action */}
+                            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-6 border-b border-[#D6CDBC]/70 dark:border-[#384232]">
                                 <div>
-                                    <div className="text-[10px] uppercase font-bold text-[#777367] dark:text-[#B8B3A7] tracking-wider">Total Hours</div>
-                                    <div className="text-sm font-bold text-[#29291F] dark:text-[#F5F1E9] tabular-nums">{fmtH(data.totalMinutes)}</div>
+                                    <div className="flex items-center gap-3">
+                                        <h2 className="font-serif text-2xl font-bold text-[#29291F] dark:text-[#F5F1E9]">
+                                            {data.employeeName}
+                                        </h2>
+                                        <span className={`px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider border ${STATUS_BADGE[data.status] || STATUS_BADGE.DRAFT}`}>
+                                            {data.status}
+                                        </span>
+                                        {data.overThreshold && (
+                                            <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-[#FAF0E1] dark:bg-[#2C2415] text-[#C98A3C] dark:text-[#E5B56D] border border-[#E8D4B8] dark:border-[#5C4A28]">
+                                                <AlertTriangle size={11} /> {fmtH(data.overtimeMinutes)} OT
+                                            </span>
+                                        )}
+                                    </div>
+                                    <p className="text-xs text-[#777367] dark:text-[#B8B3A7] mt-1">
+                                        Team: <span className="font-semibold text-[#29291F] dark:text-[#F5F1E9]">{data.teamName}</span> · Rate: <span className="font-semibold text-[#29291F] dark:text-[#F5F1E9]">{fmtMoney(data.hourlyRate)}/h</span>
+                                    </p>
                                 </div>
-                            </div>
 
-                            <div className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-[#F5F1E9] dark:bg-[#1E2419] border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs">
-                                <DollarSign size={16} className="text-[#5E7D64] dark:text-[#8BB394]" />
-                                <div>
-                                    <div className="text-[10px] uppercase font-bold text-[#777367] dark:text-[#B8B3A7] tracking-wider">Total Pay</div>
-                                    <div className="text-sm font-bold text-[#5E7D64] dark:text-[#8BB394] tabular-nums">{fmtMoney(data.totalPay)}</div>
-                                </div>
-                            </div>
+                                {/* Top Metrics Rollup */}
+                                <div className="flex flex-wrap items-center gap-3">
+                                    <div className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-[#F5F1E9] dark:bg-[#1E2419] border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs">
+                                        <Clock size={16} className="text-[#B9955B]" />
+                                        <div>
+                                            <div className="text-[10px] uppercase font-bold text-[#777367] dark:text-[#B8B3A7] tracking-wider">Total Hours</div>
+                                            <div className="text-sm font-bold text-[#29291F] dark:text-[#F5F1E9] tabular-nums">{fmtH(data.totalMinutes)}</div>
+                                        </div>
+                                    </div>
 
-                            {/* Submit Button */}
-                            {(data.status === 'DRAFT' || data.status === 'REJECTED') && (
-                                <button
-                                    onClick={handleSubmit}
-                                    disabled={submitting || data.totalMinutes === 0}
-                                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#30382B] hover:bg-[#3C4536] text-[#FDFBF7] font-semibold text-xs uppercase tracking-wider shadow-warm-xs transition disabled:opacity-50 cursor-pointer active:scale-95"
-                                >
-                                    {submitting ? <Loader2 size={14} className="animate-spin text-[#D3B98D]" /> : <Send size={14} className="text-[#D3B98D]" />}
-                                    <span>{data.status === 'REJECTED' ? 'Resubmit for Approval' : 'Submit for Approval'}</span>
-                                </button>
-                            )}
+                                    <div className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-[#F5F1E9] dark:bg-[#1E2419] border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs">
+                                        <DollarSign size={16} className="text-[#5E7D64] dark:text-[#8BB394]" />
+                                        <div>
+                                            <div className="text-[10px] uppercase font-bold text-[#777367] dark:text-[#B8B3A7] tracking-wider">Total Pay</div>
+                                            <div className="text-sm font-bold text-[#5E7D64] dark:text-[#8BB394] tabular-nums">{fmtMoney(data.totalPay)}</div>
+                                        </div>
+                                    </div>
+
+                                    {/* Submit Button - Only for Manager and Employee roles */}
+                                    {role !== 'ADMIN' && (data.status === 'DRAFT' || data.status === 'REJECTED') && (
+                                        <button
+                                            onClick={() => handleSubmit(data.employeeId)}
+                                            disabled={submittingId === data.employeeId || data.totalMinutes === 0}
+                                            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#30382B] hover:bg-[#3C4536] text-[#FDFBF7] font-semibold text-xs uppercase tracking-wider shadow-warm-xs transition disabled:opacity-50 cursor-pointer active:scale-95"
+                                        >
+                                            {submittingId === data.employeeId ? <Loader2 size={14} className="animate-spin text-[#D3B98D]" /> : <Send size={14} className="text-[#D3B98D]" />}
+                                            <span>{data.status === 'REJECTED' ? 'Resubmit for Approval' : 'Submit for Approval'}</span>
+                                        </button>
+                                    )}
 
                             {data.status === 'SUBMITTED' && (
                                 <span className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#FAF0E1] dark:bg-[#2C2415] text-[#C98A3C] dark:text-[#E5B56D] text-xs font-bold border border-[#E8D4B8] dark:border-[#5C4A28]">
@@ -353,83 +377,6 @@ export function WeeklyTimesheetsView({ employees = [] }) {
                         </div>
                     </div>
 
-                    {/* Day Attendance Breakdown Modal */}
-                    {activeDayModal && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-                            <div className="bg-[#F5F1E9] dark:bg-[#1E2419] rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-[#D6CDBC] dark:border-[#384232] space-y-4 max-h-[85vh] flex flex-col">
-                                <div className="flex items-center justify-between pb-3 border-b border-[#D6CDBC]/70 dark:border-[#384232]">
-                                    <div>
-                                        <h3 className="font-serif text-lg font-bold text-[#29291F] dark:text-[#F5F1E9]">
-                                            Real Database Sessions Breakdown
-                                        </h3>
-                                        <p className="text-xs text-[#777367] dark:text-[#B8B3A7] mt-0.5">
-                                            {new Date(activeDayModal.date + 'T00:00:00Z').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}
-                                            {' · '}
-                                            <span className="font-bold text-[#29291F] dark:text-[#F5F1E9]">Total: {fmtH(activeDayModal.minutes)}</span>
-                                            {' · '}
-                                            <span className="font-semibold text-[#5E7D64] dark:text-[#8BB394]">{activeDayModal.sessions.length} Recorded Sessions</span>
-                                        </p>
-                                    </div>
-                                    <button
-                                        onClick={() => setActiveDayModal(null)}
-                                        className="w-8 h-8 rounded-full hover:bg-[#E5DDCF] dark:hover:bg-[#252B20] flex items-center justify-center text-[#777367] dark:text-[#B8B3A7] font-bold cursor-pointer transition"
-                                    >
-                                        ✕
-                                    </button>
-                                </div>
-
-                                <div className="overflow-y-auto flex-1 pr-1">
-                                    <table className="w-full text-left text-xs">
-                                        <thead className="bg-[#EEE8DD] dark:bg-[#252B20] text-[#777367] dark:text-[#B8B3A7] text-[10px] uppercase tracking-wider font-bold border-b border-[#D6CDBC]/70 dark:border-[#384232]">
-                                            <tr>
-                                                <th className="p-2.5 rounded-l-lg">#</th>
-                                                <th className="p-2.5">Type</th>
-                                                <th className="p-2.5">Clock In</th>
-                                                <th className="p-2.5">Clock Out</th>
-                                                <th className="p-2.5">Duration</th>
-                                                <th className="p-2.5 rounded-r-lg">Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-[#D6CDBC]/50 dark:divide-[#384232]">
-                                            {activeDayModal.sessions.map((sess, idx) => {
-                                                const inTime = sess.clockIn ? new Date(sess.clockIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : (sess.startTime ? new Date(sess.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--');
-                                                const outTime = sess.clockOut ? new Date(sess.clockOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : (sess.endTime ? new Date(sess.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (sess.isLive ? 'Active' : '--'));
-                                                const durationStr = sess.isLive ? 'In Progress' : (sess.minutes >= 60 ? `${Math.floor(sess.minutes / 60)}h ${sess.minutes % 60}m` : (sess.minutes > 0 ? `${sess.minutes}m` : (sess.durationSeconds ? `${sess.durationSeconds}s` : '<1m')));
-                                                return (
-                                                    <tr key={sess.id || idx} className="hover:bg-[#EEE8DD]/50 dark:hover:bg-[#252B20]/50 transition">
-                                                        <td className="p-2.5 font-bold text-[#777367] dark:text-[#B8B3A7]">{idx + 1}</td>
-                                                        <td className="p-2.5">
-                                                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-bold uppercase ${sess.type === 'attendance' ? 'bg-[#EAEFEA] dark:bg-[#1E2B20] text-[#5E7D64] dark:text-[#8BB394] border border-[#C5D7C7] dark:border-[#325238]' : 'bg-[#FAF0E1] dark:bg-[#2C2415] text-[#C98A3C] dark:text-[#E5B56D] border border-[#E8D4B8] dark:border-[#5C4A28]'}`}>
-                                                                {sess.type === 'attendance' ? 'Attendance' : (sess.note || 'Manual')}
-                                                            </span>
-                                                        </td>
-                                                        <td className="p-2.5 font-semibold text-[#29291F] dark:text-[#F5F1E9] tabular-nums">{inTime}</td>
-                                                        <td className="p-2.5 font-semibold text-[#29291F] dark:text-[#F5F1E9] tabular-nums">{outTime}</td>
-                                                        <td className="p-2.5 font-bold text-[#B9955B] dark:text-[#D3B98D] tabular-nums">{durationStr}</td>
-                                                        <td className="p-2.5">
-                                                            <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${sess.isLive ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800' : 'bg-[#EEE8DD] dark:bg-[#252B20] text-[#777367] dark:text-[#B8B3A7]'}`}>
-                                                                {sess.isLive ? 'Working' : 'Completed'}
-                                                            </span>
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            })}
-                                        </tbody>
-                                    </table>
-                                </div>
-
-                                <div className="pt-3 border-t border-[#D6CDBC]/70 dark:border-[#384232] flex justify-end">
-                                    <button
-                                        onClick={() => setActiveDayModal(null)}
-                                        className="px-4 py-2 rounded-xl bg-[#30382B] dark:bg-[#3C4536] hover:bg-[#3C4536] dark:hover:bg-[#495442] text-white text-xs font-semibold transition cursor-pointer"
-                                    >
-                                        Close
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
                     {/* Audit History Timeline */}
                     {data.approvals && data.approvals.length > 0 && (
                         <div className="pt-4 border-t border-[#D6CDBC]/70 dark:border-[#384232]">
@@ -463,7 +410,87 @@ export function WeeklyTimesheetsView({ employees = [] }) {
                         </div>
                     )}
                 </div>
-            )}
+            ))}
         </div>
-    );
+    )}
+
+    {/* Day Attendance Breakdown Modal - Rendered via Portal to cover full viewport including top Header */}
+    {activeDayModal && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-200">
+            <div className="bg-[#F5F1E9] dark:bg-[#1E2419] rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-[#D6CDBC] dark:border-[#384232] space-y-4 max-h-[85vh] flex flex-col">
+                <div className="flex items-center justify-between pb-3 border-b border-[#D6CDBC]/70 dark:border-[#384232]">
+                    <div>
+                        <h3 className="font-serif text-lg font-bold text-[#29291F] dark:text-[#F5F1E9]">
+                            Real Database Sessions Breakdown
+                        </h3>
+                        <p className="text-xs text-[#777367] dark:text-[#B8B3A7] mt-0.5">
+                            {new Date(activeDayModal.date + 'T00:00:00Z').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}
+                            {' · '}
+                            <span className="font-bold text-[#29291F] dark:text-[#F5F1E9]">Total: {fmtH(activeDayModal.minutes)}</span>
+                            {' · '}
+                            <span className="font-semibold text-[#5E7D64] dark:text-[#8BB394]">{activeDayModal.sessions.length} Recorded Sessions</span>
+                        </p>
+                    </div>
+                    <button
+                        onClick={() => setActiveDayModal(null)}
+                        className="w-8 h-8 rounded-full hover:bg-[#E5DDCF] dark:hover:bg-[#252B20] flex items-center justify-center text-[#777367] dark:text-[#B8B3A7] font-bold cursor-pointer transition"
+                    >
+                        ✕
+                    </button>
+                </div>
+
+                <div className="overflow-y-auto flex-1 pr-1">
+                    <table className="w-full text-left text-xs">
+                        <thead className="bg-[#EEE8DD] dark:bg-[#252B20] text-[#777367] dark:text-[#B8B3A7] text-[10px] uppercase tracking-wider font-bold border-b border-[#D6CDBC]/70 dark:border-[#384232]">
+                            <tr>
+                                <th className="p-2.5 rounded-l-lg">#</th>
+                                <th className="p-2.5">Type</th>
+                                <th className="p-2.5">Clock In</th>
+                                <th className="p-2.5">Clock Out</th>
+                                <th className="p-2.5">Duration</th>
+                                <th className="p-2.5 rounded-r-lg">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-[#D6CDBC]/50 dark:divide-[#384232]">
+                            {activeDayModal.sessions.map((sess, idx) => {
+                                const inTime = sess.clockIn ? new Date(sess.clockIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : (sess.startTime ? new Date(sess.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--');
+                                const outTime = sess.clockOut ? new Date(sess.clockOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : (sess.endTime ? new Date(sess.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (sess.isLive ? 'Active' : '--'));
+                                const durationStr = sess.isLive ? 'In Progress' : (sess.minutes >= 60 ? `${Math.floor(sess.minutes / 60)}h ${sess.minutes % 60}m` : (sess.minutes > 0 ? `${sess.minutes}m` : (sess.durationSeconds ? `${sess.durationSeconds}s` : '<1m')));
+                                return (
+                                    <tr key={sess.id || idx} className="hover:bg-[#EEE8DD]/50 dark:hover:bg-[#252B20]/50 transition">
+                                        <td className="p-2.5 font-bold text-[#777367] dark:text-[#B8B3A7]">{idx + 1}</td>
+                                        <td className="p-2.5">
+                                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-bold uppercase ${sess.type === 'attendance' ? 'bg-[#EAEFEA] dark:bg-[#1E2B20] text-[#5E7D64] dark:text-[#8BB394] border border-[#C5D7C7] dark:border-[#325238]' : 'bg-[#FAF0E1] dark:bg-[#2C2415] text-[#C98A3C] dark:text-[#E5B56D] border border-[#E8D4B8] dark:border-[#5C4A28]'}`}>
+                                                {sess.type === 'attendance' ? 'Attendance' : (sess.note || 'Manual')}
+                                            </span>
+                                        </td>
+                                        <td className="p-2.5 font-semibold text-[#29291F] dark:text-[#F5F1E9] tabular-nums">{inTime}</td>
+                                        <td className="p-2.5 font-semibold text-[#29291F] dark:text-[#F5F1E9] tabular-nums">{outTime}</td>
+                                        <td className="p-2.5 font-bold text-[#B9955B] dark:text-[#D3B98D] tabular-nums">{durationStr}</td>
+                                        <td className="p-2.5">
+                                            <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${sess.isLive ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800' : 'bg-[#EEE8DD] dark:bg-[#252B20] text-[#777367] dark:text-[#B8B3A7]'}`}>
+                                                {sess.isLive ? 'Working' : 'Completed'}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div className="pt-3 border-t border-[#D6CDBC]/70 dark:border-[#384232] flex justify-end">
+                    <button
+                        onClick={() => setActiveDayModal(null)}
+                        className="px-4 py-2 rounded-xl bg-[#30382B] dark:bg-[#3C4536] hover:bg-[#3C4536] dark:hover:bg-[#495442] text-white text-xs font-semibold transition cursor-pointer"
+                    >
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>,
+        document.body
+    )}
+</div>
+);
 }

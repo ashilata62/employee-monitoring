@@ -178,7 +178,7 @@ export function WorkloadDistribution() {
                                 const pct = Math.round(((row.hours || 0) / (row.capacity || 1)) * 100);
                                 return pct >= optimalFrom && pct <= optimalTo ? 'Optimal' : pct > optimalTo ? 'Overloaded' : 'Underloaded';
                             }},
-                            { header: 'Efficiency', key: 'efficiency', formatter: (_, row) => `${Math.min(Math.round(((row.hours || 0) / (row.capacity || 1)) * 100) + 4, 100)}%` }
+                            { header: 'Efficiency', key: 'efficiency', formatter: (_, row) => `${Math.min(Math.round(((row.hours || 0) / (row.capacity || 1)) * 100), 100)}%` }
                         ]}
                         fileName="workload-distribution"
                         metadata={{
@@ -239,7 +239,7 @@ export function WorkloadDistribution() {
                                     <div className="flex items-center gap-4 pt-2">
                                         <div className="flex items-center gap-1.5">
                                             <BarChart2 size={14} className="text-slate-400" />
-                                            <span className="text-xs font-medium text-slate-500">Efficiency: {Math.min(pct + 4, 100)}%</span>
+                                            <span className="text-xs font-medium text-slate-500">Efficiency: {Math.min(pct, 100)}%</span>
                                         </div>
                                     </div>
                                 </div>

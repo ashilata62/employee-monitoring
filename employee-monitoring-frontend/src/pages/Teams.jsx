@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Users, Search, Edit, Trash2, Eye, TrendingUp, Plus, X } from 'lucide-react';
 import { CreateTeamModal } from '../components/CreateTeamModal';
 import { useTeamStore } from '../store/teamStore';
@@ -384,41 +385,30 @@ export function Teams() {
 }
 
 const TeamDetailModal = ({ isOpen, onClose, team }) => {
-    if (!team) return null;
+    if (!isOpen || !team) return null;
 
-    return (
-        <div className={cn(
-            "fixed inset-0 z-[100] flex items-center justify-center p-4 transition-all duration-300",
-            isOpen ? "visible" : "invisible"
-        )}>
-            {/* Backdrop */}
-            <div
-                className={cn(
-                    "absolute inset-0 bg-black/40 backdrop-blur-xs transition-opacity duration-300",
-                    isOpen ? "opacity-100" : "opacity-0"
-                )}
-                onClick={onClose}
-            />
+    const modalContent = (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
+            {/* Backdrop click area */}
+            <div className="absolute inset-0" onClick={onClose} />
 
-            {/* Modal */}
-            <div className={cn(
-                "relative w-full max-w-2xl bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl shadow-xl transition-all duration-300 ease-out flex flex-col max-h-[85vh] overflow-hidden border border-[#E5DED2] dark:border-[#384232]",
-                isOpen ? "scale-100 opacity-100" : "scale-95 opacity-0"
-            )}>
+            {/* Modal Card */}
+            <div className="relative w-full max-w-2xl bg-[#FAF8F5] dark:bg-[#252B20] rounded-3xl shadow-2xl border border-[#D6CDBC] dark:border-[#384232] flex flex-col max-h-[85vh] overflow-hidden animate-in zoom-in-95 duration-200">
                 {/* Header */}
-                <div className="px-6 py-5 border-b border-[#E5DED2] dark:border-[#384232] flex items-center justify-between bg-[#FBF9F5] dark:bg-[#252B20] sticky top-0 z-10">
+                <div className="px-6 py-5 border-b border-[#E5DED2] dark:border-[#384232] flex items-center justify-between bg-[#F5F1E9]/50 dark:bg-[#1E2419]/50 sticky top-0 z-10">
                     <div className="flex items-center gap-3.5">
                         <div className="h-10 w-10 rounded-xl bg-[#EEE8DD] text-[#30382B] border border-[#E5DED2] flex items-center justify-center text-xs font-bold">
                             {team.initials}
                         </div>
                         <div>
-                            <h2 className="font-serif text-xl font-semibold text-[#29291F] dark:text-[#F5F1E9] tracking-tight">{team.name}</h2>
+                            <h2 className="font-serif text-xl font-bold text-[#29291F] dark:text-[#F5F1E9] tracking-tight">{team.name}</h2>
                             <p className="text-[10px] font-bold text-[#777367] uppercase tracking-wider mt-0.5">{team.memberCount || 0} Team Members</p>
                         </div>
                     </div>
                     <button
                         onClick={onClose}
-                        className="h-8 w-8 rounded-lg bg-[#EEE8DD]/70 hover:bg-[#EEE8DD] flex items-center justify-center text-[#777367] hover:text-[#29291F] transition-all cursor-pointer"
+                        title="Close"
+                        className="w-8 h-8 rounded-xl bg-[#EEE8DD] hover:bg-[#E5DDCF] dark:bg-[#1E2419] dark:hover:bg-[#2A3324] text-[#777367] hover:text-[#29291F] dark:text-[#B8B3A7] dark:hover:text-[#F5F1E9] flex items-center justify-center transition cursor-pointer"
                     >
                         <X size={16} />
                     </button>
@@ -498,10 +488,10 @@ const TeamDetailModal = ({ isOpen, onClose, team }) => {
                 </div>
 
                 {/* Footer */}
-                <div className="p-4 sm:p-5 border-t border-[#E5DED2] dark:border-[#384232] bg-[#FBF9F5] dark:bg-[#252B20] flex justify-end">
+                <div className="p-4 sm:p-5 border-t border-[#E5DED2] dark:border-[#384232] bg-[#F5F1E9]/60 dark:bg-[#1E2419]/60 flex justify-end">
                     <button
                         onClick={onClose}
-                        className="px-6 py-2 bg-[#30382B] hover:bg-[#3C4536] text-[#FDFBF7] rounded-xl text-xs font-semibold shadow-warm-xs transition-all active:scale-95 cursor-pointer"
+                        className="px-6 py-2.5 bg-[#30382B] hover:bg-[#3C4536] text-[#FDFBF7] dark:bg-[#B9955B] dark:hover:bg-[#C9A86B] dark:text-[#1E2419] rounded-xl text-xs font-bold uppercase tracking-wider shadow-warm-xs transition-all active:scale-95 cursor-pointer"
                     >
                         Close
                     </button>
@@ -509,4 +499,6 @@ const TeamDetailModal = ({ isOpen, onClose, team }) => {
             </div>
         </div>
     );
+
+    return typeof document !== 'undefined' ? createPortal(modalContent, document.body) : null;
 };

@@ -140,7 +140,7 @@ export default function ProcessMining() {
                         <Zap size={16} className="text-emerald-500" />
                     </div>
                     <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
-                        {summary.processCycleEfficiency || '65%'}
+                        {summary.processCycleEfficiency || '0%'}
                     </div>
                     <div className="text-xs text-slate-500 mt-1 font-medium">
                         Active Time / Total Lead Time
@@ -153,7 +153,7 @@ export default function ProcessMining() {
                         <Clock size={16} className="text-amber-500" />
                     </div>
                     <div className="text-2xl font-black text-slate-900 dark:text-white">
-                        {summary.averageLeadTime || '18.4 hours'}
+                        {summary.averageLeadTime || '0.0 hours'}
                     </div>
                     <div className="text-xs text-slate-500 mt-1 font-medium">
                         Initiation to final delivery
@@ -179,7 +179,7 @@ export default function ProcessMining() {
                         <CheckCircle2 size={16} className="text-primary-600" />
                     </div>
                     <div className="text-2xl font-black text-primary-600 dark:text-primary-400">
-                        {summary.processMaturityScore || 82}/100
+                        {(summary.processMaturityScore ?? 0)}/100
                     </div>
                     <div className="text-xs text-slate-500 mt-1 font-medium">
                         Operational health index
@@ -238,7 +238,16 @@ export default function ProcessMining() {
 
                         {/* Interactive Graph Stages Rendering */}
                         <div className="flex flex-col lg:flex-row items-center justify-between gap-4 py-8 overflow-x-auto">
-                            {nodes.map((node, index) => {
+                            {nodes.length === 0 ? (
+                                <div className="w-full py-12 flex flex-col items-center justify-center text-center">
+                                    <div className="h-14 w-14 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mb-3 text-slate-300">
+                                        <GitBranch size={28} />
+                                    </div>
+                                    <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">No Process Graph Discovered Yet</h4>
+                                    <p className="text-xs text-slate-400 max-w-sm mt-1">Real tasks with workflow stage transitions will automatically generate the Directly-Follows Graph (DFG).</p>
+                                </div>
+                            ) : (
+                                nodes.map((node, index) => {
                                 const isStart = node.type === 'start';
                                 const isEnd = node.type === 'end';
                                 return (
@@ -275,7 +284,8 @@ export default function ProcessMining() {
                                         )}
                                     </React.Fragment>
                                 );
-                            })}
+                            })
+                            )}
                         </div>
                     </div>
 
@@ -324,7 +334,12 @@ export default function ProcessMining() {
             {/* TAB 2: Bottlenecks & Inefficiencies */}
             {activeTab === 'bottlenecks' && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {bottlenecks.map((btn) => (
+                    {bottlenecks.length === 0 ? (
+                        <div className="col-span-full p-12 text-center text-xs font-semibold text-slate-400 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800">
+                            No active bottlenecks detected across workflows.
+                        </div>
+                    ) : (
+                        bottlenecks.map((btn) => (
                         <div key={btn.id} className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-4">
                             <div>
                                 <div className="flex items-center justify-between mb-3">
@@ -357,7 +372,8 @@ export default function ProcessMining() {
                                 </p>
                             </div>
                         </div>
-                    ))}
+                    ))
+                    )}
                 </div>
             )}
 
@@ -374,7 +390,12 @@ export default function ProcessMining() {
                     </div>
 
                     <div className="space-y-4">
-                        {variants.map((v, i) => (
+                        {variants.length === 0 ? (
+                            <div className="p-8 text-center text-xs text-slate-400 font-medium">
+                                No process variants recorded yet.
+                            </div>
+                        ) : (
+                            variants.map((v, i) => (
                             <div key={i} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 flex items-center justify-between gap-4">
                                 <div className="space-y-1">
                                     <span className="text-xs font-black text-slate-800 dark:text-slate-200">
@@ -393,7 +414,8 @@ export default function ProcessMining() {
                                     />
                                 </div>
                             </div>
-                        ))}
+                        ))
+                        )}
                     </div>
                 </div>
             )}
@@ -411,7 +433,12 @@ export default function ProcessMining() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {applicationHandoffs.map((handoff, i) => (
+                        {applicationHandoffs.length === 0 ? (
+                            <div className="col-span-full p-8 text-center text-xs text-slate-400 font-medium bg-slate-50 dark:bg-slate-800/40 rounded-2xl">
+                                No application handoffs recorded yet. Active tracking agent will map app context switches.
+                            </div>
+                        ) : (
+                            applicationHandoffs.map((handoff, i) => (
                             <div key={i} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 flex items-center justify-between">
                                 <div>
                                     <span className="text-xs font-bold text-slate-900 dark:text-white block">
@@ -425,7 +452,8 @@ export default function ProcessMining() {
                                     {handoff.percentage}%
                                 </span>
                             </div>
-                        ))}
+                        ))
+                        )}
                     </div>
                 </div>
             )}

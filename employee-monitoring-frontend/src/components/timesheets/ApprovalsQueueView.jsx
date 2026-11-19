@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import {
     Check,
     X,
@@ -6,16 +7,21 @@ import {
     Download,
     Loader2,
     Calendar,
-    ShieldAlert
+    ShieldAlert,
+    Clock,
+    CheckCircle2,
+    XCircle
 } from 'lucide-react';
 import { timesheetService, fmtMoney, fmtH } from '../../services/timesheetService';
 import { toast } from '../../utils/toastManager';
+import { cn } from '../../utils/cn';
 
 export function ApprovalsQueueView() {
     const [queue, setQueue] = useState([]);
     const [selected, setSelected] = useState([]);
     const [loading, setLoading] = useState(false);
     const [actionLoading, setActionLoading] = useState(false);
+    const [filterStatus, setFilterStatus] = useState('ALL'); // 'ALL' | 'SUBMITTED' | 'APPROVED' | 'REJECTED'
 
     // Reject Modal state
     const [rejectModal, setRejectModal] = useState({ open: false, timesheet: null, comment: '' });
@@ -38,9 +44,20 @@ export function ApprovalsQueueView() {
         loadQueue();
     }, []);
 
+    const pendingList = useMemo(() => queue.filter(q => q.status === 'SUBMITTED'), [queue]);
+    const approvedList = useMemo(() => queue.filter(q => q.status === 'APPROVED'), [queue]);
+    const rejectedList = useMemo(() => queue.filter(q => q.status === 'REJECTED'), [queue]);
+
+    const displayedQueue = useMemo(() => {
+        if (filterStatus === 'SUBMITTED') return pendingList;
+        if (filterStatus === 'APPROVED') return approvedList;
+        if (filterStatus === 'REJECTED') return rejectedList;
+        return queue;
+    }, [queue, filterStatus, pendingList, approvedList, rejectedList]);
+
     const handleSelectAll = (e) => {
         if (e.target.checked) {
-            setSelected(queue.map(q => q.timesheetId));
+            setSelected(pendingList.map(q => q.timesheetId));
         } else {
             setSelected([]);
         }
@@ -121,13 +138,62 @@ export function ApprovalsQueueView() {
         <div className="space-y-6">
             {/* Header & Bulk Action Bar */}
             <div className="flex flex-wrap items-center justify-between gap-4 bg-[#EEE8DD] dark:bg-[#252B20] p-4 rounded-2xl border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs">
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3">
                     <h2 className="font-serif text-base font-bold text-[#29291F] dark:text-[#F5F1E9] uppercase tracking-wider flex items-center gap-2.5">
                         <span>Approval Queue</span>
-                        <span className="px-2.5 py-0.5 rounded-md text-xs bg-[#FAF0E1] dark:bg-[#2C2415] text-[#C98A3C] dark:text-[#E5B56D] font-bold border border-[#E8D4B8] dark:border-[#5C4A28]">
-                            {queue.length} Pending
-                        </span>
                     </h2>
+
+                    {/* Filter Status Tabs */}
+                    <div className="flex items-center gap-1 bg-[#F5F1E9] dark:bg-[#1E2419] p-1 rounded-xl border border-[#D6CDBC] dark:border-[#384232]">
+                        <button
+                            type="button"
+                            onClick={() => setFilterStatus('ALL')}
+                            className={cn(
+                                "px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer",
+                                filterStatus === 'ALL'
+                                    ? "bg-[#30382B] text-[#FDFBF7] shadow-warm-xs"
+                                    : "text-[#777367] dark:text-[#B8B3A7] hover:text-[#29291F]"
+                            )}
+                        >
+                            All ({queue.length})
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setFilterStatus('SUBMITTED')}
+                            className={cn(
+                                "px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1",
+                                filterStatus === 'SUBMITTED'
+                                    ? "bg-[#FAF0E1] text-[#C98A3C] border border-[#E8D4B8]"
+                                    : "text-[#777367] dark:text-[#B8B3A7] hover:text-[#C98A3C]"
+                            )}
+                        >
+                            Pending ({pendingList.length})
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setFilterStatus('APPROVED')}
+                            className={cn(
+                                "px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1",
+                                filterStatus === 'APPROVED'
+                                    ? "bg-[#EAEFEA] text-[#5E7D64] border border-[#C5D7C7]"
+                                    : "text-[#777367] dark:text-[#B8B3A7] hover:text-[#5E7D64]"
+                            )}
+                        >
+                            Approved ({approvedList.length})
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setFilterStatus('REJECTED')}
+                            className={cn(
+                                "px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1",
+                                filterStatus === 'REJECTED'
+                                    ? "bg-[#FAF3F2] text-[#A84B4B] border border-[#F2D6D3]"
+                                    : "text-[#777367] dark:text-[#B8B3A7] hover:text-[#A84B4B]"
+                            )}
+                        >
+                            Rejected ({rejectedList.length})
+                        </button>
+                    </div>
                 </div>
 
                 <div className="flex items-center gap-3">
@@ -158,14 +224,16 @@ export function ApprovalsQueueView() {
                     <Loader2 size={28} className="animate-spin text-[#B9955B]" />
                     <span className="text-xs font-bold">Loading approval queue...</span>
                 </div>
-            ) : queue.length === 0 ? (
+            ) : displayedQueue.length === 0 ? (
                 <div className="p-16 text-center bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs">
                     <div className="text-3xl mb-2">🎉</div>
                     <h3 className="font-serif text-xl font-normal text-[#29291F] dark:text-[#F5F1E9]">
-                        Queue is Clear
+                        {filterStatus === 'ALL' ? 'Queue is Clear' : `No ${filterStatus.toLowerCase()} timesheets`}
                     </h3>
                     <p className="text-xs text-[#777367] dark:text-[#B8B3A7] mt-1">
-                        There are currently no timesheets awaiting approval.
+                        {filterStatus === 'SUBMITTED' 
+                            ? 'There are currently no timesheets awaiting approval.' 
+                            : 'No records matching the selected filter.'}
                     </p>
                 </div>
             ) : (
@@ -177,9 +245,11 @@ export function ApprovalsQueueView() {
                                 <th className="p-4 w-10">
                                     <input
                                         type="checkbox"
-                                        checked={selected.length === queue.length && queue.length > 0}
+                                        checked={selected.length === pendingList.length && pendingList.length > 0}
                                         onChange={handleSelectAll}
-                                        className="rounded border-[#D6CDBC] text-[#30382B] focus:ring-[#B9955B]"
+                                        disabled={pendingList.length === 0}
+                                        className="rounded border-[#D6CDBC] text-[#30382B] focus:ring-[#B9955B] disabled:opacity-30"
+                                        title={pendingList.length > 0 ? "Select all pending" : "No pending items to select"}
                                     />
                                 </th>
                                 <th className="p-4">Employee</th>
@@ -188,12 +258,14 @@ export function ApprovalsQueueView() {
                                 <th className="p-4">Regular</th>
                                 <th className="p-4">Overtime</th>
                                 <th className="p-4">Total Pay</th>
+                                <th className="p-4">Status</th>
                                 <th className="p-4 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-[#D6CDBC]/50 dark:divide-[#384232] text-xs">
-                            {queue.map((ts) => {
+                            {displayedQueue.map((ts) => {
                                 const isChecked = selected.includes(ts.timesheetId);
+                                const isPending = ts.status === 'SUBMITTED';
 
                                 return (
                                     <tr
@@ -203,12 +275,16 @@ export function ApprovalsQueueView() {
                                         }`}
                                     >
                                         <td className="p-4">
-                                            <input
-                                                type="checkbox"
-                                                checked={isChecked}
-                                                onChange={() => handleToggleSelect(ts.timesheetId)}
-                                                className="rounded border-[#D6CDBC] text-[#30382B] focus:ring-[#B9955B]"
-                                            />
+                                            {isPending ? (
+                                                <input
+                                                    type="checkbox"
+                                                    checked={isChecked}
+                                                    onChange={() => handleToggleSelect(ts.timesheetId)}
+                                                    className="rounded border-[#D6CDBC] text-[#30382B] focus:ring-[#B9955B]"
+                                                />
+                                            ) : (
+                                                <span className="text-[#C5BEAF] dark:text-[#505A4A]">—</span>
+                                            )}
                                         </td>
                                         <td className="p-4 font-bold text-[#29291F] dark:text-[#F5F1E9]">
                                             <div>{ts.employeeName}</div>
@@ -241,27 +317,74 @@ export function ApprovalsQueueView() {
                                         <td className="p-4 font-bold text-[#5E7D64] dark:text-[#8BB394] tabular-nums">
                                             {fmtMoney(ts.totalPay)}
                                         </td>
+                                        <td className="p-4">
+                                            {ts.status === 'APPROVED' && (
+                                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-[#EAEFEA] dark:bg-[#1E2B20] text-[#5E7D64] dark:text-[#8BB394] border border-[#C5D7C7] dark:border-[#325238]">
+                                                    <CheckCircle2 size={12} />
+                                                    Approved
+                                                </span>
+                                            )}
+                                            {ts.status === 'REJECTED' && (
+                                                <div className="flex flex-col">
+                                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-[#FAF3F2] dark:bg-[#2E1E1E] text-[#A84B4B] dark:text-[#E07A7A] border border-[#F2D6D3] dark:border-[#572E2E]">
+                                                        <XCircle size={12} />
+                                                        Rejected
+                                                    </span>
+                                                    {ts.approvals && ts.approvals[0]?.comment && (
+                                                        <span className="text-[10px] text-[#A84B4B] dark:text-[#E07A7A] italic mt-0.5 truncate max-w-[150px]" title={ts.approvals[0].comment}>
+                                                            "{ts.approvals[0].comment}"
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            )}
+                                            {ts.status === 'SUBMITTED' && (
+                                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-[#FAF0E1] dark:bg-[#2C2415] text-[#C98A3C] dark:text-[#E5B56D] border border-[#E8D4B8] dark:border-[#5C4A28]">
+                                                    <Clock size={12} />
+                                                    Pending Review
+                                                </span>
+                                            )}
+                                        </td>
                                         <td className="p-4 text-right">
-                                            <div className="flex items-center justify-end gap-2">
-                                                <button
-                                                    onClick={() => handleApproveSingle(ts)}
-                                                    disabled={actionLoading}
-                                                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#30382B] hover:bg-[#3C4536] text-[#FDFBF7] font-semibold text-xs transition disabled:opacity-50 cursor-pointer shadow-warm-xs"
-                                                    title="Approve Timesheet"
-                                                >
-                                                    <Check size={13} className="text-[#D3B98D]" />
-                                                    Approve
-                                                </button>
-                                                <button
-                                                    onClick={() => setRejectModal({ open: true, timesheet: ts, comment: '' })}
-                                                    disabled={actionLoading}
-                                                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#FAF3F2] dark:bg-[#2E1E1E] hover:bg-[#F5E4E2] dark:hover:bg-[#3B2626] text-[#A84B4B] dark:text-[#E07A7A] border border-[#F2D6D3] dark:border-[#572E2E] font-semibold text-xs transition disabled:opacity-50 cursor-pointer"
-                                                    title="Reject Timesheet"
-                                                >
-                                                    <X size={13} />
-                                                    Reject
-                                                </button>
-                                            </div>
+                                            {isPending ? (
+                                                <div className="flex items-center justify-end gap-2">
+                                                    <button
+                                                        onClick={() => handleApproveSingle(ts)}
+                                                        disabled={actionLoading}
+                                                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#30382B] hover:bg-[#3C4536] text-[#FDFBF7] font-semibold text-xs transition disabled:opacity-50 cursor-pointer shadow-warm-xs"
+                                                        title="Approve Timesheet"
+                                                    >
+                                                        <Check size={13} className="text-[#D3B98D]" />
+                                                        Approve
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setRejectModal({ open: true, timesheet: ts, comment: '' })}
+                                                        disabled={actionLoading}
+                                                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#FAF3F2] dark:bg-[#2E1E1E] hover:bg-[#F5E4E2] dark:hover:bg-[#3B2626] text-[#A84B4B] dark:text-[#E07A7A] border border-[#F2D6D3] dark:border-[#572E2E] font-semibold text-xs transition disabled:opacity-50 cursor-pointer"
+                                                        title="Reject Timesheet"
+                                                    >
+                                                        <X size={13} />
+                                                        Reject
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <div className="flex items-center justify-end gap-2 text-[11px] text-[#777367] dark:text-[#B8B3A7]">
+                                                    {ts.status === 'APPROVED' ? (
+                                                        <span>By {ts.approvals?.[0]?.approverName || 'Admin'}</span>
+                                                    ) : (
+                                                        <div className="flex items-center gap-2">
+                                                            <span>By {ts.approvals?.[0]?.approverName || 'Admin'}</span>
+                                                            <button
+                                                                onClick={() => handleApproveSingle(ts)}
+                                                                disabled={actionLoading}
+                                                                className="text-[#5E7D64] hover:underline font-semibold cursor-pointer"
+                                                                title="Change decision to Approved"
+                                                            >
+                                                                Re-approve
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
                                         </td>
                                     </tr>
                                 );
@@ -272,9 +395,9 @@ export function ApprovalsQueueView() {
                 </div>
             )}
 
-            {/* Reject Modal Dialog */}
-            {rejectModal.open && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
+            {/* Reject Modal Dialog - Rendered via Portal to cover full viewport including top Header */}
+            {rejectModal.open && createPortal(
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
                     <div className="w-full max-w-md bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl border border-[#D6CDBC] dark:border-[#384232] shadow-warm-lg p-6 space-y-4">
                         <div className="flex items-center gap-3 text-[#A84B4B] dark:text-[#E07A7A]">
                             <div className="p-2.5 rounded-xl bg-[#FAF3F2] dark:bg-[#2E1E1E] border border-[#F2D6D3] dark:border-[#572E2E]">
@@ -320,7 +443,8 @@ export function ApprovalsQueueView() {
                             </button>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     );
