@@ -113,6 +113,11 @@ export function PeriodComparisonBar({
 
     const formatDate = (dStr) => {
         if (!dStr) return '';
+        if (typeof dStr === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dStr)) {
+            const [y, m, day] = dStr.split('-');
+            const d = new Date(Number(y), Number(m) - 1, Number(day));
+            return d.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+        }
         const d = new Date(dStr);
         if (isNaN(d.getTime())) return dStr;
         return d.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
@@ -344,8 +349,8 @@ export function PeriodComparisonBar({
                         )}
                     </div>
 
-                    {/* 4. Session Controls (Clock In / Clock Out / Take Break) for Manager / Admin */}
-                    {role !== 'EMPLOYEE' && (
+                    {/* 4. Session Controls (Clock In / Clock Out / Take Break) - Commented out for Admin Dashboard, active for Manager */}
+                    {role?.toUpperCase() === 'MANAGER' && (
                         <div className="flex items-center gap-2 self-end">
                             {!isClockedIn ? (
                                 <button

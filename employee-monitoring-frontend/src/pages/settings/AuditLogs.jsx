@@ -17,6 +17,7 @@ import {
     Monitor
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../../store/authStore';
 import { useAuditLogStore } from '../../store/auditLogStore';
 import { UserFilterModal } from '../../components/filters/UserFilterModal';
 import { RoleFilterModal } from '../../components/filters/RoleFilterModal';
@@ -24,6 +25,15 @@ import { cn } from '../../utils/cn';
 
 export function AuditLogs() {
     const navigate = useNavigate();
+    const { role } = useAuthStore();
+    const rolePath = role ? `/${role.toLowerCase()}` : '/admin';
+    const handleBack = () => {
+        if (window.history.length > 1) {
+            navigate(-1);
+        } else {
+            navigate(`${rolePath}/settings`);
+        }
+    };
     const { auditLogs, isLoading, fetchAuditLogs, filters, setFilters, sortConfig, setSort, clearFilters } = useAuditLogStore();
 
     const [isUserModalOpen, setIsUserModalOpen] = useState(false);
@@ -44,20 +54,22 @@ export function AuditLogs() {
             const now = new Date();
             let matchesDate = true;
 
-            if (filters.dateRange === 'today') {
-                matchesDate = logDate.toDateString() === now.toDateString();
+            if (filters.dateRange === 'all') {
+                matchesDate = true;
+            } else if (filters.dateRange === 'today') {
+                matchesDate = !isNaN(logDate.getTime()) && logDate.toDateString() === now.toDateString();
             } else if (filters.dateRange === 'yesterday') {
                 const yesterday = new Date();
                 yesterday.setDate(now.getDate() - 1);
-                matchesDate = logDate.toDateString() === yesterday.toDateString();
+                matchesDate = !isNaN(logDate.getTime()) && logDate.toDateString() === yesterday.toDateString();
             } else if (filters.dateRange === 'last7') {
                 const last7 = new Date();
                 last7.setDate(now.getDate() - 7);
-                matchesDate = logDate >= last7;
+                matchesDate = !isNaN(logDate.getTime()) && logDate >= last7;
             } else if (filters.dateRange === 'last30') {
                 const last30 = new Date();
                 last30.setDate(now.getDate() - 30);
-                matchesDate = logDate >= last30;
+                matchesDate = !isNaN(logDate.getTime()) && logDate >= last30;
             }
 
             // User Filter
@@ -82,6 +94,7 @@ export function AuditLogs() {
     }, [auditLogs, filters, sortConfig, searchQuery]);
 
     const dateOptions = [
+        { label: 'All Time', value: 'all' },
         { label: 'Today', value: 'today' },
         { label: 'Yesterday', value: 'yesterday' },
         { label: 'Last 7 Days', value: 'last7' },
@@ -118,14 +131,14 @@ export function AuditLogs() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div className="flex items-center gap-4">
                     <button
-                        onClick={() => navigate('/settings')}
+                        onClick={handleBack}
                         className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-all hover:scale-105 shadow-sm"
                     >
                         <ChevronLeft size={20} />
                     </button>
                     <div>
                         <nav className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">
-                            <span className="hover:text-slate-600 transition-colors cursor-pointer" onClick={() => navigate('/settings')}>Settings</span>
+                            <span className="hover:text-slate-600 transition-colors cursor-pointer" onClick={() => navigate(`${rolePath}/settings`)}>Settings</span>
                             <span>/</span>
                             <span className="text-primary-600">Audit Logs</span>
                         </nav>
@@ -155,11 +168,11 @@ export function AuditLogs() {
                         onClick={() => setIsDateDropdownOpen(!isDateDropdownOpen)}
                         className={cn(
                             "h-11 px-5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center gap-3 text-xs font-black uppercase tracking-widest transition-all shadow-sm hover:border-primary-500/50",
-                            filters.dateRange !== 'today' ? "text-primary-600 border-primary-500/30" : "text-slate-600 dark:text-slate-400"
+                            filters.dateRange !== 'all' ? "text-primary-600 border-primary-500/30" : "text-slate-600 dark:text-slate-400"
                         )}
                     >
                         <CalendarIcon size={16} />
-                        {dateOptions.find(o => o.value === filters.dateRange)?.label}
+                        {dateOptions.find(o => o.value === filters.dateRange)?.label || 'All Time'}
                         <ChevronDown size={14} className={cn("transition-transform", isDateDropdownOpen && "rotate-180")} />
                     </button>
 

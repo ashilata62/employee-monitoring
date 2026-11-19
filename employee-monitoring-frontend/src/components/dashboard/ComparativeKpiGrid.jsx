@@ -9,7 +9,9 @@ import {
     Activity,
     PieChart
 } from 'lucide-react';
-import { useLiveTimeDisplay } from '../../hooks/useLiveTime';
+import { useAuthStore } from '../../store/authStore';
+import { useSessionTimer } from '../../hooks/useLiveTime';
+import { formatSecondsToHMS } from '../../utils/timeFormat';
 
 const formatSecondsToHoursMins = (secs) => {
     if (secs === null || secs === undefined || isNaN(secs) || secs < 0) return '00:00 h';
@@ -27,13 +29,13 @@ const FormattedDisplayValue = ({ value }) => {
     const matchHMS = value.match(/^(\d{1,3})h\s*(\d{2})m\s*(\d{2})s$/);
     if (matchHMS) {
         return (
-            <div className="flex items-baseline font-sans font-bold tracking-tight text-[#29291F] dark:text-[#F5F1E9] tabular-nums leading-none flex-wrap">
+            <div className="flex items-baseline font-mono font-bold tracking-tight text-[#29291F] dark:text-[#F5F1E9] tabular-nums leading-none flex-wrap">
                 <span className="text-base sm:text-xl md:text-2xl">{matchHMS[1]}</span>
-                <span className="text-[10px] sm:text-xs font-semibold text-[#777367] dark:text-[#9E988A] ml-0.5 mr-1 sm:mr-1.5">h</span>
+                <span className="text-[10px] sm:text-xs font-semibold text-[#B9955B] ml-0.5 mr-1 sm:mr-1.5">h</span>
                 <span className="text-base sm:text-xl md:text-2xl">{matchHMS[2]}</span>
-                <span className="text-[10px] sm:text-xs font-semibold text-[#777367] dark:text-[#9E988A] ml-0.5 mr-1 sm:mr-1.5">m</span>
-                <span className="text-xs sm:text-base md:text-lg text-[#777367] dark:text-[#9E988A]">{matchHMS[3]}</span>
-                <span className="text-[9px] sm:text-[10px] md:text-[11px] font-semibold text-[#777367]/80 dark:text-[#9E988A]/80 ml-0.5">s</span>
+                <span className="text-[10px] sm:text-xs font-semibold text-[#B9955B] ml-0.5 mr-1 sm:mr-1.5">m</span>
+                <span className="text-base sm:text-xl md:text-2xl text-[#29291F] dark:text-[#F5F1E9]">{matchHMS[3]}</span>
+                <span className="text-[10px] sm:text-xs font-semibold text-[#B9955B] ml-0.5">s</span>
             </div>
         );
     }
@@ -59,22 +61,12 @@ const FormattedDisplayValue = ({ value }) => {
 
 const KpiCard = ({
     title,
-    value,
-    baseSeconds,
-    liveTick,
+    displayValue,
     delta,
     inverse = false,
+    liveTick = false,
     icon: Icon
 }) => {
-    const liveSecsDisplay = useLiveTimeDisplay(baseSeconds, liveTick);
-    
-    let displayValue = '00h 00m 00s';
-    if (value !== undefined && value !== null) {
-        displayValue = liveTick ? (liveSecsDisplay || value) : value;
-    } else if (baseSeconds !== undefined && baseSeconds !== null) {
-        displayValue = liveTick ? (liveSecsDisplay || formatSecondsToHoursMins(baseSeconds)) : formatSecondsToHoursMins(baseSeconds);
-    }
-
     const activeDelta = delta?.percent !== undefined
         ? delta
         : { percent: 0, percentFormatted: '0%', diffHoursFormatted: '', direction: 'up' };
@@ -94,9 +86,17 @@ const KpiCard = ({
         <div className="group bg-[#EEE8DD] dark:bg-[#252B20] rounded-xl sm:rounded-2xl border border-[#D6CDBC] dark:border-[#384232] p-3.5 sm:p-4 shadow-warm-xs hover:border-[#B9955B]/60 dark:hover:border-[#B9955B]/50 transition-all duration-200 flex flex-col justify-between">
             {/* Top row: Title & Mini Icon */}
             <div className="flex items-center justify-between gap-2 mb-2">
-                <span className="text-[10px] sm:text-[11px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-[0.12em] truncate">
-                    {title}
-                </span>
+                <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="text-[10px] sm:text-[11px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-[0.12em] truncate">
+                        {title}
+                    </span>
+                    {liveTick && (
+                        <span className="relative flex h-2 w-2 shrink-0" title="Live ticking stopwatch">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                        </span>
+                    )}
+                </div>
                 <div className="h-7 w-7 rounded-lg bg-[#EEE8DD]/80 dark:bg-[#30382B] flex items-center justify-center text-[#B9955B] group-hover:bg-[#B9955B]/15 group-hover:text-[#A17D45] transition-colors shrink-0">
                     <Icon size={14} strokeWidth={2} />
                 </div>
@@ -127,38 +127,69 @@ const KpiCard = ({
     );
 };
 
-export function ComparativeKpiGrid({ sec, stats, deltas, liveTick }) {
+export function ComparativeKpiGrid({ sec, stats, deltas, role, isToday = true, liveTick = false }) {
     const d = deltas || {};
+    const { isClockedIn } = useAuthStore();
+    const sessionSeconds = useSessionTimer();
 
-    const utilizationVal = stats?.summary?.utilization !== undefined
-        ? `${stats.summary.utilization}%`
-        : '0%';
+    const isManagerOrEmp = role?.toUpperCase() !== 'ADMIN';
+
+    // When Manager / Employee is viewing Today:
+    // If clocked out: ALL cards reset to 00h 00m 00s and 0% immediately with zero latency!
+    // If clocked in: session timer ticks live from 00h 00m 00s upwards!
+    const effectiveWorkTime = isManagerOrEmp && isToday
+        ? (isClockedIn ? formatSecondsToHMS(sessionSeconds) : '00h 00m 00s')
+        : (stats?.summary?.workTime || formatSecondsToHoursMins(sec?.workTime));
+
+    const effectiveActiveTime = isManagerOrEmp && isToday
+        ? (isClockedIn ? formatSecondsToHMS(sessionSeconds) : '00h 00m 00s')
+        : (stats?.summary?.activeTime || formatSecondsToHoursMins(sec?.activeTime));
+
+    const effectiveProductiveTime = isManagerOrEmp && isToday
+        ? (isClockedIn ? formatSecondsToHMS(sessionSeconds) : '00h 00m 00s')
+        : (stats?.summary?.productiveTime || formatSecondsToHoursMins(sec?.productiveTime));
+
+    const effectiveIdleTime = isManagerOrEmp && isToday
+        ? '00h 00m 00s'
+        : (stats?.summary?.idleTime || formatSecondsToHoursMins(sec?.idleTime));
+
+    const effectiveManualTime = isManagerOrEmp && isToday
+        ? '00h 00m 00s'
+        : (stats?.summary?.manualTime || formatSecondsToHoursMins(sec?.manualTime));
+
+    const effectiveUnproductiveTime = isManagerOrEmp && isToday
+        ? '00h 00m 00s'
+        : (stats?.summary?.unproductiveTime || formatSecondsToHoursMins(sec?.unproductiveTime));
+
+    const effectiveNeutralTime = isManagerOrEmp && isToday
+        ? '00h 00m 00s'
+        : (stats?.summary?.neutralTime || formatSecondsToHoursMins(sec?.neutralTime));
+
+    const effectiveProductivity = isManagerOrEmp && isToday
+        ? (isClockedIn ? '100%' : '0%')
+        : (stats?.summary?.utilization !== undefined ? `${stats.summary.utilization}%` : '0%');
 
     return (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 sm:gap-4 lg:gap-5 mb-6 sm:mb-8">
             <KpiCard
                 title="Work Time"
-                value={stats?.summary?.workTime}
-                baseSeconds={sec?.workTime}
-                liveTick={liveTick}
+                displayValue={effectiveWorkTime}
                 delta={d.workTime}
+                liveTick={liveTick}
                 icon={Briefcase}
             />
 
             <KpiCard
                 title="Active Time"
-                value={stats?.summary?.activeTime}
-                baseSeconds={sec?.activeTime}
-                liveTick={liveTick}
+                displayValue={effectiveActiveTime}
                 delta={d.activeTime}
+                liveTick={liveTick}
                 icon={Monitor}
             />
 
             <KpiCard
                 title="Idle Time"
-                value={stats?.summary?.idleTime}
-                baseSeconds={sec?.idleTime}
-                liveTick={false}
+                displayValue={effectiveIdleTime}
                 delta={d.idleTime}
                 inverse={true}
                 icon={MonitorOff}
@@ -166,27 +197,21 @@ export function ComparativeKpiGrid({ sec, stats, deltas, liveTick }) {
 
             <KpiCard
                 title="Manual Time"
-                value={stats?.summary?.manualTime}
-                baseSeconds={sec?.manualTime}
-                liveTick={false}
+                displayValue={effectiveManualTime}
                 delta={d.manualTime}
                 icon={Clock}
             />
 
             <KpiCard
                 title="Productive Time"
-                value={stats?.summary?.productiveTime}
-                baseSeconds={sec?.productiveTime}
-                liveTick={false}
+                displayValue={effectiveProductiveTime}
                 delta={d.productiveTime}
                 icon={Award}
             />
 
             <KpiCard
                 title="Unproductive Time"
-                value={stats?.summary?.unproductiveTime}
-                baseSeconds={sec?.unproductiveTime}
-                liveTick={false}
+                displayValue={effectiveUnproductiveTime}
                 delta={d.unproductiveTime}
                 inverse={true}
                 icon={Activity}
@@ -194,16 +219,14 @@ export function ComparativeKpiGrid({ sec, stats, deltas, liveTick }) {
 
             <KpiCard
                 title="Neutral Time"
-                value={stats?.summary?.neutralTime}
-                baseSeconds={sec?.neutralTime}
-                liveTick={false}
+                displayValue={effectiveNeutralTime}
                 delta={d.neutralTime}
                 icon={PieChart}
             />
 
             <KpiCard
                 title="Productivity"
-                value={utilizationVal}
+                displayValue={effectiveProductivity}
                 delta={d.productivity || d.utilization}
                 icon={TrendingUp}
             />

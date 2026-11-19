@@ -838,54 +838,11 @@ export function Payroll() {
                         </button>
                     </div>
 
-                    <div className="space-y-6">
-                        <div className="rounded-[2rem] border border-slate-200 bg-slate-900 text-white p-6 md:p-8 shadow-xl relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-32 md:w-40 h-32 md:h-40 bg-indigo-500 rounded-full blur-3xl -mr-10 -mt-10 opacity-30"></div>
-                            <h3 className="text-lg md:text-xl font-bold mb-2 relative z-10">Sync Assistant</h3>
-                            <p className="text-slate-400 text-[11px] md:text-sm mb-6 relative z-10">Quickly sync your data with cloud accounting services.</p>
-                            <div className="space-y-3 relative z-10">
-                                <button onClick={() => setActiveTab('integrations')} className="w-full py-3 px-4 rounded-xl bg-white text-slate-900 font-bold text-xs md:text-sm flex items-center justify-center gap-2 hover:bg-slate-100 transition-colors">
-                                    <Zap size={16} /> Manage Integrations
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {activeTab === 'integrations' && (
-                <div className="space-y-8 animate-fade-in">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div>
-                            <h2 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">Third-Party Integrations</h2>
-                            <p className="text-slate-500 font-medium">Automatic data synchronization with industry-leading platforms.</p>
-                        </div>
-                        <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-800">
-                            <ShieldCheck size={18} />
-                            <span className="text-xs font-black uppercase tracking-widest">Enterprise Encrypted</span>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {INTEGRATIONS.map(item => (
-                            <IntegrationCard
-                                key={item.id}
-                                item={item}
-                                status={integrationStatuses[item.id] || 'Not Connected'}
-                                lastSync={integrationLastSync[item.id]}
-                                onConnect={(id) => {
-                                    setConnectingService(id);
-                                    setIsCloudModalOpen(true);
-                                }}
-                                onSync={handleDirectSync}
-                                isSyncing={syncingService === item.id}
-                            />
-                        ))}
-                    </div>
-
 
                 </div>
             )}
+
+
 
             {/* Cloud Payroll Modal */}
             <CloudPayrollModal

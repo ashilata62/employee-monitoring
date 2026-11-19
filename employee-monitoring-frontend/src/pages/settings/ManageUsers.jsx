@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../../store/authStore';
 import { ChevronLeft, Search, Download, ChevronDown, Users, Plus } from 'lucide-react';
 import { useUserStore } from '../../store/userStore';
 import { UserTable } from '../../components/users/UserTable';
@@ -63,6 +64,15 @@ function AddNewDropdown({ onSelect }) {
 
 export function ManageUsers() {
     const navigate = useNavigate();
+    const { role } = useAuthStore();
+    const rolePath = role ? `/${role.toLowerCase()}` : '/admin';
+    const handleBack = () => {
+        if (window.history.length > 1) {
+            navigate(-1);
+        } else {
+            navigate(`${rolePath}/settings`);
+        }
+    };
     const { users, removeUser } = useUserStore();
     const [search, setSearch] = useState('');
     const [activeTab, setActiveTab] = useState('users');
@@ -101,12 +111,12 @@ export function ManageUsers() {
             {/* Header */}
             <div className="flex items-center justify-between pt-8 pb-6">
                 <div className="flex items-center gap-4">
-                    <button onClick={() => navigate('/settings')} className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-all hover:scale-105 shadow-sm">
+                    <button onClick={handleBack} className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-all hover:scale-105 shadow-sm">
                         <ChevronLeft size={20} />
                     </button>
                     <div>
                         <nav className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">
-                            <span className="cursor-pointer hover:text-slate-600 dark:hover:text-slate-300 transition-colors" onClick={() => navigate('/settings')}>Settings</span>
+                            <span className="cursor-pointer hover:text-slate-600 dark:hover:text-slate-300 transition-colors" onClick={() => navigate(`${rolePath}/settings`)}>Settings</span>
                             <span>/</span><span className="text-primary-600">Manage Users</span>
                         </nav>
                         <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Manage Users</h1>
@@ -117,7 +127,7 @@ export function ManageUsers() {
 
             {/* Tabs */}
             <div className="flex items-center gap-1 border-b border-slate-200 dark:border-slate-800 mb-6">
-                {[{ id: 'users', label: 'Manage Users', path: '/settings/user-management/users' }, { id: 'orgGroups', label: 'Manage Org Groups', path: '/settings/user-management/org-groups' }].map((tab) => (
+                {[{ id: 'users', label: 'Manage Users', path: `${rolePath}/settings/user-management/users` }, { id: 'orgGroups', label: 'Manage Org Groups', path: `${rolePath}/settings/user-management/org-groups` }].map((tab) => (
                     <button key={tab.id} onClick={() => { setActiveTab(tab.id); navigate(tab.path); }}
                         className={cn('px-4 py-3 text-sm font-black border-b-2 transition-all', activeTab === tab.id ? 'border-primary-600 text-primary-600 dark:text-primary-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300')}>
                         {tab.label}

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../../store/authStore';
 import { ChevronLeft, Lock } from 'lucide-react';
 import { useSecurityStore } from '../../store/securityStore';
 import { Stepper } from '../../components/ui/Stepper';
@@ -25,6 +26,8 @@ function Toast({ show, message, type }) {
 
 export function SamlWizard() {
     const navigate = useNavigate();
+    const { role } = useAuthStore();
+    const rolePath = role ? `/${role.toLowerCase()}` : '/admin';
     const { saml, nextStep, previousStep, saveSaml, resetWizard } = useSecurityStore();
     const [errors, setErrors] = useState({});
     const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
@@ -58,7 +61,7 @@ export function SamlWizard() {
     const handleBack = () => {
         if (saml.step === 1) {
             resetWizard();
-            navigate('/settings/security');
+            navigate(`${rolePath}/settings/security`);
         } else {
             previousStep();
         }
@@ -67,7 +70,7 @@ export function SamlWizard() {
     const handleFinish = () => {
         saveSaml();
         showToast('SAML configuration saved successfully!');
-        setTimeout(() => navigate('/settings/security'), 1200);
+        setTimeout(() => navigate(`${rolePath}/settings/security`), 1200);
     };
 
     const handleError = (msg) => showToast(msg, 'error');
@@ -80,16 +83,16 @@ export function SamlWizard() {
             {/* Header */}
             <div className="flex items-center gap-4 pt-8 pb-8">
                 <button
-                    onClick={() => navigate('/settings/security')}
+                    onClick={() => navigate(`${rolePath}/settings/security`)}
                     className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-all hover:scale-105 shadow-sm"
                 >
                     <ChevronLeft size={20} />
                 </button>
                 <div>
                     <nav className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">
-                        <span className="hover:text-slate-600 dark:hover:text-slate-300 cursor-pointer transition-colors" onClick={() => navigate('/settings')}>Settings</span>
+                        <span className="hover:text-slate-600 dark:hover:text-slate-300 cursor-pointer transition-colors" onClick={() => navigate(`${rolePath}/settings`)}>Settings</span>
                         <span>/</span>
-                        <span className="hover:text-slate-600 dark:hover:text-slate-300 cursor-pointer transition-colors" onClick={() => navigate('/settings/security')}>Security and Identity</span>
+                        <span className="hover:text-slate-600 dark:hover:text-slate-300 cursor-pointer transition-colors" onClick={() => navigate(`${rolePath}/settings/security`)}>Security and Identity</span>
                         <span>/</span>
                         <span className="text-primary-600">SAML</span>
                     </nav>
