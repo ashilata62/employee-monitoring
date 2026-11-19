@@ -120,8 +120,8 @@ export function AppsWebsites() {
 
     // Fetch report data whenever dateRange changes
     useEffect(() => {
-        const fetchAppsReport = async () => {
-            setLoading(true);
+        const fetchAppsReport = async (isBackground = false) => {
+            if (!isBackground) setLoading(true);
             try {
                 const res = await api.get('/reports', {
                     params: {
@@ -135,10 +135,13 @@ export function AppsWebsites() {
             } catch (err) {
                 console.error('Failed to load apps report:', err);
             } finally {
-                setLoading(false);
+                if (!isBackground) setLoading(false);
             }
         };
+
         fetchAppsReport();
+        const interval = setInterval(() => fetchAppsReport(true), 30000);
+        return () => clearInterval(interval);
     }, [dateRange.start, dateRange.end]);
 
     // Available categories from DB or standard options

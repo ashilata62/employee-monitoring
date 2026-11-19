@@ -139,140 +139,168 @@ export function EmployeeProfile() {
     if (isLoading) {
         return (
             <div className="flex items-center justify-center min-h-[400px]">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#B9955B]"></div>
             </div>
         );
     }
 
     if (!employee) {
         return (
-            <div className="p-8 text-center text-gray-500">
+            <div className="p-8 text-center text-[#777367] dark:text-[#B8B3A7]">
                 Employee not found.
-                <button onClick={() => navigate(-1)} className="block mx-auto mt-4 text-indigo-600 hover:underline">
+                <button onClick={() => navigate(-1)} className="block mx-auto mt-4 text-[#B9955B] hover:underline font-semibold text-xs cursor-pointer">
                     Go Back
                 </button>
             </div>
         );
     }
 
+    const employeeInitials = (employee.name || employee.fullName || 'E')
+        .split(' ')
+        .map(n => n[0])
+        .join('')
+        .slice(0, 2)
+        .toUpperCase();
+
+    const isCustomAvatar = employee.avatar && !employee.avatar.includes('ui-avatars.com');
+
     return (
-        <div className="p-6 max-w-7xl mx-auto space-y-6">
+        <div className="p-6 max-w-7xl mx-auto space-y-6 text-[#29291F] dark:text-[#F5F1E9]">
             {/* Header */}
             <div className="flex items-center justify-between mb-2">
                 <button
                     onClick={() => navigate(-1)}
-                    className="flex items-center text-gray-500 hover:text-indigo-600 transition-colors"
+                    className="inline-flex items-center gap-2 text-xs font-semibold text-[#777367] dark:text-[#B8B3A7] hover:text-[#30382B] dark:hover:text-[#D3B98D] transition-colors cursor-pointer"
                 >
-                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    <ArrowLeft className="w-4 h-4 text-[#B9955B]" />
                     Back to Employees
                 </button>
                 <div className="flex space-x-2">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium uppercase tracking-wider ${employee.status === 'active' ? 'bg-green-100 text-green-700' :
-                            employee.status === 'invited' ? 'bg-blue-100 text-blue-700' :
-                                'bg-gray-100 text-gray-700'
-                        }`}>
-                        {employee.status}
+                    <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
+                        (employee.status || '').toLowerCase() === 'active'
+                            ? 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-800 dark:text-emerald-400 border-emerald-300 dark:border-emerald-500/20'
+                            : (employee.status || '').toLowerCase() === 'invited'
+                            ? 'bg-[#EEE8DD] dark:bg-[#1E2419] text-[#B9955B] dark:text-[#D3B98D] border-[#D6CDBC] dark:border-[#384232]'
+                            : 'bg-[#EEE8DD] dark:bg-[#1E2419] text-[#777367] dark:text-[#B8B3A7] border-[#D6CDBC] dark:border-[#384232]'
+                    }`}>
+                        {employee.status || 'OFFLINE'}
                     </span>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Profile Card */}
-                <div className="lg:col-span-1 bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-6">
+                <div className="lg:col-span-1 bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl p-6 shadow-warm-xs border border-[#D6CDBC] dark:border-[#384232] space-y-6">
                     <div className="flex flex-col items-center text-center">
-                        <img
-                            src={employee.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(employee.name || employee.fullName)}&background=random`}
-                            alt={employee.name}
-                            className="w-24 h-24 rounded-full border-4 border-indigo-50 mb-4"
-                        />
-                        <h2 className="text-xl font-bold text-gray-900">{employee.name || employee.fullName}</h2>
-                        <p className="text-gray-500 text-sm mt-1">{employee.role}</p>
+                        {isCustomAvatar ? (
+                            <img
+                                src={employee.avatar}
+                                alt={employee.name || employee.fullName}
+                                className="w-24 h-24 rounded-full object-cover border-2 border-[#D6CDBC] dark:border-[#384232] shadow-sm mb-4"
+                            />
+                        ) : (
+                            <div className="w-24 h-24 rounded-full bg-[#EEE8DD] dark:bg-[#1E2419] border-2 border-[#D6CDBC] dark:border-[#384232] flex items-center justify-center text-2xl font-serif font-bold text-[#30382B] dark:text-[#D3B98D] shadow-inner mb-4">
+                                {employeeInitials}
+                            </div>
+                        )}
+                        <h2 className="font-serif text-2xl font-normal text-[#29291F] dark:text-[#F5F1E9] tracking-tight">
+                            {employee.name || employee.fullName}
+                        </h2>
+                        <p className="text-xs font-semibold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-[0.12em] mt-1">
+                            {employee.role}
+                        </p>
                     </div>
 
-                    <div className="space-y-4 border-t border-gray-50 pt-6">
-                        <div className="flex items-center text-sm text-gray-600">
-                            <Mail className="w-4 h-4 mr-3 text-gray-400" />
-                            {employee.email}
+                    <div className="space-y-4 border-t border-[#D6CDBC]/60 dark:border-[#384232] pt-6">
+                        <div className="flex items-center text-xs font-medium text-[#29291F] dark:text-[#E2E8DE]">
+                            <Mail className="w-4 h-4 mr-3 text-[#B9955B] dark:text-[#D3B98D] shrink-0" />
+                            <span className="truncate">{employee.email}</span>
                         </div>
-                        <div className="flex items-center text-sm text-gray-600">
-                            <Users className="w-4 h-4 mr-3 text-gray-400" />
-                            {employee.team || 'Unassigned'}
+                        <div className="flex items-center text-xs font-medium text-[#29291F] dark:text-[#E2E8DE]">
+                            <Users className="w-4 h-4 mr-3 text-[#B9955B] dark:text-[#D3B98D] shrink-0" />
+                            <span>{employee.team || 'Unassigned'}</span>
                         </div>
-                        <div className="flex items-center text-sm text-gray-600">
-                            <MapPin className="w-4 h-4 mr-3 text-gray-400" />
-                            {employee.location || 'Remote'}
+                        <div className="flex items-center text-xs font-medium text-[#29291F] dark:text-[#E2E8DE]">
+                            <MapPin className="w-4 h-4 mr-3 text-[#B9955B] dark:text-[#D3B98D] shrink-0" />
+                            <span>{employee.location || 'Remote'}</span>
                         </div>
-                        <div className="flex items-center text-sm text-gray-600">
-                            <DollarSign className="w-4 h-4 mr-3 text-gray-400" />
-                            ${employee.hourlyRate || 0.00} / hour
+                        <div className="flex items-center text-xs font-medium text-[#29291F] dark:text-[#E2E8DE]">
+                            <DollarSign className="w-4 h-4 mr-3 text-[#B9955B] dark:text-[#D3B98D] shrink-0" />
+                            <span>${employee.hourlyRate || 0.00} / hour</span>
                         </div>
                     </div>
                 </div>
 
                 {/* Activity & Stats */}
                 <div className="lg:col-span-2 space-y-6">
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         {[
-                            { label: 'Total Hours', value: stats.totalHours, icon: Clock, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-                            { label: 'Productivity', value: stats.productivity, icon: TrendingUp, color: 'text-green-600', bg: 'bg-green-50' },
-                            { label: 'Activity', value: stats.activity, icon: Shield, color: 'text-purple-600', bg: 'bg-purple-50' }
+                            { label: 'Total Hours', value: stats.totalHours, icon: Clock, iconColor: 'text-[#B9955B] dark:text-[#D3B98D]', bg: 'bg-[#EEE8DD] dark:bg-[#1E2419]' },
+                            { label: 'Productivity', value: stats.productivity, icon: TrendingUp, iconColor: 'text-emerald-700 dark:text-emerald-400', bg: 'bg-emerald-100/60 dark:bg-emerald-500/10' },
+                            { label: 'Activity', value: stats.activity, icon: Shield, iconColor: 'text-[#30382B] dark:text-[#D3B98D]', bg: 'bg-[#EEE8DD] dark:bg-[#1E2419]' }
                         ].map((stat, i) => (
-                            <div key={i} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between">
-                                <div className="flex items-center justify-between mb-2">
-                                    <div className={`p-2 rounded-lg ${stat.bg}`}>
-                                        <stat.icon className={`w-4 h-4 ${stat.color}`} />
+                            <div key={i} className="bg-[#FBF9F5] dark:bg-[#252B20] p-4 sm:p-5 rounded-2xl border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs flex flex-col justify-between">
+                                <div className="flex items-center justify-between mb-3">
+                                    <div className={`p-2 rounded-xl ${stat.bg} border border-[#D6CDBC]/50 dark:border-[#384232]/50`}>
+                                        <stat.icon className={`w-4 h-4 ${stat.iconColor}`} />
                                     </div>
                                 </div>
                                 <div>
-                                    <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-                                    <p className="text-xs text-gray-500 mt-1 uppercase tracking-wider">{stat.label}</p>
+                                    <p className="font-serif text-2xl sm:text-3xl font-medium text-[#29291F] dark:text-[#F5F1E9] tracking-tight">{stat.value}</p>
+                                    <p className="text-[10px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-[0.14em] mt-1">{stat.label}</p>
                                 </div>
                             </div>
                         ))}
                     </div>
 
-                    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 min-h-[300px]">
+                    <div className="bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl p-6 shadow-warm-xs border border-[#D6CDBC] dark:border-[#384232] min-h-[300px]">
                         <div className="flex items-center justify-between mb-6">
-                            <h3 className="font-bold text-gray-900 border-l-4 border-indigo-600 pl-3">Employee Activity Summary</h3>
-                            <div className="flex items-center text-xs text-gray-400">
-                                <Calendar className="w-3 h-3 mr-1" />
+                            <h3 className="font-serif text-lg font-medium text-[#29291F] dark:text-[#F5F1E9] border-l-3 border-[#B9955B] pl-3">
+                                Employee Activity Summary
+                            </h3>
+                            <div className="flex items-center text-xs font-semibold text-[#777367] dark:text-[#B8B3A7]">
+                                <Calendar className="w-3.5 h-3.5 mr-1.5 text-[#B9955B]" />
                                 Last 7 Days
                             </div>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="h-64">
-                                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Activity Trend (Hours)</p>
+                                <p className="text-[10px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-wider mb-4">
+                                    Activity Trend (Hours)
+                                </p>
                                 {activityTrend.length > 0 ? (
                                     <ResponsiveContainer width="100%" height="100%">
                                         <BarChart data={activityTrend}>
-                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94a3b8' }} />
-                                            <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94a3b8' }} />
-                                            <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }} />
-                                            <Bar dataKey="active" name="Active" fill="#6366f1" radius={[4, 4, 0, 0]} />
-                                            <Bar dataKey="idle" name="Idle" fill="#94a3b8" radius={[4, 4, 0, 0]} />
+                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(214, 205, 188, 0.25)" />
+                                            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#777367' }} />
+                                            <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#777367' }} />
+                                            <Tooltip contentStyle={{ backgroundColor: '#252B20', borderColor: '#384232', color: '#F5F1E9', borderRadius: '12px' }} />
+                                            <Bar dataKey="active" name="Active" fill="#B9955B" radius={[4, 4, 0, 0]} />
+                                            <Bar dataKey="idle" name="Idle" fill="#777367" radius={[4, 4, 0, 0]} />
                                         </BarChart>
                                     </ResponsiveContainer>
                                 ) : (
-                                    <div className="h-full flex items-center justify-center text-xs text-slate-400 font-semibold">
+                                    <div className="h-full flex items-center justify-center text-xs text-[#777367] dark:text-[#B8B3A7] font-semibold">
                                         No activity logs recorded for this employee yet.
                                     </div>
                                 )}
                             </div>
                             <div className="space-y-4">
-                                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Top Applications & Websites</p>
+                                <p className="text-[10px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-wider">
+                                    Top Applications & Websites
+                                </p>
                                 {topApps.length > 0 ? (
                                     <div className="space-y-3">
                                         {topApps.map((app, index) => (
                                             <div key={index} className="space-y-1">
                                                 <div className="flex justify-between text-xs">
-                                                    <span className="font-bold text-slate-700 dark:text-slate-300">{app.name}</span>
-                                                    <span className="text-slate-500 font-medium">{app.duration} ({app.percentage}%)</span>
+                                                    <span className="font-semibold text-[#29291F] dark:text-[#F5F1E9]">{app.name}</span>
+                                                    <span className="text-[#777367] dark:text-[#B8B3A7] font-medium">{app.duration} ({app.percentage}%)</span>
                                                 </div>
-                                                <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                                                <div className="w-full bg-[#EEE8DD] dark:bg-[#1E2419] h-2 rounded-full overflow-hidden border border-[#D6CDBC]/40 dark:border-[#384232]/40">
                                                     <div 
                                                         className={`h-full rounded-full transition-all duration-500 ${
-                                                            app.type === 'Productive' ? 'bg-emerald-500' : app.type === 'Unproductive' ? 'bg-rose-500' : 'bg-slate-400'
+                                                            app.type === 'Productive' ? 'bg-emerald-600 dark:bg-emerald-500' : app.type === 'Unproductive' ? 'bg-[#A84B4B]' : 'bg-[#B9955B]'
                                                         }`}
                                                         style={{ width: `${Math.min(app.percentage, 100)}%` }}
                                                     />
@@ -281,7 +309,7 @@ export function EmployeeProfile() {
                                         ))}
                                     </div>
                                 ) : (
-                                    <div className="h-40 flex items-center justify-center text-xs text-slate-400 font-semibold">
+                                    <div className="h-40 flex items-center justify-center text-xs text-[#777367] dark:text-[#B8B3A7] font-semibold">
                                         No tracked application usage for this employee.
                                     </div>
                                 )}
