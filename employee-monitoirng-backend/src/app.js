@@ -18,8 +18,8 @@ app.use('/api', routes);
 app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
 app.use('/agent', express.static(path.join(__dirname, '../public/agent')));
 
-// Redirect /setup-agent directly to agent installer download
-app.get('/setup-agent', (req, res) => {
+// Redirect friendly agent setup URLs directly to agent installer download
+app.get(['/setup-agent', '/download-agent', '/download'], (req, res) => {
     res.redirect('/api/agent/download');
 });
 
