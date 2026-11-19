@@ -112,14 +112,21 @@ export function AdminExecutiveDashboard({
             const liveStatus = (liveMatch?.status || liveMatch?.accountStatus || '').toLowerCase();
             const dbStatus = (emp.status || '').toLowerCase();
 
+            const appString = (liveMatch?.activeApp || liveMatch?.currentApp || emp.activeApp || emp.currentApp || emp.currentActivity || '').toLowerCase();
+            const hasIdleApp = appString.includes('idle') || appString.includes('away');
+            const hasIdleActivity = (emp.currentActivity || '').toLowerCase().includes('idle') || (liveMatch?.currentActivity || '').toLowerCase().includes('idle');
+
             const isBreak = liveStatus === 'break' || dbStatus === 'break' || liveMatch?.isOnBreak || false;
             
-            const isIdle = liveStatus === 'idle' || liveStatus === 'afk' || liveStatus === 'passive' || liveStatus === 'idle_warning' ||
-                           dbStatus === 'idle' || dbStatus === 'afk' ||
-                           liveMatch?.isIdle ||
-                           (liveMatch?.idleTime || 0) >= 60 ||
-                           (liveMatch?.idleMinutes || 0) >= 1 ||
-                           (typeof emp.idle === 'number' && emp.idle >= 60);
+            const isIdle = !isBreak && (
+                liveStatus === 'idle' || liveStatus === 'afk' || liveStatus === 'passive' || liveStatus === 'idle_warning' ||
+                dbStatus === 'idle' || dbStatus === 'afk' ||
+                hasIdleApp || hasIdleActivity ||
+                liveMatch?.isIdle ||
+                (liveMatch?.idleTime || 0) >= 60 ||
+                (liveMatch?.idleMinutes || 0) >= 1 ||
+                (typeof emp.idle === 'number' && emp.idle >= 60)
+            );
 
             const isOnline = liveStatus === 'online' || liveStatus === 'active' ||
                              dbStatus === 'online' || dbStatus === 'active' ||
@@ -130,7 +137,7 @@ export function AdminExecutiveDashboard({
             const idleMinutes = liveMatch?.idleTime 
                 ? Math.max(1, Math.floor(liveMatch.idleTime / 60)) 
                 : (typeof emp.idle === 'number' && emp.idle >= 60 ? Math.floor(emp.idle / 60) : (liveMatch?.idleMinutes || (isIdle ? 1 : 0)));
-            const currentApp = liveMatch?.activeApp || liveMatch?.activeWindow || liveMatch?.currentApp || null;
+            const currentApp = liveMatch?.activeApp || liveMatch?.activeWindow || liveMatch?.currentApp || (hasIdleApp ? 'Away from Computer (Idle)' : null);
 
             let currentActivity = 'Offline';
             if (isOnBreak) {

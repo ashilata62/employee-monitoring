@@ -151,16 +151,6 @@ export function RealTimeProvider({ children }) {
                 notifications: [n, ...prev.notifications].slice(0, 50)
             };
         });
-
-        // Persist notification to backend database
-        try {
-            notificationService.createNotification({
-                title,
-                description: description || '',
-                type,
-                link: options.link || null
-            }).catch(() => {});
-        } catch (e) {}
     }, []);
 
     // Listen to all toast notifications across the app and record them in the Bell dropdown
@@ -247,7 +237,11 @@ export function RealTimeProvider({ children }) {
                     const backendEmployees = res.data.map(emp => {
                         const name = emp.fullName || emp.name || 'Unknown User';
                         const st = (emp.status || 'offline').toLowerCase();
-                        const normalizedStatus = (st === 'active' || st === 'online') ? 'online' : st;
+                        const appStr = (emp.activeApp || emp.currentApp || '').toLowerCase();
+                        const actStr = (emp.currentActivity || '').toLowerCase();
+                        const isIdleFromApi = actStr === 'idle' || appStr.includes('idle') || appStr.includes('away');
+                        const isBreakFromApi = st === 'break' || actStr === 'break';
+                        const normalizedStatus = isBreakFromApi ? 'break' : (isIdleFromApi ? 'idle' : ((st === 'active' || st === 'online') ? 'online' : st));
                         return {
                             ...emp,
                             name: name,
@@ -255,13 +249,15 @@ export function RealTimeProvider({ children }) {
                             team: emp.team?.name || emp.team || 'General',
                             status: normalizedStatus,
                             accountStatus: st,
+                            isIdle: normalizedStatus === 'idle',
+                            isOnBreak: normalizedStatus === 'break',
                             productivityScore: emp.productivityScore || (normalizedStatus === 'online' ? 92 : 82),
                             utilizationScore: emp.utilizationScore || (normalizedStatus === 'online' ? 86 : 76),
                             totalWorkHours: emp.totalWorkHours || 0,
                             manualHours: emp.manualHours || 0,
                             computerActivityHours: emp.computerActivityHours || 0,
-                            activeApp: emp.activeApp || (normalizedStatus === 'online' ? 'Visual Studio Code' : 'Offline'),
-                            activeWindow: emp.activeWindow || (normalizedStatus === 'online' ? 'Working on Development Task' : 'No recent activity'),
+                            activeApp: emp.activeApp || (normalizedStatus === 'online' ? 'Visual Studio Code' : (normalizedStatus === 'idle' ? 'Away from Computer (Idle)' : 'Offline')),
+                            activeWindow: emp.activeWindow || (normalizedStatus === 'online' ? 'Working on Development Task' : (normalizedStatus === 'idle' ? 'Away from Computer (Idle)' : 'No recent activity')),
                             location: emp.location || 'Remote'
                         };
                     });
