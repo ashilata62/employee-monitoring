@@ -38,7 +38,7 @@ const navItems = [
     { name: 'Projects', icon: CheckSquare, path: '/projects', key: 'projects' },
     { name: 'Tasks', icon: CheckSquare, path: '/tasks', key: 'tasks' },
     { name: 'Payroll', icon: CreditCard, path: '/payroll', key: 'payroll' },
-    { name: 'Compliance', icon: ShieldCheck, path: '/compliance', key: 'compliance' },
+    // { name: 'Compliance', icon: ShieldCheck, path: '/compliance', key: 'compliance' },
     { name: 'Settings', icon: Settings, path: '/settings', key: 'settings' },
 ];
 
