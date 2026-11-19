@@ -23,7 +23,10 @@ import { useAuthStore } from '../store/authStore';
 
 const statusColors = {
     online: 'bg-[#5E7D64]',
+    active: 'bg-[#5E7D64]',
     idle: 'bg-[#C98A3C]',
+    idle_warning: 'bg-[#D97706]',
+    passive: 'bg-[#60A5FA]',
     break: 'bg-[#B9955B]',
     offline: 'bg-[#9E988A]'
 };
@@ -318,11 +321,14 @@ export function RealTimeInsights() {
                                                         </span>
                                                     </td>
                                                     <td className="px-6 py-4">
-                                                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${emp.status === 'online' ? 'bg-[#5E7D64]/10 text-[#5E7D64]' :
+                                                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${
+                                                            (emp.status === 'online' || emp.status === 'active') ? 'bg-[#5E7D64]/10 text-[#5E7D64]' :
                                                             emp.status === 'idle' ? 'bg-[#C98A3C]/10 text-[#C98A3C]' :
-                                                                emp.status === 'break' ? 'bg-[#B9955B]/15 text-[#A17D45]' :
-                                                                    'bg-[#777367]/10 text-[#777367]'
-                                                            }`}>
+                                                            emp.status === 'idle_warning' ? 'bg-[#D97706]/15 text-[#D97706]' :
+                                                            emp.status === 'passive' ? 'bg-[#60A5FA]/15 text-[#3B82F6]' :
+                                                            emp.status === 'break' ? 'bg-[#B9955B]/15 text-[#A17D45]' :
+                                                            'bg-[#777367]/10 text-[#777367]'
+                                                        }`}>
                                                             <span className={`h-1.5 w-1.5 rounded-full ${statusColors[emp.status] || statusColors.offline}`} />
                                                             {emp.status}
                                                         </span>
@@ -378,8 +384,10 @@ export function RealTimeInsights() {
                                             </div>
                                         </div>
                                         <span className={`shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${
-                                            emp.status === 'online' ? 'bg-[#5E7D64]/10 text-[#5E7D64] dark:bg-[#5E7D64]/20' :
+                                            (emp.status === 'online' || emp.status === 'active') ? 'bg-[#5E7D64]/10 text-[#5E7D64] dark:bg-[#5E7D64]/20' :
                                             emp.status === 'idle' ? 'bg-[#C98A3C]/10 text-[#C98A3C] dark:bg-[#C98A3C]/20' :
+                                            emp.status === 'idle_warning' ? 'bg-[#D97706]/15 text-[#D97706] dark:bg-[#D97706]/25' :
+                                            emp.status === 'passive' ? 'bg-[#60A5FA]/15 text-[#3B82F6] dark:bg-[#60A5FA]/25' :
                                             emp.status === 'break' ? 'bg-[#B9955B]/15 text-[#A17D45] dark:bg-[#B9955B]/25 dark:text-[#D3B98D]' :
                                             'bg-[#777367]/10 text-[#777367] dark:bg-[#777367]/20 dark:text-[#A8A295]'
                                         }`}>

@@ -109,18 +109,25 @@ let lastViolation = {
 };
 const VIOLATION_COOLDOWN_MS = 60 * 1000; // 60s cooldown for same continuous violation
 
-// ─── Smart Idle & Inactivity Monitoring Configuration (Requirement 2 & 3) ────
-const DEFAULT_IDLE_THRESHOLD_SECONDS = 600; // 10 minutes (600 seconds) default
+// ─── Smart Idle & Inactivity Monitoring Configuration (Requirements 2, 3, 4, 5) ──
+const DEFAULT_IDLE_THRESHOLD_SECONDS = 600; // 10 minutes (600s) default - Idle classification & Admin Alert
+const WARNING_THRESHOLD_SECONDS = 300; // 5 minutes (300s) - First employee warning reminder
+const PASSIVE_THRESHOLD_SECONDS = 60; // 1 minute (60s) - Initial inactivity detection
+
 let idleConfig = {
     thresholdSeconds: DEFAULT_IDLE_THRESHOLD_SECONDS,
+    warningSeconds: WARNING_THRESHOLD_SECONDS,
+    passiveSeconds: PASSIVE_THRESHOLD_SECONDS,
     checkIntervalMs: 5000, // Check inactivity every 5 seconds
 };
 
 let idleState = {
-    currentStatus: 'ACTIVE', // 'ACTIVE' | 'IDLE' | 'RESUMED'
+    currentStatus: 'ACTIVE', // 'ACTIVE' | 'PASSIVE' | 'IDLE_WARNING' | 'IDLE' | 'BREAK' | 'RESUMED'
     idleStartTime: null,
     lastActiveTimestamp: Date.now(),
     lastIdleSeconds: 0,
+    hasSentPassiveAlert: false,
+    hasSentWarningAlert: false,
     hasSentIdleAlert: false, // Prevents duplicate IDLE events in same session
 };
 
@@ -529,18 +536,19 @@ async function handleViolationScreenshot(appName, windowTitle, violationType) {
     }
 }
 
-// ─── Idle Activity Reporting to Backend (Requirement 4 & 5) ─────────────────
-async function sendIdleActivityEvent({ status, idleDuration, timestamp, idleStartTime, taskId }) {
+// ─── Idle Activity Reporting to Backend (Requirements 2, 3, 4, 5) ─────────────
+async function sendIdleActivityEvent({ status, idleDuration, timestamp, idleStartTime, taskId, source }) {
     if (!agentState.employeeId || !agentState.agentToken) return;
 
     try {
         const payload = {
             employeeId: agentState.employeeId,
             taskId: taskId || agentState.activeTaskId || null,
-            status, // 'IDLE' | 'RESUMED' | 'ACTIVE'
+            status, // 'PASSIVE' | 'IDLE_WARNING' | 'IDLE' | 'RESUMED' | 'ACTIVE'
             idleDuration: idleDuration || 0,
             idleStartTime,
-            timestamp: timestamp || new Date().toISOString()
+            timestamp: timestamp || new Date().toISOString(),
+            source: source || 'DESKTOP_AGENT'
         };
 
         const res = await axios.post(`${API_URL}/api/agent/idle-activity`, payload, {
@@ -559,8 +567,8 @@ async function sendIdleActivityEvent({ status, idleDuration, timestamp, idleStar
 }
 
 /**
- * Periodically evaluate system idle time from OS
- * Detects transitions between ACTIVE and IDLE without recording text/passwords
+ * Periodically evaluate system idle time from OS (Windows API GetLastInputInfo)
+ * Detects transitions between ACTIVE, PASSIVE, IDLE_WARNING, and IDLE without recording text/passwords
  */
 async function checkIdleActivity() {
     if (!agentState.isTracking && agentState.status !== 'active') return;
@@ -568,28 +576,50 @@ async function checkIdleActivity() {
     const idleSeconds = getSystemInactivitySeconds();
     idleState.lastIdleSeconds = idleSeconds;
     const now = Date.now();
-    const threshold = idleConfig.thresholdSeconds;
+    const idleThreshold = idleConfig.thresholdSeconds; // 600s (10 min)
+    const warningThreshold = idleConfig.warningSeconds; // 300s (5 min)
+    const passiveThreshold = idleConfig.passiveSeconds; // 60s (1 min)
 
-    // Detect Transition: ACTIVE -> IDLE
-    if (idleSeconds >= threshold) {
+    // 1. Stage: IDLE (>= 10 minutes / 600s)
+    if (idleSeconds >= idleThreshold) {
         if (idleState.currentStatus !== 'IDLE') {
             idleState.currentStatus = 'IDLE';
-            idleState.idleStartTime = new Date(now - (idleSeconds * 1000)).toISOString();
-            console.log(`[SmartIdle] IDLE DETECTED: No mouse/keyboard input for ${idleSeconds}s (Threshold: ${threshold}s).`);
+            if (!idleState.idleStartTime) {
+                idleState.idleStartTime = new Date(now - (idleSeconds * 1000)).toISOString();
+            }
+            console.log(`[SmartIdle] IDLE DETECTED: No mouse/keyboard input for ${idleSeconds}s (Threshold: ${idleThreshold}s).`);
 
-            // Send IDLE event once per idle session (prevents repeated spam)
+            // Send IDLE event once per idle session (prevents duplicate notification/alert spam)
             if (!idleState.hasSentIdleAlert) {
                 idleState.hasSentIdleAlert = true;
+
+                // Show OS Native Notification
+                if (Notification && typeof Notification.isSupported === 'function' && Notification.isSupported()) {
+                    try {
+                        new Notification({
+                            title: 'Inactivity Detected',
+                            body: 'You have been inactive for 10 minutes. Are you still working?'
+                        }).show();
+                    } catch (e) {}
+                }
+
                 await sendIdleActivityEvent({
                     status: 'IDLE',
                     idleDuration: idleSeconds,
                     timestamp: new Date().toISOString(),
                     idleStartTime: idleState.idleStartTime,
-                    taskId: agentState.activeTaskId || null
+                    taskId: agentState.activeTaskId || null,
+                    source: 'DESKTOP_AGENT'
                 });
 
-                // Notify renderer UI if window open
+                // Notify renderer UI
                 if (mainWindow && !mainWindow.isDestroyed()) {
+                    mainWindow.webContents.send('idle:prompt', {
+                        title: 'Inactivity Detected',
+                        message: 'You have been inactive for 10 minutes. Are you still working?',
+                        idleDuration: idleSeconds,
+                        idleStartTime: idleState.idleStartTime
+                    });
                     mainWindow.webContents.send('idle:state-changed', {
                         status: 'IDLE',
                         idleDuration: idleSeconds,
@@ -598,20 +628,94 @@ async function checkIdleActivity() {
                 }
             }
         }
-    } else {
-        // Employee has active mouse/keyboard input (idleSeconds < threshold)
+    } 
+    // 2. Stage: IDLE WARNING (>= 5 minutes / 300s)
+    else if (idleSeconds >= warningThreshold) {
+        if (idleState.currentStatus !== 'IDLE_WARNING' && idleState.currentStatus !== 'IDLE') {
+            idleState.currentStatus = 'IDLE_WARNING';
+            if (!idleState.idleStartTime) {
+                idleState.idleStartTime = new Date(now - (idleSeconds * 1000)).toISOString();
+            }
+            console.log(`[SmartIdle] WARNING THRESHOLD: No mouse/keyboard input for ${idleSeconds}s (Warning: ${warningThreshold}s).`);
+
+            if (!idleState.hasSentWarningAlert) {
+                idleState.hasSentWarningAlert = true;
+
+                // Non-intrusive reminder notification
+                if (Notification && typeof Notification.isSupported === 'function' && Notification.isSupported()) {
+                    try {
+                        new Notification({
+                            title: 'Activity Reminder',
+                            body: 'No recent mouse or keyboard activity has been detected. Please check your activity status.'
+                        }).show();
+                    } catch (e) {}
+                }
+
+                await sendIdleActivityEvent({
+                    status: 'IDLE_WARNING',
+                    idleDuration: idleSeconds,
+                    timestamp: new Date().toISOString(),
+                    idleStartTime: idleState.idleStartTime,
+                    taskId: agentState.activeTaskId || null,
+                    source: 'DESKTOP_AGENT'
+                });
+
+                if (mainWindow && !mainWindow.isDestroyed()) {
+                    mainWindow.webContents.send('idle:warning', {
+                        title: 'Activity Reminder',
+                        message: 'No recent mouse or keyboard activity has been detected. Please check your activity status.',
+                        idleDuration: idleSeconds
+                    });
+                    mainWindow.webContents.send('idle:state-changed', {
+                        status: 'IDLE_WARNING',
+                        idleDuration: idleSeconds,
+                        idleStartTime: idleState.idleStartTime
+                    });
+                }
+            }
+        }
+    }
+    // 3. Stage: PASSIVE (>= 1 minute / 60s)
+    else if (idleSeconds >= passiveThreshold) {
+        if (idleState.currentStatus === 'ACTIVE') {
+            idleState.currentStatus = 'PASSIVE';
+            console.log(`[SmartIdle] PASSIVE DETECTED: No recent input for ${idleSeconds}s. Tracking initial inactivity.`);
+
+            if (!idleState.hasSentPassiveAlert) {
+                idleState.hasSentPassiveAlert = true;
+                await sendIdleActivityEvent({
+                    status: 'PASSIVE',
+                    idleDuration: idleSeconds,
+                    timestamp: new Date().toISOString(),
+                    taskId: agentState.activeTaskId || null,
+                    source: 'DESKTOP_AGENT'
+                });
+
+                if (mainWindow && !mainWindow.isDestroyed()) {
+                    mainWindow.webContents.send('idle:state-changed', {
+                        status: 'PASSIVE',
+                        idleDuration: idleSeconds
+                    });
+                }
+            }
+        }
+    }
+    // 4. Stage: ACTIVE (Genuine mouse/keyboard input detected, idleSeconds < passiveThreshold)
+    else {
         idleState.lastActiveTimestamp = now;
 
-        // Detect Transition: IDLE -> RESUMED / ACTIVE
-        if (idleState.currentStatus === 'IDLE') {
+        // Transition back to ACTIVE if was PASSIVE, IDLE_WARNING, or IDLE
+        if (idleState.currentStatus !== 'ACTIVE' && idleState.currentStatus !== 'BREAK') {
             const idleEndTime = new Date().toISOString();
             const totalIdleDuration = idleState.idleStartTime
-                ? Math.max(threshold, Math.round((now - new Date(idleState.idleStartTime).getTime()) / 1000))
+                ? Math.max(idleSeconds, Math.round((now - new Date(idleState.idleStartTime).getTime()) / 1000))
                 : idleSeconds;
 
-            console.log(`[SmartIdle] RESUMED: Mouse/keyboard activity resumed after ${totalIdleDuration}s. Returning to ACTIVE state.`);
+            console.log(`[SmartIdle] RESUMED: Mouse/keyboard activity detected after ${totalIdleDuration}s idle. Returning to ACTIVE state.`);
 
             idleState.currentStatus = 'ACTIVE';
+            idleState.hasSentPassiveAlert = false;
+            idleState.hasSentWarningAlert = false;
             idleState.hasSentIdleAlert = false; // Reset for next idle session
 
             await sendIdleActivityEvent({
@@ -619,10 +723,10 @@ async function checkIdleActivity() {
                 idleDuration: totalIdleDuration,
                 timestamp: idleEndTime,
                 idleStartTime: idleState.idleStartTime,
-                taskId: agentState.activeTaskId || null
+                taskId: agentState.activeTaskId || null,
+                source: 'DESKTOP_AGENT'
             });
 
-            // Notify renderer UI
             if (mainWindow && !mainWindow.isDestroyed()) {
                 mainWindow.webContents.send('idle:state-changed', {
                     status: 'ACTIVE',
@@ -1046,6 +1150,38 @@ ipcMain.on('idle:set-threshold', (_event, seconds) => {
     if (!isNaN(sec) && sec > 0) {
         idleConfig.thresholdSeconds = sec;
         console.log(`[SmartIdle] Inactivity threshold updated to ${sec}s (${Math.round(sec / 60)}m).`);
+    }
+});
+
+ipcMain.handle('idle:respond', async (_event, response) => {
+    console.log('[Desktop Agent] Employee responded to idle prompt:', response);
+    try {
+        if (agentState.employeeId && agentState.agentToken) {
+            await axios.post(`${API_URL}/api/agent/idle-response`, {
+                employeeId: agentState.employeeId,
+                response,
+                taskId: agentState.activeTaskId || null
+            }, {
+                headers: {
+                    'X-Agent-Auth': agentState.agentToken,
+                    'Content-Type': 'application/json'
+                },
+                timeout: 10000
+            });
+        }
+        if (response === 'WORKING') {
+            idleState.currentStatus = 'ACTIVE';
+            idleState.hasSentIdleAlert = false;
+            idleState.hasSentWarningAlert = false;
+            idleState.hasSentPassiveAlert = false;
+            idleState.idleStartTime = null;
+        } else if (response === 'BREAK') {
+            idleState.currentStatus = 'BREAK';
+        }
+        return { success: true };
+    } catch (err) {
+        console.error('[Desktop Agent] Error sending idle confirmation response:', err.message);
+        return { success: false, error: err.message };
     }
 });
 
