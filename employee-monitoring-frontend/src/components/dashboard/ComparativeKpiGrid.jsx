@@ -64,6 +64,7 @@ const KpiCard = ({
     displayValue,
     delta,
     inverse = false,
+    liveTick = false,
     icon: Icon
 }) => {
     const activeDelta = delta?.percent !== undefined
@@ -126,7 +127,7 @@ const KpiCard = ({
     );
 };
 
-export function ComparativeKpiGrid({ sec, stats, deltas, role, isToday = true }) {
+export function ComparativeKpiGrid({ sec, stats, deltas, role, isToday = true, liveTick = false }) {
     const d = deltas || {};
     const { isClockedIn } = useAuthStore();
     const sessionSeconds = useSessionTimer();
@@ -174,6 +175,7 @@ export function ComparativeKpiGrid({ sec, stats, deltas, role, isToday = true })
                 title="Work Time"
                 displayValue={effectiveWorkTime}
                 delta={d.workTime}
+                liveTick={liveTick}
                 icon={Briefcase}
             />
 
@@ -181,6 +183,7 @@ export function ComparativeKpiGrid({ sec, stats, deltas, role, isToday = true })
                 title="Active Time"
                 displayValue={effectiveActiveTime}
                 delta={d.activeTime}
+                liveTick={liveTick}
                 icon={Monitor}
             />
 
