@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
     ChevronLeft,
     ChevronRight,
@@ -25,13 +25,23 @@ const STATUS_BADGE = {
 };
 
 export function WeeklyTimesheetsView({ employees = [] }) {
-    const { role } = useAuthStore();
+    const { role, user } = useAuthStore();
     const [weekStart, setWeekStart] = useState(() => mondayOf());
     const [selectedEmployeeId, setSelectedEmployeeId] = useState('');
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [activeDayModal, setActiveDayModal] = useState(null);
+
+    // Filter employees: If manager, only show employees in their assigned team. Filter out ADMIN role.
+    const managerTeamId = user?.teamId || user?.employee?.teamId;
+    const selectableEmployees = useMemo(() => {
+        let list = employees.filter(emp => (emp.role || 'EMPLOYEE').toUpperCase() !== 'ADMIN');
+        if (role === 'MANAGER' && managerTeamId) {
+            list = list.filter(emp => (emp.teamId === managerTeamId || emp.team?.id === managerTeamId));
+        }
+        return list;
+    }, [employees, role, managerTeamId]);
 
     const fmtTimeShort = (dateStr) => {
         if (!dateStr) return '--';

@@ -435,14 +435,20 @@ export function Payroll() {
     }, []);
 
     useEffect(() => {
-        const params = {
-            startDate: dateRange.start,
-            endDate: dateRange.end,
-            userId: selectedEmployee,
-            teamId: selectedTeam
+        const loadPayroll = () => {
+            const params = {
+                startDate: dateRange.start,
+                endDate: dateRange.end,
+                userId: selectedEmployee,
+                teamId: selectedTeam
+            };
+            fetchSummary(params);
+            fetchRecords(params);
         };
-        fetchSummary(params);
-        fetchRecords(params);
+
+        loadPayroll();
+        const interval = setInterval(loadPayroll, 30000);
+        return () => clearInterval(interval);
     }, [fetchSummary, fetchRecords, dateRange, selectedEmployee, selectedTeam]);
 
     useEffect(() => {
