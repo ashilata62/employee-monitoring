@@ -47,8 +47,8 @@ function FilterDropdown({ onSelect }) {
     }, []);
     return (
         <div className="relative" ref={ref}>
-            <button onClick={() => setOpen(!open)} className="flex items-center gap-2 h-9 px-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-black text-slate-600 dark:text-slate-300 hover:border-violet-400 transition-all shadow-sm">
-                <Plus size={13} className="text-violet-500" strokeWidth={3} /> Add Filter
+            <button onClick={() => setOpen(!open)} className="flex items-center gap-2 h-9 px-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-black text-slate-600 dark:text-slate-300 hover:border-primary-400 transition-all shadow-sm">
+                <Plus size={13} className="text-primary-600 dark:text-primary-400" strokeWidth={3} /> Add Filter
             </button>
             {open && (
                 <div className="absolute left-0 top-full mt-2 z-50 w-48 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
@@ -75,8 +75,8 @@ function FilterModal({ filter, onApply, onClose }) {
                 <div className="space-y-2">
                     {filter.options.map((opt) => (
                         <label key={opt} className={cn('flex items-center gap-3 px-4 py-3 rounded-xl border-2 cursor-pointer transition-all',
-                            val === opt ? 'border-violet-500 bg-violet-50 dark:bg-violet-900/10' : 'border-slate-200 dark:border-slate-700 hover:border-violet-300')}>
-                            <input type="radio" name="filterVal" value={opt} checked={val === opt} onChange={() => setVal(opt)} className="accent-violet-600" />
+                            val === opt ? 'border-primary-500 bg-primary-50/50 dark:bg-primary-900/20' : 'border-slate-200 dark:border-slate-700 hover:border-primary-300')}>
+                            <input type="radio" name="filterVal" value={opt} checked={val === opt} onChange={() => setVal(opt)} className="accent-primary-600" />
                             <span className="text-sm font-bold text-slate-700 dark:text-slate-300 capitalize">
                                 {typeMap[opt] ?? opt}
                             </span>
@@ -85,7 +85,7 @@ function FilterModal({ filter, onApply, onClose }) {
                 </div>
                 <div className="flex gap-3 mt-5">
                     <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-black text-slate-500 hover:bg-slate-50 transition-all">Cancel</button>
-                    <button onClick={() => { onApply(filter.key, val); onClose(); }} disabled={!val} className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-xs font-black disabled:opacity-40 transition-all">Apply</button>
+                    <button onClick={() => { onApply(filter.key, val); onClose(); }} disabled={!val} className="flex-1 py-2.5 rounded-xl bg-[#30382B] hover:bg-[#3C4536] dark:bg-[#B9955B] dark:hover:bg-[#A17D45] text-white text-xs font-black disabled:opacity-40 transition-all">Apply</button>
                 </div>
             </div>
         </div>
@@ -139,14 +139,14 @@ export function Utilization() {
                     <div>
                         <nav className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">
                             <span className="cursor-pointer hover:text-slate-600 dark:hover:text-slate-300 transition-colors" onClick={() => navigate('/settings')}>Settings</span>
-                            <span>/</span><span className="text-violet-600">Utilization</span>
+                            <span>/</span><span className="text-primary-600 dark:text-primary-400">Utilization</span>
                         </nav>
                         <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Utilization</h1>
                     </div>
                 </div>
                 <button onClick={() => { setEditFormula(null); setWizardOpen(true); }}
-                    className="flex items-center gap-2 h-10 px-5 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-xs font-black shadow-lg shadow-violet-200 dark:shadow-none hover:scale-[1.02] active:scale-95 transition-all">
-                    <Plus size={14} strokeWidth={3} /> Add New Formula
+                    className="flex items-center gap-2 h-10 px-5 rounded-2xl bg-[#30382B] hover:bg-[#3C4536] dark:bg-[#B9955B] dark:hover:bg-[#A17D45] text-white text-xs font-black shadow-warm-sm hover:scale-[1.02] active:scale-95 transition-all">
+                    <Plus size={14} strokeWidth={3} className="text-[#D3B98D] dark:text-white" /> Add New Formula
                 </button>
             </div>
 
@@ -159,7 +159,7 @@ export function Utilization() {
                         if (!value) return null;
                         const label = key === 'type' ? typeMap[value] : value;
                         return (
-                            <span key={key} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-violet-100 dark:bg-violet-900/20 text-violet-700 dark:text-violet-400 text-[10px] font-black uppercase tracking-widest">
+                            <span key={key} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary-50 dark:bg-primary-950/40 text-primary-700 dark:text-primary-300 border border-primary-200/60 dark:border-primary-800/50 text-[10px] font-black uppercase tracking-widest">
                                 {key}: {label}
                                 <button onClick={() => applyFilter(key, null)} className="hover:text-rose-500 transition-colors"><X size={11} /></button>
                             </span>

@@ -105,17 +105,17 @@ export function TrackingSettings() {
                             <nav className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">
                                 <span className="cursor-pointer hover:text-slate-600 dark:hover:text-slate-300 transition-colors" onClick={() => navigate(`${rolePath}/settings`)}>Settings</span>
                                 <span>/</span>
-                                <span className="text-violet-600">Tracking Settings</span>
+                                <span className="text-primary-600 dark:text-primary-400">Tracking Settings</span>
                             </nav>
                             <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Tracking Settings</h1>
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
-                        <button onClick={() => navigate(`${rolePath}/settings/tracking/advanced`)} className="flex items-center gap-2 h-10 px-5 rounded-2xl border-2 border-slate-200 dark:border-slate-700 text-xs font-black text-slate-600 dark:text-slate-300 hover:border-violet-400 hover:text-violet-600 transition-all">
+                        <button onClick={() => navigate(`${rolePath}/settings/tracking/advanced`)} className="flex items-center gap-2 h-10 px-5 rounded-2xl border-2 border-slate-200 dark:border-slate-700 text-xs font-black text-slate-600 dark:text-slate-300 hover:border-primary-400 hover:text-primary-600 transition-all">
                             <Settings2 size={14} /> Advanced Settings
                         </button>
-                        <button onClick={openCreate} className="flex items-center gap-2 h-10 px-5 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-xs font-black shadow-lg shadow-violet-200 dark:shadow-none hover:scale-[1.02] active:scale-95 transition-all">
-                            <Plus size={14} strokeWidth={3} /> Create new tracking settings
+                        <button onClick={openCreate} className="flex items-center gap-2 h-10 px-5 rounded-2xl bg-[#30382B] hover:bg-[#3C4536] dark:bg-[#B9955B] dark:hover:bg-[#A17D45] text-white text-xs font-black shadow-warm-sm hover:scale-[1.02] active:scale-95 transition-all">
+                            <Plus size={14} strokeWidth={3} className="text-[#D3B98D] dark:text-white" /> Create new tracking settings
                         </button>
                     </div>
                 </div>

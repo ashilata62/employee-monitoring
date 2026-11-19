@@ -12,7 +12,7 @@ function SectionLabel({ title, description }) {
         <div className="min-w-[160px] max-w-[200px] shrink-0">
             <h3 className="text-xs font-black uppercase tracking-widest text-slate-900 dark:text-white mb-1">{title}</h3>
             <p className="text-xs font-medium text-slate-400 dark:text-slate-500 leading-relaxed">{description}</p>
-            <button className="text-[10px] font-black text-violet-600 dark:text-violet-400 mt-1 hover:underline">Learn more</button>
+            <button className="text-[10px] font-black text-primary-600 dark:text-primary-400 mt-1 hover:underline">Learn more</button>
         </div>
     );
 }
@@ -27,7 +27,7 @@ function CheckRow({ checked, onChange, disabled = false, children }) {
             <div
                 className={cn(
                     'h-4 w-4 rounded border-2 flex items-center justify-center shrink-0 transition-all',
-                    checked ? 'bg-violet-600 border-violet-600' : 'border-slate-300 dark:border-slate-600'
+                    checked ? 'bg-primary-600 border-primary-600' : 'border-slate-300 dark:border-slate-600'
                 )}
                 onClick={() => !disabled && onChange(!checked)}
             >
@@ -47,7 +47,7 @@ function StyledSelect({ value, onChange, options, disabled = false }) {
                 disabled={disabled}
                 className={cn(
                     'w-full h-10 pl-3 pr-8 rounded-xl border-2 bg-white dark:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 outline-none transition-all appearance-none',
-                    disabled ? 'border-slate-100 dark:border-slate-800 opacity-50 cursor-not-allowed' : 'border-slate-200 dark:border-slate-700 focus:border-violet-500'
+                    disabled ? 'border-slate-100 dark:border-slate-800 opacity-50 cursor-not-allowed' : 'border-slate-200 dark:border-slate-700 focus:border-primary-500'
                 )}
             >
                 {options.map((o) => (
@@ -92,7 +92,7 @@ export function TrackingForm({ form, setForm }) {
                             placeholder="Enter title for tracking settings"
                             value={form.title}
                             onChange={(e) => update('title', e.target.value)}
-                            className="w-full h-10 px-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 focus:border-violet-500 bg-white dark:bg-slate-800 text-sm font-medium text-slate-900 dark:text-white outline-none transition-all"
+                            className="w-full h-10 px-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 focus:border-primary-500 bg-white dark:bg-slate-800 text-sm font-medium text-slate-900 dark:text-white outline-none transition-all"
                         />
                     </div>
                     <div className="space-y-2">
@@ -104,9 +104,9 @@ export function TrackingForm({ form, setForm }) {
                             ].map((opt) => (
                                 <label key={opt.value} className={cn(
                                     'flex items-start gap-3 px-4 py-3 rounded-xl border-2 cursor-pointer transition-all',
-                                    form.computerType === opt.value ? 'border-violet-500 bg-violet-50 dark:bg-violet-900/10' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'
+                                    form.computerType === opt.value ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/10' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'
                                 )}>
-                                    <input type="radio" name="computerType" checked={form.computerType === opt.value} onChange={() => update('computerType', opt.value)} className="accent-violet-600 mt-0.5" />
+                                    <input type="radio" name="computerType" checked={form.computerType === opt.value} onChange={() => update('computerType', opt.value)} className="accent-primary-600 mt-0.5" />
                                     <div>
                                         <p className="text-xs font-black text-slate-900 dark:text-white">{opt.label}</p>
                                         <p className="text-[10px] font-medium text-slate-400">{opt.desc}</p>
@@ -130,10 +130,10 @@ export function TrackingForm({ form, setForm }) {
                             <label key={opt.value} className={cn(
                                 'flex items-start gap-3 px-4 py-3 rounded-xl border-2 cursor-pointer transition-all',
                                 form.visibility === opt.value
-                                    ? 'border-violet-500 bg-violet-50 dark:bg-violet-900/10'
+                                    ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/10'
                                     : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'
                             )}>
-                                <input type="radio" name="visibility" value={opt.value} checked={form.visibility === opt.value} onChange={() => update('visibility', opt.value)} className="accent-violet-600 mt-0.5" />
+                                <input type="radio" name="visibility" value={opt.value} checked={form.visibility === opt.value} onChange={() => update('visibility', opt.value)} className="accent-primary-600 mt-0.5" />
                                 <div>
                                     <p className="text-xs font-black text-slate-900 dark:text-white">{opt.label}</p>
                                     <p className="text-[10px] font-medium text-slate-400 leading-relaxed">{opt.desc}</p>
@@ -197,11 +197,11 @@ export function TrackingForm({ form, setForm }) {
                             {TRACKING_SCENARIOS.map((s) => (
                                 <label key={s.id} className={cn(
                                     'flex items-start gap-3 px-4 py-3 rounded-xl border-2 cursor-pointer transition-all',
-                                    form.trackingScenario === s.id ? 'border-violet-500 bg-violet-50 dark:bg-violet-900/10' : 'border-slate-100 dark:border-slate-800 hover:border-slate-200'
+                                    form.trackingScenario === s.id ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/10' : 'border-slate-100 dark:border-slate-800 hover:border-slate-200'
                                 )}>
-                                    <input type="radio" name="trackingScenario" value={s.id} checked={form.trackingScenario === s.id} onChange={() => update('trackingScenario', s.id)} className="accent-violet-600 mt-0.5" />
+                                    <input type="radio" name="trackingScenario" value={s.id} checked={form.trackingScenario === s.id} onChange={() => update('trackingScenario', s.id)} className="accent-primary-600 mt-0.5" />
                                     <div>
-                                        <p className={cn('text-xs font-black', form.trackingScenario === s.id ? 'text-violet-700 dark:text-violet-400' : 'text-slate-700 dark:text-slate-300')}>{s.label}</p>
+                                        <p className={cn('text-xs font-black', form.trackingScenario === s.id ? 'text-primary-700 dark:text-primary-400' : 'text-slate-700 dark:text-slate-300')}>{s.label}</p>
                                         <p className="text-[10px] font-medium text-slate-400">{s.desc}</p>
                                     </div>
                                 </label>
@@ -222,8 +222,8 @@ export function TrackingForm({ form, setForm }) {
                                         className={cn(
                                             'px-3 py-1.5 rounded-xl text-xs font-black border-2 transition-all',
                                             form.workingDays.includes(d)
-                                                ? 'border-violet-500 bg-violet-600 text-white'
-                                                : 'border-slate-200 dark:border-slate-700 text-slate-500 hover:border-violet-300'
+                                                ? 'border-primary-500 bg-primary-600 text-white'
+                                                : 'border-slate-200 dark:border-slate-700 text-slate-500 hover:border-primary-300'
                                         )}
                                     >
                                         {d}

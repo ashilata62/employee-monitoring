@@ -358,7 +358,7 @@ export function ActivitiesTimeline() {
   ];
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6 bg-slate-50/60 dark:bg-slate-950/20 min-h-screen">
+    <div className="space-y-6 w-full">
       {/* ── Top Insightful Module Switcher ──────────────────────────────────── */}
       <InsightfulModuleSwitcher activeTab="activities" />
 

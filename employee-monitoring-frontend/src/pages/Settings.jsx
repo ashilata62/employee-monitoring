@@ -261,10 +261,10 @@ export function Settings() {
                     <button
                         key={category}
                         onClick={() => setSelectedCategory(category)}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
+                        className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
                             selectedCategory === category
-                                ? 'bg-primary-600 text-white shadow-sm'
-                                : 'bg-slate-100 hover:bg-slate-200/70 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300'
+                                ? 'bg-[#30382B] text-[#FDFBF7] dark:bg-[#B9955B] dark:text-white shadow-warm-xs'
+                                : 'bg-slate-100 hover:bg-slate-200/70 dark:bg-slate-800/80 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200/60 dark:border-slate-700/50'
                         }`}
                     >
                         {category}
