@@ -296,11 +296,13 @@ export function ActivitiesTimeline() {
   const filteredEmployees = useMemo(() => {
     if (!data?.employeeTimelines) return [];
     return data.employeeTimelines.filter(emp => {
-      // Exclude Admin from trackable activities timeline
+      // Exclude Admin from trackable activities timeline for manager or non-admin view
+      if (role === 'MANAGER' && ((emp.role || '').toUpperCase() === 'ADMIN' || (emp.name || '').toLowerCase().includes('admin demo'))) {
+        return false;
+      }
       if ((emp.role || '').toUpperCase() === 'ADMIN' || (emp.name || '').toLowerCase().includes('admin demo')) {
         return false;
       }
-
       const matchesSearch = !searchQuery.trim() ||
         emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         emp.team.toLowerCase().includes(searchQuery.toLowerCase());
@@ -310,7 +312,7 @@ export function ActivitiesTimeline() {
 
       return matchesSearch && matchesTeam && matchesLate;
     });
-  }, [data, searchQuery, filterTeam, filterShiftStatus]);
+  }, [data, searchQuery, filterTeam, filterShiftStatus, role]);
 
   // Derived logs data for 'Logs' tab
   const activityLogs = useMemo(() => {

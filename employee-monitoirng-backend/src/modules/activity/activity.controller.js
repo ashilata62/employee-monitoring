@@ -145,7 +145,8 @@ const activityController = {
                 organizationId,
                 date,
                 targetEmployeeId,
-                teamId
+                teamId,
+                req.user
             );
             return successResponse(res, report, 'Activities timeline report fetched successfully');
         } catch (error) {
