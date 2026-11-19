@@ -1439,17 +1439,17 @@ export function TasksProjects() {
     return (
         <div className="space-y-5 sm:space-y-6 pb-24 animate-fade-in px-3 sm:px-4 md:px-0 max-w-full overflow-x-hidden box-border">
             {/* Elegant Header */}
-            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-5 sm:mb-6">
-                <div className="min-w-0">
-                    <div className="flex items-center gap-2.5 flex-wrap">
-                        <h1 className="font-serif text-2xl sm:text-3xl font-normal text-[#29291F] dark:text-[#F5F1E9] tracking-tight">Enterprise Hub</h1>
+            <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4 mb-5 sm:mb-6">
+                <div className="shrink-0 max-w-xl">
+                    <div className="flex items-center gap-2.5">
+                        <h1 className="font-serif text-2xl sm:text-3xl font-bold text-[#29291F] dark:text-[#F5F1E9] tracking-tight whitespace-nowrap">Enterprise Hub</h1>
                         <span className="px-2.5 py-0.5 rounded-full bg-[#3C4536]/10 dark:bg-[#3C4536]/30 border border-[#3C4536]/20 text-[#30382B] dark:text-[#D3B98D] text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider whitespace-nowrap">Live Status</span>
                     </div>
                     <p className="text-xs sm:text-sm text-[#777367] dark:text-[#A8A295] font-medium tracking-tight mt-1">Requirement-driven task management & business intelligence.</p>
                 </div>
 
                 {/* Right: Tabs (Single Line Segmented Bar) */}
-                <div className="flex items-center gap-1 p-1 bg-[#EEE8DD] dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] rounded-2xl flex-nowrap shrink-0 overflow-x-auto max-w-full">
+                <div className="flex items-center gap-1 p-1 bg-[#EEE8DD] dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] rounded-2xl flex-nowrap shrink-0 overflow-x-auto max-w-full scrollbar-none">
                     {[
                         { id: 'board', name: 'Board', icon: Kanban },
                         { id: 'cycle-time', name: 'Cycle Time', icon: Clock },
@@ -1806,45 +1806,49 @@ export function TasksProjects() {
                     <div className="space-y-5 sm:space-y-6 animate-fade-in">
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6">
                             {/* Detailed Performance Table with high-fidelity scores */}
-                            <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden">
-                                <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                                    <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">Performance Audit Board</h3>
-                                    <div className="h-8 w-8 bg-slate-50 dark:bg-slate-800 flex items-center justify-center rounded-lg text-slate-400"><Filter size={15} /></div>
+                            <div className="lg:col-span-2 bg-[#FBF9F5] dark:bg-[#252B20] border border-[#E5DED2] dark:border-[#384232] rounded-2xl shadow-warm-xs overflow-hidden">
+                                <div className="p-4 sm:p-5 border-b border-[#E5DED2] dark:border-[#384232] flex items-center justify-between bg-[#F5F1E9]/40 dark:bg-[#1E2419]/40">
+                                    <h3 className="text-base sm:text-lg font-bold font-serif text-[#29291F] dark:text-[#F5F1E9]">Performance Audit Board</h3>
+                                    <div className="h-8 w-8 bg-[#EEE8DD] dark:bg-[#1E2419] flex items-center justify-center rounded-lg text-[#777367] dark:text-[#B8B3A7] border border-[#E5DED2] dark:border-[#384232]"><Filter size={15} /></div>
                                 </div>
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-left">
-                                        <thead className="bg-slate-50/60 dark:bg-slate-800/40">
+                                        <thead className="bg-[#EEE8DD]/50 dark:bg-[#1E2419] border-b border-[#E5DED2] dark:border-[#384232]">
                                             <tr>
-                                                <th className="px-4 sm:px-6 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider">Employee</th>
-                                                <th className="px-3 sm:px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider text-center">Quality</th>
-                                                <th className="px-3 sm:px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider text-center">Punctuality</th>
-                                                <th className="px-3 sm:px-4 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider text-center">Output</th>
-                                                <th className="px-4 sm:px-6 py-3 text-[10px] font-black uppercase text-slate-400 tracking-wider text-center">Composite</th>
+                                                <th className="px-4 sm:px-6 py-3 text-[10px] font-bold uppercase text-[#777367] dark:text-[#B8B3A7] tracking-wider whitespace-nowrap">Employee</th>
+                                                <th className="px-3 sm:px-4 py-3 text-[10px] font-bold uppercase text-[#777367] dark:text-[#B8B3A7] tracking-wider text-center whitespace-nowrap">Quality</th>
+                                                <th className="px-3 sm:px-4 py-3 text-[10px] font-bold uppercase text-[#777367] dark:text-[#B8B3A7] tracking-wider text-center whitespace-nowrap">Punctuality</th>
+                                                <th className="px-3 sm:px-4 py-3 text-[10px] font-bold uppercase text-[#777367] dark:text-[#B8B3A7] tracking-wider text-center whitespace-nowrap">Output</th>
+                                                <th className="px-4 sm:px-6 py-3 text-[10px] font-bold uppercase text-[#777367] dark:text-[#B8B3A7] tracking-wider text-center whitespace-nowrap">Composite</th>
                                             </tr>
                                         </thead>
-                                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                                        <tbody className="divide-y divide-[#E5DED2]/60 dark:divide-[#384232]/60">
                                             {enhancedPerformanceKPIs.map(kpi => (
-                                                <tr key={kpi.id} className="group hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-all">
-                                                    <td className="px-4 sm:px-6 py-3.5">
+                                                <tr key={kpi.id} className="group hover:bg-[#EEE8DD]/30 dark:hover:bg-[#1E2419] transition-all">
+                                                    <td className="px-4 sm:px-6 py-3.5 whitespace-nowrap">
                                                         <div className="flex items-center gap-3">
-                                                            <div className="h-9 w-9 rounded-xl bg-slate-100 overflow-hidden shadow-xs border border-slate-200 dark:border-slate-700 shrink-0">
-                                                                <img src={kpi.avatar || `https://ui-avatars.com/api/?background=6366f1&color=fff&name=${encodeURIComponent(kpi.employee || 'User')}`} alt={kpi.employee} className="h-full w-full object-cover" />
+                                                            <div className="h-9 w-9 rounded-xl bg-[#EEE8DD] dark:bg-[#384232] overflow-hidden shadow-xs border border-[#E5DED2] dark:border-[#4A5742] shrink-0 flex items-center justify-center font-bold text-xs text-[#29291F] dark:text-[#F5F1E9]">
+                                                                {kpi.avatar ? (
+                                                                    <img src={kpi.avatar} alt={kpi.employee} className="h-full w-full object-cover" />
+                                                                ) : (
+                                                                    (kpi.employee || 'User').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+                                                                )}
                                                             </div>
                                                             <div className="flex flex-col min-w-0">
-                                                                <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white leading-tight truncate">{kpi.employee}</span>
-                                                                <span className="text-[10px] text-slate-400 uppercase tracking-wider mt-0.5">{kpi.role}</span>
+                                                                <span className="text-xs sm:text-sm font-semibold text-[#29291F] dark:text-[#F5F1E9] leading-tight truncate">{kpi.employee}</span>
+                                                                <span className="text-[10px] text-[#777367] dark:text-[#9E988A] uppercase tracking-wider mt-0.5">{kpi.role}</span>
                                                             </div>
                                                         </div>
                                                     </td>
-                                                    <td className="px-3 sm:px-4 py-3.5 text-center"><span className="px-2.5 py-1 rounded-lg bg-slate-50 dark:bg-slate-800 text-xs font-bold text-slate-600 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/50">{kpi.quality}%</span></td>
-                                                    <td className="px-3 sm:px-4 py-3.5 text-center"><span className="px-2.5 py-1 rounded-lg bg-slate-50 dark:bg-slate-800 text-xs font-bold text-slate-600 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/50">{kpi.punctuality}%</span></td>
-                                                    <td className="px-3 sm:px-4 py-3.5 text-center"><span className="px-2.5 py-1 rounded-lg bg-slate-50 dark:bg-slate-800 text-xs font-bold text-slate-600 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/50">{kpi.output}%</span></td>
-                                                    <td className="px-4 sm:px-6 py-3.5">
+                                                    <td className="px-3 sm:px-4 py-3.5 text-center whitespace-nowrap"><span className="px-2.5 py-1 rounded-lg bg-[#EEE8DD]/70 dark:bg-[#1E2419] text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] border border-[#E5DED2] dark:border-[#384232]">{kpi.quality}%</span></td>
+                                                    <td className="px-3 sm:px-4 py-3.5 text-center whitespace-nowrap"><span className="px-2.5 py-1 rounded-lg bg-[#EEE8DD]/70 dark:bg-[#1E2419] text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] border border-[#E5DED2] dark:border-[#384232]">{kpi.punctuality}%</span></td>
+                                                    <td className="px-3 sm:px-4 py-3.5 text-center whitespace-nowrap"><span className="px-2.5 py-1 rounded-lg bg-[#EEE8DD]/70 dark:bg-[#1E2419] text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] border border-[#E5DED2] dark:border-[#384232]">{kpi.output}%</span></td>
+                                                    <td className="px-4 sm:px-6 py-3.5 whitespace-nowrap">
                                                         <div className="flex items-center justify-center gap-3">
-                                                            <div className="w-16 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                                                                <div className={cn("h-full rounded-full transition-all duration-1000", kpi.overall >= 80 ? "bg-emerald-500" : (kpi.overall >= 50 ? "bg-indigo-600" : "bg-amber-500"))} style={{ width: `${kpi.overall}%` }} />
+                                                            <div className="w-16 h-1.5 bg-[#E5DED2] dark:bg-[#384232] rounded-full overflow-hidden">
+                                                                <div className={cn("h-full rounded-full transition-all duration-1000", kpi.overall >= 80 ? "bg-[#5E7D64]" : (kpi.overall >= 50 ? "bg-[#B9955B]" : "bg-[#C98A3C]"))} style={{ width: `${kpi.overall}%` }} />
                                                             </div>
-                                                            <span className="text-xs sm:text-sm font-black text-slate-900 dark:text-white leading-none">{kpi.overall}</span>
+                                                            <span className="text-xs sm:text-sm font-bold text-[#29291F] dark:text-[#F5F1E9] leading-none">{kpi.overall}</span>
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -1855,32 +1859,32 @@ export function TasksProjects() {
                             </div>
 
                             {/* Radar Visualization */}
-                            <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col items-center">
-                                <h3 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white mb-4 uppercase tracking-wider text-center">Global Competency Radar</h3>
+                            <div className="bg-[#FBF9F5] dark:bg-[#252B20] p-4 sm:p-5 rounded-2xl border border-[#E5DED2] dark:border-[#384232] shadow-warm-xs flex flex-col items-center">
+                                <h3 className="text-xs sm:text-sm font-bold text-[#29291F] dark:text-[#F5F1E9] mb-4 uppercase tracking-wider text-center">Global Competency Radar</h3>
                                 <div className="h-[280px] sm:h-[300px] w-full">
                                     <ResponsiveContainer width="100%" height="100%">
                                         <RadarChart cx="50%" cy="50%" outerRadius="75%" data={radarData}>
-                                            <PolarGrid stroke="#e2e8f0" strokeDasharray="3 3" />
-                                            <PolarAngleAxis dataKey="subject" tick={{ fontSize: 9, fontWeight: 800, textTransform: 'uppercase', fill: '#94a3b8' }} />
-                                            <Radar name="Team Avg" dataKey="A" stroke="#4f46e1" strokeWidth={3} fill="#4f46e1" fillOpacity={0.25} />
-                                            <Tooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', padding: '10px' }} />
+                                            <PolarGrid stroke="#D6CDBC" strokeDasharray="3 3" className="dark:opacity-20" />
+                                            <PolarAngleAxis dataKey="subject" tick={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', fill: '#777367' }} />
+                                            <Radar name="Team Avg" dataKey="A" stroke="#B9955B" strokeWidth={2.5} fill="#B9955B" fillOpacity={0.25} />
+                                            <Tooltip contentStyle={{ borderRadius: '12px', border: '1px solid #D6CDBC', backgroundColor: '#FBF9F5', padding: '10px' }} />
                                         </RadarChart>
                                     </ResponsiveContainer>
                                 </div>
-                                <div className="mt-4 space-y-2 w-full pt-3 border-t border-slate-100 dark:border-slate-800">
-                                    <div className="flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700/60">
+                                <div className="mt-4 space-y-2 w-full pt-3 border-t border-[#E5DED2] dark:border-[#384232]">
+                                    <div className="flex items-center justify-between p-2.5 bg-[#EEE8DD]/50 dark:bg-[#1E2419] rounded-xl border border-[#E5DED2] dark:border-[#384232]">
                                         <div className="flex items-center gap-2">
-                                            <div className="h-6 w-6 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-600"><Star size={13} fill="currentColor" /></div>
-                                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Top Skill</span>
+                                            <div className="h-6 w-6 rounded-lg bg-[#5E7D64]/15 flex items-center justify-center text-[#5E7D64]"><Star size={13} fill="currentColor" /></div>
+                                            <span className="text-[10px] font-bold uppercase tracking-wider text-[#777367] dark:text-[#B8B3A7]">Top Skill</span>
                                         </div>
-                                        <span className="text-xs font-bold text-slate-900 dark:text-white">{radarSummary.topSkill}</span>
+                                        <span className="text-xs font-bold text-[#29291F] dark:text-[#F5F1E9]">{radarSummary.topSkill}</span>
                                     </div>
-                                    <div className="flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700/60">
+                                    <div className="flex items-center justify-between p-2.5 bg-[#EEE8DD]/50 dark:bg-[#1E2419] rounded-xl border border-[#E5DED2] dark:border-[#384232]">
                                         <div className="flex items-center gap-2">
-                                            <div className="h-6 w-6 rounded-lg bg-amber-100 flex items-center justify-center text-amber-600"><Shield size={13} /></div>
-                                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Stability</span>
+                                            <div className="h-6 w-6 rounded-lg bg-[#C98A3C]/15 flex items-center justify-center text-[#C98A3C]"><Shield size={13} /></div>
+                                            <span className="text-[10px] font-bold uppercase tracking-wider text-[#777367] dark:text-[#B8B3A7]">Stability</span>
                                         </div>
-                                        <span className="text-xs font-bold text-emerald-500">{radarSummary.stability}</span>
+                                        <span className="text-xs font-bold text-[#5E7D64]">{radarSummary.stability}</span>
                                     </div>
                                 </div>
                             </div>
