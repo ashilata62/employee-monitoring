@@ -344,8 +344,8 @@ export function PeriodComparisonBar({
                         )}
                     </div>
 
-                    {/* 4. Session Controls (Clock In / Clock Out / Take Break) for Manager / Admin */}
-                    {role !== 'EMPLOYEE' && (
+                    {/* 4. Session Controls (Clock In / Clock Out / Take Break) - Commented out for Admin Dashboard, active for Manager */}
+                    {role?.toUpperCase() === 'MANAGER' && (
                         <div className="flex items-center gap-2 self-end">
                             {!isClockedIn ? (
                                 <button

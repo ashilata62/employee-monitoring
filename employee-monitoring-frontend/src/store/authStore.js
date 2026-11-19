@@ -110,17 +110,17 @@ export const useAuthStore = create(
 
             clockOut: async () => {
                 const { default: attendanceService } = await import('../services/attendanceService');
+                // Immediate synchronous reset so UI cards & buttons reset with 0 latency
+                set({ activeAttendance: null, isClockedIn: false, isOnBreak: false, isTrackerActive: false });
+                if (typeof window !== 'undefined') {
+                    window.dispatchEvent(new Event('stop-web-tracker'));
+                }
                 try {
-                    if (typeof window !== 'undefined') {
-                        window.dispatchEvent(new Event('stop-web-tracker'));
-                    }
                     const response = await attendanceService.clockOut();
-                    set({ activeAttendance: null, isClockedIn: false, isOnBreak: false, isTrackerActive: false });
                     toast.success('Work session ended');
                     return response;
                 } catch (error) {
-                    // Gracefully handle any error (e.g. session already closed in DB) by resetting local session to 0
-                    set({ activeAttendance: null, isClockedIn: false, isOnBreak: false, isTrackerActive: false });
+                    // Gracefully handled - local session already reset
                     toast.success('Work session ended');
                     return { success: true };
                 }

@@ -124,7 +124,7 @@ export function ApprovalsQueueView() {
                 <div className="flex items-center gap-3">
                     <h2 className="font-serif text-base font-bold text-[#29291F] dark:text-[#F5F1E9] uppercase tracking-wider flex items-center gap-2.5">
                         <span>Approval Queue</span>
-                        <span className="px-2.5 py-0.5 rounded-md text-xs bg-[#FAF0E1] text-[#C98A3C] font-bold border border-[#E8D4B8]">
+                        <span className="px-2.5 py-0.5 rounded-md text-xs bg-[#FAF0E1] dark:bg-[#2C2415] text-[#C98A3C] dark:text-[#E5B56D] font-bold border border-[#E8D4B8] dark:border-[#5C4A28]">
                             {queue.length} Pending
                         </span>
                     </h2>
@@ -154,7 +154,7 @@ export function ApprovalsQueueView() {
 
             {/* Queue Table */}
             {loading ? (
-                <div className="p-16 flex flex-col items-center justify-center text-[#777367] gap-2 bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl border border-[#D6CDBC] dark:border-[#384232]">
+                <div className="p-16 flex flex-col items-center justify-center text-[#777367] dark:text-[#B8B3A7] gap-2 bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl border border-[#D6CDBC] dark:border-[#384232]">
                     <Loader2 size={28} className="animate-spin text-[#B9955B]" />
                     <span className="text-xs font-bold">Loading approval queue...</span>
                 </div>
@@ -164,7 +164,7 @@ export function ApprovalsQueueView() {
                     <h3 className="font-serif text-xl font-normal text-[#29291F] dark:text-[#F5F1E9]">
                         Queue is Clear
                     </h3>
-                    <p className="text-xs text-[#777367] mt-1">
+                    <p className="text-xs text-[#777367] dark:text-[#B8B3A7] mt-1">
                         There are currently no timesheets awaiting approval.
                     </p>
                 </div>
@@ -172,7 +172,7 @@ export function ApprovalsQueueView() {
                 <div className="bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs overflow-hidden">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="border-b border-[#D6CDBC]/70 dark:border-[#384232] bg-[#E5DDCF]/60 dark:bg-[#1E2419] text-[10px] font-bold uppercase tracking-[0.14em] text-[#777367]">
+                            <tr className="border-b border-[#D6CDBC]/70 dark:border-[#384232] bg-[#E5DDCF]/60 dark:bg-[#1E2419] text-[10px] font-bold uppercase tracking-[0.14em] text-[#777367] dark:text-[#B8B3A7]">
                                 <th className="p-4 w-10">
                                     <input
                                         type="checkbox"
@@ -198,7 +198,7 @@ export function ApprovalsQueueView() {
                                     <tr
                                         key={ts.timesheetId}
                                         className={`hover:bg-[#F5F1E9]/60 dark:hover:bg-[#1E2419]/60 transition ${
-                                            isChecked ? 'bg-[#FAF0E1]/50 dark:bg-[#30382B]/30' : ''
+                                            isChecked ? 'bg-[#FAF0E1]/50 dark:bg-[#30382B]/50' : ''
                                         }`}
                                     >
                                         <td className="p-4">
@@ -211,17 +211,17 @@ export function ApprovalsQueueView() {
                                         </td>
                                         <td className="p-4 font-bold text-[#29291F] dark:text-[#F5F1E9]">
                                             <div>{ts.employeeName}</div>
-                                            <div className="text-[10px] text-[#777367] font-normal">{ts.employeeEmail}</div>
+                                            <div className="text-[10px] text-[#777367] dark:text-[#B8B3A7] font-normal">{ts.employeeEmail}</div>
                                         </td>
-                                        <td className="p-4 text-[#777367] font-medium">
+                                        <td className="p-4 text-[#777367] dark:text-[#B8B3A7] font-medium">
                                             {ts.teamName || 'General'}
                                         </td>
-                                        <td className="p-4 text-[#777367] font-medium">
+                                        <td className="p-4 text-[#777367] dark:text-[#B8B3A7] font-medium">
                                             <div className="flex items-center gap-1.5">
                                                 <Calendar size={12} className="text-[#B9955B]" />
                                                 <span>{ts.weekStart}</span>
                                             </div>
-                                            <div className="text-[10px] text-[#777367]">
+                                            <div className="text-[10px] text-[#777367] dark:text-[#B8B3A7]">
                                                 Submitted {new Date(ts.submittedAt).toLocaleDateString()}
                                             </div>
                                         </td>
@@ -230,14 +230,14 @@ export function ApprovalsQueueView() {
                                         </td>
                                         <td className="p-4 font-semibold">
                                             {ts.overtimeMinutes > 0 ? (
-                                                <span className="text-[#C98A3C] font-bold flex items-center gap-1 tabular-nums">
+                                                <span className="text-[#C98A3C] dark:text-[#E5B56D] font-bold flex items-center gap-1 tabular-nums">
                                                     <AlertTriangle size={11} /> +{fmtH(ts.overtimeMinutes)}
                                                 </span>
                                             ) : (
-                                                <span className="text-[#777367]">0h</span>
+                                                <span className="text-[#777367] dark:text-[#B8B3A7]">0h</span>
                                             )}
                                         </td>
-                                        <td className="p-4 font-bold text-[#5E7D64] tabular-nums">
+                                        <td className="p-4 font-bold text-[#5E7D64] dark:text-[#8BB394] tabular-nums">
                                             {fmtMoney(ts.totalPay)}
                                         </td>
                                         <td className="p-4 text-right">
@@ -254,7 +254,7 @@ export function ApprovalsQueueView() {
                                                 <button
                                                     onClick={() => setRejectModal({ open: true, timesheet: ts, comment: '' })}
                                                     disabled={actionLoading}
-                                                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#FAF3F2] hover:bg-[#F5E4E2] text-[#A84B4B] border border-[#F2D6D3] font-semibold text-xs transition disabled:opacity-50 cursor-pointer"
+                                                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#FAF3F2] dark:bg-[#2E1E1E] hover:bg-[#F5E4E2] dark:hover:bg-[#3B2626] text-[#A84B4B] dark:text-[#E07A7A] border border-[#F2D6D3] dark:border-[#572E2E] font-semibold text-xs transition disabled:opacity-50 cursor-pointer"
                                                     title="Reject Timesheet"
                                                 >
                                                     <X size={13} />
@@ -274,23 +274,23 @@ export function ApprovalsQueueView() {
             {rejectModal.open && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
                     <div className="w-full max-w-md bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl border border-[#D6CDBC] dark:border-[#384232] shadow-warm-lg p-6 space-y-4">
-                        <div className="flex items-center gap-3 text-[#A84B4B]">
-                            <div className="p-2.5 rounded-xl bg-[#FAF3F2] border border-[#F2D6D3]">
+                        <div className="flex items-center gap-3 text-[#A84B4B] dark:text-[#E07A7A]">
+                            <div className="p-2.5 rounded-xl bg-[#FAF3F2] dark:bg-[#2E1E1E] border border-[#F2D6D3] dark:border-[#572E2E]">
                                 <ShieldAlert size={20} />
                             </div>
                             <div>
                                 <h3 className="font-serif text-lg font-bold text-[#29291F] dark:text-[#F5F1E9]">
                                     Reject Timesheet
                                 </h3>
-                                <p className="text-xs text-[#777367]">
+                                <p className="text-xs text-[#777367] dark:text-[#B8B3A7]">
                                     {rejectModal.timesheet?.employeeName} · Week of {rejectModal.timesheet?.weekStart}
                                 </p>
                             </div>
                         </div>
 
                         <div>
-                            <label className="block text-[10px] font-bold uppercase tracking-[0.14em] text-[#777367] mb-1.5">
-                                Rejection Reason / Audit Note <span className="text-[#A84B4B]">*</span>
+                            <label className="block text-[10px] font-bold uppercase tracking-[0.14em] text-[#777367] dark:text-[#B8B3A7] mb-1.5">
+                                Rejection Reason / Audit Note <span className="text-[#A84B4B] dark:text-[#E07A7A]">*</span>
                             </label>
                             <textarea
                                 rows={3}
@@ -305,7 +305,7 @@ export function ApprovalsQueueView() {
                         <div className="flex items-center justify-end gap-2 pt-2">
                             <button
                                 onClick={() => setRejectModal({ open: false, timesheet: null, comment: '' })}
-                                className="px-4 py-2 rounded-xl text-xs font-semibold text-[#777367] hover:text-[#29291F] transition cursor-pointer"
+                                className="px-4 py-2 rounded-xl text-xs font-semibold text-[#777367] dark:text-[#B8B3A7] hover:text-[#29291F] dark:hover:text-[#F5F1E9] transition cursor-pointer"
                             >
                                 Cancel
                             </button>

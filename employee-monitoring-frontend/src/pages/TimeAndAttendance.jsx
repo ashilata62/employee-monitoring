@@ -321,41 +321,41 @@ export function TimeAndAttendance() {
                                         <tr key={row.id || `${row.employeeId}-${row.date}`} className="bg-[#F5F1E9] dark:bg-[#1E2419] hover:bg-[#EAE2D3] dark:hover:bg-[#252B20] transition-colors border-b border-[#D6CDBC]/50">
                                             <td className="px-6 py-6">
                                                 <div className="flex items-center gap-4">
-                                                    <div className="h-9 w-9 rounded-xl bg-[#EEE8DD] text-[#30382B] border border-[#E5DED2] flex items-center justify-center text-xs font-bold tracking-wider shrink-0">
+                                                    <div className="h-9 w-9 rounded-xl bg-[#EEE8DD] dark:bg-[#252B20] text-[#30382B] dark:text-[#F5F1E9] border border-[#E5DED2] dark:border-[#384232] flex items-center justify-center text-xs font-bold tracking-wider shrink-0">
                                                         {(row.employee?.fullName || row.employee?.name || '??').split(' ').map(n => n[0]).join('').toUpperCase()}
                                                     </div>
                                                     <div>
-                                                        <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{row.employee?.fullName || row.employee?.name || 'Unknown'}</span>
+                                                        <span className="text-xs font-bold text-[#29291F] dark:text-[#F5F1E9]">{row.employee?.fullName || row.employee?.name || 'Unknown'}</span>
                                                         {row.sessionCount > 1 && (
-                                                            <p className="text-[9px] text-slate-400 font-bold mt-0.5">{row.sessionCount} sessions merged</p>
+                                                            <p className="text-[9px] text-[#777367] dark:text-[#B8B3A7] font-bold mt-0.5">{row.sessionCount} sessions merged</p>
                                                         )}
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-6 text-xs font-bold text-slate-600 dark:text-slate-400 border-l border-slate-50 dark:border-slate-800">{row.employee?.location || 'Remote'}</td>
-                                            <td className="px-6 py-6 text-xs font-bold text-slate-600 dark:text-slate-400">
+                                            <td className="px-6 py-6 text-xs font-bold text-[#777367] dark:text-[#B8B3A7] border-l border-[#D6CDBC]/40 dark:border-[#384232]">{row.employee?.location || 'Remote'}</td>
+                                            <td className="px-6 py-6 text-xs font-bold text-[#777367] dark:text-[#B8B3A7]">
                                                 {typeof row.employee?.team === 'object' ? (row.employee?.team?.name || 'No Team') : (row.employee?.team || 'No Team')}
                                             </td>
-                                            <td className="px-6 py-6 text-xs font-bold text-slate-800 dark:text-slate-300">
+                                            <td className="px-6 py-6 text-xs font-bold text-[#29291F] dark:text-[#F5F1E9]">
                                                 {format(new Date(row.date), 'MMM dd, yyyy')}
                                             </td>
-                                            <td className="px-6 py-6 text-xs font-bold text-slate-800 dark:text-slate-300">
+                                            <td className="px-6 py-6 text-xs font-bold text-[#29291F] dark:text-[#F5F1E9]">
                                                 <div className="flex items-center gap-1 group">
                                                     {row.clockIn ? format(new Date(row.clockIn), 'hh:mm a') : '--'}
-                                                    {row.clockIn && !row.clockOut && <Play size={10} className="text-primary-500 fill-primary-500 rotate-90" />}
+                                                    {row.clockIn && !row.clockOut && <Play size={10} className="text-[#5E7D64] fill-[#5E7D64] rotate-90" />}
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-6 text-xs font-bold text-slate-800 dark:text-slate-300">
+                                            <td className="px-6 py-6 text-xs font-bold text-[#29291F] dark:text-[#F5F1E9]">
                                                 {row.clockOut ? format(new Date(row.clockOut), 'hh:mm a') : '--'}
                                             </td>
-                                            <td className="px-6 py-6 text-xs font-bold text-slate-800 dark:text-slate-300">
+                                            <td className="px-6 py-6 text-xs font-bold text-[#29291F] dark:text-[#F5F1E9]">
                                                 {formatDuration(row.duration, row.clockIn, row.clockOut)}
                                             </td>
                                             <td className="px-6 py-6">
                                                 {row.clockIn && !row.clockOut ? (
-                                                    <span className="px-2.5 py-0.5 rounded-md bg-[#5E7D64]/10 text-[#5E7D64] text-[9px] font-bold uppercase tracking-wider">Working</span>
+                                                    <span className="px-2.5 py-0.5 rounded-md bg-[#5E7D64]/10 dark:bg-[#5E7D64]/20 text-[#5E7D64] dark:text-[#8BB394] text-[9px] font-bold uppercase tracking-wider">Working</span>
                                                 ) : (
-                                                    <span className="px-2.5 py-0.5 rounded-md bg-[#EEE8DD] text-[#777367] text-[9px] font-bold uppercase tracking-wider">Completed</span>
+                                                    <span className="px-2.5 py-0.5 rounded-md bg-[#EEE8DD] dark:bg-[#252B20] text-[#777367] dark:text-[#B8B3A7] border border-[#D6CDBC]/50 dark:border-[#384232] text-[9px] font-bold uppercase tracking-wider">Completed</span>
                                                 )}
                                             </td>
                                         </tr>
@@ -498,42 +498,42 @@ export function TimeAndAttendance() {
                         <table className="w-full text-left min-w-[700px]">
                             <thead className="bg-[#E5DDCF]/70 dark:bg-[#1E2419] border-b border-[#D6CDBC] dark:border-[#384232]">
                                 <tr>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 w-48">Employee Name</th>
+                                    <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-[#777367] dark:text-[#B8B3A7] w-48">Employee Name</th>
                                     {gridDays.map((date, i) => (
-                                        <th key={i} className="px-3 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">
+                                        <th key={i} className="px-3 py-4 text-[10px] font-bold uppercase tracking-wider text-[#777367] dark:text-[#B8B3A7] text-center">
                                             {format(date, 'MMM dd')}
                                         </th>
                                     ))}
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">Total</th>
+                                    <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-[#777367] dark:text-[#B8B3A7] text-center">Total</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
+                            <tbody className="divide-y divide-[#D6CDBC]/50 dark:divide-[#384232]">
                                 {filteredEmployees
                                     .filter(emp => (emp.role || 'EMPLOYEE').toUpperCase() !== 'ADMIN')
                                     .map((emp, idx) => {
                                         const empTimesheets = timesheets.filter(t => t.employeeId === emp.id);
                                         const attendedDaysCount = gridDays.filter(date => {
-                                            const dayStr = format(date, 'yyyy-MM-dd');
-                                            return empTimesheets.some(t => isDayAttended(t, dayStr));
+                                             const dayStr = format(date, 'yyyy-MM-dd');
+                                             return empTimesheets.some(t => isDayAttended(t, dayStr));
                                         }).length;
 
                                         return (
                                             <tr key={idx} className="bg-[#F5F1E9] dark:bg-[#1E2419] hover:bg-[#EAE2D3] dark:hover:bg-[#252B20] transition-colors border-b border-[#D6CDBC]/50">
                                                 <td className="px-6 py-5">
                                                     <div className="flex items-center gap-3">
-                                                        <div className={`h-9 w-9 rounded-xl flex items-center justify-center text-xs font-bold border border-[#E5DED2] bg-[#EEE8DD] text-[#30382B]`}>
+                                                        <div className={`h-9 w-9 rounded-xl flex items-center justify-center text-xs font-bold border border-[#E5DED2] dark:border-[#384232] bg-[#EEE8DD] dark:bg-[#252B20] text-[#30382B] dark:text-[#F5F1E9]`}>
                                                             {(emp.fullName || emp.name || '??').split(' ').map(n => n[0]).join('').toUpperCase()}
                                                         </div>
                                                         <div>
                                                             <div className="flex items-center gap-1.5">
-                                                                <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{emp.fullName || emp.name || 'Unknown'}</span>
+                                                                <span className="text-xs font-bold text-[#29291F] dark:text-[#F5F1E9]">{emp.fullName || emp.name || 'Unknown'}</span>
                                                                 {emp.role && emp.role !== 'EMPLOYEE' && (
-                                                                    <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300">
+                                                                    <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-[#B9955B]/15 text-[#B9955B] dark:bg-[#B9955B]/25 dark:text-[#D3B98D] border border-[#B9955B]/30">
                                                                         {emp.role}
                                                                     </span>
                                                                 )}
                                                             </div>
-                                                            <p className="text-[10px] text-slate-400 font-medium">
+                                                            <p className="text-[10px] text-[#777367] dark:text-[#B8B3A7] font-medium">
                                                                 {typeof emp.team === 'object' ? (emp.team?.name || 'No Team') : (emp.team || 'No Team')}
                                                             </p>
                                                         </div>
@@ -552,7 +552,7 @@ export function TimeAndAttendance() {
                                                     );
                                                 })}
                                                 <td className="px-6 py-5 text-center">
-                                                    <span className="text-xs font-black text-slate-700 dark:text-slate-200">
+                                                    <span className="text-xs font-bold text-[#29291F] dark:text-[#F5F1E9]">
                                                         {attendedDaysCount}/7
                                                     </span>
                                                 </td>
@@ -560,7 +560,7 @@ export function TimeAndAttendance() {
                                         );
                                     })}
                                 <tr className="bg-[#E5DDCF]/50 dark:bg-[#1E2419]/50 border-t border-[#D6CDBC] dark:border-[#384232]">
-                                    <td className="px-6 py-4"><span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Count</span></td>
+                                    <td className="px-6 py-4"><span className="text-[10px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-widest">Total Count</span></td>
                                     {gridDays.map((date, i) => {
                                         const dayStr = format(date, 'yyyy-MM-dd');
                                         const matrixEmps = filteredEmployees.filter(emp => (emp.role || 'EMPLOYEE').toUpperCase() !== 'ADMIN');
@@ -568,10 +568,10 @@ export function TimeAndAttendance() {
                                             timesheets.some(t => t.employeeId === emp.id && isDayAttended(t, dayStr))
                                         ).length;
                                         return (
-                                            <td key={i} className="px-3 py-4 text-center text-xs font-black text-slate-700 dark:text-slate-300">{count}</td>
+                                            <td key={i} className="px-3 py-4 text-center text-xs font-bold text-[#29291F] dark:text-[#F5F1E9]">{count}</td>
                                         );
                                     })}
-                                    <td className="px-6 py-4 text-center text-xs font-black text-primary-600">
+                                    <td className="px-6 py-4 text-center text-xs font-bold text-[#B9955B] dark:text-[#D3B98D]">
                                         {(() => {
                                             const matrixEmps = filteredEmployees.filter(emp => (emp.role || 'EMPLOYEE').toUpperCase() !== 'ADMIN');
                                             const grandTotal = gridDays.reduce((acc, gd) => {
@@ -591,17 +591,17 @@ export function TimeAndAttendance() {
                     <div className="mt-8 bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs overflow-hidden">
                         <div className="p-6 border-b border-[#D6CDBC] dark:border-[#384232] bg-[#E5DDCF]/50 dark:bg-[#1E2419] flex items-center justify-between">
                             <div>
-                                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Shift Compliance Preview</h3>
-                                <p className="text-xs font-bold text-slate-400">Real-time status based on Alerts & Scheduling settings</p>
+                                <h3 className="text-[10px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-[0.2em]">Shift Compliance Preview</h3>
+                                <p className="text-xs font-bold text-[#777367] dark:text-[#B8B3A7]">Real-time status based on Alerts & Scheduling settings</p>
                             </div>
-                            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EAEFEA] text-[#5E7D64] border border-[#C5D7C7] font-bold text-[10px] uppercase tracking-wider">
+                            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EAEFEA] dark:bg-[#1E2B20] text-[#5E7D64] dark:text-[#8BB394] border border-[#C5D7C7] dark:border-[#325238] font-bold text-[10px] uppercase tracking-wider">
                                 <Zap size={14} /> Live
                             </div>
                         </div>
 
                         <div className="overflow-x-auto">
                             <table className="w-full text-left">
-                                <thead className="bg-[#fcfdfe] dark:bg-slate-950 text-slate-400 dark:text-slate-500 font-bold text-[10px] uppercase tracking-widest border-b border-slate-50 dark:border-slate-800">
+                                <thead className="bg-[#E5DDCF]/60 dark:bg-[#1E2419] text-[#777367] dark:text-[#B8B3A7] font-bold text-[10px] uppercase tracking-wider border-b border-[#D6CDBC] dark:border-[#384232]">
                                     <tr>
                                         <th className="px-8 py-4">Employee</th>
                                         <th className="px-8 py-4">Scheduled</th>
@@ -609,7 +609,7 @@ export function TimeAndAttendance() {
                                         <th className="px-8 py-4">Status & Alerts</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
+                                <tbody className="divide-y divide-[#D6CDBC]/50 dark:divide-[#384232]">
                                     {shifts.map((shift) => {
                                         const attendance = timesheets.find(t =>
                                             t.employeeId === shift.employeeId &&
@@ -627,19 +627,19 @@ export function TimeAndAttendance() {
                                         );
 
                                         return (
-                                            <tr key={shift.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
+                                            <tr key={shift.id} className="hover:bg-[#F5F1E9]/60 dark:hover:bg-[#1E2419]/60 transition-colors">
                                                 <td className="px-8 py-6">
                                                     <div className="flex items-center gap-4">
-                                                        <div className="h-10 w-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs font-black text-slate-600 dark:text-slate-400">
+                                                        <div className="h-10 w-10 rounded-full bg-[#EEE8DD] dark:bg-[#252B20] border border-[#E5DED2] dark:border-[#384232] flex items-center justify-center text-xs font-bold text-[#30382B] dark:text-[#F5F1E9]">
                                                             {shift.employee?.fullName?.split(' ').map(n => n[0]).join('')}
                                                         </div>
-                                                        <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{shift.employee?.fullName}</span>
+                                                        <span className="text-xs font-bold text-[#29291F] dark:text-[#F5F1E9]">{shift.employee?.fullName}</span>
                                                     </div>
                                                 </td>
-                                                <td className="px-8 py-6 text-xs font-bold text-slate-500">
+                                                <td className="px-8 py-6 text-xs font-bold text-[#777367] dark:text-[#B8B3A7]">
                                                     {shift.startTime} – {shift.endTime}
                                                 </td>
-                                                <td className="px-8 py-6 text-xs font-bold text-slate-900 dark:text-white">
+                                                <td className="px-8 py-6 text-xs font-bold text-[#29291F] dark:text-[#F5F1E9]">
                                                     {actualStart ? `${actualStart} – ${actualEnd || '--:--'}` : '--'}
                                                 </td>
                                                 <td className="px-8 py-6">
@@ -649,21 +649,21 @@ export function TimeAndAttendance() {
                                                                 <ShieldAlert size={12} /> Absent
                                                             </span>
                                                         ) : !status.warning && !status.overtime && !status.incomplete ? (
-                                                            <span className="px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-widest border border-emerald-100 dark:border-emerald-500/20">On Track</span>
+                                                            <span className="px-3 py-1 rounded-full bg-[#EAEFEA] dark:bg-[#1E2B20] text-[#5E7D64] dark:text-[#8BB394] text-[10px] font-bold uppercase tracking-wider border border-[#C5D7C7] dark:border-[#325238]">On Track</span>
                                                         ) : (
                                                             <>
                                                                 {status.warning && (
-                                                                    <span className="px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[10px] font-black uppercase tracking-widest border border-amber-100 dark:border-amber-500/20 flex items-center gap-1">
+                                                                    <span className="px-3 py-1 rounded-full bg-[#FAF0E1] dark:bg-[#2C2415] text-[#C98A3C] dark:text-[#E5B56D] text-[10px] font-bold uppercase tracking-wider border border-[#E8D4B8] dark:border-[#5C4A28] flex items-center gap-1">
                                                                         <AlertTriangle size={12} /> {status.message}
                                                                     </span>
                                                                 )}
                                                                 {status.overtime && (
-                                                                    <span className="px-3 py-1 rounded-full bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 text-[10px] font-black uppercase tracking-widest border border-rose-100 dark:border-rose-500/20 flex items-center gap-1">
+                                                                    <span className="px-3 py-1 rounded-full bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 text-[10px] font-bold uppercase tracking-wider border border-rose-100 dark:border-rose-500/20 flex items-center gap-1">
                                                                         <Zap size={12} /> Overtime
                                                                     </span>
                                                                 )}
                                                                 {status.incomplete && (
-                                                                    <span className="px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[10px] font-black uppercase tracking-widest border border-slate-200 dark:border-slate-700 flex items-center gap-1">
+                                                                    <span className="px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider border border-slate-200 dark:border-slate-700 flex items-center gap-1">
                                                                         <ShieldAlert size={12} /> {status.message}
                                                                     </span>
                                                                 )}
