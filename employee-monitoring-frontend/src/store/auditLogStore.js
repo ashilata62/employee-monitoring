@@ -9,7 +9,7 @@ export const useAuditLogStore = create(
             isLoading: false,
             error: null,
             filters: {
-                dateRange: 'today',
+                dateRange: 'all',
                 users: [],
                 userRoles: []
             },
@@ -26,18 +26,29 @@ export const useAuditLogStore = create(
                         params: search ? { search } : {}
                     });
                     const rawLogs = res.data?.data || res.data || [];
-                    const mappedLogs = rawLogs.map(l => ({
-                        id: l.id,
-                        dateTime: l.createdAt,
-                        userName: l.user?.fullName || l.user?.email || 'System Administrator',
-                        userRole: l.metadata?.userRole || 'Admin',
-                        ipAddress: l.ipAddress || '127.0.0.1',
-                        actionType: l.action?.toLowerCase().includes('create') || l.action?.toLowerCase().includes('add') ? 'Create'
-                            : l.action?.toLowerCase().includes('delete') || l.action?.toLowerCase().includes('remove') ? 'Delete'
-                            : 'Update',
-                        action: l.action,
-                        objectType: l.metadata?.objectType || (l.action?.includes('Token') ? 'API Token' : l.action?.includes('Employee') ? 'Employee' : 'System')
-                    }));
+                    const mappedLogs = rawLogs.map(l => {
+                        let parsedMetadata = {};
+                        if (typeof l.metadata === 'string') {
+                            try { parsedMetadata = JSON.parse(l.metadata || '{}'); } catch (e) { parsedMetadata = {}; }
+                        } else if (l.metadata && typeof l.metadata === 'object') {
+                            parsedMetadata = l.metadata;
+                        }
+
+                        const userName = l.userName || (typeof l.user === 'object' ? (l.user?.fullName || l.user?.email) : l.user) || 'System Administrator';
+
+                        return {
+                            id: l.id,
+                            dateTime: l.dateTime || l.createdAt || l.time,
+                            userName: userName,
+                            userRole: parsedMetadata?.userRole || l.userRole || 'Admin',
+                            ipAddress: l.ipAddress || '127.0.0.1',
+                            actionType: l.action?.toLowerCase().includes('create') || l.action?.toLowerCase().includes('add') ? 'Create'
+                                : l.action?.toLowerCase().includes('delete') || l.action?.toLowerCase().includes('remove') ? 'Delete'
+                                : 'Update',
+                            action: l.action,
+                            objectType: parsedMetadata?.objectType || (l.action?.includes('Token') ? 'API Token' : l.action?.includes('Employee') ? 'Employee' : 'System')
+                        };
+                    });
                     set({ auditLogs: mappedLogs, isLoading: false });
                 } catch (err) {
                     console.error('Failed to fetch audit logs:', err);
@@ -74,7 +85,7 @@ export const useAuditLogStore = create(
             clearFilters: () => {
                 set({
                     filters: {
-                        dateRange: 'today',
+                        dateRange: 'all',
                         users: [],
                         userRoles: []
                     }

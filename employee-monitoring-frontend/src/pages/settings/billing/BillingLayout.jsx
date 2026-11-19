@@ -1,5 +1,6 @@
 import React from 'react';
 import { NavLink, Outlet, useNavigate, Navigate } from 'react-router-dom';
+import { useAuthStore } from '../../../store/authStore';
 import {
     ChevronLeft,
     CreditCard,
@@ -10,6 +11,15 @@ import { cn } from '../../../utils/cn';
 
 export function BillingLayout() {
     const navigate = useNavigate();
+    const { role } = useAuthStore();
+    const rolePath = role ? `/${role.toLowerCase()}` : '/admin';
+    const handleBack = () => {
+        if (window.history.length > 1) {
+            navigate(-1);
+        } else {
+            navigate(`${rolePath}/settings`);
+        }
+    };
     const { billingCycle, setBillingCycle, trialDaysLeft, subscriptionStatus } = useBillingStore();
     const isTrial = subscriptionStatus === 'trial';
 
@@ -22,7 +32,7 @@ export function BillingLayout() {
                     <p className="text-sm font-bold text-amber-800 dark:text-amber-300">
                         <span>{trialDaysLeft} days left on your trial.</span>{' '}
                         <NavLink
-                            to="/settings/billing/plans"
+                            to={`${rolePath}/settings/billing/plans`}
                             className="font-black text-amber-600 dark:text-amber-400 hover:underline"
                         >
                             Choose plan
@@ -35,7 +45,7 @@ export function BillingLayout() {
                 {/* Header */}
                 <div className="flex items-center gap-4 pt-8 pb-6">
                     <button
-                        onClick={() => navigate('/settings')}
+                        onClick={handleBack}
                         className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-all hover:scale-105 shadow-sm"
                     >
                         <ChevronLeft size={20} />
@@ -44,7 +54,7 @@ export function BillingLayout() {
                         <nav className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">
                             <span
                                 className="hover:text-slate-600 dark:hover:text-slate-300 transition-colors cursor-pointer"
-                                onClick={() => navigate('/settings')}
+                                onClick={() => navigate(`${rolePath}/settings`)}
                             >
                                 Settings
                             </span>
@@ -67,8 +77,8 @@ export function BillingLayout() {
                     {/* Tabs */}
                     <div className="flex items-center gap-1">
                         {[
-                            { label: 'Plans', to: '/settings/billing/plans' },
-                            { label: 'Add-ons', to: '/settings/billing/add-ons' },
+                            { label: 'Plans', to: `${rolePath}/settings/billing/plans` },
+                            { label: 'Add-ons', to: `${rolePath}/settings/billing/add-ons` },
                         ].map(({ label, to }) => (
                             <NavLink
                                 key={to}

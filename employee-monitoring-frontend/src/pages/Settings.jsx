@@ -7,7 +7,6 @@ import {
     ClipboardList,
     CreditCard,
     Mail,
-    Puzzle,
     Clock,
     Building,
     Shield,
@@ -27,8 +26,7 @@ const CATEGORIES = [
     'Productivity & Tracking',
     'Administration',
     'Security & Governance',
-    'Reports & Analytics',
-    'Integrations & API'
+    'Reports & Analytics'
 ];
 
 const SettingCard = ({ icon: Icon, title, description, badge, iconBg, onClick }) => (
@@ -173,28 +171,12 @@ export function Settings() {
             iconBg: "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border-emerald-200/80 dark:border-emerald-800/80"
         },
         {
-            icon: Puzzle,
-            title: "Integrations",
-            description: "Connect with Jira, Slack, GitHub, Asana, Google Workspace and enterprise identity apps.",
-            path: "/settings/integrations",
-            category: "Integrations & API",
-            iconBg: "bg-orange-50 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 border-orange-200/80 dark:border-orange-800/80"
-        },
-        {
             icon: CreditCard,
             title: "Billing & Subscriptions",
             description: "Manage your company plans, seat licenses, payment methods, and invoices.",
             path: "/settings/billing",
             category: "Administration",
             iconBg: "bg-green-50 dark:bg-green-950/40 text-green-600 dark:text-green-400 border-green-200/80 dark:border-green-800/80"
-        },
-        {
-            icon: Key,
-            title: "API Tokens",
-            description: "Create and revoke secure access tokens for custom developer webhooks and data pipelines.",
-            path: "/settings/api-tokens",
-            category: "Integrations & API",
-            iconBg: "bg-primary-50 dark:bg-primary-950/40 text-primary-600 dark:text-primary-400 border-primary-200/80 dark:border-primary-800/80"
         },
         {
             icon: Mail,

@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { ShieldAlert, MonitorCheck } from 'lucide-react';
+import { ShieldAlert, MonitorCheck, Clock, Briefcase, Coffee } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
+import { getActiveSessionSeconds } from '../../hooks/useLiveTime';
 import screenshotService from '../../services/screenshotService';
 import videoService from '../../services/videoService';
+import api from '../../services/apiClient';
 import useSocket from '../../hooks/useSocket';
 import { toast } from '../../utils/toastManager';
 
@@ -59,6 +61,273 @@ export function WebTrackerAgent() {
     const intervalRef = useRef(null);
     const videoRef = useRef(null);
     const isStartingRef = useRef(false);
+
+    // ─── Cursor Activity & Inactivity Monitoring State (Requirements 2, 3, 4, 5) ─
+    const [showIdleModal, setShowIdleModal] = useState(false);
+    const showIdleModalRef = useRef(false);
+    const [idleMinutesPrompt, setIdleMinutesPrompt] = useState(10);
+    const lastActivityRef = useRef(Date.now());
+    const idleStatusRef = useRef('ACTIVE'); // 'ACTIVE' | 'PASSIVE' | 'IDLE_WARNING' | 'IDLE' | 'BREAK'
+    const idleStartTimeRef = useRef(null);
+    const hasSentPassiveAlertRef = useRef(false);
+    const hasSentWarningAlertRef = useRef(false);
+    const hasSentIdleAlertRef = useRef(false);
+    const idleTimerIntervalRef = useRef(null);
+
+    // Activity Detection on window (mouse move, click, scroll, keyboard input)
+    useEffect(() => {
+        if (!user) return;
+
+        // Request browser Notification permission for desktop alerts
+        if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission().catch(() => {});
+        }
+
+        const handleUserActivity = () => {
+            // If the idle alert modal is currently open, DO NOT close it on mouse/keyboard touch!
+            // The employee must explicitly choose "I am working" or "I am on a break".
+            if (showIdleModalRef.current) {
+                return;
+            }
+
+            const now = Date.now();
+            lastActivityRef.current = now;
+
+            // If employee was inactive (PASSIVE or IDLE_WARNING before modal opened), resume to ACTIVE
+            if (idleStatusRef.current === 'PASSIVE' || idleStatusRef.current === 'IDLE_WARNING') {
+                const prev = idleStatusRef.current;
+                const startTime = idleStartTimeRef.current;
+                const duration = startTime
+                    ? Math.round((now - new Date(startTime).getTime()) / 1000)
+                    : 0;
+
+                console.log(`[WebTrackerAgent] Genuine cursor/input detected! Resuming from ${prev} to ACTIVE (${duration}s idle).`);
+
+                idleStatusRef.current = 'ACTIVE';
+                hasSentPassiveAlertRef.current = false;
+                hasSentWarningAlertRef.current = false;
+                hasSentIdleAlertRef.current = false;
+                idleStartTimeRef.current = null;
+
+                const resolvedEmpId = user?.employeeId || user?.employee?.id || user?.id;
+                if (resolvedEmpId) {
+                    api.post('/agent/idle-activity', {
+                        employeeId: resolvedEmpId,
+                        status: 'RESUMED',
+                        idleDuration: duration,
+                        taskId: activeTaskIdRef.current,
+                        source: 'WEB_AGENT'
+                    }).catch(() => {});
+                }
+            }
+        };
+
+        // Listen for genuine user input without recording keystrokes, text or passwords
+        window.addEventListener('mousemove', handleUserActivity, { passive: true });
+        window.addEventListener('mousedown', handleUserActivity, { passive: true });
+        window.addEventListener('keydown', handleUserActivity, { passive: true });
+        window.addEventListener('wheel', handleUserActivity, { passive: true });
+        window.addEventListener('scroll', handleUserActivity, { passive: true });
+
+        return () => {
+            window.removeEventListener('mousemove', handleUserActivity);
+            window.removeEventListener('mousedown', handleUserActivity);
+            window.removeEventListener('keydown', handleUserActivity);
+            window.removeEventListener('wheel', handleUserActivity);
+            window.removeEventListener('scroll', handleUserActivity);
+        };
+    }, [role, user]);
+
+    // Periodic 5-second Inactivity Check (Reduced testing thresholds: 30s Passive, 60s Idle)
+    useEffect(() => {
+        if (!user) {
+            if (idleTimerIntervalRef.current) clearInterval(idleTimerIntervalRef.current);
+            return;
+        }
+
+        const checkInactivity = () => {
+            // Guard: If employee is not clocked in, is on break, or modal is already showing, skip checks
+            const { isClockedIn, isOnBreak } = useAuthStore.getState();
+            if (!isClockedIn || isOnBreak || showIdleModalRef.current) {
+                return;
+            }
+
+            const now = Date.now();
+            const idleSec = Math.round((now - lastActivityRef.current) / 1000);
+            const resolvedEmpId = user?.employeeId || user?.employee?.id || user?.id;
+
+            // 1. Stage: IDLE (1 minute / 60 seconds - triggers Employee Inactivity Alert)
+            if (idleSec >= 60) {
+                if (idleStatusRef.current !== 'IDLE') {
+                    idleStatusRef.current = 'IDLE';
+                    if (!idleStartTimeRef.current) {
+                        idleStartTimeRef.current = new Date(now - idleSec * 1000).toISOString();
+                    }
+
+                    if (!hasSentIdleAlertRef.current) {
+                        hasSentIdleAlertRef.current = true;
+                        setIdleMinutesPrompt(1);
+                        showIdleModalRef.current = true;
+                        setShowIdleModal(true);
+
+                        // Freeze work session timer at this exact elapsed time!
+                        const storeState = useAuthStore.getState();
+                        const currentSessionSec = getActiveSessionSeconds(
+                            storeState.activeAttendance,
+                            storeState.isClockedIn,
+                            storeState.isOnBreak
+                        );
+                        storeState.pauseSessionForIdle(currentSessionSec);
+
+                        // Trigger In-App Alert Toast Notification
+                        toast.error('Employee Inactivity Alert: You have been inactive for 1 minute. Please resume your work.');
+
+                        // Trigger Browser Native Desktop Notification
+                        if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+                            try {
+                                new window.Notification('Employee Inactivity Alert', {
+                                    body: 'You have been inactive for 1 minute. Please resume your work.',
+                                    icon: '/favicon.ico'
+                                });
+                            } catch (e) {
+                                console.warn('[WebTrackerAgent] Notification error:', e);
+                            }
+                        }
+
+                        if (resolvedEmpId) {
+                            api.post('/agent/idle-activity', {
+                                employeeId: resolvedEmpId,
+                                status: 'IDLE',
+                                idleDuration: idleSec,
+                                idleStartTime: idleStartTimeRef.current,
+                                taskId: activeTaskIdRef.current,
+                                source: 'WEB_AGENT'
+                            }).catch(() => {});
+                        }
+                    }
+                }
+            }
+            // 2. Stage: IDLE WARNING (45 seconds reminder)
+            else if (idleSec >= 45) {
+                if (idleStatusRef.current !== 'IDLE_WARNING' && idleStatusRef.current !== 'IDLE') {
+                    idleStatusRef.current = 'IDLE_WARNING';
+                    if (!idleStartTimeRef.current) {
+                        idleStartTimeRef.current = new Date(now - idleSec * 1000).toISOString();
+                    }
+
+                    if (!hasSentWarningAlertRef.current) {
+                        hasSentWarningAlertRef.current = true;
+                        toast.warning('Activity Reminder: No recent mouse or keyboard activity detected.');
+
+                        if (resolvedEmpId) {
+                            api.post('/agent/idle-activity', {
+                                employeeId: resolvedEmpId,
+                                status: 'IDLE_WARNING',
+                                idleDuration: idleSec,
+                                idleStartTime: idleStartTimeRef.current,
+                                taskId: activeTaskIdRef.current,
+                                source: 'WEB_AGENT'
+                            }).catch(() => {});
+                        }
+                    }
+                }
+            }
+            // 3. Stage: PASSIVE (30 seconds initial inactivity detection)
+            else if (idleSec >= 30) {
+                if (idleStatusRef.current === 'ACTIVE') {
+                    idleStatusRef.current = 'PASSIVE';
+                    if (!hasSentPassiveAlertRef.current) {
+                        hasSentPassiveAlertRef.current = true;
+                        console.log(`[WebTrackerAgent] Inactivity detected: 30s elapsed. Status -> PASSIVE.`);
+                        if (resolvedEmpId) {
+                            api.post('/agent/idle-activity', {
+                                employeeId: resolvedEmpId,
+                                status: 'PASSIVE',
+                                idleDuration: idleSec,
+                                taskId: activeTaskIdRef.current,
+                                source: 'WEB_AGENT'
+                            }).catch(() => {});
+                        }
+                    }
+                }
+            }
+        };
+
+        idleTimerIntervalRef.current = setInterval(checkInactivity, 5000);
+        return () => {
+            if (idleTimerIntervalRef.current) clearInterval(idleTimerIntervalRef.current);
+        };
+    }, [role, user]);
+
+    // Handle Desktop Agent IPC events if running inside Electron wrapper
+    useEffect(() => {
+        if (window.electronAPI?.onIdlePrompt) {
+            const cleanup = window.electronAPI.onIdlePrompt((data) => {
+                setIdleMinutesPrompt(Math.floor((data.idleDuration || 600) / 60));
+                showIdleModalRef.current = true;
+                setShowIdleModal(true);
+                const storeState = useAuthStore.getState();
+                const currentSessionSec = getActiveSessionSeconds(
+                    storeState.activeAttendance,
+                    storeState.isClockedIn,
+                    storeState.isOnBreak
+                );
+                storeState.pauseSessionForIdle(currentSessionSec);
+            });
+            return cleanup;
+        }
+    }, []);
+
+    // Handle Employee Modal Confirmation ('I am working' or 'I am on a break')
+    const handleIdleModalResponse = async (responseType) => {
+        const resolvedEmpId = user?.employeeId || user?.employee?.id || user?.id;
+        try {
+            if (window.electronAPI?.respondToIdlePrompt) {
+                await window.electronAPI.respondToIdlePrompt(responseType);
+            } else if (resolvedEmpId) {
+                await api.post('/agent/idle-response', {
+                    employeeId: resolvedEmpId,
+                    response: responseType,
+                    taskId: activeTaskIdRef.current
+                }).catch(() => {});
+            }
+
+            if (responseType === 'WORKING') {
+                idleStatusRef.current = 'ACTIVE';
+                lastActivityRef.current = Date.now();
+                hasSentIdleAlertRef.current = false;
+                hasSentWarningAlertRef.current = false;
+                hasSentPassiveAlertRef.current = false;
+                idleStartTimeRef.current = null;
+                showIdleModalRef.current = false;
+                setShowIdleModal(false);
+
+                // Resume the paused session timer so it starts counting upwards again seamlessly
+                useAuthStore.getState().resumeSessionFromIdle();
+
+                toast.success('Work session resumed.');
+            } else if (responseType === 'BREAK') {
+                idleStatusRef.current = 'BREAK';
+                showIdleModalRef.current = false;
+                setShowIdleModal(false);
+
+                // Release modal pause lock
+                useAuthStore.getState().resumeSessionFromIdle();
+
+                // Start official break so session banner displays "Session Paused", "On Break", and "Resume Work"
+                if (!useAuthStore.getState().isOnBreak) {
+                    await useAuthStore.getState().toggleBreak();
+                }
+
+                toast.info('Break mode activated. Work timer is paused.');
+            }
+        } catch (err) {
+            console.error('[WebTrackerAgent] Failed to submit idle confirmation:', err);
+            showIdleModalRef.current = false;
+            setShowIdleModal(false);
+            useAuthStore.getState().resumeSessionFromIdle();
+        }
+    };
 
     // ─── Video Recording Refs ──────────────────────────────────────────────────
     const mediaRecorderRef = useRef(null);
@@ -463,6 +732,53 @@ export function WebTrackerAgent() {
                         <div className="flex items-center justify-center gap-4 text-[10px] text-slate-400 uppercase font-black tracking-widest opacity-60">
                             <span>Requires Screen Share</span>
                         </div>
+                    </div>
+                </div>,
+                document.body
+            )}
+
+            {/* Employee Inactivity Alert Modal (Requirements 4 & 5) */}
+            {showIdleModal && createPortal(
+                <div
+                    className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/80 backdrop-blur-md animate-in fade-in duration-300 pointer-events-auto p-4"
+                    style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh' }}
+                >
+                    <div className="bg-[#1C2419] border border-[#C9A96E]/30 rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-8 text-center text-[#E8DFD1] animate-in zoom-in-95 duration-200">
+                        <div className="h-16 w-16 mx-auto mb-5 rounded-2xl bg-[#C9A96E]/15 border border-[#C9A96E]/30 flex items-center justify-center shadow-inner">
+                            <Clock className="w-8 h-8 text-[#C9A96E] animate-pulse" />
+                        </div>
+
+                        <div className="inline-block px-3 py-1 rounded-full bg-[#C9A96E]/15 border border-[#C9A96E]/30 text-[#C9A96E] text-xs font-semibold uppercase tracking-wider mb-3">
+                            Inactivity Alert
+                        </div>
+
+                        <h3 className="text-xl sm:text-2xl font-serif font-bold text-[#E8DFD1] mb-2 tracking-tight">
+                            Employee Inactivity Alert
+                        </h3>
+
+                        <p className="text-sm text-[#9E988A] leading-relaxed mb-6 font-medium">
+                            You have been inactive for 1 minute. Please resume your work.
+                        </p>
+
+                        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                            <button
+                                onClick={() => handleIdleModalResponse('WORKING')}
+                                className="flex-1 py-3 px-5 bg-[#C9A96E] hover:bg-[#d8b87d] text-[#161C14] rounded-xl font-bold text-sm tracking-wide shadow-lg transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+                            >
+                                <Briefcase className="w-4 h-4 text-[#161C14]" />
+                                <span>I am working</span>
+                            </button>
+                            <button
+                                onClick={() => handleIdleModalResponse('BREAK')}
+                                className="flex-1 py-3 px-5 bg-[#252E22] hover:bg-[#2E3A2A] text-[#E8DFD1] border border-[#3E4F39] rounded-xl font-medium text-sm tracking-wide transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+                            >
+                                <Coffee className="w-4 h-4 text-[#9E988A]" />
+                                <span>I am on a break</span>
+                            </button>
+                        </div>
+                        <p className="mt-4 text-[11px] text-[#9E988A] opacity-75">
+                            Please select an option above to resume your session or transition to break mode.
+                        </p>
                     </div>
                 </div>,
                 document.body

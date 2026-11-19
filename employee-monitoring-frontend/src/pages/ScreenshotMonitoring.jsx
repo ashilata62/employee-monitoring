@@ -2075,7 +2075,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                   {/* Top Controls (Screenshots tab only) */}
                   {activeMainTab === 'screenshots' && (
                     <div className="flex items-center gap-2.5 flex-nowrap shrink-0">
-                      {role !== 'EMPLOYEE' && (
+                      {role === 'EMPLOYEE' && (
                         <button
                           onClick={handleCaptureRealScreen}
                           className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-emerald-500/20 active:scale-95 transition-all flex items-center gap-2"
@@ -2280,7 +2280,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                   {/* Top Controls (Videos Tab) */}
                   {activeMainTab === 'videos' && (
                     <div className="flex items-center gap-2.5 flex-nowrap shrink-0">
-                      {role !== 'EMPLOYEE' && (
+                      {role === 'EMPLOYEE' && (
                         <>
                           {!isRecordingVideo ? (
                             <button

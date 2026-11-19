@@ -9,12 +9,22 @@ import {
     Search
 } from 'lucide-react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
+import { useAuthStore } from '../../../store/authStore';
 import { NewAlertModal } from '../../../components/modals/NewAlertModal';
 import { cn } from '../../../utils/cn';
 
 export function AlertsLayout() {
     const navigate = useNavigate();
     const location = useLocation();
+    const { role } = useAuthStore();
+    const rolePath = role ? `/${role.toLowerCase()}` : '/admin';
+    const handleBack = () => {
+        if (window.history.length > 1) {
+            navigate(-1);
+        } else {
+            navigate(`${rolePath}/settings`);
+        }
+    };
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [alertToEdit, setAlertToEdit] = useState(null);
 
@@ -35,14 +45,14 @@ export function AlertsLayout() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div className="flex items-center gap-4">
                     <button
-                        onClick={() => navigate(-1)}
+                        onClick={handleBack}
                         className="h-10 w-10 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-400 hover:text-primary-600 hover:border-primary-200 transition-all shadow-sm group"
                     >
                         <ChevronLeft size={20} className="group-hover:-translate-x-0.5 transition-transform" />
                     </button>
                     <div>
                         <nav className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">
-                            <span className="hover:text-slate-600 transition-colors cursor-pointer" onClick={() => navigate(-1)}>Settings</span>
+                            <span className="hover:text-slate-600 transition-colors cursor-pointer" onClick={() => navigate(`${rolePath}/settings`)}>Settings</span>
                             <span>/</span>
                             <span className="text-primary-600">Alerts</span>
                         </nav>
