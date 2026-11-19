@@ -42,6 +42,8 @@ export default function ProcessMining() {
 
     useEffect(() => {
         fetchDiscovery();
+        const interval = setInterval(fetchDiscovery, 60000);
+        return () => clearInterval(interval);
     }, []);
 
     const handleExport = async () => {
