@@ -1993,9 +1993,9 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
     <>
               <div className="min-h-screen bg-[#fcfdfe] dark:bg-slate-950 space-y-6 sm:space-y-8 pb-20 px-2 sm:px-4 lg:px-8 max-w-full overflow-x-hidden box-border animate-fade-in">
                 {/* Header */}
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 py-8">
-                  <div className="flex flex-wrap items-center gap-4">
-                    <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Screenshots & Screen Recording</h1>
+                <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 py-6 sm:py-8">
+                  <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+                    <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">Screenshots & Screen Recording</h1>
 
                     {/* Main Navigation Tabs (Phase 2) */}
                     <div className="flex items-center gap-1.5 bg-[#EEE8DD] dark:bg-[#252B20] p-1.5 rounded-xl border border-[#D6CDBC] dark:border-[#384232]">
@@ -2249,14 +2249,14 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
 
                   {/* Top Controls (Videos Tab) */}
                   {activeMainTab === 'videos' && (
-                    <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex items-center gap-2.5 flex-nowrap shrink-0">
                       {role !== 'EMPLOYEE' && (
                         <>
                           {!isRecordingVideo ? (
                             <button
                               onClick={handleStartScreenRecording}
                               disabled={isUploadingVideo}
-                              className="px-4 py-2 bg-rose-500 hover:bg-rose-600 disabled:opacity-50 text-white rounded-xl text-sm font-bold shadow-lg shadow-rose-500/20 active:scale-95 transition-all flex items-center gap-2 animate-in fade-in cursor-pointer"
+                              className="px-4 py-2 bg-rose-500 hover:bg-rose-600 disabled:opacity-50 text-white rounded-xl text-sm font-bold shadow-lg shadow-rose-500/20 active:scale-95 transition-all flex items-center gap-2 animate-in fade-in cursor-pointer whitespace-nowrap shrink-0"
                               title="Start screen recording to capture and save video session"
                             >
                               {isUploadingVideo ? (
@@ -2274,7 +2274,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                           ) : (
                             <button
                               onClick={handleStopScreenRecording}
-                              className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-rose-600/30 active:scale-95 transition-all flex items-center gap-2 animate-pulse"
+                              className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-rose-600/30 active:scale-95 transition-all flex items-center gap-2 animate-pulse whitespace-nowrap shrink-0"
                               title="Stop recording and save video"
                             >
                               <span className="h-2 w-2 rounded-full bg-white animate-ping" />
@@ -2288,10 +2288,10 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                       <button
                         onClick={fetchVideos}
                         disabled={loadingVideos}
-                        className="p-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl transition-all shadow-sm"
+                        className="p-2.5 bg-[#FBF9F5] dark:bg-[#252B20] border border-[#E5DED2] dark:border-[#384232] hover:bg-[#EEE8DD] dark:hover:bg-[#30382B] text-[#777367] dark:text-[#F5F1E9] rounded-xl transition-all shadow-warm-xs cursor-pointer shrink-0"
                         title="Refresh video list"
                       >
-                        <RefreshCw size={16} className={cn(loadingVideos && "animate-spin text-primary-500")} />
+                        <RefreshCw size={16} className={cn(loadingVideos && "animate-spin text-[#B9955B]")} />
                       </button>
                     </div>
                   )}

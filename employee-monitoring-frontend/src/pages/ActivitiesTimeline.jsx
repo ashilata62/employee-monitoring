@@ -358,25 +358,29 @@ export function ActivitiesTimeline() {
   ];
 
   return (
+<<<<<<< HEAD
     <div className="space-y-6 w-full">
+=======
+    <div className="space-y-6 w-full text-[#29291F] dark:text-[#F5F1E9]">
+>>>>>>> 77c0a9cd72e6f91b977be1dcc664cdb5381b3486
       {/* ── Top Insightful Module Switcher ──────────────────────────────────── */}
       <InsightfulModuleSwitcher activeTab="activities" />
 
       {/* ── 1. Page Header (Matching Image 1) ───────────────────────────────── */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-bold font-serif text-[#29291F] dark:text-[#F5F1E9] tracking-tight">
             Activities
           </h1>
           {/* Subheader Navigation Tabs */}
-          <div className="flex items-center gap-6 mt-3 border-b border-slate-200 dark:border-slate-800">
+          <div className="flex items-center gap-6 mt-3 border-b border-[#E5DED2] dark:border-[#384232]">
             <button
               onClick={() => setActiveTab('Timeline')}
               className={cn(
-                "pb-2.5 text-xs font-black uppercase tracking-wider transition-all relative",
+                "pb-2.5 text-xs font-bold uppercase tracking-wider transition-all relative cursor-pointer",
                 activeTab === 'Timeline'
-                  ? "text-primary-600 dark:text-primary-400 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary-600 dark:after:bg-primary-400 rounded-t"
-                  : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                  ? "text-[#B9955B] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[#B9955B] rounded-t"
+                  : "text-[#777367] hover:text-[#29291F] dark:text-[#B8B3A7] dark:hover:text-[#F5F1E9]"
               )}
             >
               Timeline
@@ -384,10 +388,10 @@ export function ActivitiesTimeline() {
             <button
               onClick={() => setActiveTab('Logs')}
               className={cn(
-                "pb-2.5 text-xs font-black uppercase tracking-wider transition-all relative flex items-center gap-1.5",
+                "pb-2.5 text-xs font-bold uppercase tracking-wider transition-all relative flex items-center gap-1.5 cursor-pointer",
                 activeTab === 'Logs'
-                  ? "text-primary-600 dark:text-primary-400 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary-600 dark:after:bg-primary-400 rounded-t"
-                  : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                  ? "text-[#B9955B] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[#B9955B] rounded-t"
+                  : "text-[#777367] hover:text-[#29291F] dark:text-[#B8B3A7] dark:hover:text-[#F5F1E9]"
               )}
             >
               <span>Logs</span>
@@ -1026,14 +1030,14 @@ export function ActivitiesTimeline() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-4">
         {/* Floating Mini Tracker Card */}
         {showMiniTracker && (
-          <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200 dark:border-slate-800 shadow-xl flex flex-col justify-between relative overflow-hidden group">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-              <span className="text-xs font-black tracking-widest text-slate-400 uppercase">Insightful Tracker</span>
-              <button onClick={() => setShowMiniTracker(false)} className="text-slate-400 hover:text-slate-600 text-xs font-bold">✕</button>
+          <div className="bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl p-5 border border-[#E5DED2] dark:border-[#384232] shadow-warm-md flex flex-col justify-between relative overflow-hidden group">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E5DED2] dark:border-[#384232]">
+              <span className="text-xs font-bold tracking-widest text-[#777367] dark:text-[#B8B3A7] uppercase">Insightful Tracker</span>
+              <button onClick={() => setShowMiniTracker(false)} className="text-[#777367] hover:text-[#29291F] dark:hover:text-[#F5F1E9] text-xs font-bold cursor-pointer">✕</button>
             </div>
             <div className="py-6 text-center">
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Shift Session Time</p>
-              <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight mt-1">
+              <p className="text-[10px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-widest">Shift Session Time</p>
+              <h2 className="text-3xl font-bold font-serif text-[#29291F] dark:text-[#F5F1E9] tracking-tight mt-1">
                 {formatTrackerTime(trackerSeconds)}
               </h2>
             </div>
@@ -1042,8 +1046,8 @@ export function ActivitiesTimeline() {
                 onClick={handleToggleClock}
                 disabled={isActionLoading}
                 className={cn(
-                  "flex-1 py-3 rounded-xl text-xs font-black shadow-lg transition-all active:scale-95 text-white disabled:opacity-50 cursor-pointer",
-                  isClockedIn ? "bg-rose-500 hover:bg-rose-600 shadow-rose-500/20" : "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20"
+                  "flex-1 py-3 rounded-xl text-xs font-bold shadow-warm-xs transition-all active:scale-95 text-[#FDFBF7] disabled:opacity-50 cursor-pointer uppercase tracking-wider",
+                  isClockedIn ? "bg-[#A84B4B] hover:bg-[#8E3B3B]" : "bg-[#5E7D64] hover:bg-[#4A6B53]"
                 )}
               >
                 {isActionLoading ? "Processing..." : isClockedIn ? "Clock Out" : "Clock In"}
@@ -1052,28 +1056,28 @@ export function ActivitiesTimeline() {
                 onClick={handleToggleBreak}
                 disabled={!isClockedIn || isActionLoading}
                 className={cn(
-                  "flex-1 py-3 rounded-xl text-xs font-black transition-all text-white shadow-lg",
+                  "flex-1 py-3 rounded-xl text-xs font-bold transition-all text-[#FDFBF7] shadow-warm-xs uppercase tracking-wider",
                   !isClockedIn
-                    ? "bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed shadow-none"
+                    ? "bg-[#E5DED2] dark:bg-[#384232] text-[#777367] dark:text-[#B8B3A7] cursor-not-allowed shadow-none"
                     : isOnBreak
-                      ? "bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20 active:scale-95 cursor-pointer"
-                      : "bg-[#B9955B] hover:bg-[#A17D45] shadow-[#B9955B]/20 active:scale-95 cursor-pointer"
+                      ? "bg-[#5E7D64] hover:bg-[#4A6B53] active:scale-95 cursor-pointer"
+                      : "bg-[#B9955B] hover:bg-[#A17D45] active:scale-95 cursor-pointer"
                 )}
                 title={!isClockedIn ? "Clock in first to take a break" : isOnBreak ? "Resume Work" : "Take a Break"}
               >
                 {!isClockedIn ? "Take a Break" : isOnBreak ? "Resume Work" : "Take a Break"}
               </button>
             </div>
-            <p className="text-center text-[10px] font-bold text-slate-400 mt-3">
+            <p className="text-center text-[10px] font-medium text-[#777367] dark:text-[#B8B3A7] mt-3">
               Status:{" "}
               <span
                 className={cn(
-                  "font-black",
+                  "font-bold",
                   !isClockedIn
-                    ? "text-slate-400"
+                    ? "text-[#777367] dark:text-[#B8B3A7]"
                     : isOnBreak
-                    ? "text-amber-500"
-                    : "text-emerald-500"
+                    ? "text-[#C98A3C]"
+                    : "text-[#5E7D64]"
                 )}
               >
                 {!isClockedIn
@@ -1088,15 +1092,15 @@ export function ActivitiesTimeline() {
 
         {/* Floating Projects & Billable Costs Card (Admin / Manager only) */}
         {showProjectsCard && role !== 'EMPLOYEE' && (
-          <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200 dark:border-slate-800 shadow-xl relative overflow-hidden group">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+          <div className="bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl p-5 border border-[#E5DED2] dark:border-[#384232] shadow-warm-md relative overflow-hidden group">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E5DED2] dark:border-[#384232]">
               <div className="flex items-center gap-2">
-                <Briefcase size={16} className="text-primary-600" />
-                <span className="text-xs font-black tracking-widest text-slate-700 dark:text-slate-200 uppercase">Projects & Tasks</span>
+                <Briefcase size={16} className="text-[#B9955B]" />
+                <span className="text-xs font-bold tracking-widest text-[#29291F] dark:text-[#F5F1E9] uppercase">Projects & Tasks</span>
               </div>
-              <div className="flex items-center gap-1.5 px-3 py-1 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 rounded-xl border border-amber-200 dark:border-amber-800/60 font-black text-xs">
+              <div className="flex items-center gap-1.5 px-3 py-1 bg-[#FDF8F0] dark:bg-[#1E2419] text-[#C98A3C] rounded-xl border border-[#FAF0DE] dark:border-[#384232] font-bold text-xs">
                 <span>Billable Costs:</span>
-                <span className="text-amber-900 dark:text-amber-300">{data?.projectsSummary?.totalBillableCost || '$0.00'}</span>
+                <span className="text-[#A17D45] dark:text-[#D3B98D]">{data?.projectsSummary?.totalBillableCost || '$0.00'}</span>
               </div>
             </div>
 
