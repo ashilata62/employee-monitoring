@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { ShieldAlert, MonitorCheck, Clock, Briefcase, Coffee } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
+import { getActiveSessionSeconds } from '../../hooks/useLiveTime';
 import screenshotService from '../../services/screenshotService';
 import videoService from '../../services/videoService';
 import api from '../../services/apiClient';
@@ -63,6 +64,7 @@ export function WebTrackerAgent() {
 
     // ─── Cursor Activity & Inactivity Monitoring State (Requirements 2, 3, 4, 5) ─
     const [showIdleModal, setShowIdleModal] = useState(false);
+    const showIdleModalRef = useRef(false);
     const [idleMinutesPrompt, setIdleMinutesPrompt] = useState(10);
     const lastActivityRef = useRef(Date.now());
     const idleStatusRef = useRef('ACTIVE'); // 'ACTIVE' | 'PASSIVE' | 'IDLE_WARNING' | 'IDLE' | 'BREAK'
@@ -82,11 +84,17 @@ export function WebTrackerAgent() {
         }
 
         const handleUserActivity = () => {
+            // If the idle alert modal is currently open, DO NOT close it on mouse/keyboard touch!
+            // The employee must explicitly choose "I am working" or "I am on a break".
+            if (showIdleModalRef.current) {
+                return;
+            }
+
             const now = Date.now();
             lastActivityRef.current = now;
 
-            // If employee was inactive (PASSIVE, IDLE_WARNING, or IDLE), automatically resume to ACTIVE
-            if (idleStatusRef.current !== 'ACTIVE' && idleStatusRef.current !== 'BREAK') {
+            // If employee was inactive (PASSIVE or IDLE_WARNING before modal opened), resume to ACTIVE
+            if (idleStatusRef.current === 'PASSIVE' || idleStatusRef.current === 'IDLE_WARNING') {
                 const prev = idleStatusRef.current;
                 const startTime = idleStartTimeRef.current;
                 const duration = startTime
@@ -100,7 +108,6 @@ export function WebTrackerAgent() {
                 hasSentWarningAlertRef.current = false;
                 hasSentIdleAlertRef.current = false;
                 idleStartTimeRef.current = null;
-                setShowIdleModal(false);
 
                 const resolvedEmpId = user?.employeeId || user?.employee?.id || user?.id;
                 if (resolvedEmpId) {
@@ -139,6 +146,12 @@ export function WebTrackerAgent() {
         }
 
         const checkInactivity = () => {
+            // Guard: If employee is not clocked in, is on break, or modal is already showing, skip checks
+            const { isClockedIn, isOnBreak } = useAuthStore.getState();
+            if (!isClockedIn || isOnBreak || showIdleModalRef.current) {
+                return;
+            }
+
             const now = Date.now();
             const idleSec = Math.round((now - lastActivityRef.current) / 1000);
             const resolvedEmpId = user?.employeeId || user?.employee?.id || user?.id;
@@ -154,7 +167,17 @@ export function WebTrackerAgent() {
                     if (!hasSentIdleAlertRef.current) {
                         hasSentIdleAlertRef.current = true;
                         setIdleMinutesPrompt(1);
+                        showIdleModalRef.current = true;
                         setShowIdleModal(true);
+
+                        // Freeze work session timer at this exact elapsed time!
+                        const storeState = useAuthStore.getState();
+                        const currentSessionSec = getActiveSessionSeconds(
+                            storeState.activeAttendance,
+                            storeState.isClockedIn,
+                            storeState.isOnBreak
+                        );
+                        storeState.pauseSessionForIdle(currentSessionSec);
 
                         // Trigger In-App Alert Toast Notification
                         toast.error('Employee Inactivity Alert: You have been inactive for 1 minute. Please resume your work.');
@@ -241,7 +264,15 @@ export function WebTrackerAgent() {
         if (window.electronAPI?.onIdlePrompt) {
             const cleanup = window.electronAPI.onIdlePrompt((data) => {
                 setIdleMinutesPrompt(Math.floor((data.idleDuration || 600) / 60));
+                showIdleModalRef.current = true;
                 setShowIdleModal(true);
+                const storeState = useAuthStore.getState();
+                const currentSessionSec = getActiveSessionSeconds(
+                    storeState.activeAttendance,
+                    storeState.isClockedIn,
+                    storeState.isOnBreak
+                );
+                storeState.pauseSessionForIdle(currentSessionSec);
             });
             return cleanup;
         }
@@ -258,7 +289,7 @@ export function WebTrackerAgent() {
                     employeeId: resolvedEmpId,
                     response: responseType,
                     taskId: activeTaskIdRef.current
-                });
+                }).catch(() => {});
             }
 
             if (responseType === 'WORKING') {
@@ -268,16 +299,33 @@ export function WebTrackerAgent() {
                 hasSentWarningAlertRef.current = false;
                 hasSentPassiveAlertRef.current = false;
                 idleStartTimeRef.current = null;
+                showIdleModalRef.current = false;
                 setShowIdleModal(false);
+
+                // Resume the paused session timer so it starts counting upwards again seamlessly
+                useAuthStore.getState().resumeSessionFromIdle();
+
                 toast.success('Work session resumed.');
             } else if (responseType === 'BREAK') {
                 idleStatusRef.current = 'BREAK';
+                showIdleModalRef.current = false;
                 setShowIdleModal(false);
-                toast.info('Break mode activated.');
+
+                // Release modal pause lock
+                useAuthStore.getState().resumeSessionFromIdle();
+
+                // Start official break so session banner displays "Session Paused", "On Break", and "Resume Work"
+                if (!useAuthStore.getState().isOnBreak) {
+                    await useAuthStore.getState().toggleBreak();
+                }
+
+                toast.info('Break mode activated. Work timer is paused.');
             }
         } catch (err) {
             console.error('[WebTrackerAgent] Failed to submit idle confirmation:', err);
+            showIdleModalRef.current = false;
             setShowIdleModal(false);
+            useAuthStore.getState().resumeSessionFromIdle();
         }
     };
 
@@ -729,7 +777,7 @@ export function WebTrackerAgent() {
                             </button>
                         </div>
                         <p className="mt-4 text-[11px] text-[#9E988A] opacity-75">
-                            Moving your mouse or typing will automatically resume your active session.
+                            Please select an option above to resume your session or transition to break mode.
                         </p>
                     </div>
                 </div>,

@@ -848,7 +848,11 @@ const handleIdleResponse = async (req, res) => {
                 where: { id: latestSession.id },
                 data: {
                     employeeResponse: response,
-                    employeeResponseAt: now
+                    employeeResponseAt: now,
+                    ...(latestSession.idleEndTime ? {} : {
+                        idleEndTime: now,
+                        activityStatus: response === 'WORKING' ? 'ACTIVE' : 'BREAK'
+                    })
                 }
             });
         }
@@ -868,6 +872,12 @@ const handleIdleResponse = async (req, res) => {
             });
             if (io && room) {
                 io.to(room).emit('employee:status', { employeeId, status: 'online', lastActiveAt: now });
+                io.to(room).emit('employee:idle_resumed', {
+                    employeeId,
+                    employeeName: employee.fullName,
+                    idleDuration: latestSession?.idleDuration || 0,
+                    resumedAt: now
+                });
             }
         }
 

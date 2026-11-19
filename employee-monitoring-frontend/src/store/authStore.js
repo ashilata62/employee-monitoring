@@ -126,7 +126,15 @@ export const useAuthStore = create(
             clockOut: async () => {
                 const { default: attendanceService } = await import('../services/attendanceService');
                 // Immediate synchronous reset so UI cards & buttons reset with 0 latency
-                set({ activeAttendance: null, isClockedIn: false, isOnBreak: false, isTrackerActive: false });
+                set({
+                    activeAttendance: null,
+                    isClockedIn: false,
+                    isOnBreak: false,
+                    isTrackerActive: false,
+                    isIdlePaused: false,
+                    frozenIdleSeconds: null,
+                    idlePauseStartTime: null
+                });
                 if (typeof window !== 'undefined') {
                     window.dispatchEvent(new Event('stop-web-tracker'));
                 }
@@ -205,6 +213,31 @@ export const useAuthStore = create(
                     }
                     return { success: true };
                 }
+            },
+            pauseSessionForIdle: (currentSeconds) => {
+                set({
+                    isIdlePaused: true,
+                    frozenIdleSeconds: currentSeconds,
+                    idlePauseStartTime: Date.now()
+                });
+            },
+
+            resumeSessionFromIdle: () => {
+                const { idlePauseStartTime, activeAttendance } = get();
+                let pauseDuration = 0;
+                if (idlePauseStartTime) {
+                    pauseDuration = Math.max(0, Math.floor((Date.now() - idlePauseStartTime) / 1000));
+                }
+                const prevDeduction = Number(activeAttendance?.totalIdleDeductionSeconds) || 0;
+                set({
+                    isIdlePaused: false,
+                    frozenIdleSeconds: null,
+                    idlePauseStartTime: null,
+                    activeAttendance: activeAttendance ? {
+                        ...activeAttendance,
+                        totalIdleDeductionSeconds: prevDeduction + pauseDuration
+                    } : null
+                });
             },
             setTrackerActive: (status) => set({ isTrackerActive: status }),
 

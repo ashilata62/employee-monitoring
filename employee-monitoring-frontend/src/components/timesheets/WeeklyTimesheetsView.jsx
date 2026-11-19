@@ -293,15 +293,13 @@ export function WeeklyTimesheetsView({ employees = [] }) {
                                     <div
                                         key={day.date}
                                         onClick={() => day.sessions.length > 0 && setActiveDayModal(day)}
-                                        className={`rounded-xl border p-3 flex flex-col justify-between min-h-[140px] transition-all ${
-                                            day.sessions.length > 0 ? 'cursor-pointer hover:border-[#B9955B] hover:shadow-warm-xs' : ''
-                                        } ${
-                                            isHeavy
+                                        className={`rounded-xl border p-3 flex flex-col justify-between min-h-[140px] transition-all ${day.sessions.length > 0 ? 'cursor-pointer hover:border-[#B9955B] hover:shadow-warm-xs' : ''
+                                            } ${isHeavy
                                                 ? 'bg-[#FAF0E1] dark:bg-[#2A2418] border-[#E8D4B8] dark:border-[#5C4A28] shadow-sm'
                                                 : day.minutes > 0
-                                                ? 'bg-[#F5F1E9] dark:bg-[#1E2419] border-[#D6CDBC] dark:border-[#384232]'
-                                                : 'bg-[#F5F1E9]/70 dark:bg-[#1E2419]/70 border-[#D6CDBC]/60 dark:border-[#384232]/60 opacity-80'
-                                        }`}
+                                                    ? 'bg-[#F5F1E9] dark:bg-[#1E2419] border-[#D6CDBC] dark:border-[#384232]'
+                                                    : 'bg-[#F5F1E9]/70 dark:bg-[#1E2419]/70 border-[#D6CDBC]/60 dark:border-[#384232]/60 opacity-80'
+                                            }`}
                                     >
                                         <div className="flex items-center justify-between pb-2 border-b border-[#D6CDBC]/60 dark:border-[#384232]">
                                             <span className="font-serif text-xs font-bold text-[#29291F] dark:text-[#F5F1E9]">{dayName}</span>
@@ -380,15 +378,9 @@ export function WeeklyTimesheetsView({ employees = [] }) {
                                     </button>
                                 </div>
 
-<<<<<<< HEAD
-                                <div className="overflow-y-auto overflow-x-auto flex-1 pr-1 custom-scrollbar">
-                                    <table className="w-full min-w-[500px] text-left text-xs">
-                                        <thead className="bg-[#EEE8DD] dark:bg-[#252B20] text-[#777367] text-[10px] uppercase tracking-wider font-bold border-b border-[#D6CDBC]/70 dark:border-[#384232]">
-=======
                                 <div className="overflow-y-auto flex-1 pr-1">
                                     <table className="w-full text-left text-xs">
                                         <thead className="bg-[#EEE8DD] dark:bg-[#252B20] text-[#777367] dark:text-[#B8B3A7] text-[10px] uppercase tracking-wider font-bold border-b border-[#D6CDBC]/70 dark:border-[#384232]">
->>>>>>> 3fc82a182c8ef7064d349f5885b4cd754975e911
                                             <tr>
                                                 <th className="p-2.5 rounded-l-lg">#</th>
                                                 <th className="p-2.5">Type</th>
