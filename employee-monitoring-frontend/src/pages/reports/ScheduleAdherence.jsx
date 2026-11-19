@@ -77,13 +77,19 @@ export function ScheduleAdherence() {
     };
 
     useEffect(() => {
-        const { start, end } = getDatesFromPreset(selectedPreset);
-        fetchReportData('adherence', { 
-            startDate: toYMD(start), 
-            endDate: toYMD(end),
-            userId: selectedEmployee,
-            teamId: selectedTeam
-        });
+        const loadData = () => {
+            const { start, end } = getDatesFromPreset(selectedPreset);
+            fetchReportData('adherence', { 
+                startDate: toYMD(start), 
+                endDate: toYMD(end),
+                userId: selectedEmployee,
+                teamId: selectedTeam
+            });
+        };
+
+        loadData();
+        const interval = setInterval(loadData, 30000);
+        return () => clearInterval(interval);
     }, [selectedPreset, fetchReportData, selectedEmployee, selectedTeam]);
 
     const handleApplyCalendar = () => {

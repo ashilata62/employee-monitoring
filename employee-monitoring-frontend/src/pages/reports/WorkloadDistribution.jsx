@@ -98,13 +98,19 @@ export function WorkloadDistribution() {
     };
 
     useEffect(() => {
-        const { start, end } = getDatesFromPreset(selectedPreset);
-        fetchReportData('workload', { 
-            startDate: start, 
-            endDate: end,
-            userId: selectedEmployee,
-            teamId: selectedTeam
-        });
+        const loadData = () => {
+            const { start, end } = getDatesFromPreset(selectedPreset);
+            fetchReportData('workload', { 
+                startDate: start, 
+                endDate: end,
+                userId: selectedEmployee,
+                teamId: selectedTeam
+            });
+        };
+
+        loadData();
+        const interval = setInterval(loadData, 30000);
+        return () => clearInterval(interval);
     }, [selectedPreset, fetchReportData, selectedEmployee, selectedTeam]);
 
     const activeData = React.useMemo(() => {

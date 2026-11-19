@@ -69,6 +69,10 @@ export function WeeklyTimesheetsView({ employees = [] }) {
 
     useEffect(() => {
         loadTimesheet();
+        const interval = setInterval(() => {
+            loadTimesheet();
+        }, 30000);
+        return () => clearInterval(interval);
     }, [weekStart, selectedEmployeeId]);
 
     const handleSubmit = async () => {

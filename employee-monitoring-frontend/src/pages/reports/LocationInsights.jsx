@@ -122,8 +122,8 @@ export function LocationInsights() {
     const [selectedLocationFilter, setSelectedLocationFilter] = useState('ALL');
 
     useEffect(() => {
-        const fetchLocationData = async () => {
-            setLoading(true);
+        const fetchLocationData = async (isBackground = false) => {
+            if (!isBackground) setLoading(true);
             try {
                 // Fetch real location report from database
                 const res = await api.get('/reports?type=location');
@@ -132,10 +132,13 @@ export function LocationInsights() {
             } catch (err) {
                 console.error('Failed to load location report:', err);
             } finally {
-                setLoading(false);
+                if (!isBackground) setLoading(false);
             }
         };
+
         fetchLocationData();
+        const interval = setInterval(() => fetchLocationData(true), 30000);
+        return () => clearInterval(interval);
     }, []);
 
     const rolePrefix = role ? `/${role.toLowerCase()}` : '/admin';
