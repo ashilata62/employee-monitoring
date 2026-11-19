@@ -95,12 +95,19 @@ export function AdminExecutiveDashboard({
         };
     }, [socket, fetchApprovals]);
 
-    // Merge static employee directory with real-time live presence
+    // Merge static employee directory with real-time live presence (Exclude ADMIN role)
     const allEmployees = useMemo(() => {
         const directory = dashboardData?.employees || [];
         const sourceList = directory.length > 0 ? directory : realTimeEmps;
 
-        return sourceList.map(emp => {
+        return sourceList
+            .filter(emp => {
+                const r = (emp.role || emp.user?.role || '').toUpperCase();
+                const nm = (emp.fullName || emp.name || '').toLowerCase();
+                const em = (emp.email || '').toLowerCase();
+                return r !== 'ADMIN' && !nm.includes('admin demo') && !em.startsWith('admin@');
+            })
+            .map(emp => {
             const liveMatch = realTimeEmps.find(rt => 
                 String(rt.id) === String(emp.id) || 
                 String(rt.userId) === String(emp.id) || 
@@ -247,9 +254,14 @@ export function AdminExecutiveDashboard({
         }));
     }, [stats?.intradayActivity, dashboardData?.intradayActivity]);
 
-    // Top Performers & Focus Areas
+    // Top Performers & Focus Areas (Exclude ADMIN role)
     const topPerformers = useMemo(() => {
-        return dashboardData?.topProductive || [];
+        return (dashboardData?.topProductive || []).filter(emp => {
+            const r = (emp.role || emp.user?.role || '').toUpperCase();
+            const nm = (emp.name || emp.fullName || '').toLowerCase();
+            const em = (emp.email || '').toLowerCase();
+            return r !== 'ADMIN' && !nm.includes('admin demo') && !em.startsWith('admin@');
+        });
     }, [dashboardData?.topProductive]);
 
     const formatLoggedTime = useCallback((emp) => {
@@ -298,8 +310,13 @@ export function AdminExecutiveDashboard({
             });
         }
 
-        // 2. Add employees from topUnproductive who have REAL idle time or low productivity (< 80%)
-        const unproductiveFromData = dashboardData?.topUnproductive || [];
+        // 2. Add employees from topUnproductive who have REAL idle time or low productivity (< 80%) (Exclude ADMIN role)
+        const unproductiveFromData = (dashboardData?.topUnproductive || []).filter(emp => {
+            const r = (emp.role || emp.user?.role || '').toUpperCase();
+            const nm = (emp.name || emp.fullName || '').toLowerCase();
+            const em = (emp.email || '').toLowerCase();
+            return r !== 'ADMIN' && !nm.includes('admin demo') && !em.startsWith('admin@');
+        });
         for (const emp of unproductiveFromData) {
             if (list.some(item => String(item.id) === String(emp.id))) continue;
 
