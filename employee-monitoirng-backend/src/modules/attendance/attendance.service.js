@@ -142,6 +142,24 @@ const attendanceService = {
             io.to(`org_${organizationId}`).emit('employee:status', { employeeId, status: 'ACTIVE' });
         }
 
+        // Persist notification for attendance event
+        try {
+            const empUser = await prisma.employee.findUnique({ where: { id: employeeId }, include: { user: true } });
+            const empName = empUser?.user?.name || `Employee ${empUser?.employeeCode || employeeId}`;
+            await prisma.notification.create({
+                data: {
+                    organizationId,
+                    title: 'Work session started',
+                    description: `${empName} clocked in`,
+                    type: 'success',
+                    targetUserId: empUser?.userId || null,
+                    unread: true
+                }
+            });
+        } catch (ne) {
+            console.error('[AttendanceService] Notification create error on clock-in:', ne.message);
+        }
+
         // Evaluate Late Arrival Alert in background (non-blocking)
         try {
             const alertsService = require('../alerts/alerts.service');
@@ -254,6 +272,24 @@ const attendanceService = {
         if (io) {
             io.to(`org_${attendance.organizationId}`).emit('attendance:update', { employeeId, type: 'clock-out' });
             io.to(`org_${attendance.organizationId}`).emit('employee:status', { employeeId, status: 'OFFLINE' });
+        }
+
+        // Persist notification for clock-out
+        try {
+            const empUser = await prisma.employee.findUnique({ where: { id: employeeId }, include: { user: true } });
+            const empName = empUser?.user?.name || `Employee ${empUser?.employeeCode || employeeId}`;
+            await prisma.notification.create({
+                data: {
+                    organizationId: attendance.organizationId,
+                    title: 'Work session ended',
+                    description: `${empName} clocked out`,
+                    type: 'info',
+                    targetUserId: empUser?.userId || null,
+                    unread: true
+                }
+            });
+        } catch (ne) {
+            console.error('[AttendanceService] Notification create error on clock-out:', ne.message);
         }
 
         return updatedAttendance;
@@ -643,6 +679,24 @@ const attendanceService = {
                 io.to(`org_${organizationId}`).emit('employee:status', { employeeId, status: 'BREAK' });
             }
 
+            // Persist notification for start break
+            try {
+                const empUser = await prisma.employee.findUnique({ where: { id: employeeId }, include: { user: true } });
+                const empName = empUser?.user?.name || `Employee ${empUser?.employeeCode || employeeId}`;
+                await prisma.notification.create({
+                    data: {
+                        organizationId,
+                        title: 'Break started',
+                        description: `${empName} started a break`,
+                        type: 'warning',
+                        targetUserId: empUser?.userId || null,
+                        unread: true
+                    }
+                });
+            } catch (ne) {
+                console.error('[AttendanceService] Notification create error on break-start:', ne.message);
+            }
+
             return { ...log, openBreak: log.timestamp };
         } catch (error) {
             console.error('[AttendanceService] startBreak Error:', error);
@@ -727,6 +781,23 @@ const attendanceService = {
             if (io) {
                 io.to(`org_${employee.organizationId}`).emit('attendance:update', { employeeId, type: 'break-end' });
                 io.to(`org_${employee.organizationId}`).emit('employee:status', { employeeId, status: 'ACTIVE' });
+            }
+
+            // Persist notification for end break
+            try {
+                const empName = employee?.user?.name || `Employee ${employee?.employeeCode || employeeId}`;
+                await prisma.notification.create({
+                    data: {
+                        organizationId: employee.organizationId,
+                        title: 'Break ended',
+                        description: `${empName} resumed work`,
+                        type: 'success',
+                        targetUserId: employee?.userId || null,
+                        unread: true
+                    }
+                });
+            } catch (ne) {
+                console.error('[AttendanceService] Notification create error on break-end:', ne.message);
             }
 
             return { success: true, duration };

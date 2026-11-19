@@ -147,7 +147,9 @@ export function Header({ onMenuClick }) {
                                                         </button>
                                                     </div>
                                                 </div>
-                                                <p className="text-[11px] text-[#777367] dark:text-[#B8B3A7] line-clamp-2 mt-0.5">{n.description}</p>
+                                                {n.description ? (
+                                                    <p className="text-[11px] text-[#777367] dark:text-[#B8B3A7] line-clamp-2 mt-0.5">{n.description}</p>
+                                                ) : null}
                                                 <p className="mt-1 text-[9px] font-bold text-[#9E988A] uppercase tracking-wider">{n.time || 'Just now'}</p>
                                             </div>
                                         </div>
