@@ -215,7 +215,7 @@ const AppSection = ({ title }) => (
 import dashboardService from '../services/dashboardService';
 
 export function Dashboard() {
-    const { employees: contextEmployees, teams: contextTeams, stats: realTimeStats, isLoading: isRealTimeLoading } = useRealTime();
+    const { employees: contextEmployees, teams: contextTeams, stats: realTimeStats, notifications: contextNotifications, isLoading: isRealTimeLoading } = useRealTime();
     const { role, isClockedIn, isOnBreak } = useAuthStore();
     const { dateRange, setDateRange } = useFilterStore();
     const { start: startDate, end: endDate } = dateRange || {};
@@ -228,6 +228,8 @@ export function Dashboard() {
     const [pieData2, setPieData2] = useState([]);
     const navigate = useNavigate();
 
+    const unreadCount = (contextNotifications || []).filter(n => n.unread).length;
+
     React.useEffect(() => {
         const fetchDashboardData = async () => {
             // Only set loading on initial fetch to avoid UI flicker during auto-refresh
@@ -235,9 +237,25 @@ export function Dashboard() {
             try {
                 let data;
                 if (role === 'ADMIN') {
-                    data = await dashboardService.getAdminDashboard(startDate, endDate, compareStartDate, compareEndDate);
+                    data = await dashboardService.getAdminDashboard(
+                        startDate,
+                        endDate,
+                        compareStartDate,
+                        compareEndDate,
+                        activeFilter.employeeId,
+                        activeFilter.teamId,
+                        activeFilter.role
+                    );
                 } else if (role === 'MANAGER') {
-                    data = await dashboardService.getManagerDashboard(startDate, endDate, compareStartDate, compareEndDate);
+                    data = await dashboardService.getManagerDashboard(
+                        startDate,
+                        endDate,
+                        compareStartDate,
+                        compareEndDate,
+                        activeFilter.employeeId,
+                        activeFilter.teamId,
+                        activeFilter.role
+                    );
                 } else {
                     data = await dashboardService.getEmployeeDashboard(startDate, endDate, compareStartDate, compareEndDate);
                 }
@@ -251,10 +269,10 @@ export function Dashboard() {
 
         fetchDashboardData();
 
-        // Auto-refresh every 30 seconds (seconds tick live between refreshes)
+        // Auto-refresh every 30 seconds
         const interval = setInterval(fetchDashboardData, 30000);
         return () => clearInterval(interval);
-    }, [role, startDate, endDate, compareStartDate, compareEndDate]);
+    }, [role, startDate, endDate, compareStartDate, compareEndDate, activeFilter.employeeId, activeFilter.teamId, activeFilter.role]);
 
     const handleDownload = () => {
         const empMetricsData = realTimeStats.empMetrics || [];
@@ -312,13 +330,8 @@ export function Dashboard() {
         if (role === 'EMPLOYEE') {
             return isClockedIn && !isOnBreak;
         }
-        const list = stats?.empMetrics || contextEmployees || [];
-        const someoneOnline = list.some((e) => {
-            const s = String(e.status || '').toLowerCase();
-            return s === 'active' || s === 'online';
-        });
-        return someoneOnline || (sec.workTime > 0);
-    }, [isToday, role, isClockedIn, isOnBreak, stats?.empMetrics, contextEmployees, sec.workTime]);
+        return false;
+    }, [isToday, role, isClockedIn, isOnBreak]);
 
     const chartData = stats.intradayActivity?.length
         ? stats.intradayActivity
@@ -411,6 +424,7 @@ export function Dashboard() {
                 employees={dashboardData?.employees || []}
                 teams={dashboardData?.teams || []}
                 role={role}
+                unreadCount={unreadCount}
             />
 
             {/* 8 Comparative KPI Cards (Insightful Image 1) */}

@@ -10,8 +10,9 @@ import activityService from '../services/activityService';
 import { cn } from '../utils/cn';
 
 const formatHours = (hours) => {
-    const h = Math.floor(hours);
-    const m = Math.round((hours - h) * 60);
+    const totalMinutes = Math.round((hours || 0) * 60);
+    const h = Math.floor(totalMinutes / 60);
+    const m = totalMinutes % 60;
     return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
 };
 
@@ -31,6 +32,12 @@ export function Teams() {
         fetchTeams();
         fetchEmployees();
         if (!organization?.id) fetchOrganization();
+
+        const interval = setInterval(() => {
+            fetchTeams();
+            fetchEmployees();
+        }, 30000);
+        return () => clearInterval(interval);
     }, [fetchTeams, fetchEmployees, fetchOrganization, organization?.id]);
 
     const teamIdsKey = useMemo(
