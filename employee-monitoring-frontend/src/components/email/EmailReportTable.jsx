@@ -52,7 +52,7 @@ function ActionMenu({ report, onEdit, onDelete, onToggle }) {
                         className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
                     >
                         {report.isActive
-                            ? <ToggleRight size={15} className="text-violet-500" />
+                            ? <ToggleRight size={15} className="text-primary-600" />
                             : <ToggleLeft size={15} className="text-slate-400" />}
                         {report.isActive ? 'Disable' : 'Enable'}
                     </button>

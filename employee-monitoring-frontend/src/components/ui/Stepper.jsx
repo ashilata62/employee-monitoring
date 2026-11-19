@@ -15,7 +15,7 @@ export function Stepper({ steps, currentStep }) {
                         {i > 0 && (
                             <div className={cn(
                                 'flex-1 h-px max-w-[80px] transition-all duration-500',
-                                isComplete || (num === currentStep) ? 'bg-violet-400' : 'bg-slate-200 dark:bg-slate-700'
+                                isComplete || (num === currentStep) ? 'bg-primary-400' : 'bg-slate-200 dark:bg-slate-700'
                             )} />
                         )}
 
@@ -24,9 +24,9 @@ export function Stepper({ steps, currentStep }) {
                             <div className={cn(
                                 'h-9 w-9 rounded-full flex items-center justify-center text-sm font-black border-2 transition-all duration-300',
                                 isComplete
-                                    ? 'bg-violet-600 border-violet-600 text-white shadow-lg shadow-violet-200 dark:shadow-none'
+                                    ? 'bg-[#30382B] dark:bg-[#B9955B] border-primary-600 text-white shadow-lg shadow-warm-xs dark:shadow-none'
                                     : isActive
-                                        ? 'bg-white dark:bg-slate-900 border-violet-600 text-violet-600 shadow-lg shadow-violet-200/50 dark:shadow-none ring-4 ring-violet-100 dark:ring-violet-900/20'
+                                        ? 'bg-white dark:bg-slate-900 border-primary-600 text-primary-600 shadow-lg shadow-warm-xs dark:shadow-none ring-4 ring-primary-100 dark:ring-primary-950/40'
                                         : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-400'
                             )}>
                                 {isComplete ? (
@@ -37,7 +37,7 @@ export function Stepper({ steps, currentStep }) {
                             </div>
                             <span className={cn(
                                 'text-[10px] font-bold whitespace-nowrap',
-                                isActive ? 'text-violet-600 dark:text-violet-400' : 'text-slate-400 dark:text-slate-500'
+                                isActive ? 'text-primary-600 dark:text-primary-400' : 'text-slate-400 dark:text-slate-500'
                             )}>
                                 {step.label}
                             </span>

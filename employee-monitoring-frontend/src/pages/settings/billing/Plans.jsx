@@ -12,9 +12,9 @@ export function Plans() {
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Info Banner */}
-            <div className="flex items-center gap-3 px-5 py-4 rounded-2xl bg-violet-50 dark:bg-violet-900/10 border border-violet-100 dark:border-violet-800/30">
-                <Info size={18} className="text-violet-500 shrink-0" />
-                <p className="text-sm font-semibold text-violet-700 dark:text-violet-400">
+            <div className="flex items-center gap-3 px-5 py-4 rounded-2xl bg-primary-50 dark:bg-primary-950/40 border border-primary-100 dark:border-primary-800/30">
+                <Info size={18} className="text-primary-600 shrink-0" />
+                <p className="text-sm font-semibold text-primary-700 dark:text-primary-400">
                     <strong>Learn more</strong> about how Insightful Billing works
                 </p>
             </div>
@@ -33,7 +33,7 @@ export function Plans() {
             {/* Compare Link */}
             <div className="text-center py-4">
                 <p className="text-sm text-slate-400 font-medium">Not sure which one to choose?</p>
-                <button className="text-sm font-bold text-violet-600 dark:text-violet-400 hover:underline mt-1">
+                <button className="text-sm font-bold text-primary-600 dark:text-primary-400 hover:underline mt-1">
                     See All Features and Compare Plans
                 </button>
             </div>

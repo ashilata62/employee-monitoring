@@ -80,7 +80,7 @@ export function Settings() {
             path: "/settings/productivity/apps",
             category: "Productivity & Tracking",
             badge: "Core",
-            iconBg: "bg-violet-50 dark:bg-violet-950/40 text-violet-600 dark:text-violet-400 border-violet-200/80 dark:border-violet-800/80"
+            iconBg: "bg-primary-50 dark:bg-primary-950/40 text-primary-600 dark:text-primary-400 border-primary-200/80 dark:border-primary-800/80"
         },
         {
             icon: Laptop,
@@ -138,7 +138,7 @@ export function Settings() {
             description: "Configure enterprise SSO authentication, SAML 2.0 integration and 2FA credentials.",
             path: "/settings/security",
             category: "Security & Governance",
-            iconBg: "bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 border-purple-200/80 dark:border-purple-800/80"
+            iconBg: "bg-primary-50 dark:bg-primary-950/40 text-primary-600 dark:text-primary-400 border-primary-200/80 dark:border-primary-800/80"
         },
         {
             icon: Clock,
@@ -194,7 +194,7 @@ export function Settings() {
             description: "Create and revoke secure access tokens for custom developer webhooks and data pipelines.",
             path: "/settings/api-tokens",
             category: "Integrations & API",
-            iconBg: "bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border-indigo-200/80 dark:border-indigo-800/80"
+            iconBg: "bg-primary-50 dark:bg-primary-950/40 text-primary-600 dark:text-primary-400 border-primary-200/80 dark:border-primary-800/80"
         },
         {
             icon: Mail,
@@ -261,10 +261,10 @@ export function Settings() {
                     <button
                         key={category}
                         onClick={() => setSelectedCategory(category)}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
+                        className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
                             selectedCategory === category
-                                ? 'bg-primary-600 text-white shadow-sm'
-                                : 'bg-slate-100 hover:bg-slate-200/70 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300'
+                                ? 'bg-[#30382B] text-[#FDFBF7] dark:bg-[#B9955B] dark:text-white shadow-warm-xs'
+                                : 'bg-slate-100 hover:bg-slate-200/70 dark:bg-slate-800/80 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200/60 dark:border-slate-700/50'
                         }`}
                     >
                         {category}

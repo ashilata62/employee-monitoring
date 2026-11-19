@@ -28,7 +28,8 @@ export function PeriodComparisonBar({
     onExport,
     employees = [],
     teams = [],
-    role = 'admin'
+    role = 'admin',
+    unreadCount = 0
 }) {
     const navigate = useNavigate();
     const rolePrefix = role ? `/${role.toLowerCase()}` : '/admin';
@@ -84,6 +85,20 @@ export function PeriodComparisonBar({
     const compRef = useRef(null);
     const filterRef = useRef(null);
     const exportRef = useRef(null);
+
+    const toLocalDateStr = (d) => {
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+    const todayStr = toLocalDateStr(new Date());
+    const last7Str = toLocalDateStr(new Date(Date.now() - 6 * 86400000));
+    const firstOfMonthStr = toLocalDateStr(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+    const last30Str = toLocalDateStr(new Date(Date.now() - 29 * 86400000));
+    const yesterdayStr = toLocalDateStr(new Date(Date.now() - 86400000));
+    const firstOfPrevMonthStr = toLocalDateStr(new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1));
+    const lastOfPrevMonthStr = toLocalDateStr(new Date(new Date().getFullYear(), new Date().getMonth(), 0));
 
     useEffect(() => {
         const handleClickOutside = (e) => {
@@ -151,9 +166,11 @@ export function PeriodComparisonBar({
                         title="Alerts & Notifications"
                     >
                         <Bell size={17} className="text-[#777367]" />
-                        <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#A84B4B] text-white text-[9px] font-bold rounded-full flex items-center justify-center border-2 border-[#F5F1E9] dark:border-[#1A1F18]">
-                            2
-                        </span>
+                        {unreadCount > 0 && (
+                            <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 bg-[#A84B4B] text-white text-[9px] font-bold rounded-full flex items-center justify-center border-2 border-[#F5F1E9] dark:border-[#1A1F18]">
+                                {unreadCount > 99 ? '99+' : unreadCount}
+                            </span>
+                        )}
                     </button>
                 </div>
             </div>
@@ -178,10 +195,10 @@ export function PeriodComparisonBar({
                             <div className="absolute top-full left-0 mt-2 w-64 bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl shadow-xl border border-[#D6CDBC] dark:border-[#384232] p-2 z-50 animate-in fade-in duration-150">
                                 <p className="px-3 py-1.5 text-[9px] font-bold text-[#777367] uppercase tracking-[0.15em]">Select Range</p>
                                 {[
-                                    { label: 'Today', start: new Date().toISOString().slice(0, 10), end: new Date().toISOString().slice(0, 10) },
-                                    { label: 'Last 7 Days', start: new Date(Date.now() - 6 * 86400000).toISOString().slice(0, 10), end: new Date().toISOString().slice(0, 10) },
-                                    { label: 'This Month', start: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().slice(0, 10), end: new Date().toISOString().slice(0, 10) },
-                                    { label: 'Last 30 Days', start: new Date(Date.now() - 29 * 86400000).toISOString().slice(0, 10), end: new Date().toISOString().slice(0, 10) }
+                                    { label: 'Today', start: todayStr, end: todayStr },
+                                    { label: 'Last 7 Days', start: last7Str, end: todayStr },
+                                    { label: 'This Month', start: firstOfMonthStr, end: todayStr },
+                                    { label: 'Last 30 Days', start: last30Str, end: todayStr }
                                 ].map(p => (
                                     <button
                                         key={p.label}
@@ -221,8 +238,8 @@ export function PeriodComparisonBar({
                                 <p className="px-3 py-1.5 text-[9px] font-bold text-[#777367] uppercase tracking-[0.15em]">Select Comparison Range</p>
                                 {[
                                     { label: 'Prior Period (Equal Duration)', start: null, end: null },
-                                    { label: 'Yesterday', start: new Date(Date.now() - 86400000).toISOString().slice(0, 10), end: new Date(Date.now() - 86400000).toISOString().slice(0, 10) },
-                                    { label: 'Previous Month', start: new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1).toISOString().slice(0, 10), end: new Date(new Date().getFullYear(), new Date().getMonth(), 0).toISOString().slice(0, 10) }
+                                    { label: 'Yesterday', start: yesterdayStr, end: yesterdayStr },
+                                    { label: 'Previous Month', start: firstOfPrevMonthStr, end: lastOfPrevMonthStr }
                                 ].map(p => (
                                     <button
                                         key={p.label}

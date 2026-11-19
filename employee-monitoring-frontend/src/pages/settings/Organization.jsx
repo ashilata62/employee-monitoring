@@ -77,7 +77,7 @@ function StyledSelect({ value, onChange, options, placeholder, error }) {
                     !value ? 'text-slate-400' : '',
                     error
                         ? 'border-rose-400 focus:border-rose-500'
-                        : 'border-slate-200 dark:border-slate-700 focus:border-violet-500'
+                        : 'border-slate-200 dark:border-slate-700 focus:border-primary-500'
                 )}
             >
                 <option value="" disabled>{placeholder}</option>
@@ -107,7 +107,7 @@ export function Organization() {
     if (isLoading && !organization) {
         return (
             <div className="flex items-center justify-center min-h-[400px]">
-                <div className="h-8 w-8 animate-spin rounded-full border-4 border-violet-600 border-t-transparent"></div>
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary-600 border-t-transparent"></div>
             </div>
         );
     }
@@ -174,10 +174,10 @@ export function Organization() {
                             Settings
                         </span>
                         <span>/</span>
-                        <span className="text-violet-600">Organization</span>
+                        <span className="text-primary-600">Organization</span>
                     </nav>
                     <div className="flex items-center gap-3">
-                        {/* <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-violet-200 dark:shadow-none">
+                        {/* <div className="h-9 w-9 rounded-xl bg-[#30382B] dark:bg-[#B9955B] text-white flex items-center justify-center text-white shadow-lg shadow-warm-xs dark:shadow-none">
                             <Building2 size={18} />
                         </div> */}
                         <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
@@ -204,7 +204,7 @@ export function Organization() {
                             'w-full h-12 px-4 rounded-xl border-2 bg-white dark:bg-slate-900 text-sm font-medium text-slate-900 dark:text-white outline-none transition-all',
                             errors.legalName
                                 ? 'border-rose-400 focus:border-rose-500'
-                                : 'border-slate-200 dark:border-slate-800 focus:border-violet-500'
+                                : 'border-slate-200 dark:border-slate-800 focus:border-primary-500'
                         )}
                     />
                     {errors.legalName && (
@@ -274,7 +274,7 @@ export function Organization() {
                                 type="time"
                                 value={organization.workHours?.start || '09:00'}
                                 onChange={(e) => updateField('workHours', { ...organization.workHours, start: e.target.value })}
-                                className="w-full h-12 px-4 rounded-xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-sm font-medium text-slate-900 dark:text-white outline-none focus:border-violet-500 transition-all"
+                                className="w-full h-12 px-4 rounded-xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-sm font-medium text-slate-900 dark:text-white outline-none focus:border-primary-500 transition-all"
                             />
                         </div>
                         <div className="space-y-2">
@@ -283,7 +283,7 @@ export function Organization() {
                                 type="time"
                                 value={organization.workHours?.end || '18:00'}
                                 onChange={(e) => updateField('workHours', { ...organization.workHours, end: e.target.value })}
-                                className="w-full h-12 px-4 rounded-xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-sm font-medium text-slate-900 dark:text-white outline-none focus:border-violet-500 transition-all"
+                                className="w-full h-12 px-4 rounded-xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-sm font-medium text-slate-900 dark:text-white outline-none focus:border-primary-500 transition-all"
                             />
                         </div>
                     </div>
@@ -306,7 +306,7 @@ export function Organization() {
                                     className={cn(
                                         "px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border-2",
                                         isActive
-                                            ? "bg-violet-600 border-violet-600 text-white shadow-md shadow-violet-200 dark:shadow-none"
+                                            ? "bg-[#30382B] dark:bg-[#B9955B] border-primary-600 text-white shadow-md shadow-warm-xs dark:shadow-none"
                                             : "bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 text-slate-400 hover:border-slate-200 dark:hover:border-slate-700"
                                     )}
                                 >
@@ -331,7 +331,7 @@ export function Organization() {
                         className={cn(
                             'px-8 py-3.5 rounded-2xl text-xs font-black uppercase tracking-widest transition-all',
                             isDirty
-                                ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg shadow-violet-200 dark:shadow-none hover:from-violet-700 hover:to-indigo-700 hover:scale-[1.02] active:scale-95'
+                                ? 'bg-[#30382B] hover:bg-[#3C4536] dark:bg-[#B9955B] dark:hover:bg-[#A17D45] text-white shadow-warm-sm text-white shadow-lg shadow-warm-xs dark:shadow-none  hover:scale-[1.02] active:scale-95'
                                 : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed'
                         )}
                     >

@@ -105,17 +105,17 @@ export function TrackingSettings() {
                             <nav className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">
                                 <span className="cursor-pointer hover:text-slate-600 dark:hover:text-slate-300 transition-colors" onClick={() => navigate(`${rolePath}/settings`)}>Settings</span>
                                 <span>/</span>
-                                <span className="text-violet-600">Tracking Settings</span>
+                                <span className="text-primary-600 dark:text-primary-400">Tracking Settings</span>
                             </nav>
                             <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Tracking Settings</h1>
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
-                        <button onClick={() => navigate(`${rolePath}/settings/tracking/advanced`)} className="flex items-center gap-2 h-10 px-5 rounded-2xl border-2 border-slate-200 dark:border-slate-700 text-xs font-black text-slate-600 dark:text-slate-300 hover:border-violet-400 hover:text-violet-600 transition-all">
+                        <button onClick={() => navigate(`${rolePath}/settings/tracking/advanced`)} className="flex items-center gap-2 h-10 px-5 rounded-2xl border-2 border-slate-200 dark:border-slate-700 text-xs font-black text-slate-600 dark:text-slate-300 hover:border-primary-400 hover:text-primary-600 transition-all">
                             <Settings2 size={14} /> Advanced Settings
                         </button>
-                        <button onClick={openCreate} className="flex items-center gap-2 h-10 px-5 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-xs font-black shadow-lg shadow-violet-200 dark:shadow-none hover:scale-[1.02] active:scale-95 transition-all">
-                            <Plus size={14} strokeWidth={3} /> Create new tracking settings
+                        <button onClick={openCreate} className="flex items-center gap-2 h-10 px-5 rounded-2xl bg-[#30382B] hover:bg-[#3C4536] dark:bg-[#B9955B] dark:hover:bg-[#A17D45] text-white text-xs font-black shadow-warm-sm hover:scale-[1.02] active:scale-95 transition-all">
+                            <Plus size={14} strokeWidth={3} className="text-[#D3B98D] dark:text-white" /> Create new tracking settings
                         </button>
                     </div>
                 </div>
@@ -154,14 +154,14 @@ export function TrackingSettings() {
                 <div className="flex items-center justify-between px-8 py-4 border-b border-slate-100 dark:border-slate-800 shrink-0">
                     <div>
                         <nav className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-0.5">
-                            <span className="text-violet-600 cursor-pointer hover:underline" onClick={closePanel}>Tracking Settings</span>
+                            <span className="text-primary-600 cursor-pointer hover:underline" onClick={closePanel}>Tracking Settings</span>
                             {' › '}
                             {editId ? 'Edit Tracking Settings' : 'New Tracking Settings'}
                         </nav>
                     </div>
                     <div className="flex items-center gap-3">
                         <button onClick={closePanel} className="px-5 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 text-xs font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">Cancel</button>
-                        <button onClick={handleSave} disabled={!canSave} className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-xs font-black uppercase tracking-widest disabled:opacity-40 hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-violet-200 dark:shadow-none">Save</button>
+                        <button onClick={handleSave} disabled={!canSave} className="px-6 py-2.5 rounded-2xl bg-[#30382B] hover:bg-[#3C4536] dark:bg-[#B9955B] dark:hover:bg-[#A17D45] text-white shadow-warm-sm text-white text-xs font-black uppercase tracking-widest disabled:opacity-40 hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-warm-xs dark:shadow-none">Save</button>
                     </div>
                 </div>
 

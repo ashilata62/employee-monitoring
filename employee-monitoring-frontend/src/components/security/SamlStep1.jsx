@@ -35,7 +35,7 @@ export function SamlStep1({ errors, setErrors }) {
 
     const inputClass = (errKey) => cn(
         'w-full h-12 px-4 rounded-xl border-2 bg-white dark:bg-slate-900 text-sm font-medium text-slate-900 dark:text-white outline-none transition-all',
-        errors[errKey] ? 'border-rose-400' : 'border-slate-200 dark:border-slate-800 focus:border-violet-500'
+        errors[errKey] ? 'border-rose-400' : 'border-slate-200 dark:border-slate-800 focus:border-primary-500'
     );
 
     return (
@@ -44,7 +44,7 @@ export function SamlStep1({ errors, setErrors }) {
             <div>
                 <h2 className="text-xl font-black text-slate-900 dark:text-white mb-1">SAML Configuration</h2>
                 <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-                    Please fill in <span className="text-violet-600 font-bold">all</span> the fields below to configure SAML
+                    Please fill in <span className="text-primary-600 font-bold">all</span> the fields below to configure SAML
                 </p>
             </div>
 
@@ -90,7 +90,7 @@ export function SamlStep1({ errors, setErrors }) {
                     rows={5}
                     className={cn(
                         'w-full px-4 py-3 rounded-xl border-2 bg-white dark:bg-slate-900 text-sm font-mono text-slate-900 dark:text-white outline-none transition-all resize-none leading-relaxed',
-                        errors.certificate ? 'border-rose-400' : 'border-slate-200 dark:border-slate-800 focus:border-violet-500'
+                        errors.certificate ? 'border-rose-400' : 'border-slate-200 dark:border-slate-800 focus:border-primary-500'
                     )}
                 />
                 {/* OR divider / upload */}
@@ -102,7 +102,7 @@ export function SamlStep1({ errors, setErrors }) {
                 <button
                     type="button"
                     onClick={() => fileRef.current?.click()}
-                    className="flex items-center gap-2 text-xs font-black text-violet-600 dark:text-violet-400 hover:underline transition-all mx-auto"
+                    className="flex items-center gap-2 text-xs font-black text-primary-600 dark:text-primary-400 hover:underline transition-all mx-auto"
                 >
                     <Upload size={13} strokeWidth={3} /> Upload Certificate File
                 </button>

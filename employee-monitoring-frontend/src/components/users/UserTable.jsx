@@ -5,14 +5,14 @@ import { cn } from '../../utils/cn';
 function Avatar({ name, role }) {
     const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
     return (
-        <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white text-xs font-black shrink-0">
+        <div className="h-9 w-9 rounded-xl bg-[#30382B] dark:bg-[#B9955B] text-white flex items-center justify-center text-white text-xs font-black shrink-0">
             {initials || <User size={14} />}
         </div>
     );
 }
 
 const ROLE_COLORS = {
-    admin: 'text-violet-700 dark:text-violet-400',
+    admin: 'text-primary-700 dark:text-primary-400',
     manager: 'text-blue-600 dark:text-blue-400',
     client: 'text-emerald-600 dark:text-emerald-400',
 };
@@ -75,7 +75,7 @@ export function UserTable({ users, search, onEdit, onRemove }) {
                 </thead>
                 <tbody className="divide-y divide-slate-50 dark:divide-slate-800/60">
                     {filtered.map((user) => (
-                        <tr key={user.id} className="hover:bg-violet-50/20 dark:hover:bg-violet-900/5 transition-all group">
+                        <tr key={user.id} className="hover:bg-primary-50/20 dark:hover:bg-primary-950/20 transition-all group">
                             <td className="px-5 py-4">
                                 <div className="flex items-center gap-3">
                                     <Avatar name={user.name} role={user.role} />

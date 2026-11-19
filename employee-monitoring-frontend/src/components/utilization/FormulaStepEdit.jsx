@@ -5,7 +5,7 @@ function CheckRow({ checked, onChange, disabled = false, children }) {
     return (
         <label className={cn('flex items-center gap-3 cursor-pointer', disabled && 'opacity-40 cursor-not-allowed')}>
             <div className={cn('h-5 w-5 rounded border-2 flex items-center justify-center shrink-0 transition-all',
-                checked ? 'bg-violet-600 border-violet-600' : 'border-slate-300 dark:border-slate-600')}
+                checked ? 'bg-primary-600 border-primary-600' : 'border-slate-300 dark:border-slate-600')}
                 onClick={() => !disabled && onChange(!checked)}>
                 {checked && <svg width="11" height="11" viewBox="0 0 10 10" fill="none"><path d="M1.5 5L3.82 7.5L8.5 2.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>}
             </div>
@@ -34,7 +34,7 @@ export function FormulaStepEdit({ type, config, onChange }) {
                                 max={24}
                                 value={config.standardDailyHours ?? 8}
                                 onChange={(e) => update('standardDailyHours', Number(e.target.value))}
-                                className="w-28 h-10 px-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 focus:border-violet-500 bg-white dark:bg-slate-800 text-sm font-bold text-slate-900 dark:text-white outline-none transition-all text-center"
+                                className="w-28 h-10 px-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 focus:border-primary-500 bg-white dark:bg-slate-800 text-sm font-bold text-slate-900 dark:text-white outline-none transition-all text-center"
                             />
                             <span className="text-sm font-semibold text-slate-400">hours / day</span>
                         </div>

@@ -46,10 +46,10 @@ export function IntegrationsLayout() {
                             Settings
                         </span>
                         <span>/</span>
-                        <span className="text-violet-600">Integrations</span>
+                        <span className="text-primary-600">Integrations</span>
                     </nav>
                     <div className="flex items-center gap-3">
-                        {/* <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-violet-200 dark:shadow-none">
+                        {/* <div className="h-9 w-9 rounded-xl bg-[#30382B] dark:bg-[#B9955B] text-white flex items-center justify-center text-white shadow-lg shadow-warm-xs dark:shadow-none">
                             <Puzzle size={18} />
                         </div> */}
                         <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
@@ -70,7 +70,7 @@ export function IntegrationsLayout() {
                                 cn(
                                     'relative px-4 py-4 text-sm font-bold whitespace-nowrap transition-all',
                                     isActive
-                                        ? 'text-violet-600 dark:text-violet-400'
+                                        ? 'text-primary-600 dark:text-primary-400'
                                         : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
                                 )
                             }
@@ -79,7 +79,7 @@ export function IntegrationsLayout() {
                                 <>
                                     {tab.label}
                                     {isActive && (
-                                        <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-violet-600 to-indigo-600 rounded-full animate-in fade-in duration-200" />
+                                        <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#30382B] hover:bg-[#3C4536] dark:bg-[#B9955B] dark:hover:bg-[#A17D45] text-white shadow-warm-sm rounded-full animate-in fade-in duration-200" />
                                     )}
                                 </>
                             )}
@@ -95,14 +95,14 @@ export function IntegrationsLayout() {
                         placeholder="Search"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="h-9 w-44 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl pl-9 pr-3 text-xs font-bold text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-violet-500/20 outline-none transition-all shadow-sm"
+                        className="h-9 w-44 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl pl-9 pr-3 text-xs font-bold text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-primary-500/20 outline-none transition-all shadow-sm"
                     />
                 </div>
             </div>
 
             {/* Subtitle */}
             {subtitle && (
-                <p className="text-sm font-semibold text-violet-600 dark:text-violet-400 mb-8">{subtitle}</p>
+                <p className="text-sm font-semibold text-primary-600 dark:text-primary-400 mb-8">{subtitle}</p>
             )}
 
             {/* Tab content via Outlet — searchQuery passed via context */}

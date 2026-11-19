@@ -20,12 +20,12 @@ function Stepper({ steps, current }) {
                     )}
                     <div className="flex items-center gap-1.5 shrink-0">
                         <div className={cn('h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-black border-2 transition-all',
-                            i + 1 < current ? 'bg-violet-600 border-violet-600 text-white'
-                                : i + 1 === current ? 'bg-white dark:bg-slate-900 border-violet-600 text-violet-600'
+                            i + 1 < current ? 'bg-primary-600 border-primary-600 text-white'
+                                : i + 1 === current ? 'bg-white dark:bg-slate-900 border-primary-600 text-primary-600'
                                     : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-400')}>
                             {i + 1 < current ? <Check size={12} strokeWidth={3} /> : i + 1}
                         </div>
-                        <span className={cn('text-xs font-bold hidden sm:block', i + 1 === current ? 'text-violet-600 dark:text-violet-400' : 'text-slate-400')}>{s}</span>
+                        <span className={cn('text-xs font-bold hidden sm:block', i + 1 === current ? 'text-primary-600 dark:text-primary-400' : 'text-slate-400')}>{s}</span>
                     </div>
                 </React.Fragment>
             ))}
@@ -132,7 +132,7 @@ export function AddFormulaWizard({ isOpen, editFormula, onClose }) {
                         <button
                             onClick={handleNext}
                             disabled={!canProceed}
-                            className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-xs font-black uppercase tracking-widest disabled:opacity-40 hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-violet-200 dark:shadow-none"
+                            className="px-6 py-2.5 rounded-xl bg-[#30382B] hover:bg-[#3C4536] dark:bg-[#B9955B] dark:hover:bg-[#A17D45] text-white text-xs font-black uppercase tracking-widest disabled:opacity-40 hover:scale-[1.02] active:scale-95 transition-all shadow-warm-sm"
                         >
                             Next Step
                         </button>
@@ -140,7 +140,7 @@ export function AddFormulaWizard({ isOpen, editFormula, onClose }) {
                         <button
                             onClick={handleSave}
                             disabled={!canSave}
-                            className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-xs font-black uppercase tracking-widest disabled:opacity-40 hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-violet-200 dark:shadow-none"
+                            className="px-6 py-2.5 rounded-xl bg-[#30382B] hover:bg-[#3C4536] dark:bg-[#B9955B] dark:hover:bg-[#A17D45] text-white text-xs font-black uppercase tracking-widest disabled:opacity-40 hover:scale-[1.02] active:scale-95 transition-all shadow-warm-sm"
                         >
                             {isEdit ? 'Update' : 'Save'}
                         </button>

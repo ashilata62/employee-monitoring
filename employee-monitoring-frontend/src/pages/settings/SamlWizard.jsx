@@ -91,10 +91,10 @@ export function SamlWizard() {
                         <span>/</span>
                         <span className="hover:text-slate-600 dark:hover:text-slate-300 cursor-pointer transition-colors" onClick={() => navigate('/settings/security')}>Security and Identity</span>
                         <span>/</span>
-                        <span className="text-violet-600">SAML</span>
+                        <span className="text-primary-600">SAML</span>
                     </nav>
                     <div className="flex items-center gap-3">
-                        <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-violet-200 dark:shadow-none">
+                        <div className="h-9 w-9 rounded-xl bg-[#30382B] dark:bg-[#B9955B] text-white flex items-center justify-center text-white shadow-lg shadow-warm-xs dark:shadow-none">
                             <Lock size={18} />
                         </div>
                         <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Security and Identity</h1>
@@ -113,7 +113,7 @@ export function SamlWizard() {
                     {/* Back link */}
                     <button
                         onClick={handleBack}
-                        className="text-xs font-black text-violet-600 dark:text-violet-400 hover:underline mb-5 block transition-all"
+                        className="text-xs font-black text-primary-600 dark:text-primary-400 hover:underline mb-5 block transition-all"
                     >
                         ← Back to Previous Step
                     </button>
@@ -136,7 +136,7 @@ export function SamlWizard() {
                     {!isLastStep ? (
                         <button
                             onClick={handleNext}
-                            className="px-8 py-3 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-violet-200 dark:shadow-none hover:from-violet-700 hover:to-indigo-700 hover:scale-[1.02] active:scale-95 transition-all"
+                            className="px-8 py-3 rounded-2xl bg-[#30382B] hover:bg-[#3C4536] dark:bg-[#B9955B] dark:hover:bg-[#A17D45] text-white shadow-warm-sm text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-warm-xs dark:shadow-none  hover:scale-[1.02] active:scale-95 transition-all"
                         >
                             Next step
                         </button>
