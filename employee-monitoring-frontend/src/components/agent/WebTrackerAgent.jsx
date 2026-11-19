@@ -8,9 +8,10 @@ import videoService from '../../services/videoService';
 import api from '../../services/apiClient';
 import useSocket from '../../hooks/useSocket';
 import { toast } from '../../utils/toastManager';
+import { broadcastStaffStatus } from '../../utils/staffSync';
 
 export function WebTrackerAgent() {
-    const { user, role, clockIn, clockOut, isClockedIn, isTrackerActive, setTrackerActive } = useAuthStore();
+    const { user, role, clockIn, clockOut, isClockedIn, isTrackerActive, setTrackerActive, isOnBreak } = useAuthStore();
     const { socket, on, emit, off } = useSocket();
     const [isTracking, setIsTracking] = useState(false);
     const isTrackingRef = useRef(false);
@@ -24,6 +25,33 @@ export function WebTrackerAgent() {
     });
     const activeTaskIdRef = useRef(activeTaskId);
     activeTaskIdRef.current = activeTaskId;
+
+    // Reactive live status broadcast for employee attendance state
+    useEffect(() => {
+        if (!user) return;
+        const resolvedEmpId = user?.employeeId || user?.employee?.id || user?.id;
+        if (!resolvedEmpId) return;
+
+        if (isOnBreak) {
+            broadcastStaffStatus({
+                employeeId: resolvedEmpId,
+                status: 'break',
+                isIdle: false,
+                isOnBreak: true,
+                activeApp: 'On Break',
+                currentActivity: 'On Break'
+            });
+        } else if (isClockedIn) {
+            broadcastStaffStatus({
+                employeeId: resolvedEmpId,
+                status: 'online',
+                isIdle: false,
+                isOnBreak: false,
+                activeApp: isTrackerActive ? 'Active Work (Screen Recording)' : 'Active Work',
+                currentActivity: 'Active / Logged In'
+            });
+        }
+    }, [user, isClockedIn, isOnBreak, isTrackerActive]);
 
     // Sync task ID with Electron Desktop Agent whenever it changes
     useEffect(() => {
@@ -111,6 +139,14 @@ export function WebTrackerAgent() {
                 idleStartTimeRef.current = null;
 
                 const resolvedEmpId = user?.employeeId || user?.employee?.id || user?.id;
+                broadcastStaffStatus({
+                    employeeId: resolvedEmpId,
+                    status: 'online',
+                    isIdle: false,
+                    isOnBreak: false,
+                    activeApp: 'Active Work',
+                    currentActivity: 'Active / Logged In'
+                });
                 if (resolvedEmpId) {
                     api.post('/agent/idle-activity', {
                         employeeId: resolvedEmpId,
@@ -194,6 +230,15 @@ export function WebTrackerAgent() {
                                 console.warn('[WebTrackerAgent] Notification error:', e);
                             }
                         }
+
+                        broadcastStaffStatus({
+                            employeeId: resolvedEmpId,
+                            status: 'idle',
+                            isIdle: true,
+                            isOnBreak: false,
+                            activeApp: 'Away from Computer (Idle)',
+                            currentActivity: 'Away from Computer (Idle)'
+                        });
 
                         if (socket) {
                             socket.emit('employee:status_override', { status: 'IDLE' });
@@ -305,6 +350,14 @@ export function WebTrackerAgent() {
             }
 
             if (responseType === 'WORKING') {
+                broadcastStaffStatus({
+                    employeeId: resolvedEmpId,
+                    status: 'online',
+                    isIdle: false,
+                    isOnBreak: false,
+                    activeApp: 'Active Work',
+                    currentActivity: 'Active / Logged In'
+                });
                 if (socket) {
                     socket.emit('employee:status_override', { status: 'ONLINE' });
                     socket.emit('employee:activity', {
@@ -329,6 +382,14 @@ export function WebTrackerAgent() {
 
                 toast.success('Work session resumed.');
             } else if (responseType === 'BREAK') {
+                broadcastStaffStatus({
+                    employeeId: resolvedEmpId,
+                    status: 'break',
+                    isIdle: false,
+                    isOnBreak: true,
+                    activeApp: 'On Break',
+                    currentActivity: 'On Break'
+                });
                 if (socket) {
                     socket.emit('employee:status_override', { status: 'BREAK' });
                 }

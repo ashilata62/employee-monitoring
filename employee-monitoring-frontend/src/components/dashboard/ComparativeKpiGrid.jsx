@@ -132,41 +132,41 @@ export function ComparativeKpiGrid({ sec, stats, deltas, role, isToday = true, l
     const { isClockedIn } = useAuthStore();
     const sessionSeconds = useSessionTimer();
 
-    const isEmployee = role?.toUpperCase() === 'EMPLOYEE';
+    const isSessionUser = role?.toUpperCase() === 'EMPLOYEE' || role?.toUpperCase() === 'MANAGER';
 
-    // When Employee is viewing Today:
+    // When Employee or Manager is viewing Today:
     // If clocked out: ALL cards reset to 00h 00m 00s and 0% immediately with zero latency!
-    // If clocked in: session timer ticks live from 00h 00m 00s upwards!
-    // For Admin and Manager: Displays genuine workforce/team aggregate metrics from stats.summary!
-    const effectiveWorkTime = isEmployee && isToday
+    // If clocked in: session timer ticks live from 00h 00m 00s upwards in sync with top pill timer!
+    // For Admin: Displays genuine workforce/team aggregate metrics from stats.summary!
+    const effectiveWorkTime = isSessionUser && isToday
         ? (isClockedIn ? formatSecondsToHMS(sessionSeconds) : '00h 00m 00s')
         : (stats?.summary?.workTime || formatSecondsToHMS(sec?.workTime));
 
-    const effectiveActiveTime = isEmployee && isToday
+    const effectiveActiveTime = isSessionUser && isToday
         ? (isClockedIn ? formatSecondsToHMS(sessionSeconds) : '00h 00m 00s')
         : (stats?.summary?.activeTime || formatSecondsToHMS(sec?.activeTime));
 
-    const effectiveProductiveTime = isEmployee && isToday
+    const effectiveProductiveTime = isSessionUser && isToday
         ? (isClockedIn ? formatSecondsToHMS(sessionSeconds) : '00h 00m 00s')
         : (stats?.summary?.productiveTime || formatSecondsToHMS(sec?.productiveTime));
 
-    const effectiveIdleTime = isEmployee && isToday
+    const effectiveIdleTime = isSessionUser && isToday
         ? '00h 00m 00s'
         : (stats?.summary?.idleTime || formatSecondsToHMS(sec?.idleTime));
 
-    const effectiveManualTime = isEmployee && isToday
+    const effectiveManualTime = isSessionUser && isToday
         ? '00h 00m 00s'
         : (stats?.summary?.manualTime || formatSecondsToHMS(sec?.manualTime));
 
-    const effectiveUnproductiveTime = isEmployee && isToday
+    const effectiveUnproductiveTime = isSessionUser && isToday
         ? '00h 00m 00s'
         : (stats?.summary?.unproductiveTime || formatSecondsToHMS(sec?.unproductiveTime));
 
-    const effectiveNeutralTime = isEmployee && isToday
+    const effectiveNeutralTime = isSessionUser && isToday
         ? '00h 00m 00s'
         : (stats?.summary?.neutralTime || formatSecondsToHMS(sec?.neutralTime));
 
-    const effectiveProductivity = isEmployee && isToday
+    const effectiveProductivity = isSessionUser && isToday
         ? (isClockedIn ? '100%' : '0%')
         : (stats?.summary?.utilization !== undefined ? `${stats.summary.utilization}%` : (stats?.summary?.productivity !== undefined ? `${stats.summary.productivity}%` : '0%'));
 

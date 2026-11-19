@@ -47,6 +47,7 @@ import { ProductivityStackedChart } from '../components/dashboard/ProductivitySt
 import { PeriodComparisonBar } from '../components/dashboard/PeriodComparisonBar';
 import { EmployeeWorkforceAnalytics } from '../components/dashboard/EmployeeWorkforceAnalytics';
 import { AdminExecutiveDashboard } from '../components/dashboard/AdminExecutiveDashboard';
+import { subscribeStaffStatus } from '../utils/staffSync';
 
 const LiveSummaryCard = ({ title, baseSeconds, live, trend, subValue, icon, color = 'primary' }) => {
     const value = useLiveTimeDisplay(baseSeconds, live);
@@ -292,6 +293,14 @@ export function Dashboard() {
         return () => clearInterval(interval);
     }, [fetchDashboardData]);
 
+    // Cross-tab immediate status update subscription
+    useEffect(() => {
+        const unsubscribe = subscribeStaffStatus(() => {
+            fetchRef.current(true);
+        });
+        return unsubscribe;
+    }, []);
+
     // Real-Time Socket Event Listeners for Instant Live Updates
     useEffect(() => {
         if (!socket) return;
@@ -386,7 +395,8 @@ export function Dashboard() {
 
     const sec = useMemo(() => {
         const rawSec = stats?.summarySeconds || {};
-        if (role !== 'EMPLOYEE') {
+        const isSessionUser = role?.toUpperCase() === 'EMPLOYEE' || role?.toUpperCase() === 'MANAGER';
+        if (!isSessionUser) {
             return rawSec;
         }
         if (!isToday) {
@@ -409,7 +419,8 @@ export function Dashboard() {
     }, [role, stats?.summarySeconds, isToday, isClockedIn, sessionSeconds]);
 
     const liveTick = useMemo(() => {
-        if (role !== 'EMPLOYEE') return false;
+        const isSessionUser = role?.toUpperCase() === 'EMPLOYEE' || role?.toUpperCase() === 'MANAGER';
+        if (!isSessionUser) return false;
         if (!isToday) return false;
         // Only tick when clocked in and not on break
         return isClockedIn && !isOnBreak;

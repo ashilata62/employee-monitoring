@@ -37,6 +37,7 @@ import { useOrganizationStore } from '../store/organizationStore';
 import { useRealTime } from '../hooks/RealTimeContext';
 import { AddEmployeeModal } from '../components/AddEmployeeModal';
 import { useToast } from '../context/ToastContext';
+import { subscribeStaffStatus } from '../utils/staffSync';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -772,22 +773,27 @@ const EmployeeRow = ({ employee, onEdit, onDelete, onTransparencyClick, visibleC
     const liveStatus = (liveMatch?.status || liveMatch?.accountStatus || '').toLowerCase();
     const dbStatus = (employee.status || '').toLowerCase();
 
-    const appString = (liveMatch?.activeApp || liveMatch?.currentApp || employee.activeApp || employee.currentApp || employee.currentActivity || '').toLowerCase();
-    const hasIdleApp = appString.includes('idle') || appString.includes('away');
-    const hasIdleActivity = (employee.currentActivity || '').toLowerCase().includes('idle') || (liveMatch?.currentActivity || '').toLowerCase().includes('idle');
+    const isExplicitlyWorking = (liveStatus === 'online' || liveStatus === 'active') && 
+                                liveMatch?.isOnBreak !== true && 
+                                liveMatch?.isIdle !== true;
 
-    const isLiveBreak = liveStatus === 'break' || dbStatus === 'break' || liveMatch?.isOnBreak || false;
-    const isLiveIdle = !isLiveBreak && (
-        liveStatus === 'idle' || liveStatus === 'afk' || liveStatus === 'passive' || liveStatus === 'idle_warning' ||
-        dbStatus === 'idle' || dbStatus === 'afk' ||
-        hasIdleApp || hasIdleActivity ||
-        liveMatch?.isIdle ||
-        (liveMatch?.idleTime || 0) >= 60 ||
-        (liveMatch?.idleMinutes || 0) >= 1 ||
-        (typeof employee.idle === 'number' && employee.idle >= 60)
+    const isLiveBreak = !isExplicitlyWorking && (
+        liveMatch?.isOnBreak === true || 
+        liveStatus === 'break' || 
+        (dbStatus === 'break' && liveStatus !== 'online' && liveStatus !== 'active')
     );
 
-    const isLiveOnline = liveStatus === 'online' || liveStatus === 'active' ||
+    const isLiveIdle = !isLiveBreak && !isExplicitlyWorking && (
+        liveStatus === 'idle' || liveStatus === 'afk' || liveStatus === 'passive' || liveStatus === 'idle_warning' ||
+        liveMatch?.isIdle === true ||
+        (liveMatch?.idleTime || 0) >= 60 ||
+        (liveMatch?.idleMinutes || 0) >= 1 ||
+        (typeof employee.idle === 'number' && employee.idle >= 60 && liveStatus !== 'online') ||
+        (dbStatus === 'idle' || dbStatus === 'afk')
+    );
+
+    const isLiveOnline = isExplicitlyWorking ||
+                         liveStatus === 'online' || liveStatus === 'active' ||
                          dbStatus === 'online' || dbStatus === 'active' ||
                          liveMatch?.isOnline || liveMatch?.agentStatus === 'active' ||
                          isLiveIdle || isLiveBreak;
@@ -1086,6 +1092,13 @@ export function EmployeeManagement() {
         }, 30000);
         return () => clearInterval(interval);
     }, [fetchEmployees, fetchTeams]);
+
+    useEffect(() => {
+        const unsubscribe = subscribeStaffStatus(() => {
+            fetchEmployees();
+        });
+        return unsubscribe;
+    }, [fetchEmployees]);
 
     // Filtering Logic
     const filteredEmployees = employees.filter(emp => {
