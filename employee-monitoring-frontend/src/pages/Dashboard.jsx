@@ -347,17 +347,9 @@ export function Dashboard() {
 
     const liveTick = useMemo(() => {
         if (!isToday) return false;
-<<<<<<< HEAD
         // Only tick when clocked in and not on break
         return isClockedIn && !isOnBreak;
     }, [isToday, isClockedIn, isOnBreak]);
-=======
-        if (role === 'EMPLOYEE') {
-            return isClockedIn && !isOnBreak;
-        }
-        return false;
-    }, [isToday, role, isClockedIn, isOnBreak]);
->>>>>>> 7db8041092903b5cf926edfbf444a84a6dc7b4cf
 
     const chartData = stats.intradayActivity?.length
         ? stats.intradayActivity
