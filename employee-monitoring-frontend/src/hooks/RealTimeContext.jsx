@@ -25,6 +25,7 @@ import screenshotService from '../services/screenshotService';
 import notificationService from '../services/notificationService';
 import alertService from '../services/alertService';
 import useTaskStore from '../store/taskStore';
+import { subscribeStaffStatus } from '../utils/staffSync';
 import { io } from 'socket.io-client';
 import { getSharedSocket } from './useSocket';
 
@@ -173,10 +174,33 @@ export function RealTimeProvider({ children }) {
             const saved = localStorage.getItem(STORAGE_KEY);
             if (saved) {
                 const parsed = JSON.parse(saved);
+                const currentEmpId = user?.employeeId || user?.employee?.id || user?.id;
+                const { isClockedIn, isOnBreak } = useAuthStore.getState();
+
+                const sanitizedEmployees = (parsed.employees || []).map(emp => {
+                    const match = currentEmpId && (
+                        String(emp.id) === String(currentEmpId) || 
+                        String(emp.userId) === String(currentEmpId) || 
+                        String(emp.employeeId) === String(currentEmpId)
+                    );
+                    if (match && isClockedIn && !isOnBreak) {
+                        return {
+                            ...emp,
+                            status: 'online',
+                            accountStatus: 'active',
+                            isIdle: false,
+                            isOnBreak: false,
+                            activeApp: 'Active Work',
+                            currentActivity: 'Active / Logged In'
+                        };
+                    }
+                    return emp;
+                });
+
                 setState(prev => ({
                     ...prev,
                     // Only restore user-added / ephemeral data — NOT the seed data
-                    employees: parsed.employees || prev.employees,
+                    employees: sanitizedEmployees.length > 0 ? sanitizedEmployees : prev.employees,
                     timeEntries: parsed.timeEntries || prev.timeEntries,
                     notifications: parsed.notifications || prev.notifications,
                     leaveRequests: parsed.leaveRequests || prev.leaveRequests,
@@ -188,7 +212,7 @@ export function RealTimeProvider({ children }) {
             }
         } catch (e) { /* ignore corrupt cache */ }
         setIsLoading(false);
-    }, []);
+    }, [user?.id, user?.employeeId]);
 
     // Restore active task timer for the authenticated employee
     useEffect(() => {
@@ -197,6 +221,41 @@ export function RealTimeProvider({ children }) {
             useTaskStore.getState().restoreActiveTask(empId);
         }
     }, [user?.employeeId, user?.id]);
+
+    // Cross-tab and instantaneous staff status synchronization
+    useEffect(() => {
+        const unsubscribe = subscribeStaffStatus((msg) => {
+            const { employeeId, status, isIdle, isOnBreak, activeApp, currentActivity } = msg;
+            setState(prev => ({
+                ...prev,
+                employees: prev.employees.map(e => {
+                    const match = String(e.id) === String(employeeId) || 
+                                  String(e.userId) === String(employeeId) || 
+                                  String(e.employeeId) === String(employeeId);
+                    if (match) {
+                        return {
+                            ...e,
+                            status: status === 'online' ? 'online' : status,
+                            accountStatus: status === 'online' ? 'active' : status,
+                            isIdle: !!isIdle,
+                            isOnBreak: !!isOnBreak,
+                            idleTime: isIdle ? (e.idleTime || 60) : 0,
+                            idleMinutes: isIdle ? (e.idleMinutes || 1) : 0,
+                            activeApp: activeApp || (isIdle ? 'Away from Computer (Idle)' : 'Active Work'),
+                            activeWindow: activeApp || (isIdle ? 'Away from Computer (Idle)' : 'Active Work'),
+                            currentActivity: currentActivity || (isIdle ? 'Away from Computer (Idle)' : 'Active / Logged In'),
+                            lastSeen: new Date().toISOString()
+                        };
+                    }
+                    return e;
+                })
+            }));
+            if (employeeId && status) {
+                useEmployeeStore.getState().updateEmployeeStatus(employeeId, status === 'online' ? 'ACTIVE' : status.toUpperCase());
+            }
+        });
+        return unsubscribe;
+    }, []);
 
     // Persistence — only save ephemeral user-interactive data (not seed logs which are huge)
     useEffect(() => {
@@ -235,13 +294,40 @@ export function RealTimeProvider({ children }) {
             if (res.success && res.data) {
                 setState(prev => {
                     const backendEmployees = res.data.map(emp => {
+                        const existing = prev.employees.find(e => 
+                            String(e.id) === String(emp.id) || 
+                            String(e.userId) === String(emp.id) || 
+                            String(e.employeeId) === String(emp.id)
+                        );
+
                         const name = emp.fullName || emp.name || 'Unknown User';
                         const st = (emp.status || 'offline').toLowerCase();
-                        const appStr = (emp.activeApp || emp.currentApp || '').toLowerCase();
-                        const actStr = (emp.currentActivity || '').toLowerCase();
-                        const isIdleFromApi = actStr === 'idle' || appStr.includes('idle') || appStr.includes('away');
-                        const isBreakFromApi = st === 'break' || actStr === 'break';
-                        const normalizedStatus = isBreakFromApi ? 'break' : (isIdleFromApi ? 'idle' : ((st === 'active' || st === 'online') ? 'online' : st));
+                        const isBreakFromApi = st === 'break';
+
+                        // Live active state preservation with correct precedence
+                        const isLiveWorking = existing && existing.status === 'online' && !existing.isIdle && !existing.isOnBreak;
+                        const isLiveBreak = existing && existing.isOnBreak && existing.status === 'break';
+                        const isLiveIdle = existing && existing.isIdle && existing.status === 'idle';
+
+                        let normalizedStatus = 'offline';
+                        if (isLiveWorking) {
+                            normalizedStatus = 'online';
+                        } else if (isLiveBreak || isBreakFromApi) {
+                            normalizedStatus = 'break';
+                        } else if (isLiveIdle) {
+                            normalizedStatus = 'idle';
+                        } else if (st === 'active' || st === 'online') {
+                            normalizedStatus = 'online';
+                        } else if (st === 'idle' || st === 'afk') {
+                            normalizedStatus = 'idle';
+                        } else {
+                            normalizedStatus = st;
+                        }
+
+                        const isNowIdle = normalizedStatus === 'idle';
+                        const isNowBreak = normalizedStatus === 'break';
+                        const isNowOnline = normalizedStatus === 'online';
+
                         return {
                             ...emp,
                             name: name,
@@ -249,15 +335,18 @@ export function RealTimeProvider({ children }) {
                             team: emp.team?.name || emp.team || 'General',
                             status: normalizedStatus,
                             accountStatus: st,
-                            isIdle: normalizedStatus === 'idle',
-                            isOnBreak: normalizedStatus === 'break',
-                            productivityScore: emp.productivityScore || (normalizedStatus === 'online' ? 92 : 82),
-                            utilizationScore: emp.utilizationScore || (normalizedStatus === 'online' ? 86 : 76),
+                            isIdle: isNowIdle,
+                            isOnBreak: isNowBreak,
+                            idleTime: isNowIdle ? (existing?.idleTime || 60) : 0,
+                            idleMinutes: isNowIdle ? (existing?.idleMinutes || 1) : 0,
+                            productivityScore: emp.productivityScore || (isNowOnline ? 92 : 82),
+                            utilizationScore: emp.utilizationScore || (isNowOnline ? 86 : 76),
                             totalWorkHours: emp.totalWorkHours || 0,
                             manualHours: emp.manualHours || 0,
                             computerActivityHours: emp.computerActivityHours || 0,
-                            activeApp: emp.activeApp || (normalizedStatus === 'online' ? 'Visual Studio Code' : (normalizedStatus === 'idle' ? 'Away from Computer (Idle)' : 'Offline')),
-                            activeWindow: emp.activeWindow || (normalizedStatus === 'online' ? 'Working on Development Task' : (normalizedStatus === 'idle' ? 'Away from Computer (Idle)' : 'No recent activity')),
+                            activeApp: isNowIdle ? 'Away from Computer (Idle)' : (existing?.activeApp || (isNowOnline ? 'Active Work' : 'Offline')),
+                            activeWindow: isNowIdle ? 'Away from Computer (Idle)' : (existing?.activeWindow || (isNowOnline ? 'Active Work' : 'No recent activity')),
+                            currentActivity: isNowBreak ? 'On Break' : (isNowIdle ? 'Away from Computer (Idle)' : (isNowOnline ? 'Active / Logged In' : 'Offline')),
                             location: emp.location || 'Remote'
                         };
                     });

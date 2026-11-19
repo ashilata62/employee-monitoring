@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import authService from '../services/authService';
 import { toast } from '../utils/toastManager';
+import { broadcastStaffStatus } from '../utils/staffSync';
 
 export const useAuthStore = create(
     persist(
@@ -89,6 +90,7 @@ export const useAuthStore = create(
             // Attendance Actions
             clockIn: async () => {
                 const { default: attendanceService } = await import('../services/attendanceService');
+                const empId = get().user?.employeeId || get().user?.employee?.id || get().user?.id;
                 try {
                     const response = await attendanceService.clockIn();
                     if (response.success && response.data) {
@@ -97,6 +99,16 @@ export const useAuthStore = create(
                             isClockedIn: true,
                             isOnBreak: false
                         });
+                        if (empId) {
+                            broadcastStaffStatus({
+                                employeeId: empId,
+                                status: 'online',
+                                isIdle: false,
+                                isOnBreak: false,
+                                activeApp: 'Active Work',
+                                currentActivity: 'Active / Logged In'
+                            });
+                        }
                         toast.success('Work session started');
                     }
                     return response;
@@ -115,6 +127,16 @@ export const useAuthStore = create(
                             isClockedIn: true,
                             isOnBreak: false
                         });
+                        if (empId) {
+                            broadcastStaffStatus({
+                                employeeId: empId,
+                                status: 'online',
+                                isIdle: false,
+                                isOnBreak: false,
+                                activeApp: 'Active Work',
+                                currentActivity: 'Active / Logged In'
+                            });
+                        }
                         toast.success('Work session resumed');
                         return { success: true, data: existingAttendance };
                     }
@@ -125,6 +147,7 @@ export const useAuthStore = create(
 
             clockOut: async () => {
                 const { default: attendanceService } = await import('../services/attendanceService');
+                const empId = get().user?.employeeId || get().user?.employee?.id || get().user?.id;
                 // Immediate synchronous reset so UI cards & buttons reset with 0 latency
                 set({
                     activeAttendance: null,
@@ -135,6 +158,16 @@ export const useAuthStore = create(
                     frozenIdleSeconds: null,
                     idlePauseStartTime: null
                 });
+                if (empId) {
+                    broadcastStaffStatus({
+                        employeeId: empId,
+                        status: 'offline',
+                        isIdle: false,
+                        isOnBreak: false,
+                        activeApp: 'Offline',
+                        currentActivity: 'Offline'
+                    });
+                }
                 if (typeof window !== 'undefined') {
                     window.dispatchEvent(new Event('stop-web-tracker'));
                 }
@@ -151,6 +184,7 @@ export const useAuthStore = create(
 
             toggleBreak: async () => {
                 const { default: attendanceService } = await import('../services/attendanceService');
+                const empId = get().user?.employeeId || get().user?.employee?.id || get().user?.id;
                 const isOnBreak = get().isOnBreak;
                 const activeAttendance = get().activeAttendance;
                 try {
@@ -169,6 +203,16 @@ export const useAuthStore = create(
                                 totalBreakSeconds: 0
                             }
                         });
+                        if (empId) {
+                            broadcastStaffStatus({
+                                employeeId: empId,
+                                status: 'break',
+                                isIdle: false,
+                                isOnBreak: true,
+                                activeApp: 'On Break',
+                                currentActivity: 'On Break'
+                            });
+                        }
                         toast.success('Break started');
                     } else {
                         response = await attendanceService.endBreak();
@@ -182,6 +226,16 @@ export const useAuthStore = create(
                                 totalBreakSeconds: prevBreakSec + breakDuration
                             } : null
                         });
+                        if (empId) {
+                            broadcastStaffStatus({
+                                employeeId: empId,
+                                status: 'online',
+                                isIdle: false,
+                                isOnBreak: false,
+                                activeApp: 'Active Work',
+                                currentActivity: 'Active / Logged In'
+                            });
+                        }
                         toast.success('Break ended');
                     }
                     return response;
@@ -200,6 +254,16 @@ export const useAuthStore = create(
                                 totalBreakSeconds: 0
                             }
                         });
+                        if (empId) {
+                            broadcastStaffStatus({
+                                employeeId: empId,
+                                status: 'break',
+                                isIdle: false,
+                                isOnBreak: true,
+                                activeApp: 'On Break',
+                                currentActivity: 'On Break'
+                            });
+                        }
                         toast.success('Break started');
                     } else {
                         set({
@@ -209,6 +273,16 @@ export const useAuthStore = create(
                                 openBreak: null
                             } : null
                         });
+                        if (empId) {
+                            broadcastStaffStatus({
+                                employeeId: empId,
+                                status: 'online',
+                                isIdle: false,
+                                isOnBreak: false,
+                                activeApp: 'Active Work',
+                                currentActivity: 'Active / Logged In'
+                            });
+                        }
                         toast.success('Break ended');
                     }
                     return { success: true };

@@ -47,6 +47,7 @@ import { ProductivityStackedChart } from '../components/dashboard/ProductivitySt
 import { PeriodComparisonBar } from '../components/dashboard/PeriodComparisonBar';
 import { EmployeeWorkforceAnalytics } from '../components/dashboard/EmployeeWorkforceAnalytics';
 import { AdminExecutiveDashboard } from '../components/dashboard/AdminExecutiveDashboard';
+import { subscribeStaffStatus } from '../utils/staffSync';
 
 const LiveSummaryCard = ({ title, baseSeconds, live, trend, subValue, icon, color = 'primary' }) => {
     const value = useLiveTimeDisplay(baseSeconds, live);
@@ -291,6 +292,14 @@ export function Dashboard() {
 
         return () => clearInterval(interval);
     }, [fetchDashboardData]);
+
+    // Cross-tab immediate status update subscription
+    useEffect(() => {
+        const unsubscribe = subscribeStaffStatus(() => {
+            fetchRef.current(true);
+        });
+        return unsubscribe;
+    }, []);
 
     // Real-Time Socket Event Listeners for Instant Live Updates
     useEffect(() => {

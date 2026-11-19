@@ -108,27 +108,36 @@ export function AdminExecutiveDashboard({
                 (rt.email && emp.email && rt.email.toLowerCase() === emp.email.toLowerCase())
             );
 
-            // Determine status from both liveMatch (socket) and database record (emp)
+            // Determine status from both liveMatch (socket/real-time) and database record (emp)
             const liveStatus = (liveMatch?.status || liveMatch?.accountStatus || '').toLowerCase();
             const dbStatus = (emp.status || '').toLowerCase();
 
-            const appString = (liveMatch?.activeApp || liveMatch?.currentApp || emp.activeApp || emp.currentApp || emp.currentActivity || '').toLowerCase();
-            const hasIdleApp = appString.includes('idle') || appString.includes('away');
-            const hasIdleActivity = (emp.currentActivity || '').toLowerCase().includes('idle') || (liveMatch?.currentActivity || '').toLowerCase().includes('idle');
+            // 1. Explicit working check:
+            // If live status is online/active AND liveMatch is not flagged on break/idle, they are DEFINITELY WORKING!
+            const isExplicitlyWorking = (liveStatus === 'online' || liveStatus === 'active') && 
+                                        liveMatch?.isOnBreak !== true && 
+                                        liveMatch?.isIdle !== true;
 
-            const isBreak = liveStatus === 'break' || dbStatus === 'break' || liveMatch?.isOnBreak || false;
+            // 2. Break check:
+            // Break ONLY if not explicitly working, AND (liveMatch is on break OR db has break without active live override)
+            const isBreak = !isExplicitlyWorking && (
+                liveMatch?.isOnBreak === true || 
+                liveStatus === 'break' || 
+                (dbStatus === 'break' && liveStatus !== 'online' && liveStatus !== 'active')
+            );
             
-            const isIdle = !isBreak && (
+            // 3. Idle / AFK check:
+            const isIdle = !isBreak && !isExplicitlyWorking && (
                 liveStatus === 'idle' || liveStatus === 'afk' || liveStatus === 'passive' || liveStatus === 'idle_warning' ||
-                dbStatus === 'idle' || dbStatus === 'afk' ||
-                hasIdleApp || hasIdleActivity ||
-                liveMatch?.isIdle ||
+                liveMatch?.isIdle === true ||
                 (liveMatch?.idleTime || 0) >= 60 ||
                 (liveMatch?.idleMinutes || 0) >= 1 ||
-                (typeof emp.idle === 'number' && emp.idle >= 60)
+                (typeof emp.idle === 'number' && emp.idle >= 60 && liveStatus !== 'online') ||
+                (dbStatus === 'idle' || dbStatus === 'afk')
             );
 
-            const isOnline = liveStatus === 'online' || liveStatus === 'active' ||
+            const isOnline = isExplicitlyWorking || 
+                             liveStatus === 'online' || liveStatus === 'active' ||
                              dbStatus === 'online' || dbStatus === 'active' ||
                              liveMatch?.isOnline || liveMatch?.agentStatus === 'active' ||
                              isIdle || isBreak;
@@ -137,7 +146,11 @@ export function AdminExecutiveDashboard({
             const idleMinutes = liveMatch?.idleTime 
                 ? Math.max(1, Math.floor(liveMatch.idleTime / 60)) 
                 : (typeof emp.idle === 'number' && emp.idle >= 60 ? Math.floor(emp.idle / 60) : (liveMatch?.idleMinutes || (isIdle ? 1 : 0)));
-            const currentApp = liveMatch?.activeApp || liveMatch?.activeWindow || liveMatch?.currentApp || (hasIdleApp ? 'Away from Computer (Idle)' : null);
+
+            const rawApp = liveMatch?.activeApp || liveMatch?.activeWindow || liveMatch?.currentApp || emp.activeApp || emp.currentApp || null;
+            const currentApp = (!isIdle && rawApp && (rawApp.toLowerCase().includes('idle') || rawApp.toLowerCase().includes('away')))
+                ? 'Active Work'
+                : (isIdle ? 'Away from Computer (Idle)' : rawApp);
 
             let currentActivity = 'Offline';
             if (isOnBreak) {
