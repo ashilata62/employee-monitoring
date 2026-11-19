@@ -127,16 +127,18 @@ export function RealTimeProvider({ children }) {
         employeesRef.current = state.employees;
     }, [state.employees]);
 
-    const addNotification = useCallback((title, type = 'info') => {
-        const n = { id: Date.now(), title, time: 'Just now', type, unread: true };
+    const addNotification = useCallback((title, type = 'info', description = '') => {
+        const n = {
+            id: `${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+            title,
+            description: description || '',
+            time: 'Just now',
+            type,
+            unread: true
+        };
         setState(prev => ({ ...prev, notifications: [n, ...prev.notifications].slice(0, 50) }));
-
-        // Route to global toast system
-        if (type === 'alert' || type === 'error') toast.error(title);
-        else if (type === 'success') toast.success(title);
-        else if (type === 'warning') toast.warning(title);
-        else toast.info(title);
-    }, [toast]);
+        // Note: Notifications are kept inside the Bell Icon dropdown to avoid screen-blocking popups
+    }, []);
 
     // Initial Load — merge saved session data (timer, notifications, user-added records)
     useEffect(() => {
@@ -572,36 +574,61 @@ export function RealTimeProvider({ children }) {
             addNotification(title, type || 'info');
         };
 
-        // ─── DEVELOPER 4 REAL-TIME LISTENERS ─────────────────────────────────
+        // ─── REAL-TIME NOTIFICATION & ALERT LISTENERS ─────────────────────────
         const handleAlertNew = (alertData) => {
             console.log('RealTimeContext: Real-time alert received:', alertData);
             playAlertChime();
+            const alertNotif = {
+                id: alertData.id || `${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+                title: alertData.title || (alertData.type === 'idle' ? 'Inactivity Alert' : 'System Alert'),
+                description: alertData.message || (alertData.type === 'idle' ? `Employee ${alertData.employeeName || 'Staff'} has been inactive.` : 'Alert received'),
+                type: alertData.severity === 'critical' ? 'alert' : 'warning',
+                time: 'Just now',
+                unread: true,
+                link: '/alerts'
+            };
+
             setState(prev => ({
                 ...prev,
-                alerts: [alertData, ...prev.alerts.filter(a => a.id !== alertData.id)]
+                alerts: [alertData, ...prev.alerts.filter(a => a.id !== alertData.id)],
+                notifications: [alertNotif, ...prev.notifications.filter(n => n.id !== alertNotif.id)].slice(0, 50)
             }));
-            if (alertData.severity === 'critical') {
-                toast.error(alertData.message);
-            } else {
-                toast.warning(alertData.message);
-            }
+            // NOTE: Routed to Notification Bell icon dropdown — no screen-blocking popups!
         };
 
         const handleNotificationNew = (notifData) => {
             console.log('RealTimeContext: Real-time notification received:', notifData);
+            const n = {
+                id: notifData.id || `${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+                title: notifData.title || 'System Notification',
+                description: notifData.description || notifData.message || '',
+                type: notifData.type || 'info',
+                time: notifData.time || 'Just now',
+                unread: notifData.unread !== undefined ? notifData.unread : true,
+                link: notifData.link || null
+            };
             setState(prev => ({
                 ...prev,
-                notifications: [notifData, ...prev.notifications.filter(n => n.id !== notifData.id)]
+                notifications: [n, ...prev.notifications.filter(item => item.id !== n.id)].slice(0, 50)
             }));
         };
 
         const handleScreenshotViolation = (violationData) => {
             console.log('RealTimeContext: Real-time violation screenshot:', violationData);
             playAlertChime();
-            toast.error(`Security Violation: Prohibited app "${violationData.appName}" accessed by ${violationData.employeeName}!`);
-            if (violationData.imageUrl) {
-                setState(prev => ({
-                    ...prev,
+            const violationNotif = {
+                id: `violation_${Date.now()}`,
+                title: 'Security Violation',
+                description: `Prohibited app "${violationData.appName}" accessed by ${violationData.employeeName}!`,
+                type: 'alert',
+                time: 'Just now',
+                unread: true,
+                link: '/screenshots'
+            };
+            setState(prev => ({
+                ...prev,
+                notifications: [violationNotif, ...prev.notifications.filter(n => n.id !== violationNotif.id)].slice(0, 50),
+                ...(violationData.imageUrl ? {
                     screenshots: [{
                         employeeId: violationData.employeeId,
                         employeeName: violationData.employeeName,
@@ -610,8 +637,8 @@ export function RealTimeProvider({ children }) {
                         productivity: 'UNPRODUCTIVE',
                         isViolation: true
                     }, ...prev.screenshots].slice(0, 50)
-                }));
-            }
+                } : {})
+            }));
         };
 
         socket.on('employee:status', handleEmployeeStatus);
