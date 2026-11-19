@@ -23,7 +23,7 @@ function CheckRow({ checked, onChange, disabled = false, children }) {
             <div
                 className={cn(
                     'h-4 w-4 rounded border-2 flex items-center justify-center shrink-0 transition-all',
-                    checked ? 'bg-violet-600 border-violet-600' : 'border-slate-300 dark:border-slate-600'
+                    checked ? 'bg-[#30382B] dark:bg-[#B9955B] border-[#30382B] dark:border-[#B9955B]' : 'border-slate-300 dark:border-slate-600'
                 )}
                 onClick={() => !disabled && onChange(!checked)}
             >
@@ -60,7 +60,7 @@ export function AdvancedForm({ settings, onChange }) {
                             <select
                                 value={settings.shiftThreshold}
                                 onChange={(e) => update('shiftThreshold', Number(e.target.value))}
-                                className="w-full h-10 pl-3 pr-8 rounded-xl border-2 border-slate-200 dark:border-slate-700 focus:border-violet-500 bg-white dark:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 outline-none transition-all appearance-none"
+                                className="w-full h-10 pl-3 pr-8 rounded-xl border-2 border-slate-200 dark:border-slate-700 focus:border-primary-500 bg-white dark:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 outline-none transition-all appearance-none"
                             >
                                 {SHIFT_THRESHOLD_OPTIONS.map((o) => (
                                     <option key={o.value} value={o.value}>{o.label}</option>
@@ -103,9 +103,9 @@ export function AdvancedForm({ settings, onChange }) {
                             ].map((opt) => (
                                 <label key={opt.value} className={cn(
                                     'flex items-center gap-3 px-4 py-3 rounded-xl border-2 cursor-pointer transition-all',
-                                    settings.identificationMode === opt.value ? 'border-violet-500 bg-violet-50 dark:bg-violet-900/10' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'
+                                    settings.identificationMode === opt.value ? 'border-primary-500 bg-primary-50 dark:bg-primary-950/40' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'
                                 )}>
-                                    <input type="radio" name="identificationMode" value={opt.value} checked={settings.identificationMode === opt.value} onChange={() => update('identificationMode', opt.value)} className="accent-violet-600" />
+                                    <input type="radio" name="identificationMode" value={opt.value} checked={settings.identificationMode === opt.value} onChange={() => update('identificationMode', opt.value)} className="accent-primary-600" />
                                     <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{opt.label}</span>
                                 </label>
                             ))}
@@ -114,7 +114,7 @@ export function AdvancedForm({ settings, onChange }) {
                     <div className="space-y-2">
                         <FieldLabel>Personal Computers</FieldLabel>
                         <div className="p-4 rounded-xl border-2 border-slate-100 dark:border-slate-800 text-xs font-semibold text-slate-500 dark:text-slate-400">
-                            User <span className="text-violet-600 font-bold">email</span> will be used for identification
+                            User <span className="text-primary-600 font-bold">email</span> will be used for identification
                         </div>
                     </div>
                 </div>
@@ -147,7 +147,7 @@ export function AdvancedForm({ settings, onChange }) {
                             <div
                                 className={cn(
                                     'h-4 w-4 rounded border-2 flex items-center justify-center shrink-0 cursor-pointer transition-all',
-                                    settings.useActiveDirectory ? 'bg-violet-600 border-violet-600' : 'border-slate-300 dark:border-slate-600'
+                                    settings.useActiveDirectory ? 'bg-[#30382B] dark:bg-[#B9955B] border-[#30382B] dark:border-[#B9955B]' : 'border-slate-300 dark:border-slate-600'
                                 )}
                                 onClick={() => update('useActiveDirectory', !settings.useActiveDirectory)}
                             >

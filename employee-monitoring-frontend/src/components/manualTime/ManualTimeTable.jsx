@@ -129,7 +129,7 @@ export function ManualTimeTable({ types, onEdit, onDelete }) {
                                 <td className="px-6 py-5">
                                     <span className={cn(
                                         'text-sm font-semibold',
-                                        type.projectRequired ? 'text-violet-600 dark:text-violet-400' : 'text-slate-400 dark:text-slate-500'
+                                        type.projectRequired ? 'text-primary-600 dark:text-primary-400' : 'text-slate-400 dark:text-slate-500'
                                     )}>
                                         {type.projectRequired ? 'Enabled' : 'Disabled'}
                                     </span>

@@ -24,7 +24,7 @@ export function IntegrationCardFull({ integrationId, connected, onConfigure, onD
                     ? 'border-emerald-300 dark:border-emerald-700 shadow-md shadow-emerald-50 dark:shadow-none'
                     : disabled
                     ? 'border-slate-100 dark:border-slate-800 opacity-50 cursor-not-allowed'
-                    : 'border-slate-100 dark:border-slate-800 hover:border-violet-200 dark:hover:border-violet-800/50 hover:shadow-lg hover:-translate-y-0.5'
+                    : 'border-slate-100 dark:border-slate-800 hover:border-primary-200 dark:hover:border-primary-800/50 hover:shadow-lg hover:-translate-y-0.5'
             )}
         >
             {/* Beta badge */}
@@ -64,7 +64,7 @@ export function IntegrationCardFull({ integrationId, connected, onConfigure, onD
                     <button
                         onClick={() => !disabled && onConfigure?.(integrationId)}
                         disabled={disabled}
-                        className="flex-1 py-2.5 rounded-xl border-2 border-violet-200 dark:border-violet-800 text-xs font-black text-violet-600 dark:text-violet-400 uppercase tracking-wider hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-all flex items-center justify-center gap-1.5 disabled:cursor-not-allowed"
+                        className="flex-1 py-2.5 rounded-xl border-2 border-primary-200 dark:border-primary-800 text-xs font-black text-primary-600 dark:text-primary-400 uppercase tracking-wider hover:bg-primary-50 dark:hover:bg-primary-950/30 transition-all flex items-center justify-center gap-1.5 disabled:cursor-not-allowed"
                     >
                         <Settings2 size={13} /> Edit
                     </button>
@@ -79,7 +79,7 @@ export function IntegrationCardFull({ integrationId, connected, onConfigure, onD
             ) : meta.requestAccess ? (
                 <button
                     disabled={disabled}
-                    className="w-full py-2.5 rounded-xl border-2 border-slate-200 dark:border-slate-700 text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-wider hover:border-violet-300 dark:hover:border-violet-700 hover:text-violet-600 dark:hover:text-violet-400 transition-all disabled:cursor-not-allowed disabled:opacity-50"
+                    className="w-full py-2.5 rounded-xl border-2 border-slate-200 dark:border-slate-700 text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-wider hover:border-primary-300 dark:hover:border-primary-700 hover:text-primary-600 dark:hover:text-primary-400 transition-all disabled:cursor-not-allowed disabled:opacity-50"
                 >
                     Request Access
                 </button>
@@ -87,7 +87,7 @@ export function IntegrationCardFull({ integrationId, connected, onConfigure, onD
                 <button
                     onClick={() => !disabled && onConfigure?.(integrationId)}
                     disabled={disabled}
-                    className="w-full py-2.5 rounded-xl border-2 border-violet-300 dark:border-violet-700 text-xs font-black text-violet-600 dark:text-violet-400 uppercase tracking-wider hover:bg-violet-50 dark:hover:bg-violet-900/20 hover:border-violet-400 transition-all disabled:cursor-not-allowed disabled:opacity-50"
+                    className="w-full py-2.5 rounded-xl border-2 border-primary-300 dark:border-primary-700 text-xs font-black text-primary-600 dark:text-primary-400 uppercase tracking-wider hover:bg-primary-50 dark:hover:bg-primary-950/30 hover:border-primary-400 transition-all disabled:cursor-not-allowed disabled:opacity-50"
                 >
                     Configure
                 </button>

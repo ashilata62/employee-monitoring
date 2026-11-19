@@ -23,10 +23,10 @@ export function SecurityLanding() {
                     <nav className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">
                         <span className="hover:text-slate-600 dark:hover:text-slate-300 cursor-pointer transition-colors" onClick={() => navigate('/settings')}>Settings</span>
                         <span>/</span>
-                        <span className="text-violet-600">Security and Identity</span>
+                        <span className="text-primary-600">Security and Identity</span>
                     </nav>
                     <div className="flex items-center gap-3">
-                        {/* <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-violet-200 dark:shadow-none">
+                        {/* <div className="h-9 w-9 rounded-xl bg-[#30382B] dark:bg-[#B9955B] text-white flex items-center justify-center text-white shadow-lg shadow-warm-xs dark:shadow-none">
                             <Lock size={18} />
                         </div> */}
                         <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Security and Identity</h1>
@@ -83,11 +83,11 @@ export function SecurityLanding() {
                             )}
                         </div>
                         <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-5">
-                            Configure SAML to enable <span className="text-violet-600 font-bold">SSO</span> for your team
+                            Configure SAML to enable <span className="text-primary-600 font-bold">SSO</span> for your team
                         </p>
                         <button
                             onClick={() => navigate('/settings/security/saml')}
-                            className="px-5 py-2.5 rounded-xl border-2 border-violet-300 dark:border-violet-700 text-sm font-black text-violet-700 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/10 transition-all hover:scale-[1.02] active:scale-95"
+                            className="px-5 py-2.5 rounded-xl border-2 border-primary-300 dark:border-primary-700 text-sm font-black text-primary-700 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-950/30 transition-all hover:scale-[1.02] active:scale-95"
                         >
                             {configured ? 'Edit Configuration' : 'Configure SAML'}
                         </button>

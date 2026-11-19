@@ -98,7 +98,7 @@ export function AddEditManualTimeModal({ isOpen, onClose, onSave, existingType =
                             onChange={(e) => { setForm(f => ({ ...f, title: e.target.value })); setErrors(e2 => ({ ...e2, title: undefined })); }}
                             className={cn(
                                 'w-full h-12 px-4 rounded-xl border-2 bg-white dark:bg-slate-800 text-sm font-medium text-slate-900 dark:text-white outline-none transition-all',
-                                errors.title ? 'border-rose-400' : 'border-slate-200 dark:border-slate-700 focus:border-violet-500'
+                                errors.title ? 'border-rose-400' : 'border-slate-200 dark:border-slate-700 focus:border-primary-500'
                             )}
                         />
                         {errors.title && <p className="text-xs font-bold text-rose-500">{errors.title}</p>}
@@ -116,7 +116,7 @@ export function AddEditManualTimeModal({ isOpen, onClose, onSave, existingType =
                                 onClick={() => setForm(f => ({ ...f, autoApproval: !f.autoApproval }))}
                                 className={cn(
                                     'relative h-6 w-11 rounded-full transition-all duration-300',
-                                    form.autoApproval ? 'bg-violet-600' : 'bg-slate-200 dark:bg-slate-700'
+                                    form.autoApproval ? 'bg-[#30382B] dark:bg-[#B9955B]' : 'bg-slate-200 dark:bg-slate-700'
                                 )}
                             >
                                 <span className={cn(
@@ -142,7 +142,7 @@ export function AddEditManualTimeModal({ isOpen, onClose, onSave, existingType =
                                     className={cn(
                                         'flex items-center gap-3 px-5 py-4 rounded-xl border-2 cursor-pointer transition-all text-sm font-bold',
                                         form.billable === opt.value
-                                            ? 'border-violet-500 bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300'
+                                            ? 'border-primary-500 bg-primary-50 dark:bg-primary-950/40 text-primary-700 dark:text-primary-300'
                                             : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300'
                                     )}
                                 >
@@ -151,7 +151,7 @@ export function AddEditManualTimeModal({ isOpen, onClose, onSave, existingType =
                                         name="billable"
                                         checked={form.billable === opt.value}
                                         onChange={() => { setForm(f => ({ ...f, billable: opt.value })); setErrors(e => ({ ...e, billable: undefined })); }}
-                                        className="accent-violet-600"
+                                        className="accent-primary-600"
                                     />
                                     {opt.label}
                                 </label>
@@ -202,7 +202,7 @@ export function AddEditManualTimeModal({ isOpen, onClose, onSave, existingType =
                                     onChange={(e) => { setForm(f => ({ ...f, maxDuration: e.target.value })); setErrors(e2 => ({ ...e2, maxDuration: undefined })); }}
                                     className={cn(
                                         'flex-1 h-11 px-4 rounded-xl border-2 bg-white dark:bg-slate-800 text-sm font-medium text-slate-900 dark:text-white outline-none transition-all',
-                                        errors.maxDuration ? 'border-rose-400' : 'border-slate-200 dark:border-slate-700 focus:border-violet-500'
+                                        errors.maxDuration ? 'border-rose-400' : 'border-slate-200 dark:border-slate-700 focus:border-primary-500'
                                     )}
                                 />
                                 <span className="text-xs font-bold text-slate-400 shrink-0">minutes</span>
@@ -215,7 +215,7 @@ export function AddEditManualTimeModal({ isOpen, onClose, onSave, existingType =
                             <label className="flex items-center gap-3 cursor-pointer">
                                 <div
                                     className={cn('h-5 w-5 rounded-md border-2 transition-all flex items-center justify-center shrink-0',
-                                        form.projectRequired ? 'bg-violet-600 border-violet-600' : 'border-slate-300 dark:border-slate-600')}
+                                        form.projectRequired ? 'bg-[#30382B] dark:bg-[#B9955B] border-[#30382B] dark:border-[#B9955B]' : 'border-slate-300 dark:border-slate-600')}
                                     onClick={() => setForm(f => ({ ...f, projectRequired: !f.projectRequired }))}
                                 >
                                     {form.projectRequired && (
@@ -236,7 +236,7 @@ export function AddEditManualTimeModal({ isOpen, onClose, onSave, existingType =
                     <button onClick={onClose} className="flex-1 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 text-xs font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
                         Cancel
                     </button>
-                    <button onClick={handleSave} className="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-violet-200 dark:shadow-none hover:from-violet-700 hover:to-indigo-700 hover:scale-[1.02] active:scale-95 transition-all">
+                    <button onClick={handleSave} className="flex-1 py-3.5 rounded-2xl bg-[#30382B] hover:bg-[#3C4536] dark:bg-[#B9955B] dark:hover:bg-[#A17D45] text-white shadow-warm-sm text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-warm-xs dark:shadow-none  hover:scale-[1.02] active:scale-95 transition-all">
                         Save
                     </button>
                 </div>

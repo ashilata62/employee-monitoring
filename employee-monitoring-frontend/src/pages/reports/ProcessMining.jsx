@@ -174,9 +174,9 @@ export default function ProcessMining() {
                 <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
                     <div className="flex items-center justify-between text-slate-500 mb-2">
                         <span className="text-xs font-black uppercase tracking-wider">Maturity Score</span>
-                        <CheckCircle2 size={16} className="text-violet-500" />
+                        <CheckCircle2 size={16} className="text-primary-600" />
                     </div>
-                    <div className="text-2xl font-black text-violet-600 dark:text-violet-400">
+                    <div className="text-2xl font-black text-primary-600 dark:text-primary-400">
                         {summary.processMaturityScore || 82}/100
                     </div>
                     <div className="text-xs text-slate-500 mt-1 font-medium">
@@ -243,23 +243,23 @@ export default function ProcessMining() {
                                     <React.Fragment key={node.id}>
                                         <div className={cn(
                                             "relative p-5 rounded-2xl border flex flex-col items-center justify-center min-w-[160px] text-center transition-all shadow-sm hover:scale-105",
-                                            isStart && "bg-slate-50 dark:bg-slate-800/60 border-slate-300 dark:border-slate-700",
+                                            isStart && "bg-[#EEE8DD] dark:bg-[#252B20] border-[#D6CDBC] dark:border-[#384232] text-[#29291F] dark:text-[#F5F1E9]",
                                             isEnd && "bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-300 dark:border-emerald-800",
                                             !isStart && !isEnd && "bg-white dark:bg-slate-800 border-primary-200 dark:border-primary-900/40"
                                         )}>
-                                            <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                                            <span className="text-[10px] font-black uppercase tracking-wider text-[#777367] dark:text-[#A8A295]">
                                                 Stage {index + 1}
                                             </span>
-                                            <span className="text-sm font-black text-slate-900 dark:text-white mt-1">
+                                            <span className="text-sm font-black text-[#29291F] dark:text-[#F5F1E9] mt-1">
                                                 {node.label}
                                             </span>
                                             <div className="mt-3 flex items-center gap-2 text-xs">
-                                                <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold">
+                                                <span className="px-2 py-0.5 rounded-full bg-[#E5DDCF] dark:bg-[#1E2419] text-[#29291F] dark:text-[#F5F1E9] font-bold">
                                                     {node.count} tasks
                                                 </span>
                                             </div>
-                                            <span className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-                                                Avg stay: <strong className="text-slate-700 dark:text-slate-300">{node.avgStayHours}</strong>
+                                            <span className="text-[11px] text-[#777367] dark:text-[#A8A295] mt-1">
+                                                Avg stay: <strong className="text-[#29291F] dark:text-[#F5F1E9]">{node.avgStayHours}</strong>
                                             </span>
                                         </div>
 
@@ -284,7 +284,7 @@ export default function ProcessMining() {
                         </div>
                         <div className="overflow-x-auto">
                             <table className="w-full text-left text-xs">
-                                <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-400 font-bold uppercase tracking-wider">
+                                <thead className="bg-[#EEE8DD] dark:bg-[#1E2419] text-[#29291F] dark:text-[#D6CDBC] border-b border-[#D6CDBC] dark:border-[#384232] font-bold uppercase tracking-wider">
                                     <tr>
                                         <th className="py-3 px-4">From Stage</th>
                                         <th className="py-3 px-4">To Stage</th>
@@ -419,7 +419,7 @@ export default function ProcessMining() {
                                         {handoff.frequency} switches observed
                                     </span>
                                 </div>
-                                <span className="px-2.5 py-1 rounded-xl bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 font-black text-xs">
+                                <span className="px-2.5 py-1 rounded-xl bg-primary-100 dark:bg-violet-900/40 text-primary-700 dark:text-primary-300 font-black text-xs">
                                     {handoff.percentage}%
                                 </span>
                             </div>

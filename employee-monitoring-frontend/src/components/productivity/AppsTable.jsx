@@ -17,7 +17,7 @@ function EmptyState() {
             </div>
             <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">No Results Found</h3>
             <p className="text-sm font-medium text-slate-400">
-                We can't find any item matching your <span className="text-violet-500 font-bold">search</span>.
+                We can't find any item matching your <span className="text-primary-600 font-bold">search</span>.
             </p>
         </div>
     );
@@ -42,7 +42,7 @@ export function AppsTable({ apps, tags, onSelectAll, onSelectApp, onChangeTag, t
                                 checked={allSelected}
                                 ref={(el) => { if (el) el.indeterminate = someSelected && !allSelected; }}
                                 onChange={(e) => onSelectAll(e.target.checked)}
-                                className="w-4 h-4 rounded accent-violet-600 cursor-pointer"
+                                className="w-4 h-4 rounded accent-primary-600 cursor-pointer"
                             />
                         </th>
                         <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-900/50">
@@ -60,7 +60,7 @@ export function AppsTable({ apps, tags, onSelectAll, onSelectApp, onChangeTag, t
                         <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-900/50">
                             Productivity
                         </th>
-                        <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-violet-500 bg-slate-50/50 dark:bg-slate-900/50">
+                        <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-primary-600 bg-slate-50/50 dark:bg-slate-900/50">
                             Label
                         </th>
                     </tr>
@@ -73,8 +73,8 @@ export function AppsTable({ apps, tags, onSelectAll, onSelectApp, onChangeTag, t
                             <tr
                                 key={app.id || app.appName}
                                 className={cn(
-                                    'group hover:bg-violet-50/30 dark:hover:bg-violet-900/10 transition-all duration-200',
-                                    app.selected && 'bg-violet-50/50 dark:bg-violet-900/10'
+                                    'group hover:bg-primary-50/30 dark:hover:bg-primary-950/30 transition-all duration-200',
+                                    app.selected && 'bg-primary-50/50 dark:bg-primary-950/40'
                                 )}
                             >
                                 <td className="px-6 py-4">
@@ -82,7 +82,7 @@ export function AppsTable({ apps, tags, onSelectAll, onSelectApp, onChangeTag, t
                                         type="checkbox"
                                         checked={app.selected}
                                         onChange={() => onSelectApp(app.id || app.appName)}
-                                        className="w-4 h-4 rounded accent-violet-600 cursor-pointer"
+                                        className="w-4 h-4 rounded accent-primary-600 cursor-pointer"
                                     />
                                 </td>
                                 <td className="px-6 py-4">
@@ -94,7 +94,7 @@ export function AppsTable({ apps, tags, onSelectAll, onSelectApp, onChangeTag, t
                                             <div className="flex items-center gap-2">
                                                 <p className="text-sm font-black text-slate-900 dark:text-white">{app.appName || app.name}</p>
                                                 {app.isTeamSpecific ? (
-                                                    <span className="px-1.5 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800/40">
+                                                    <span className="px-1.5 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider bg-primary-100 dark:bg-primary-950/40 text-primary-700 dark:text-primary-400 border border-primary-200 dark:border-primary-800/40">
                                                         Dept Override
                                                     </span>
                                                 ) : (

@@ -164,7 +164,7 @@ export default function ComplianceReadiness() {
                 </div>
 
                 <div className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center gap-3.5 hover:shadow-md transition-all min-w-0">
-                    <div className="h-11 w-11 sm:h-12 sm:w-12 rounded-xl bg-violet-50 dark:bg-violet-950/40 border border-violet-200/80 dark:border-violet-800/80 flex items-center justify-center text-violet-600 dark:text-violet-400 font-bold text-sm sm:text-base shrink-0">
+                    <div className="h-11 w-11 sm:h-12 sm:w-12 rounded-xl bg-primary-50 dark:bg-violet-950/40 border border-primary-200/80 dark:border-primary-800/80 flex items-center justify-center text-primary-600 dark:text-primary-400 font-bold text-sm sm:text-base shrink-0">
                         {summary.iso27001Score || 100}%
                     </div>
                     <div className="min-w-0 flex-1">

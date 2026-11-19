@@ -92,10 +92,10 @@ export function EmailReports() {
                                 Settings
                             </span>
                             <span>/</span>
-                            <span className="text-violet-600">Email Reports</span>
+                            <span className="text-primary-600">Email Reports</span>
                         </nav>
                         <div className="flex items-center gap-3">
-                            {/* <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-violet-200 dark:shadow-none">
+                            {/* <div className="h-9 w-9 rounded-xl bg-[#30382B] dark:bg-[#B9955B] text-white flex items-center justify-center text-white shadow-lg shadow-warm-xs dark:shadow-none">
                                 <Mail size={18} />
                             </div> */}
                             <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
@@ -114,12 +114,12 @@ export function EmailReports() {
                             placeholder="Search"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="h-10 w-full sm:w-52 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl pl-10 pr-4 text-xs font-bold text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 outline-none transition-all shadow-sm"
+                            className="h-10 w-full sm:w-52 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl pl-10 pr-4 text-xs font-bold text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all shadow-sm"
                         />
                     </div>
                     <button
                         onClick={() => { setEditingReport(null); setIsCreateOpen(true); }}
-                        className="flex justify-center items-center gap-2 h-10 w-full sm:w-auto px-5 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-violet-200 dark:shadow-none hover:from-violet-700 hover:to-indigo-700 hover:scale-[1.02] active:scale-95 transition-all"
+                        className="flex justify-center items-center gap-2 h-10 w-full sm:w-auto px-5 rounded-xl bg-[#30382B] hover:bg-[#3C4536] dark:bg-[#B9955B] dark:hover:bg-[#A17D45] text-white shadow-warm-sm text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-warm-xs dark:shadow-none  hover:scale-[1.02] active:scale-95 transition-all"
                     >
                         <Plus size={16} strokeWidth={3} /> Create new report
                     </button>
