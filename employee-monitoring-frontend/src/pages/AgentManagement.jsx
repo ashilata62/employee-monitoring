@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import agentService from '../services/agentService';
 import { toast } from '../utils/toastManager';
 import { 
@@ -373,26 +374,36 @@ export function AgentManagement() {
                 </div>
             </div>
 
-            {/* Edit Modal */}
-            {editingAgent && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-                    <div className="bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl w-full max-w-md shadow-warm-lg border border-[#D6CDBC] dark:border-[#384232] overflow-hidden animate-in zoom-in-95 duration-200">
-                        <div className="p-6 border-b border-[#D6CDBC] dark:border-[#384232] flex items-center justify-between bg-[#E5DDCF]/40">
-                            <h3 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
-                                <Edit3 className="text-primary-600" size={20} />
+            {/* Edit Modal (Portaled with Full Screen Blur) */}
+            {editingAgent && typeof document !== 'undefined' && createPortal(
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
+                    {/* Backdrop click area */}
+                    <div className="absolute inset-0" onClick={() => setEditingAgent(null)} />
+
+                    {/* Modal Card */}
+                    <div className="relative w-full max-w-md bg-[#FAF8F5] dark:bg-[#252B20] rounded-3xl shadow-2xl border border-[#D6CDBC] dark:border-[#384232] overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="px-6 py-5 border-b border-[#E5DED2] dark:border-[#384232] flex items-center justify-between bg-[#F5F1E9]/50 dark:bg-[#1E2419]/50">
+                            <h3 className="font-serif text-lg font-bold text-[#29291F] dark:text-[#F5F1E9] flex items-center gap-2">
+                                <Edit3 className="text-[#B9955B]" size={18} />
                                 Edit Monitoring Member
                             </h3>
-                            <button onClick={() => setEditingAgent(null)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all">
-                                <X size={20} className="text-slate-400" />
+                            <button
+                                onClick={() => setEditingAgent(null)}
+                                title="Close"
+                                className="w-8 h-8 rounded-xl bg-[#EEE8DD] hover:bg-[#E5DDCF] dark:bg-[#1E2419] dark:hover:bg-[#2A3324] text-[#777367] hover:text-[#29291F] dark:text-[#B8B3A7] dark:hover:text-[#F5F1E9] flex items-center justify-center transition cursor-pointer"
+                            >
+                                <X size={16} />
                             </button>
                         </div>
                         
                         <form onSubmit={handleUpdate} className="p-6 space-y-4">
                             <div>
-                                <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1.5 ml-1">Full Name</label>
+                                <label className="block text-[10px] font-bold uppercase tracking-[0.14em] text-[#777367] dark:text-[#B8B3A7] mb-1.5 ml-1">
+                                    Full Name <span className="text-rose-500">*</span>
+                                </label>
                                 <input 
                                     type="text" 
-                                    className="w-full px-4 py-2.5 bg-[#F5F1E9] dark:bg-[#1E2419] border border-[#D6CDBC] dark:border-[#384232] rounded-xl text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] focus:border-[#B9955B] outline-none transition-all"
+                                    className="w-full px-4 py-2.5 bg-[#F5F1E9] dark:bg-[#1E2419] border border-[#D6CDBC] dark:border-[#384232] rounded-xl text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] focus:border-[#B9955B] outline-none transition placeholder:text-[#777367]"
                                     value={editForm.name}
                                     onChange={(e) => setEditForm({...editForm, name: e.target.value})}
                                     required
@@ -400,10 +411,12 @@ export function AgentManagement() {
                             </div>
                             
                             <div>
-                                <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1.5 ml-1">Email Address</label>
+                                <label className="block text-[10px] font-bold uppercase tracking-[0.14em] text-[#777367] dark:text-[#B8B3A7] mb-1.5 ml-1">
+                                    Email Address <span className="text-rose-500">*</span>
+                                </label>
                                 <input 
                                     type="email" 
-                                    className="w-full px-4 py-2.5 bg-[#F5F1E9] dark:bg-[#1E2419] border border-[#D6CDBC] dark:border-[#384232] rounded-xl text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] focus:border-[#B9955B] outline-none transition-all"
+                                    className="w-full px-4 py-2.5 bg-[#F5F1E9] dark:bg-[#1E2419] border border-[#D6CDBC] dark:border-[#384232] rounded-xl text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] focus:border-[#B9955B] outline-none transition placeholder:text-[#777367]"
                                     value={editForm.email}
                                     onChange={(e) => setEditForm({...editForm, email: e.target.value})}
                                     required
@@ -411,44 +424,47 @@ export function AgentManagement() {
                             </div>
 
                             <div>
-                                <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1.5 ml-1">Reset Password (Optional)</label>
+                                <label className="block text-[10px] font-bold uppercase tracking-[0.14em] text-[#777367] dark:text-[#B8B3A7] mb-1.5 ml-1">
+                                    Reset Password (Optional)
+                                </label>
                                 <div className="relative">
                                     <input 
                                         type={showPassword ? "text" : "password"} 
                                         placeholder="Enter new password to reset"
-                                        className="w-full px-4 py-2.5 bg-[#F5F1E9] dark:bg-[#1E2419] border border-[#D6CDBC] dark:border-[#384232] rounded-xl text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] focus:border-[#B9955B] outline-none transition-all pr-10"
+                                        className="w-full px-4 py-2.5 bg-[#F5F1E9] dark:bg-[#1E2419] border border-[#D6CDBC] dark:border-[#384232] rounded-xl text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] focus:border-[#B9955B] outline-none transition pr-10 placeholder:text-[#777367]"
                                         value={editForm.password}
                                         onChange={(e) => setEditForm({...editForm, password: e.target.value})}
                                     />
                                     <button 
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary-600 transition-colors"
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#777367] hover:text-[#29291F] transition-colors"
                                     >
                                         {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                                     </button>
                                 </div>
-                                <p className="text-[10px] text-slate-400 mt-1.5 ml-1">Leave empty to keep existing password.</p>
+                                <p className="text-[10px] text-[#777367] dark:text-[#B8B3A7] mt-1.5 ml-1">Leave empty to keep existing password.</p>
                             </div>
 
-                            <div className="pt-4 flex gap-3">
+                            <div className="pt-3 flex items-center justify-end gap-3 border-t border-[#E5DED2] dark:border-[#384232]">
                                 <button 
                                     type="button"
                                     onClick={() => setEditingAgent(null)}
-                                    className="flex-1 py-3 px-4 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all active:scale-[0.98]"
+                                    className="px-6 py-2.5 border border-[#D6CDBC] dark:border-[#384232] rounded-xl text-xs font-bold uppercase tracking-wider text-[#777367] dark:text-[#B8B3A7] hover:bg-[#EAE2D3] dark:hover:bg-[#1E2419] transition cursor-pointer"
                                 >
                                     Cancel
                                 </button>
                                 <button 
                                     type="submit"
-                                    className="flex-1 py-3 px-4 bg-primary-600 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-primary-500/20 hover:bg-primary-700 transition-all active:scale-[0.98]"
+                                    className="px-6 py-2.5 bg-[#30382B] hover:bg-[#3C4536] text-[#FDFBF7] dark:bg-[#B9955B] dark:hover:bg-[#C9A86B] dark:text-[#1E2419] rounded-xl text-xs font-bold uppercase tracking-wider transition shadow-warm-sm cursor-pointer active:scale-95"
                                 >
                                     Save Changes
                                 </button>
                             </div>
                         </form>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
 
             {/* Legend/Info */}
