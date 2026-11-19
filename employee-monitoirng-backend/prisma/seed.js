@@ -53,6 +53,11 @@ async function main() {
             email: 'employee@example.com',
             role: 'EMPLOYEE',
         },
+        {
+            name: 'Demo Employee',
+            email: 'demo1@gmail.com',
+            role: 'EMPLOYEE',
+        },
     ];
 
     for (const userData of usersToCreate) {
