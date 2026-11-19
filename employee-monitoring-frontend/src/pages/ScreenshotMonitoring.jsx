@@ -40,6 +40,9 @@ import {
   Square,
   HardDrive,
   Maximize,
+  Minimize2,
+  RotateCcw,
+  RotateCw,
   Volume2,
   VolumeX,
   AlertCircle,
@@ -202,7 +205,7 @@ const LiveStreamModal = memo(({ isOpen, onClose, employee, socket }) => {
   );
 });
 
-// ─── Video Playback Modal Component (Phase 2) ────────────────────────────────
+// ─── Video Playback Modal Component (Phase 2 - Executive Cinema Edition) ─────
 const VideoPlaybackModal = memo(({ isOpen, onClose, playlist = [], initialIndex = 0, onDeleteVideo, canDelete = false }) => {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -212,6 +215,10 @@ const VideoPlaybackModal = memo(({ isOpen, onClose, playlist = [], initialIndex 
   const [isBuffering, setIsBuffering] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+  const [volume, setVolume] = useState(1);
+  const [isTheaterMode, setIsTheaterMode] = useState(false);
+  const [playActionFlash, setPlayActionFlash] = useState(null); // 'play' | 'pause' | null
+  const flashTimerRef = useRef(null);
 
   const videoRef = useRef(null);
   const containerRef = useRef(null);
@@ -229,9 +236,19 @@ const VideoPlaybackModal = memo(({ isOpen, onClose, playlist = [], initialIndex 
     setDuration(0);
     setHasError(false);
     setIsBuffering(true);
+    setPlayActionFlash(null);
   }, [currentIndex, currentVideo?.id]);
 
-  // Keyboard shortcuts (Space to play/pause, Esc to close, arrows to seek)
+  // Flash indicator helper for play/pause feedback without persistent blocking icons
+  const triggerPlayFlash = (action) => {
+    setPlayActionFlash(action);
+    if (flashTimerRef.current) clearTimeout(flashTimerRef.current);
+    flashTimerRef.current = setTimeout(() => {
+      setPlayActionFlash(null);
+    }, 600);
+  };
+
+  // Keyboard shortcuts (Space, Esc, arrows, M, F, T)
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e) => {
@@ -241,20 +258,38 @@ const VideoPlaybackModal = memo(({ isOpen, onClose, playlist = [], initialIndex 
         if (videoRef.current) {
           if (videoRef.current.paused) {
             videoRef.current.play().catch(() => { });
+            triggerPlayFlash('play');
           } else {
             videoRef.current.pause();
+            triggerPlayFlash('pause');
           }
         }
       }
       if (e.key === 'ArrowRight') {
-        if (videoRef.current) videoRef.current.currentTime = Math.min(videoRef.current.duration || 0, videoRef.current.currentTime + 10);
+        if (videoRef.current) {
+          videoRef.current.currentTime = Math.min(videoRef.current.duration || 0, videoRef.current.currentTime + 5);
+        }
       }
       if (e.key === 'ArrowLeft') {
-        if (videoRef.current) videoRef.current.currentTime = Math.max(0, videoRef.current.currentTime - 10);
+        if (videoRef.current) {
+          videoRef.current.currentTime = Math.max(0, videoRef.current.currentTime - 5);
+        }
+      }
+      if (e.key === 'm' || e.key === 'M') {
+        setIsMuted(prev => !prev);
+      }
+      if (e.key === 'f' || e.key === 'F') {
+        handleFullscreen();
+      }
+      if (e.key === 't' || e.key === 'T') {
+        setIsTheaterMode(prev => !prev);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      if (flashTimerRef.current) clearTimeout(flashTimerRef.current);
+    };
   }, [isOpen, onClose]);
 
   if (!isOpen || !currentVideo) return null;
@@ -272,8 +307,10 @@ const VideoPlaybackModal = memo(({ isOpen, onClose, playlist = [], initialIndex 
     if (!videoRef.current) return;
     if (isPlaying) {
       videoRef.current.pause();
+      triggerPlayFlash('pause');
     } else {
       videoRef.current.play().catch(err => console.warn('Play prevented:', err));
+      triggerPlayFlash('play');
     }
   };
 
@@ -289,6 +326,18 @@ const VideoPlaybackModal = memo(({ isOpen, onClose, playlist = [], initialIndex 
     setPlaybackRate(speed);
     if (videoRef.current) {
       videoRef.current.playbackRate = speed;
+    }
+  };
+
+  const handleVolumeChange = (newVol) => {
+    setVolume(newVol);
+    if (videoRef.current) {
+      videoRef.current.volume = newVol;
+    }
+    if (newVol === 0) {
+      setIsMuted(true);
+    } else if (isMuted) {
+      setIsMuted(false);
     }
   };
 
@@ -325,44 +374,78 @@ const VideoPlaybackModal = memo(({ isOpen, onClose, playlist = [], initialIndex 
   const chunkDate = new Date(currentVideo.createdAt);
   const formattedDate = chunkDate.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
   const formattedTime = chunkDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const employeeName = currentVideo.employee?.fullName || currentVideo.employee?.name || 'Employee';
+  const employeeInitial = employeeName.charAt(0).toUpperCase();
+  const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   return (
-    <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/90 backdrop-blur-md p-2 sm:p-4 animate-fade-in">
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-[150] flex items-center justify-center bg-black/85 backdrop-blur-xl p-2 sm:p-4 md:p-6 animate-fade-in"
+    >
       <div
         ref={containerRef}
-        className="bg-slate-900 rounded-[2rem] overflow-hidden border border-white/10 w-full max-w-5xl shadow-2xl flex flex-col relative animate-scale-in"
+        onClick={(e) => e.stopPropagation()}
+        className={cn(
+          "bg-[#1A1F18] border border-[#384232] rounded-[1.75rem] shadow-2xl flex flex-col relative overflow-hidden transition-all duration-300 animate-scale-in",
+          isTheaterMode
+            ? "w-[98vw] max-w-[1700px] h-[95vh]"
+            : "w-full max-w-6xl xl:max-w-7xl max-h-[92vh]"
+        )}
       >
         {/* Top Header Bar */}
-        <div className="flex items-center justify-between px-6 py-4 bg-slate-950/80 border-b border-white/10 z-10">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 bg-rose-500/10 border border-rose-500/20 px-3 py-1 rounded-xl">
-              <span className="h-2 w-2 rounded-full bg-rose-500 animate-pulse" />
-              <span className="text-white text-xs font-black uppercase tracking-wider">Screen Recording</span>
+        <div className="flex items-center justify-between px-5 sm:px-6 py-3.5 bg-[#141812] border-b border-[#384232] z-20">
+          <div className="flex items-center gap-3 min-w-0">
+            {/* Live Screen Recording Badge */}
+            <div className="flex items-center gap-2 bg-[#A84B4B]/15 border border-[#A84B4B]/30 px-3 py-1 rounded-xl text-[#E58B8B] text-xs font-bold uppercase tracking-wider shrink-0">
+              <span className="h-2 w-2 rounded-full bg-[#A84B4B] animate-pulse" />
+              <span>Screen Recording</span>
             </div>
-            <div className="h-4 w-[1px] bg-white/20" />
-            <div className="flex items-center gap-2">
-              <div className="h-7 w-7 rounded-lg bg-primary-600 text-white font-black text-xs flex items-center justify-center">
-                {(currentVideo.employee?.fullName || 'E').charAt(0)}
+
+            <div className="h-5 w-[1px] bg-[#384232] shrink-0 hidden sm:block" />
+
+            {/* Employee Profile */}
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="h-8 w-8 rounded-xl bg-[#B9955B]/20 border border-[#B9955B]/30 text-[#D3B98D] font-bold text-xs flex items-center justify-center shrink-0">
+                {employeeInitial}
               </div>
-              <div>
-                <span className="text-white text-xs font-bold block">{currentVideo.employee?.fullName || 'Employee'}</span>
-                <span className="text-slate-400 text-[10px] block">{formattedDate} at {formattedTime}</span>
+              <div className="min-w-0">
+                <span className="text-[#F5F1E9] text-xs sm:text-sm font-bold block truncate leading-tight">
+                  {employeeName}
+                </span>
+                <span className="text-[#B8B3A7] text-[10px] sm:text-[11px] block truncate leading-tight">
+                  {formattedDate} at {formattedTime}
+                </span>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-slate-400 bg-white/5 px-2.5 py-1 rounded-lg">
+          <div className="flex items-center gap-2 shrink-0">
+            {/* File Size */}
+            <span className="text-xs font-semibold text-[#B8B3A7] bg-[#252B20] px-2.5 py-1 rounded-lg border border-[#384232] hidden sm:inline-block">
               {currentVideo.sizeMb ? `${currentVideo.sizeMb} MB` : 'Chunk'}
             </span>
+
+            {/* Playlist Chunk Counter */}
             {playlist.length > 1 && (
-              <span className="text-xs font-bold text-primary-400 bg-primary-500/10 px-2.5 py-1 rounded-lg border border-primary-500/20">
+              <span className="text-xs font-bold text-[#D3B98D] bg-[#30382B] px-2.5 py-1 rounded-lg border border-[#B9955B]/40">
                 Chunk {currentIndex + 1} of {playlist.length}
               </span>
             )}
+
+            {/* Theater Mode Toggle */}
+            <button
+              onClick={() => setIsTheaterMode(!isTheaterMode)}
+              className="h-9 w-9 bg-[#252B20] hover:bg-[#30382B] text-[#B8B3A7] hover:text-[#F5F1E9] rounded-xl border border-[#384232] flex items-center justify-center transition cursor-pointer"
+              title={isTheaterMode ? "Default View (T)" : "Theater Mode (T)"}
+            >
+              {isTheaterMode ? <Minimize2 size={16} /> : <Maximize size={16} />}
+            </button>
+
+            {/* Close Button */}
             <button
               onClick={onClose}
-              className="h-9 w-9 bg-white/10 hover:bg-white/20 text-white rounded-xl flex items-center justify-center transition-all ml-2"
+              className="h-9 w-9 bg-[#252B20] hover:bg-[#A84B4B]/20 text-[#B8B3A7] hover:text-white rounded-xl border border-[#384232] hover:border-[#A84B4B]/40 flex items-center justify-center transition cursor-pointer active:scale-95"
               title="Close (Esc)"
             >
               <X size={18} />
@@ -370,14 +453,17 @@ const VideoPlaybackModal = memo(({ isOpen, onClose, playlist = [], initialIndex 
           </div>
         </div>
 
-        {/* Video Player Display */}
-        <div className="relative aspect-video bg-black flex items-center justify-center overflow-hidden group">
+        {/* Video Canvas Area */}
+        <div
+          onClick={togglePlay}
+          className="relative flex-1 min-h-[360px] bg-black flex items-center justify-center overflow-hidden group select-none cursor-pointer"
+        >
           <video
             ref={videoRef}
             src={videoSrc}
             playsInline
             muted={isMuted}
-            className="w-full h-full object-contain cursor-pointer"
+            className="w-full h-full max-h-[74vh] object-contain"
             onTimeUpdate={() => {
               if (videoRef.current) setCurrentTime(videoRef.current.currentTime);
             }}
@@ -394,24 +480,41 @@ const VideoPlaybackModal = memo(({ isOpen, onClose, playlist = [], initialIndex 
               setHasError(true);
               setIsBuffering(false);
             }}
-            onClick={togglePlay}
           />
 
           {/* Buffering Spinner */}
           {isBuffering && !hasError && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/40 pointer-events-none">
-              <div className="h-12 w-12 border-4 border-primary-500/20 border-t-primary-500 rounded-full animate-spin" />
+            <div className="absolute inset-0 flex items-center justify-center bg-black/50 pointer-events-none z-10">
+              <div className="h-12 w-12 border-2 border-[#B9955B]/20 border-t-[#B9955B] rounded-full animate-spin" />
+            </div>
+          )}
+
+          {/* Quick Play/Pause Flash Animation (Disappears after 500ms so screen is crystal clear when paused) */}
+          {playActionFlash && !isBuffering && !hasError && (
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+              <div className="h-16 w-16 rounded-full bg-black/60 backdrop-blur-md border border-[#B9955B]/40 text-[#D3B98D] flex items-center justify-center shadow-2xl animate-out fade-out zoom-out duration-500">
+                {playActionFlash === 'play' ? <Play size={28} className="translate-x-0.5" /> : <Pause size={28} />}
+              </div>
+            </div>
+          )}
+
+          {/* Unobtrusive Paused Pill (Bottom Corner, doesn't block screen content!) */}
+          {!isPlaying && !isBuffering && !hasError && (
+            <div className="absolute bottom-4 left-4 z-10 bg-black/75 backdrop-blur-md border border-[#384232] text-[#D3B98D] px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-2 pointer-events-none opacity-80 group-hover:opacity-100 transition-opacity">
+              <Pause size={14} />
+              <span>Paused · Click screen or Space to play</span>
             </div>
           )}
 
           {/* Error Message */}
           {hasError && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 p-4 text-center">
-              <AlertCircle size={40} className="text-rose-500 mb-2 animate-bounce" />
-              <p className="text-white font-bold text-sm mb-1">Failed to load video recording chunk</p>
-              <p className="text-slate-400 text-xs mb-4">The video file may be corrupt or inaccessible at {currentVideo.fileUrl}</p>
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/90 p-4 text-center z-20">
+              <AlertCircle size={40} className="text-[#A84B4B] mb-2 animate-bounce" />
+              <p className="text-[#F5F1E9] font-bold text-sm mb-1">Failed to load video recording chunk</p>
+              <p className="text-[#B8B3A7] text-xs mb-4">The file may be processing or inaccessible.</p>
               <button
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   setHasError(false);
                   setIsBuffering(true);
                   if (videoRef.current) {
@@ -419,44 +522,34 @@ const VideoPlaybackModal = memo(({ isOpen, onClose, playlist = [], initialIndex 
                     videoRef.current.play().catch(() => { });
                   }
                 }}
-                className="px-4 py-1.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-xs font-bold transition-all"
+                className="px-4 py-1.5 bg-[#B9955B] hover:bg-[#A17D45] text-white rounded-xl text-xs font-bold transition shadow-warm-xs cursor-pointer"
               >
-                Retry
+                Retry Playback
               </button>
             </div>
           )}
-
-          {/* Center Play Icon Overlay when paused */}
-          {!isPlaying && !isBuffering && !hasError && (
-            <button
-              onClick={togglePlay}
-              className="absolute h-16 w-16 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-full flex items-center justify-center text-white transition-all transform hover:scale-110 shadow-2xl"
-            >
-              <Play size={28} className="translate-x-0.5" />
-            </button>
-          )}
         </div>
 
-        {/* Multi-Chunk Playlist Bar (Chronological) */}
+        {/* Multi-Chunk Session Timeline (if multiple chunks) */}
         {playlist.length > 1 && (
-          <div className="bg-slate-950 px-6 py-2.5 border-t border-white/5 flex items-center gap-2 overflow-x-auto">
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex-shrink-0">
-              Session Chunks:
+          <div className="bg-[#141812] px-5 py-2.5 border-t border-[#384232] flex items-center gap-2 overflow-x-auto scrollbar-thin z-20">
+            <span className="text-[10px] font-bold text-[#B8B3A7] uppercase tracking-wider shrink-0 flex items-center gap-1.5">
+              <Video size={13} className="text-[#B9955B]" /> Session Chunks:
             </span>
             {playlist.map((c, idx) => (
               <button
                 key={c.id || idx}
                 onClick={() => setCurrentIndex(idx)}
                 className={cn(
-                  "px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 flex-shrink-0",
+                  "px-3 py-1 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 shrink-0 cursor-pointer",
                   idx === currentIndex
-                    ? "bg-primary-600 text-white shadow-sm ring-1 ring-white/20"
-                    : "bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white"
+                    ? "bg-[#30382B] text-[#D3B98D] border border-[#B9955B]/60 shadow-warm-xs"
+                    : "bg-[#252B20] text-[#B8B3A7] hover:bg-[#2C3426] border border-[#384232]"
                 )}
               >
-                <Video size={11} />
+                <span className={cn("w-1.5 h-1.5 rounded-full", idx === currentIndex ? "bg-[#B9955B]" : "bg-[#777367]")} />
                 <span>Chunk {idx + 1}</span>
-                <span className="text-[10px] opacity-60">
+                <span className="text-[10px] opacity-70">
                   {new Date(c.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </span>
               </button>
@@ -464,77 +557,126 @@ const VideoPlaybackModal = memo(({ isOpen, onClose, playlist = [], initialIndex 
           </div>
         )}
 
-        {/* Bottom Controls Bar */}
-        <div className="bg-slate-950 p-4 border-t border-white/10 space-y-3">
+        {/* Bottom Media Controls Bar */}
+        <div className="bg-[#141812] px-5 py-3.5 sm:py-4 border-t border-[#384232] space-y-3 z-20">
           {/* Progress / Scrubbing Bar */}
           <div className="flex items-center gap-3">
-            <span className="font-mono text-xs text-slate-400 font-bold min-w-[40px]">
+            <span className="font-mono text-xs font-bold text-[#D3B98D] min-w-[42px] tabular-nums select-none">
               {formatTime(currentTime)}
             </span>
-            <input
-              type="range"
-              min="0"
-              max={duration || 100}
-              step="0.1"
-              value={currentTime}
-              onChange={handleSeek}
-              className="flex-1 h-1.5 bg-white/20 rounded-lg appearance-none cursor-pointer accent-primary-500 hover:h-2 transition-all"
-            />
-            <span className="font-mono text-xs text-slate-400 font-bold min-w-[40px]">
+
+            {/* Custom Interactive Scrub Track */}
+            <div className="relative flex-1 flex items-center group/scrub h-4 cursor-pointer">
+              <div className="w-full h-1.5 bg-[#252B20] rounded-full overflow-hidden border border-[#384232]/60 relative">
+                <div
+                  className="h-full bg-gradient-to-r from-[#B9955B] to-[#D3B98D] rounded-full transition-all duration-75"
+                  style={{ width: `${progressPercent}%` }}
+                />
+              </div>
+              <input
+                type="range"
+                min="0"
+                max={duration || 100}
+                step="0.1"
+                value={currentTime}
+                onChange={handleSeek}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              />
+            </div>
+
+            <span className="font-mono text-xs font-semibold text-[#B8B3A7] min-w-[42px] tabular-nums text-right select-none">
               {formatTime(duration)}
             </span>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            {/* Left Controls: Play/Pause, Prev/Next chunk, Mute */}
-            <div className="flex items-center gap-2">
+          {/* Control Buttons Row */}
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+            {/* Left Controls: Skip back, -10s, Play/Pause, +10s, Skip next, Volume */}
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              {/* Prev Chunk */}
               <button
                 onClick={() => { if (currentIndex > 0) setCurrentIndex(prev => prev - 1); }}
                 disabled={currentIndex === 0}
-                className="p-2 text-white/70 hover:text-white disabled:opacity-30 disabled:hover:text-white/70 transition-colors"
+                className="p-2 text-[#B8B3A7] hover:text-[#F5F1E9] disabled:opacity-30 disabled:hover:text-[#B8B3A7] transition cursor-pointer"
                 title="Previous Chunk"
               >
-                <SkipBack size={18} />
+                <SkipBack size={17} />
               </button>
 
+              {/* -10s */}
+              <button
+                onClick={() => {
+                  if (videoRef.current) videoRef.current.currentTime = Math.max(0, videoRef.current.currentTime - 10);
+                }}
+                className="p-2 text-[#B8B3A7] hover:text-[#D3B98D] transition cursor-pointer"
+                title="Rewind 10s (←)"
+              >
+                <RotateCcw size={17} />
+              </button>
+
+              {/* Main Play / Pause Button */}
               <button
                 onClick={togglePlay}
-                className="h-10 w-10 bg-primary-600 hover:bg-primary-700 text-white rounded-xl flex items-center justify-center transition-all shadow-md active:scale-95"
+                className="h-10 w-10 bg-[#B9955B] hover:bg-[#A17D45] text-white rounded-xl flex items-center justify-center transition shadow-warm-xs cursor-pointer active:scale-95"
                 title={isPlaying ? "Pause (Space)" : "Play (Space)"}
               >
                 {isPlaying ? <Pause size={18} /> : <Play size={18} className="translate-x-0.5" />}
               </button>
 
+              {/* +10s */}
+              <button
+                onClick={() => {
+                  if (videoRef.current) videoRef.current.currentTime = Math.min(duration || 0, videoRef.current.currentTime + 10);
+                }}
+                className="p-2 text-[#B8B3A7] hover:text-[#D3B98D] transition cursor-pointer"
+                title="Forward 10s (→)"
+              >
+                <RotateCw size={17} />
+              </button>
+
+              {/* Next Chunk */}
               <button
                 onClick={() => { if (currentIndex < playlist.length - 1) setCurrentIndex(prev => prev + 1); }}
                 disabled={currentIndex === playlist.length - 1}
-                className="p-2 text-white/70 hover:text-white disabled:opacity-30 disabled:hover:text-white/70 transition-colors"
+                className="p-2 text-[#B8B3A7] hover:text-[#F5F1E9] disabled:opacity-30 disabled:hover:text-[#B8B3A7] transition cursor-pointer"
                 title="Next Chunk"
               >
-                <SkipForward size={18} />
+                <SkipForward size={17} />
               </button>
 
-              <button
-                onClick={() => setIsMuted(!isMuted)}
-                className="p-2 text-white/70 hover:text-white transition-colors ml-1"
-                title={isMuted ? "Unmute" : "Mute"}
-              >
-                {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
-              </button>
+              {/* Volume Control with hover slider */}
+              <div className="flex items-center gap-1.5 group/vol ml-1 sm:ml-2">
+                <button
+                  onClick={() => setIsMuted(!isMuted)}
+                  className="p-2 text-[#B8B3A7] hover:text-[#F5F1E9] transition cursor-pointer"
+                  title={isMuted ? "Unmute (M)" : "Mute (M)"}
+                >
+                  {isMuted || volume === 0 ? <VolumeX size={17} /> : <Volume2 size={17} />}
+                </button>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  value={isMuted ? 0 : volume}
+                  onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
+                  className="w-16 h-1 bg-[#252B20] accent-[#B9955B] rounded-lg appearance-none cursor-pointer opacity-0 group-hover/vol:opacity-100 transition-opacity"
+                  title="Volume"
+                />
+              </div>
             </div>
 
             {/* Middle Controls: Speed Selector */}
-            <div className="flex items-center gap-1 bg-white/5 p-1 rounded-xl border border-white/10">
-              {[1, 1.5, 2, 4].map(speed => (
+            <div className="flex items-center gap-1 bg-[#252B20] p-1 rounded-xl border border-[#384232]">
+              {[0.5, 1, 1.25, 1.5, 2].map(speed => (
                 <button
                   key={speed}
                   onClick={() => handleSpeedChange(speed)}
                   className={cn(
-                    "px-2.5 py-1 rounded-lg text-xs font-bold transition-all",
+                    "px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer",
                     playbackRate === speed
-                      ? "bg-primary-600 text-white shadow-sm"
-                      : "text-slate-400 hover:text-white"
+                      ? "bg-[#30382B] text-[#D3B98D] border border-[#B9955B]/40 font-bold shadow-xs"
+                      : "text-[#B8B3A7] hover:text-[#F5F1E9]"
                   )}
                 >
                   {speed}x
@@ -546,10 +688,10 @@ const VideoPlaybackModal = memo(({ isOpen, onClose, playlist = [], initialIndex 
             <div className="flex items-center gap-2">
               <button
                 onClick={handleDownload}
-                className="p-2 text-white/70 hover:text-white bg-white/5 hover:bg-white/10 rounded-xl transition-all"
+                className="p-2 text-[#B8B3A7] hover:text-[#F5F1E9] bg-[#252B20] hover:bg-[#30382B] border border-[#384232] rounded-xl transition cursor-pointer"
                 title="Download Recording (.webm)"
               >
-                <Download size={18} />
+                <Download size={17} />
               </button>
 
               {canDelete && (
@@ -559,19 +701,19 @@ const VideoPlaybackModal = memo(({ isOpen, onClose, playlist = [], initialIndex 
                       onDeleteVideo(currentVideo.id);
                     }
                   }}
-                  className="p-2 text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 rounded-xl transition-all"
+                  className="p-2 text-[#E58B8B] hover:text-white bg-[#A84B4B]/15 hover:bg-[#A84B4B]/30 border border-[#A84B4B]/30 rounded-xl transition cursor-pointer"
                   title="Delete Recording"
                 >
-                  <Trash2 size={18} />
+                  <Trash2 size={17} />
                 </button>
               )}
 
               <button
                 onClick={handleFullscreen}
-                className="p-2 text-white/70 hover:text-white bg-white/5 hover:bg-white/10 rounded-xl transition-all"
-                title="Fullscreen"
+                className="p-2 text-[#B8B3A7] hover:text-[#F5F1E9] bg-[#252B20] hover:bg-[#30382B] border border-[#384232] rounded-xl transition cursor-pointer"
+                title="Fullscreen (F)"
               >
-                <Maximize size={18} />
+                <Maximize size={17} />
               </button>
             </div>
           </div>

@@ -103,30 +103,40 @@ export function AdminExecutiveDashboard({
         return sourceList.map(emp => {
             const liveMatch = realTimeEmps.find(rt => 
                 String(rt.id) === String(emp.id) || 
+                String(rt.userId) === String(emp.id) || 
+                String(rt.employeeId) === String(emp.id) || 
                 (rt.email && emp.email && rt.email.toLowerCase() === emp.email.toLowerCase())
             );
 
-            // Determine live presence from socket / real-time context
-            const liveStatus = (liveMatch?.status || '').toLowerCase(); // 'online', 'active', 'break', 'offline'
-            const isLiveOnline = liveStatus === 'online' || liveStatus === 'active' || liveMatch?.isOnline || liveMatch?.agentStatus === 'active';
-            const isLiveBreak = liveStatus === 'break' || liveMatch?.isOnBreak || false;
+            // Determine status from both liveMatch (socket) and database record (emp)
+            const liveStatus = (liveMatch?.status || liveMatch?.accountStatus || '').toLowerCase();
+            const dbStatus = (emp.status || '').toLowerCase();
 
-            // Live status takes precedence whenever liveMatch is available
-            let isOnline = false;
-            if (liveMatch) {
-                isOnline = isLiveOnline || isLiveBreak;
-            } else {
-                const dbStatus = (emp.status || '').toUpperCase();
-                isOnline = dbStatus === 'ACTIVE' || dbStatus === 'ONLINE';
-            }
+            const isBreak = liveStatus === 'break' || dbStatus === 'break' || liveMatch?.isOnBreak || false;
+            
+            const isIdle = liveStatus === 'idle' || liveStatus === 'afk' || liveStatus === 'passive' || liveStatus === 'idle_warning' ||
+                           dbStatus === 'idle' || dbStatus === 'afk' ||
+                           liveMatch?.isIdle ||
+                           (liveMatch?.idleTime || 0) >= 60 ||
+                           (liveMatch?.idleMinutes || 0) >= 1 ||
+                           (typeof emp.idle === 'number' && emp.idle >= 60);
 
-            const isOnBreak = isLiveBreak;
-            const idleMinutes = liveMatch?.idleTime ? Math.floor(liveMatch.idleTime / 60) : (liveMatch?.idleMinutes || 0);
+            const isOnline = liveStatus === 'online' || liveStatus === 'active' ||
+                             dbStatus === 'online' || dbStatus === 'active' ||
+                             liveMatch?.isOnline || liveMatch?.agentStatus === 'active' ||
+                             isIdle || isBreak;
+
+            const isOnBreak = isBreak;
+            const idleMinutes = liveMatch?.idleTime 
+                ? Math.max(1, Math.floor(liveMatch.idleTime / 60)) 
+                : (typeof emp.idle === 'number' && emp.idle >= 60 ? Math.floor(emp.idle / 60) : (liveMatch?.idleMinutes || (isIdle ? 1 : 0)));
             const currentApp = liveMatch?.activeApp || liveMatch?.activeWindow || liveMatch?.currentApp || null;
 
             let currentActivity = 'Offline';
             if (isOnBreak) {
                 currentActivity = 'On Break';
+            } else if (isIdle) {
+                currentActivity = 'Away from Computer (Idle)';
             } else if (isOnline) {
                 currentActivity = currentApp ? `Working on ${currentApp}` : 'Active / Logged In';
             }
@@ -137,6 +147,7 @@ export function AdminExecutiveDashboard({
                 role: emp.role || 'Employee',
                 isOnline,
                 isOnBreak,
+                isIdle,
                 idleMinutes,
                 currentApp,
                 currentActivity
@@ -150,11 +161,11 @@ export function AdminExecutiveDashboard({
     }, [allEmployees]);
 
     const activeWorkingCount = useMemo(() => {
-        return allEmployees.filter(e => e.isOnline && !e.isOnBreak && (e.idleMinutes || 0) < 5).length;
+        return allEmployees.filter(e => e.isOnline && !e.isOnBreak && !e.isIdle).length;
     }, [allEmployees]);
 
     const idleCount = useMemo(() => {
-        return allEmployees.filter(e => e.isOnline && ((e.idleMinutes || 0) >= 5 || e.isOnBreak)).length;
+        return allEmployees.filter(e => e.isOnline && (e.isIdle || e.isOnBreak)).length;
     }, [allEmployees]);
 
     const offlineCount = Math.max(0, allEmployees.length - onlineEmployees.length);
@@ -170,10 +181,10 @@ export function AdminExecutiveDashboard({
             if (!matchesQuery) return false;
 
             if (staffFilter === 'ACTIVE') {
-                return emp.isOnline && !emp.isOnBreak && (emp.idleMinutes || 0) < 5;
+                return emp.isOnline && !emp.isOnBreak && !emp.isIdle;
             }
             if (staffFilter === 'IDLE') {
-                return emp.isOnline && ((emp.idleMinutes || 0) >= 5 || emp.isOnBreak);
+                return emp.isOnline && (emp.isIdle || emp.isOnBreak);
             }
             if (staffFilter === 'OFFLINE') {
                 return !emp.isOnline;
@@ -189,32 +200,118 @@ export function AdminExecutiveDashboard({
 
     // Intraday Peak Hours Chart Data
     const intradayData = useMemo(() => {
-        const raw = stats?.intradayActivity || [];
+        const raw = stats?.intradayActivity || dashboardData?.intradayActivity || [];
         if (!raw.length) {
             return [
-                { name: '09:00', active: 3.5, break: 0.5, idle: 0.2 },
-                { name: '11:00', active: 6.2, break: 0.8, idle: 0.5 },
-                { name: '13:00', active: 4.1, break: 1.8, idle: 0.4 },
-                { name: '15:00', active: 7.4, break: 0.6, idle: 0.3 },
-                { name: '17:00', active: 5.8, break: 0.4, idle: 0.2 }
+                { name: '08:00', active: 1.2, break: 0.2, idle: 0.1 },
+                { name: '10:00', active: 2.5, break: 0.4, idle: 0.2 },
+                { name: '12:00', active: 3.1, break: 0.8, idle: 0.3 },
+                { name: '14:00', active: 2.8, break: 0.3, idle: 0.2 },
+                { name: '16:00', active: 3.4, break: 0.5, idle: 0.1 },
+                { name: '18:00', active: 1.5, break: 0.2, idle: 0.1 }
             ];
         }
+
+        const toHours = (val) => {
+            const n = Number(val) || 0;
+            if (n === 0) return 0;
+            // If greater than 100, it's raw seconds, convert to hours; otherwise it's already hours
+            return n > 100 ? Number((n / 3600).toFixed(2)) : Number(n.toFixed(2));
+        };
+
         return raw.map(item => ({
             name: item.name || item.hour || '',
-            active: Number(((item.active || 0) / 3600).toFixed(1)),
-            break: Number(((item.break || 0) / 3600).toFixed(1)),
-            idle: Number(((item.idle || 0) / 3600).toFixed(1))
+            active: toHours(item.active),
+            break: toHours(item.break),
+            idle: toHours(item.idle)
         }));
-    }, [stats?.intradayActivity]);
+    }, [stats?.intradayActivity, dashboardData?.intradayActivity]);
 
     // Top Performers & Focus Areas
     const topPerformers = useMemo(() => {
         return dashboardData?.topProductive || [];
     }, [dashboardData?.topProductive]);
 
+    const formatLoggedTime = useCallback((emp) => {
+        if (!emp) return 'High Output';
+        if (typeof emp.productiveHours === 'number' && emp.productiveHours > 0) {
+            const hrs = Math.floor(emp.productiveHours);
+            const mins = Math.round((emp.productiveHours % 1) * 60);
+            return hrs > 0 ? `${hrs}h ${mins}m logged` : `${mins}m logged`;
+        }
+        if (typeof emp.productive === 'number' && emp.productive > 0) {
+            const hrs = Math.floor(emp.productive / 3600);
+            const mins = Math.floor((emp.productive % 3600) / 60);
+            return hrs > 0 ? `${hrs}h ${mins}m logged` : `${mins}m logged`;
+        }
+        if (typeof emp.productive === 'string' && emp.productive && emp.productive !== '00:00' && emp.productive !== '0h 00m') {
+            if (emp.productive.includes(':')) {
+                const [h, m] = emp.productive.split(':').map(Number);
+                if (!isNaN(h) && !isNaN(m)) {
+                    return h > 0 ? `${h}h ${m}m logged` : `${m}m logged`;
+                }
+            }
+            return `${emp.productive} logged`;
+        }
+        if (typeof emp.activeHours === 'number' && emp.activeHours > 0) {
+            const hrs = Math.floor(emp.activeHours);
+            const mins = Math.round((emp.activeHours % 1) * 60);
+            return hrs > 0 ? `${hrs}h ${mins}m logged` : `${mins}m logged`;
+        }
+        return 'Active Output';
+    }, []);
+
     const needsAttention = useMemo(() => {
-        return dashboardData?.topUnproductive || [];
-    }, [dashboardData?.topUnproductive]);
+        const list = [];
+        
+        // 1. Live staff currently AFK or on break
+        const liveAfkStaff = allEmployees.filter(e => e.isIdle || e.isOnBreak);
+        for (const emp of liveAfkStaff) {
+            const durationMins = emp.idleMinutes || 1;
+            list.push({
+                id: emp.id,
+                name: emp.fullName || emp.name,
+                team: emp.team || 'General',
+                isLiveAfk: true,
+                durationText: emp.isOnBreak ? 'On Break' : `${durationMins}m AFK`,
+                subText: emp.isOnBreak ? 'Shift Pause' : 'Currently Inactive'
+            });
+        }
+
+        // 2. Add employees from topUnproductive who have REAL idle time or low productivity (< 80%)
+        const unproductiveFromData = dashboardData?.topUnproductive || [];
+        for (const emp of unproductiveFromData) {
+            if (list.some(item => String(item.id) === String(emp.id))) continue;
+
+            const hasRealIdle = (typeof emp.idle === 'number' && emp.idle > 60) || 
+                                (typeof emp.idleHours === 'number' && emp.idleHours > 0.05);
+            const isLowUtilization = typeof emp.utilization === 'number' && emp.utilization < 80;
+
+            if (hasRealIdle || isLowUtilization) {
+                let durationText = '';
+                if (typeof emp.idleHours === 'number' && emp.idleHours > 0) {
+                    const mins = Math.round(emp.idleHours * 60);
+                    durationText = mins >= 60 ? `${(mins / 60).toFixed(1)}h Idle` : `${mins}m Idle`;
+                } else if (typeof emp.idle === 'number' && emp.idle > 0) {
+                    const mins = Math.round(emp.idle / 60);
+                    durationText = mins >= 60 ? `${(mins / 60).toFixed(1)}h Idle` : `${mins}m Idle`;
+                } else {
+                    durationText = `${Math.max(1, 100 - (emp.utilization || 0))}% AFK`;
+                }
+
+                list.push({
+                    id: emp.id,
+                    name: emp.name || emp.fullName,
+                    team: emp.team || 'General',
+                    isLiveAfk: false,
+                    durationText,
+                    subText: 'Review Suggested'
+                });
+            }
+        }
+
+        return list;
+    }, [allEmployees, dashboardData?.topUnproductive]);
 
     // Org Productivity Score
     const orgProductivityScore = Number(stats?.summary?.utilization) || 88;
@@ -485,7 +582,7 @@ export function AdminExecutiveDashboard({
                             filteredStaff.map((emp) => {
                                 const isOnline = emp.isOnline;
                                 const isBreak = emp.isOnBreak;
-                                const isIdle = (emp.idleMinutes || 0) >= 5;
+                                const isIdle = emp.isIdle;
 
                                 let statusBg = 'bg-[#EAEFEA] dark:bg-[#1E2B20] text-[#5E7D64] dark:text-[#8BB394] border-[#C5D7C7] dark:border-[#325238]';
                                 let statusText = 'Working';
@@ -500,9 +597,9 @@ export function AdminExecutiveDashboard({
                                     statusText = 'On Break';
                                     dotColor = 'bg-amber-500';
                                 } else if (isIdle) {
-                                    statusBg = 'bg-amber-100/70 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400 border-amber-300 dark:border-amber-800';
-                                    statusText = `Idle (${emp.idleMinutes}m)`;
-                                    dotColor = 'bg-amber-500';
+                                    statusBg = 'bg-amber-100/90 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border-amber-300 dark:border-amber-800';
+                                    statusText = 'AFK';
+                                    dotColor = 'bg-amber-500 animate-pulse';
                                 }
 
                                 return (
@@ -657,7 +754,7 @@ export function AdminExecutiveDashboard({
                             <BarChart data={intradayData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(185, 149, 91, 0.15)" />
                                 <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#777367' }} />
-                                <YAxis tick={{ fontSize: 10, fill: '#777367' }} unit="h" />
+                                <YAxis tick={{ fontSize: 10, fill: '#777367' }} unit="h" allowDecimals={true} domain={[0, 'auto']} />
                                 <Tooltip
                                     contentStyle={{
                                         backgroundColor: '#252B20',
@@ -666,11 +763,12 @@ export function AdminExecutiveDashboard({
                                         color: '#F5F1E9',
                                         fontSize: '11px'
                                     }}
+                                    formatter={(val, name) => [`${Number(val).toFixed(2)}h`, name]}
                                 />
                                 <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }} />
-                                <Bar dataKey="active" name="Productive Work (h)" fill="#5E7D64" radius={[4, 4, 0, 0]} />
-                                <Bar dataKey="break" name="Break Time (h)" fill="#C98A3C" radius={[4, 4, 0, 0]} />
-                                <Bar dataKey="idle" name="Idle / Inactive (h)" fill="#9E988A" radius={[4, 4, 0, 0]} />
+                                <Bar dataKey="active" name="Productive Work (h)" fill="#5E7D64" radius={[4, 4, 0, 0]} minPointSize={4} />
+                                <Bar dataKey="break" name="Break Time (h)" fill="#C98A3C" radius={[4, 4, 0, 0]} minPointSize={4} />
+                                <Bar dataKey="idle" name="Idle / Inactive (h)" fill="#9E988A" radius={[4, 4, 0, 0]} minPointSize={4} />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
@@ -713,10 +811,10 @@ export function AdminExecutiveDashboard({
                                     </div>
                                     <div className="text-right">
                                         <div className="text-xs font-bold text-[#5E7D64] dark:text-[#8BB394] tabular-nums">
-                                            {emp.utilization}%
+                                            {emp.utilization || emp.productivityScore || 100}%
                                         </div>
                                         <div className="text-[9px] text-[#777367] dark:text-[#B8B3A7]">
-                                            {emp.productive ? `${(emp.productive / 3600).toFixed(1)}h logged` : 'High Output'}
+                                            {formatLoggedTime(emp)}
                                         </div>
                                     </div>
                                 </div>
@@ -733,7 +831,7 @@ export function AdminExecutiveDashboard({
                                 ✓ All employees within optimal idle thresholds.
                             </div>
                         ) : (
-                            needsAttention.slice(0, 2).map((emp, i) => (
+                            needsAttention.slice(0, 3).map((emp, i) => (
                                 <div key={emp.id || i} className="flex items-center justify-between p-2.5 rounded-xl bg-[#FAF0E1] dark:bg-[#2A2418] border border-[#E8D4B8] dark:border-[#5C4A28]">
                                     <div className="flex items-center gap-2">
                                         <Coffee size={14} className="text-[#C98A3C]" />
@@ -744,9 +842,9 @@ export function AdminExecutiveDashboard({
                                     </div>
                                     <div className="text-right">
                                         <div className="text-xs font-bold text-[#C98A3C] tabular-nums">
-                                            {emp.idle ? `${(emp.idle / 3600).toFixed(1)}h Idle` : `${100 - (emp.utilization || 0)}% AFK`}
+                                            {emp.durationText}
                                         </div>
-                                        <div className="text-[9px] text-[#777367] dark:text-[#B8B3A7]">Review Suggested</div>
+                                        <div className="text-[9px] text-[#777367] dark:text-[#B8B3A7]">{emp.subText}</div>
                                     </div>
                                 </div>
                             ))

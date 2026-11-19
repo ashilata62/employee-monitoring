@@ -469,14 +469,15 @@ export function RealTimeProvider({ children }) {
             setState(prev => ({
                 ...prev,
                 employees: prev.employees.map(e =>
-                    String(e.id) === String(employeeId)
+                    String(e.id) === String(employeeId) || String(e.userId) === String(employeeId) || String(e.employeeId) === String(employeeId)
                         ? {
                             ...e,
                             status: normalized,
                             accountStatus: raw,
-                            ...(normalized === 'online' ? { lastSeen: new Date().toISOString(), idleTime: 0 } : {}),
+                            isIdle: normalized === 'idle' || normalized === 'afk',
+                            ...(normalized === 'online' ? { lastSeen: new Date().toISOString(), idleTime: 0, isIdle: false } : {}),
                             ...(idleStartTime ? { idleStartTime } : {}),
-                            ...(idleDuration !== undefined ? { idleTime: idleDuration } : {}),
+                            ...(idleDuration !== undefined ? { idleTime: idleDuration, idleMinutes: Math.floor(idleDuration / 60) } : {}),
                             ...(lastActiveAt ? { lastActiveAt } : {})
                         }
                         : e
@@ -526,15 +527,19 @@ export function RealTimeProvider({ children }) {
 
         const handleActivityUpdate = (data) => {
             console.log('RealTimeContext: Activity update received:', data);
+            const isIdleNow = (data.idleTime || 0) >= 60 || (data.activeApp || '').toLowerCase().includes('idle') || (data.activeApp || '').toLowerCase().includes('away');
             setState(prev => ({
                 ...prev,
                 employees: prev.employees.map(e => {
-                    if (e.id === data.employeeId) {
+                    if (String(e.id) === String(data.employeeId) || String(e.userId) === String(data.employeeId) || String(e.employeeId) === String(data.employeeId)) {
                         return {
                             ...e,
                             activeApp: data.activeApp,
                             activeWindow: data.activeWindow,
                             idleTime: data.idleTime,
+                            idleMinutes: Math.floor((data.idleTime || 0) / 60),
+                            isIdle: isIdleNow,
+                            status: isIdleNow ? 'idle' : (e.status === 'break' ? 'break' : 'online'),
                             location: data.location || e.location,
                             lastSeen: data.timestamp || new Date()
                         };
