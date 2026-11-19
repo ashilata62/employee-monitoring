@@ -1021,6 +1021,14 @@ export function TasksProjects() {
     const { quickFilter, dateRange, selectedEmployee, selectedTeam } = useFilterStore();
     const taskDurations = useTaskStore(state => state.taskDurations);
 
+    const scopedEmployees = useMemo(() => {
+        if (!employees) return [];
+        if (role === 'MANAGER') {
+            return employees.filter(e => e.role !== 'ADMIN' && e.user?.role !== 'ADMIN');
+        }
+        return employees;
+    }, [employees, role]);
+
     // Board, Logs, Projects (Time Tracking + Productivity), Performance (KPIs), Goals
     const [activeTab, setActiveTab] = useState('board');
     const [searchQuery, setSearchQuery] = useState('');
@@ -1250,12 +1258,11 @@ export function TasksProjects() {
             projectMilestones: String(projectMilestones).padStart(2, '0'),
             milestoneProgress
         };
-    }, [tasks, filteredTasks, projects, stats, role, user, taskDurations, employees]);
+    }, [tasks, filteredTasks, projects, stats, role, user, taskDurations, scopedEmployees]);
 
     // Enhanced Performance KPIs for the table
-    // Enhanced Performance KPIs for the table
     const enhancedPerformanceKPIs = useMemo(() => {
-        const empList = employees || [];
+        const empList = scopedEmployees || [];
         if (empList.length === 0) return [];
 
         let targetEmployees = empList;
@@ -1280,25 +1287,27 @@ export function TasksProjects() {
             });
 
             // 1. Quality: Tasks progressing cleanly without overdue, plus QA achievements
-            let quality = 85;
+            let quality = 0;
             if (totalCount > 0) {
                 const goodTasks = empTasks.filter(t => !overdueTasks.includes(t) && (t.status === 'Quality Assurance' || t.status === 'Finalized'));
                 const okTasks = empTasks.filter(t => !overdueTasks.includes(t) && t.status === 'In Operations');
-                quality = Math.min(100, Math.max(15, Math.round(((goodTasks.length * 100) + (okTasks.length * 75) + ((totalCount - overdueTasks.length - goodTasks.length - okTasks.length) * 40)) / totalCount)));
+                quality = Math.min(100, Math.max(0, Math.round(((goodTasks.length * 100) + (okTasks.length * 75) + ((totalCount - overdueTasks.length - goodTasks.length - okTasks.length) * 40)) / totalCount)));
             } else if (empMetric?.productivity) {
                 quality = Math.round(empMetric.productivity);
             }
 
             // 2. Punctuality: On-time delivery compliance
-            let punctuality = 100;
+            let punctuality = 0;
             if (totalCount > 0) {
-                punctuality = Math.max(10, Math.round(((totalCount - overdueTasks.length) / totalCount) * 100));
+                punctuality = Math.max(0, Math.round(((totalCount - overdueTasks.length) / totalCount) * 100));
             } else if (empMetric?.utilization) {
                 punctuality = Math.round(empMetric.utilization);
+            } else if (empMetric?.productivity) {
+                punctuality = Math.round(empMetric.productivity);
             }
 
             // 3. Output: Cumulative delivery progress across assigned deliverables
-            let output = 70;
+            let output = 0;
             if (totalCount > 0) {
                 const weightedPoints = empTasks.reduce((acc, t) => {
                     if (t.status === 'Finalized') return acc + 100;
@@ -1306,7 +1315,7 @@ export function TasksProjects() {
                     if (t.status === 'In Operations') return acc + 50;
                     return acc + 25; // Backlog
                 }, 0);
-                output = Math.min(100, Math.max(15, Math.round(weightedPoints / totalCount)));
+                output = Math.min(100, Math.max(0, Math.round(weightedPoints / totalCount)));
             } else if (empMetric?.productivity) {
                 output = Math.round(empMetric.productivity);
             }
@@ -1327,18 +1336,18 @@ export function TasksProjects() {
                 role: emp.role || emp.position || 'Contributor'
             };
         }).sort((a, b) => b.overall - a.overall);
-    }, [employees, stats?.empMetrics, role, user?.employeeId, tasks]);
+    }, [scopedEmployees, stats?.empMetrics, role, user?.employeeId, tasks]);
 
     // Dynamic Radar Data - combines live task execution & team metrics
     const radarData = useMemo(() => {
         if (!enhancedPerformanceKPIs || enhancedPerformanceKPIs.length === 0) {
             return [
-                { subject: 'Quality', A: 85, fullMark: 100 },
-                { subject: 'Velocity', A: 80, fullMark: 100 },
-                { subject: 'Communication', A: 88, fullMark: 100 },
-                { subject: 'Reliability', A: 84, fullMark: 100 },
-                { subject: 'Output', A: 78, fullMark: 100 },
-                { subject: 'Punctuality', A: 90, fullMark: 100 },
+                { subject: 'Quality', A: 0, fullMark: 100 },
+                { subject: 'Velocity', A: 0, fullMark: 100 },
+                { subject: 'Communication', A: 0, fullMark: 100 },
+                { subject: 'Reliability', A: 0, fullMark: 100 },
+                { subject: 'Output', A: 0, fullMark: 100 },
+                { subject: 'Punctuality', A: 0, fullMark: 100 },
             ];
         }
 
@@ -1360,13 +1369,13 @@ export function TasksProjects() {
         const compT = relevantTasks.filter(t => t.status === 'Finalized').length;
         const activeT = relevantTasks.filter(t => t.status === 'In Operations' || t.status === 'Quality Assurance').length;
         const velocity = totalT > 0
-            ? Math.min(100, Math.max(35, Math.round(((compT * 100) + (activeT * 75) + ((totalT - compT - activeT) * 30)) / totalT)))
+            ? Math.min(100, Math.max(0, Math.round(((compT * 100) + (activeT * 75) + ((totalT - compT - activeT) * 30)) / totalT)))
             : Math.round(avgOutput);
 
         // Communication: multi-stakeholder participation & cross-functional allocation
-        const communication = Math.min(100, Math.max(45, Math.round(
-            (projects.length > 0 ? 70 : 50) + (contextGoals.length > 0 ? 15 : 0) + (targetList.length > 1 ? 12 : 5)
-        )));
+        const communication = (projects.length > 0 || contextGoals.length > 0)
+            ? Math.min(100, Math.round((projects.length > 0 ? 50 : 0) + (contextGoals.length > 0 ? 30 : 0) + (targetList.length > 1 ? 20 : 0)))
+            : (avgOutput > 0 ? Math.round(avgOutput * 0.8) : 0);
 
         return [
             { subject: 'Quality', A: avgQuality, fullMark: 100 },
@@ -1380,8 +1389,8 @@ export function TasksProjects() {
 
     // Dynamic Top Skill and Stability based on live radar metrics
     const radarSummary = useMemo(() => {
-        if (!radarData || radarData.length === 0) {
-            return { topSkill: 'Execution', stability: 'Optimal' };
+        if (!radarData || radarData.length === 0 || radarData.every(s => s.A === 0)) {
+            return { topSkill: 'None Recorded', stability: 'No Activity' };
         }
         const sorted = [...radarData].sort((a, b) => b.A - a.A);
         const top = sorted[0];
@@ -1390,10 +1399,11 @@ export function TasksProjects() {
         let stabilityLabel = 'High';
         if (avgScore >= 85) stabilityLabel = `Optimal (${avgScore}%)`;
         else if (avgScore >= 70) stabilityLabel = `High (${avgScore}%)`;
-        else stabilityLabel = `Moderate (${avgScore}%)`;
+        else if (avgScore > 0) stabilityLabel = `Moderate (${avgScore}%)`;
+        else stabilityLabel = 'No Activity';
 
         return {
-            topSkill: top ? `${top.subject} (${top.A}%)` : 'Execution',
+            topSkill: top && top.A > 0 ? `${top.subject} (${top.A}%)` : 'None Recorded',
             stability: stabilityLabel
         };
     }, [radarData]);
@@ -1420,9 +1430,9 @@ export function TasksProjects() {
             const hours = Math.round((trackedSec / 3600) * 10) / 10;
 
             // Dynamic Productivity / Progress Score for the project
-            let score = 50;
+            let score = 0;
             if (totalTasks > 0) {
-                score = Math.min(100, Math.max(20, Math.round(((completed * 100) + (inQA * 85) + (inOps * 60) + ((totalTasks - completed - inQA - inOps) * 30)) / totalTasks)));
+                score = Math.min(100, Math.max(0, Math.round(((completed * 100) + (inQA * 85) + (inOps * 60) + ((totalTasks - completed - inQA - inOps) * 30)) / totalTasks)));
             } else if (p.progress) {
                 score = p.progress;
             }
@@ -1431,11 +1441,11 @@ export function TasksProjects() {
             const leadName = pTasks.find(t => t.assignee && t.assignee !== 'Unassigned')?.assignee || 
                              p.leadStakeholder || 
                              (p.assignedEmployees && p.assignedEmployees[0]) || 
-                             employees.find(e => p.memberIds?.includes(e.id))?.name || 
-                             'Project Lead';
+                             scopedEmployees.find(e => p.memberIds?.includes(e.id))?.name || 
+                             'Unassigned';
 
             // Real Rate
-            const rate = p.billableRate || p.billRate || 120;
+            const rate = p.billableRate || p.billRate || 0;
 
             // Real Trend
             const trend = Math.round((score * 0.05) * 10) / 10;
@@ -1443,7 +1453,7 @@ export function TasksProjects() {
             // Real Efficiency
             const efficiency = totalTasks > 0 
                 ? Math.min(100, Math.round(((completed + inQA + inOps) / totalTasks) * 100)) 
-                : (p.efficiency || 100);
+                : (p.efficiency || 0);
 
             return {
                 id: p.id,
@@ -1463,7 +1473,7 @@ export function TasksProjects() {
                 trend: `+${trend}`
             };
         });
-    }, [projects, tasks, taskDurations, employees]);
+    }, [projects, tasks, taskDurations, scopedEmployees]);
 
     return (
         <div className="space-y-5 sm:space-y-6 pb-24 animate-fade-in px-3 sm:px-4 md:px-0 max-w-full overflow-x-hidden box-border">
@@ -1604,7 +1614,7 @@ export function TasksProjects() {
                         <EditTaskModal
                             isOpen={isEditModalOpen}
                             task={editingTask}
-                            employees={employees}
+                            employees={scopedEmployees}
                             projects={projects}
                             onClose={() => { setIsEditModalOpen(false); setEditingTask(null); }}
                             onSave={handleUpdateTask}
@@ -1992,7 +2002,7 @@ export function TasksProjects() {
 
                 {/* 5. CYCLE TIME & BOTTLENECK ANALYTICS VIEW */}
                 {activeTab === 'cycle-time' && (
-                    <CycleTimeAnalyticsView employees={employees} projects={projects} />
+                    <CycleTimeAnalyticsView employees={scopedEmployees} projects={projects} />
                 )}
             </div>
 
@@ -2001,7 +2011,7 @@ export function TasksProjects() {
                 onClose={() => setIsTaskModalOpen(false)}
                 onSave={handleSaveTask}
                 defaultStatus={taskModalDefaultStatus}
-                employees={employees}
+                employees={scopedEmployees}
                 projects={projects}
             />
 
@@ -2009,7 +2019,7 @@ export function TasksProjects() {
                 isOpen={isGoalModalOpen}
                 onClose={() => setIsGoalModalOpen(false)}
                 onSave={handleSaveGoal}
-                employees={employees}
+                employees={scopedEmployees}
             />
 
             {editingGoal && (
@@ -2017,7 +2027,7 @@ export function TasksProjects() {
                     isOpen={isEditGoalModalOpen}
                     onClose={() => { setIsEditGoalModalOpen(false); setEditingGoal(null); }}
                     onSave={(data) => handleUpdateGoal(editingGoal.id, data)}
-                    employees={employees}
+                    employees={scopedEmployees}
                     initialData={editingGoal}
                 />
             )}
@@ -2031,7 +2041,7 @@ export function TasksProjects() {
                 isOpen={isProjectModalOpen}
                 onClose={() => setIsProjectModalOpen(false)}
                 onSave={handleSaveProject}
-                employees={employees}
+                employees={scopedEmployees}
                 teams={contextTeams}
             />
         </div>

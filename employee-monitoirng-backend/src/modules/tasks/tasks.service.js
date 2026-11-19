@@ -78,7 +78,7 @@ class TasksService {
         return task;
     }
 
-    async getTasks(organizationId, filter = {}) {
+    async getTasks(organizationId, filter = {}, requester = null) {
         let where = {};
         if (filter.employeeId) {
             where = {
@@ -91,6 +91,34 @@ class TasksService {
             };
         } else {
             where = { ...filter };
+        }
+
+        if (requester?.role === 'MANAGER') {
+            const manager = await prisma.employee.findUnique({
+                where: { id: requester.employeeId },
+                select: { teamId: true }
+            });
+            if (manager?.teamId) {
+                where.AND = [
+                    ...(where.AND || []),
+                    {
+                        OR: [
+                            { employeeId: null },
+                            { employee: { role: { not: 'ADMIN' }, teamId: manager.teamId } }
+                        ]
+                    }
+                ];
+            } else {
+                where.AND = [
+                    ...(where.AND || []),
+                    {
+                        OR: [
+                            { employeeId: null },
+                            { employee: { role: { not: 'ADMIN' } } }
+                        ]
+                    }
+                ];
+            }
         }
 
         const tasks = await prisma.task.findMany({
@@ -648,8 +676,8 @@ class TasksService {
         return stoppedList;
     }
 
-    async getBoardTasks(organizationId, filter = {}) {
-        const tasks = await this.getTasks(organizationId, filter);
+    async getBoardTasks(organizationId, filter = {}, requester = null) {
+        const tasks = await this.getTasks(organizationId, filter, requester);
         
         // Group tasks by status for the Kanban board
         const board = {
@@ -685,7 +713,7 @@ class TasksService {
     /**
      * Workflow Bottleneck & Cycle Time Analytics
      */
-    async getCycleTimeAnalytics(organizationId, filter = {}) {
+    async getCycleTimeAnalytics(organizationId, filter = {}, requester = null) {
         // Query tasks matching filter
         const taskWhere = { organizationId };
         if (filter.projectId) taskWhere.projectId = filter.projectId;
@@ -695,6 +723,34 @@ class TasksService {
             taskWhere.createdAt = {};
             if (filter.startDate) taskWhere.createdAt.gte = new Date(filter.startDate);
             if (filter.endDate) taskWhere.createdAt.lte = new Date(filter.endDate);
+        }
+
+        if (requester?.role === 'MANAGER') {
+            const manager = await prisma.employee.findUnique({
+                where: { id: requester.employeeId },
+                select: { teamId: true }
+            });
+            if (manager?.teamId) {
+                taskWhere.AND = [
+                    ...(taskWhere.AND || []),
+                    {
+                        OR: [
+                            { employeeId: null },
+                            { employee: { role: { not: 'ADMIN' }, teamId: manager.teamId } }
+                        ]
+                    }
+                ];
+            } else {
+                taskWhere.AND = [
+                    ...(taskWhere.AND || []),
+                    {
+                        OR: [
+                            { employeeId: null },
+                            { employee: { role: { not: 'ADMIN' } } }
+                        ]
+                    }
+                ];
+            }
         }
 
         const tasks = await prisma.task.findMany({

@@ -759,14 +759,83 @@ const EmployeeRow = ({ employee, onEdit, onDelete, onTransparencyClick, visibleC
     const rolePath = userRole ? `/${userRole.toLowerCase()}` : '';
     const [showOptions, setShowOptions] = useState(false);
     const optionsRef = useRef(null);
+    const { employees: realTimeEmps = [] } = useRealTime();
 
-    const statusColor =
-        employee.status === 'active' || employee.status === 'online' ? 'bg-emerald-500' :
-            employee.status === 'pending' ? 'bg-amber-500' :
-                employee.status === 'idle' ? 'bg-amber-400' :
-                    employee.status === 'offline' ? 'bg-slate-400' :
-                        employee.status === 'deactivated' ? 'bg-rose-500' :
-                            employee.status === 'merged' ? 'bg-purple-500' : 'bg-slate-300';
+    // Match employee against live real-time telemetry
+    const liveMatch = realTimeEmps.find(rt => 
+        String(rt.id) === String(employee.id) || 
+        String(rt.userId) === String(employee.id) ||
+        String(rt.employeeId) === String(employee.id) ||
+        (rt.email && employee.email && rt.email.toLowerCase() === employee.email.toLowerCase())
+    );
+
+    const liveStatus = (liveMatch?.status || liveMatch?.accountStatus || '').toLowerCase();
+    const dbStatus = (employee.status || '').toLowerCase();
+
+    const appString = (liveMatch?.activeApp || liveMatch?.currentApp || employee.activeApp || employee.currentApp || employee.currentActivity || '').toLowerCase();
+    const hasIdleApp = appString.includes('idle') || appString.includes('away');
+    const hasIdleActivity = (employee.currentActivity || '').toLowerCase().includes('idle') || (liveMatch?.currentActivity || '').toLowerCase().includes('idle');
+
+    const isLiveBreak = liveStatus === 'break' || dbStatus === 'break' || liveMatch?.isOnBreak || false;
+    const isLiveIdle = !isLiveBreak && (
+        liveStatus === 'idle' || liveStatus === 'afk' || liveStatus === 'passive' || liveStatus === 'idle_warning' ||
+        dbStatus === 'idle' || dbStatus === 'afk' ||
+        hasIdleApp || hasIdleActivity ||
+        liveMatch?.isIdle ||
+        (liveMatch?.idleTime || 0) >= 60 ||
+        (liveMatch?.idleMinutes || 0) >= 1 ||
+        (typeof employee.idle === 'number' && employee.idle >= 60)
+    );
+
+    const isLiveOnline = liveStatus === 'online' || liveStatus === 'active' ||
+                         dbStatus === 'online' || dbStatus === 'active' ||
+                         liveMatch?.isOnline || liveMatch?.agentStatus === 'active' ||
+                         isLiveIdle || isLiveBreak;
+
+    let badgeText = 'Offline';
+    let badgeClass = 'bg-[#EEE8DD] text-[#777367] dark:bg-[#1E2419] dark:text-[#B8B3A7] border border-[#D6CDBC] dark:border-[#384232]';
+    let dotClass = 'bg-[#9E988A]';
+
+    if (dbStatus === 'deactivated') {
+        badgeText = 'Deactivated';
+        badgeClass = 'bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400 border border-rose-200 dark:border-rose-800';
+        dotClass = 'bg-rose-500';
+    } else if (dbStatus === 'pending' || dbStatus === 'invited') {
+        badgeText = 'Invited';
+        badgeClass = 'bg-[#B9955B]/15 text-[#A17D45] dark:text-[#D3B98D] border border-[#B9955B]/30';
+        dotClass = 'bg-[#B9955B]';
+    } else if (isLiveBreak) {
+        badgeText = 'On Break';
+        badgeClass = 'bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-400 border border-amber-300 dark:border-amber-800';
+        dotClass = 'bg-amber-500';
+    } else if (isLiveIdle) {
+        badgeText = 'AFK';
+        badgeClass = 'bg-amber-100/90 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-300 dark:border-amber-800';
+        dotClass = 'bg-amber-500 animate-pulse';
+    } else if (isLiveOnline) {
+        badgeText = 'Working';
+        badgeClass = 'bg-[#EAEFEA] dark:bg-[#1E2B20] text-[#5E7D64] dark:text-[#8BB394] border border-[#C5D7C7] dark:border-[#325238]';
+        dotClass = 'bg-[#5E7D64] animate-pulse';
+    }
+
+    const workTimeDisplay = (() => {
+        if (typeof liveMatch?.activeHours === 'number' && liveMatch.activeHours > 0) {
+            const hrs = Math.floor(liveMatch.activeHours);
+            const mins = Math.round((liveMatch.activeHours % 1) * 60);
+            return `${hrs}h ${String(mins).padStart(2, '0')}m`;
+        }
+        if (typeof liveMatch?.totalWorkHours === 'number' && liveMatch.totalWorkHours > 0) {
+            const hrs = Math.floor(liveMatch.totalWorkHours);
+            const mins = Math.round((liveMatch.totalWorkHours % 1) * 60);
+            return `${hrs}h ${String(mins).padStart(2, '0')}m`;
+        }
+        if (typeof employee.workTime === 'string' && employee.workTime) {
+            return employee.workTime;
+        }
+        return '0h 00m';
+    })();
+
+    const statusColor = dotClass;
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -788,9 +857,9 @@ const EmployeeRow = ({ employee, onEdit, onDelete, onTransparencyClick, visibleC
                         onClick={() => navigate(`${rolePath}/employees/${employee.id}`)}
                     >
                         {/* Status Badge (Top Right) */}
-                        <div className="absolute top-5 right-5 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shrink-0">
-                            <div className={cn("h-1.5 w-1.5 rounded-full ring-1 ring-white dark:ring-slate-900", statusColor)} />
-                            <span className="text-[8px] font-black uppercase tracking-widest text-slate-500">{employee.status}</span>
+                        <div className={cn("absolute top-5 right-5 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider shrink-0", badgeClass)}>
+                            <span className={cn("h-1.5 w-1.5 rounded-full", dotClass)} />
+                            <span>{badgeText}</span>
                         </div>
 
                         {/* Header: Avatar + Info */}
@@ -827,7 +896,7 @@ const EmployeeRow = ({ employee, onEdit, onDelete, onTransparencyClick, visibleC
                             </div>
                             <div className="bg-slate-50 dark:bg-slate-800/40 rounded-2xl p-3 border border-slate-100/50 dark:border-slate-800/50 flex flex-col gap-0.5">
                                 <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">Work Time</span>
-                                <span className="text-[12px] font-black text-slate-700 dark:text-slate-200">0h 00m</span>
+                                <span className="text-[12px] font-black text-slate-700 dark:text-slate-200">{workTimeDisplay}</span>
                             </div>
                             <div className="bg-slate-50 dark:bg-slate-800/40 rounded-2xl p-3 border border-slate-100/50 dark:border-slate-800/50 flex flex-col gap-0.5">
                                 <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">Activity</span>
@@ -922,7 +991,7 @@ const EmployeeRow = ({ employee, onEdit, onDelete, onTransparencyClick, visibleC
                 )}
                 {visibleColumns.includes('Work Time') && (
                     <td className="px-6 py-4">
-                        <span className="text-xs font-medium text-[#29291F] dark:text-[#F5F1E9]">0h 00m</span>
+                        <span className="text-xs font-medium text-[#29291F] dark:text-[#F5F1E9]">{workTimeDisplay}</span>
                     </td>
                 )}
                 {visibleColumns.includes('Manual Time') && (
@@ -936,14 +1005,9 @@ const EmployeeRow = ({ employee, onEdit, onDelete, onTransparencyClick, visibleC
                     </td>
                 )}
                 <td className="px-6 py-4">
-                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${
-                        employee.status === 'active' || employee.status === 'online' ? 'bg-[#5E7D64]/10 text-[#5E7D64]' :
-                        employee.status === 'pending' || employee.status === 'invited' ? 'bg-[#B9955B]/15 text-[#A17D45]' :
-                        employee.status === 'deactivated' ? 'bg-[#A84B4B]/10 text-[#A84B4B]' :
-                        'bg-[#777367]/10 text-[#777367]'
-                    }`}>
-                        <span className="h-1.5 w-1.5 rounded-full bg-current" />
-                        {employee.status}
+                    <span className={cn("inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider", badgeClass)}>
+                        <span className={cn("h-1.5 w-1.5 rounded-full", dotClass)} />
+                        {badgeText}
                     </span>
                 </td>
                 <td className="px-6 py-4 text-right relative">

@@ -11,6 +11,7 @@ import { toast } from '../../utils/toastManager';
 
 export function WebTrackerAgent() {
     const { user, role, clockIn, clockOut, isClockedIn, isTrackerActive, setTrackerActive } = useAuthStore();
+    const { socket, on, emit, off } = useSocket();
     const [isTracking, setIsTracking] = useState(false);
     const isTrackingRef = useRef(false);
     isTrackingRef.current = isTracking;
@@ -194,6 +195,17 @@ export function WebTrackerAgent() {
                             }
                         }
 
+                        if (socket) {
+                            socket.emit('employee:status_override', { status: 'IDLE' });
+                            socket.emit('employee:activity', {
+                                activeApp: 'Away from Computer (Idle)',
+                                activeWindow: 'Away from Computer (Idle)',
+                                idleTime: idleSec,
+                                keystrokes: 0,
+                                mouseClicks: 0
+                            });
+                        }
+
                         if (resolvedEmpId) {
                             api.post('/agent/idle-activity', {
                                 employeeId: resolvedEmpId,
@@ -293,6 +305,16 @@ export function WebTrackerAgent() {
             }
 
             if (responseType === 'WORKING') {
+                if (socket) {
+                    socket.emit('employee:status_override', { status: 'ONLINE' });
+                    socket.emit('employee:activity', {
+                        activeApp: 'Active Work',
+                        activeWindow: 'Active Work',
+                        idleTime: 0,
+                        keystrokes: 1,
+                        mouseClicks: 1
+                    });
+                }
                 idleStatusRef.current = 'ACTIVE';
                 lastActivityRef.current = Date.now();
                 hasSentIdleAlertRef.current = false;
@@ -307,6 +329,9 @@ export function WebTrackerAgent() {
 
                 toast.success('Work session resumed.');
             } else if (responseType === 'BREAK') {
+                if (socket) {
+                    socket.emit('employee:status_override', { status: 'BREAK' });
+                }
                 idleStatusRef.current = 'BREAK';
                 showIdleModalRef.current = false;
                 setShowIdleModal(false);
@@ -334,7 +359,6 @@ export function WebTrackerAgent() {
     const recordingChunkIntervalRef = useRef(null);
     
     // WebRTC Live Monitoring
-    const { socket, on, emit, off } = useSocket();
     const pcRef = useRef(null);
 
     // Only render for EMPLOYEE role
