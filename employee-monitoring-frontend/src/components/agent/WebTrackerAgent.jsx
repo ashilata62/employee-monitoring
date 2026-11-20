@@ -12,6 +12,7 @@ import { broadcastStaffStatus } from '../../utils/staffSync';
 
 export function WebTrackerAgent() {
     const { user, role, clockIn, clockOut, isClockedIn, isTrackerActive, setTrackerActive, isOnBreak } = useAuthStore();
+    const isMonitoredEmployee = (user?.role || role || '').toUpperCase() === 'EMPLOYEE';
     const { socket, on, emit, off } = useSocket();
     const [isTracking, setIsTracking] = useState(false);
     const isTrackingRef = useRef(false);
@@ -26,9 +27,9 @@ export function WebTrackerAgent() {
     const activeTaskIdRef = useRef(activeTaskId);
     activeTaskIdRef.current = activeTaskId;
 
-    // Reactive live status broadcast for employee attendance state
+    // Reactive live status broadcast for employee attendance state (EMPLOYEE only)
     useEffect(() => {
-        if (!user) return;
+        if (!user || !isMonitoredEmployee) return;
         const resolvedEmpId = user?.employeeId || user?.employee?.id || user?.id;
         if (!resolvedEmpId) return;
 
@@ -51,19 +52,21 @@ export function WebTrackerAgent() {
                 currentActivity: 'Active / Logged In'
             });
         }
-    }, [user, isClockedIn, isOnBreak, isTrackerActive]);
+    }, [user, isClockedIn, isOnBreak, isTrackerActive, isMonitoredEmployee]);
 
     // Sync task ID with Electron Desktop Agent whenever it changes
     useEffect(() => {
+        if (!user || !isMonitoredEmployee) return;
         if (window.electronAPI?.setActiveTask) {
             window.electronAPI.setActiveTask(activeTaskId);
         } else if (window.electron?.sendTask) {
             window.electron.sendTask(activeTaskId);
         }
-    }, [activeTaskId]);
+    }, [activeTaskId, user, isMonitoredEmployee]);
 
     // Listen for custom task change events from frontend components or Dev 2 integrations
     useEffect(() => {
+        if (!user || !isMonitoredEmployee) return;
         const handleTaskChange = (event) => {
             const newTaskId = event.detail?.taskId || event.detail || null;
             const sanitized = (typeof newTaskId === 'string' && newTaskId.trim().length > 0) ? newTaskId.trim() : null;
@@ -84,7 +87,7 @@ export function WebTrackerAgent() {
             window.removeEventListener('task:change', handleTaskChange);
             window.removeEventListener('task:set-active', handleTaskChange);
         };
-    }, []);
+    }, [user, isMonitoredEmployee]);
 
     const streamRef = useRef(null);
     const intervalRef = useRef(null);
@@ -103,9 +106,9 @@ export function WebTrackerAgent() {
     const hasSentIdleAlertRef = useRef(false);
     const idleTimerIntervalRef = useRef(null);
 
-    // Activity Detection on window (mouse move, click, scroll, keyboard input)
+    // Activity Detection on window (mouse move, click, scroll, keyboard input) - EMPLOYEE only
     useEffect(() => {
-        if (!user) return;
+        if (!user || !isMonitoredEmployee) return;
 
         // Request browser Notification permission for desktop alerts
         if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
@@ -175,23 +178,77 @@ export function WebTrackerAgent() {
         };
     }, [role, user]);
 
-    // Periodic 5-second Inactivity Check (Reduced testing thresholds: 30s Passive, 60s Idle)
+    // Periodic 5-second Inactivity Check (EMPLOYEE only)
     useEffect(() => {
-        if (!user) {
+        if (!user || !isMonitoredEmployee) {
             if (idleTimerIntervalRef.current) clearInterval(idleTimerIntervalRef.current);
             return;
         }
 
         const checkInactivity = () => {
-            // Guard: If employee is not clocked in, is on break, or modal is already showing, skip checks
             const { isClockedIn, isOnBreak } = useAuthStore.getState();
-            if (!isClockedIn || isOnBreak || showIdleModalRef.current) {
+            if (!isClockedIn) {
                 return;
             }
 
             const now = Date.now();
             const idleSec = Math.round((now - lastActivityRef.current) / 1000);
             const resolvedEmpId = user?.employeeId || user?.employee?.id || user?.id;
+
+            // 0. AUTO CLOCK-OUT: 15 minutes (900 seconds) of inactivity / freeze
+            if (idleSec >= 15 * 60) {
+                console.log(`[WebTrackerAgent] 15 minutes of inactivity detected (${idleSec}s). Auto clocking out.`);
+                showIdleModalRef.current = false;
+                setShowIdleModal(false);
+                idleStatusRef.current = 'OFFLINE';
+
+                // Stop tracker recording if active
+                if (useAuthStore.getState().isTrackerActive) {
+                    useAuthStore.getState().setTrackerActive(false);
+                }
+
+                // Execute auto clock-out
+                useAuthStore.getState().clockOut();
+
+                toast.error('Auto Clock-Out: You have been clocked out due to 15 minutes of inactivity.');
+
+                if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+                    try {
+                        new window.Notification('Auto Clock-Out', {
+                            body: 'You have been automatically clocked out due to 15 minutes of inactivity.',
+                            icon: '/favicon.ico'
+                        });
+                    } catch (e) {}
+                }
+
+                if (socket) {
+                    socket.emit('employee:status_override', { status: 'OFFLINE' });
+                }
+
+                broadcastStaffStatus({
+                    employeeId: resolvedEmpId,
+                    status: 'offline',
+                    isIdle: false,
+                    isOnBreak: false,
+                    activeApp: 'Offline (Auto Clock-Out)',
+                    currentActivity: 'Offline'
+                });
+
+                if (resolvedEmpId) {
+                    api.post('/agent/idle-activity', {
+                        employeeId: resolvedEmpId,
+                        status: 'AUTO_CLOCKED_OUT',
+                        idleDuration: idleSec,
+                        source: 'WEB_AGENT'
+                    }).catch(() => {});
+                }
+                return;
+            }
+
+            // Guard: If employee is on break or modal is already showing (within the 15 min window), skip opening duplicate prompts
+            if (isOnBreak || showIdleModalRef.current) {
+                return;
+            }
 
             // 1. Stage: IDLE (1 minute / 60 seconds - triggers Employee Inactivity Alert)
             if (idleSec >= 60) {
@@ -316,8 +373,9 @@ export function WebTrackerAgent() {
         };
     }, [role, user]);
 
-    // Handle Desktop Agent IPC events if running inside Electron wrapper
+    // Handle Desktop Agent IPC events if running inside Electron wrapper (EMPLOYEE only)
     useEffect(() => {
+        if (!user || !isMonitoredEmployee) return;
         if (window.electronAPI?.onIdlePrompt) {
             const cleanup = window.electronAPI.onIdlePrompt((data) => {
                 setIdleMinutesPrompt(Math.floor((data.idleDuration || 600) / 60));
@@ -773,6 +831,8 @@ export function WebTrackerAgent() {
     // Use isTrackerActive to hide the global overlay
     // Disabled as per user request to allow direct dashboard access
     const showLoadingOverlay = false; // !isTrackerActive && role === 'EMPLOYEE';
+
+    if (!isMonitoredEmployee) return null;
 
     return (
         <>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { HelpCircle } from 'lucide-react';
 import {
     ResponsiveContainer,
     ComposedChart,
@@ -152,9 +153,9 @@ export function ProductivityStackedChart({
                                     tickFormatter={(val) => `${val}h`}
                                 />
                                 <Tooltip content={<ProductivityTooltip />} />
-                                <Bar dataKey="productive" name="Productive Time" stackId="a" fill="#5E7D64" maxBarSize={28} />
-                                <Bar dataKey="unproductive" name="Unproductive Time" stackId="a" fill="#A84B4B" maxBarSize={28} />
-                                <Bar dataKey="neutral" name="Neutral Time" stackId="a" fill="#D3B98D" radius={[4, 4, 0, 0]} maxBarSize={28} />
+                                <Bar dataKey="productive" name="Productive Time" stackId="a" fill="#00C48C" maxBarSize={28} />
+                                <Bar dataKey="unproductive" name="Unproductive Time" stackId="a" fill="#F46A6A" maxBarSize={28} />
+                                <Bar dataKey="neutral" name="Neutral Time" stackId="a" fill="#CBD5E1" radius={[4, 4, 0, 0]} maxBarSize={28} />
                             </BarChart>
                         ) : (
                             <div className="h-full flex flex-col items-center justify-center text-[#777367]">
@@ -211,35 +212,41 @@ export function ProductivityStackedChart({
             </div>
 
             {/* Bottom Legend */}
-            <div className="flex items-center justify-start gap-8 py-3.5 px-6 border-t border-[#D6CDBC] dark:border-[#384232] text-xs font-semibold text-[#777367] dark:text-[#B8B3A7]">
+            <div className="flex flex-wrap items-center justify-start gap-6 py-3.5 px-6 border-t border-[#D6CDBC] dark:border-[#384232] text-xs font-semibold text-[#777367] dark:text-[#B8B3A7]">
                 {activeTab === 'Productivity' ? (
                     <>
-                        <span className="flex items-center gap-2">
-                            <span className="w-2.5 h-2.5 rounded-full bg-[#5E7D64]" />
+                        <span className="flex items-center gap-1.5">
+                            <span className="w-2.5 h-2.5 rounded-full bg-[#00C48C]" />
                             <span>Productive Time</span>
+                            <HelpCircle size={13} className="text-[#9E988A] cursor-help" />
                         </span>
-                        <span className="flex items-center gap-2">
-                            <span className="w-2.5 h-2.5 rounded-full bg-[#A84B4B]" />
+                        <span className="flex items-center gap-1.5">
+                            <span className="w-2.5 h-2.5 rounded-full bg-[#F46A6A]" />
                             <span>Unproductive Time</span>
+                            <HelpCircle size={13} className="text-[#9E988A] cursor-help" />
                         </span>
-                        <span className="flex items-center gap-2">
-                            <span className="w-2.5 h-2.5 rounded-full bg-[#D3B98D]" />
+                        <span className="flex items-center gap-1.5">
+                            <span className="w-2.5 h-2.5 rounded-full bg-[#CBD5E1]" />
                             <span>Neutral Time</span>
+                            <HelpCircle size={13} className="text-[#9E988A] cursor-help" />
                         </span>
                     </>
                 ) : (
                     <>
-                        <span className="flex items-center gap-2">
+                        <span className="flex items-center gap-1.5">
                             <span className="w-2.5 h-2.5 rounded-full bg-[#30382B]" />
                             <span>Active Time</span>
+                            <HelpCircle size={13} className="text-[#9E988A] cursor-help" />
                         </span>
-                        <span className="flex items-center gap-2">
+                        <span className="flex items-center gap-1.5">
                             <span className="w-2.5 h-2.5 rounded-full bg-[#D3B98D]" />
                             <span>Idle Time</span>
+                            <HelpCircle size={13} className="text-[#9E988A] cursor-help" />
                         </span>
-                        <span className="flex items-center gap-2">
+                        <span className="flex items-center gap-1.5">
                             <span className="w-2.5 h-2.5 rounded-full bg-[#C98A3C]" />
                             <span>Break Time</span>
+                            <HelpCircle size={13} className="text-[#9E988A] cursor-help" />
                         </span>
                     </>
                 )}
