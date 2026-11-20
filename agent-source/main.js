@@ -937,11 +937,11 @@ ipcMain.handle('agent:register', async (_event, credentials) => {
         const payload = {
             ...credentials,
             deviceId: agentState.deviceId,
-            systemInfo: {
+            systemInfo: JSON.stringify({
                 hostname: os.hostname(),
                 platform: os.platform(),
                 arch: os.arch()
-            }
+            })
         };
 
         const res = await axios.post(`${API_URL}/api/agent/register`, payload);
@@ -1348,12 +1348,12 @@ ipcMain.handle('complete-setup', async (_event, data) => {
             password: data.password,
             deviceId: agentState.deviceId,
             inviteToken: data.inviteToken || null,
-            systemInfo: {
+            systemInfo: JSON.stringify({
                 hostname: os.hostname(),
                 platform: os.platform(),
                 arch: os.arch(),
                 release: os.release()
-            }
+            })
         };
 
         console.log(`[AgentSetup] Sending registration to ${API_URL}/api/agent/register for: ${payload.email}...`);
@@ -1362,6 +1362,7 @@ ipcMain.handle('complete-setup', async (_event, data) => {
         if (res.data?.success && res.data?.data) {
             agentState.employeeId = res.data.data.agent.employeeId;
             agentState.agentToken = res.data.data.token;
+            agentState.deviceId = res.data.data.agent.deviceId || agentState.deviceId;
             agentState.status = res.data.data.agent.status || 'active';
             agentState.permissionsCompleted = false;
 

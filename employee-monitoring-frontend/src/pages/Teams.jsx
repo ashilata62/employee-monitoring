@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Users, Search, Edit, Trash2, Eye, TrendingUp, Plus, X } from 'lucide-react';
 import { CreateTeamModal } from '../components/CreateTeamModal';
+import { ConfirmDeleteModal } from '../components/modals/ConfirmDeleteModal';
 import { useTeamStore } from '../store/teamStore';
 import { useEmployeeStore } from '../store/employeeStore';
 import { useAuthStore } from '../store/authStore';
@@ -25,9 +26,24 @@ export function Teams() {
     const [teamSummaries, setTeamSummaries] = useState({});
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingTeam, setEditingTeam] = useState(null);
+    const [teamToDelete, setTeamToDelete] = useState(null);
+    const [isDeleting, setIsDeleting] = useState(false);
     const [search, setSearch] = useState('');
     const { toast } = useToast();
     const [selectedTeam, setSelectedTeam] = useState(null);
+
+    const handleConfirmDelete = async () => {
+        if (!teamToDelete) return;
+        setIsDeleting(true);
+        try {
+            await deleteTeam(teamToDelete.id);
+            setTeamToDelete(null);
+        } catch (err) {
+            console.error('Failed to delete team:', err);
+        } finally {
+            setIsDeleting(false);
+        }
+    };
 
     useEffect(() => {
         fetchTeams();
@@ -118,19 +134,25 @@ export function Teams() {
         if (editingTeam) {
             try {
                 await updateTeam(editingTeam.id, teamData);
-                toast('Team updated successfully', 'success');
+                if (toast?.success) toast.success('Team updated successfully');
+            } catch (err) {
+                console.error('Failed to update team:', err);
+                if (toast?.error) toast.error('Failed to update team');
+                throw err;
+            } finally {
                 setIsModalOpen(false);
                 setEditingTeam(null);
-            } catch (err) {
-                toast('Failed to update team', 'error');
             }
         } else {
             try {
                 await addTeam(teamData);
-                toast('Team created successfully', 'success');
-                setIsModalOpen(false);
+                if (toast?.success) toast.success('Team created successfully');
             } catch (err) {
-                toast('Failed to create team', 'error');
+                console.error('Failed to create team:', err);
+                if (toast?.error) toast.error('Failed to create team');
+                throw err;
+            } finally {
+                setIsModalOpen(false);
             }
         }
     };
@@ -281,7 +303,7 @@ export function Teams() {
                                             )}
                                             {user?.role === 'ADMIN' && (
                                                 <button
-                                                    onClick={() => { if (window.confirm(`Are you sure you want to delete ${team.name}?`)) deleteTeam(team.id); }}
+                                                    onClick={() => setTeamToDelete(team)}
                                                     className="h-8 w-8 flex items-center justify-center rounded-lg bg-[#EEE8DD]/60 text-[#777367] hover:text-[#A84B4B] hover:bg-[#FAF3F2] transition-all shadow-warm-xs cursor-pointer"
                                                     title="Delete Team"
                                                 >
@@ -352,8 +374,8 @@ export function Teams() {
                                 )}
                                 {user?.role === 'ADMIN' && (
                                     <button
-                                        onClick={() => { if (window.confirm(`Are you sure you want to delete ${team.name}?`)) deleteTeam(team.id); }}
-                                        className="px-2.5 py-1 text-xs rounded-lg bg-[#FAF3F2] text-[#A84B4B] font-semibold flex items-center gap-1"
+                                        onClick={() => setTeamToDelete(team)}
+                                        className="px-2.5 py-1 text-xs rounded-lg bg-[#FAF3F2] text-[#A84B4B] font-semibold flex items-center gap-1 cursor-pointer"
                                     >
                                         <Trash2 size={13} /> Delete
                                     </button>
@@ -379,6 +401,16 @@ export function Teams() {
                 isOpen={!!selectedTeam}
                 onClose={() => setSelectedTeam(null)}
                 team={selectedTeam}
+            />
+
+            <ConfirmDeleteModal
+                isOpen={!!teamToDelete}
+                onClose={() => setTeamToDelete(null)}
+                onConfirm={handleConfirmDelete}
+                title="Delete Team?"
+                description={`Are you sure you want to delete "${teamToDelete?.name}"? Any employees currently in this team will become unassigned.`}
+                confirmText="Delete Team"
+                isLoading={isDeleting}
             />
         </div>
     );
