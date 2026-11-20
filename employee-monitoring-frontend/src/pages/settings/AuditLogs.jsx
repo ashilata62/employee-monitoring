@@ -76,7 +76,7 @@ export function AuditLogs() {
             const matchesUser = filters.users.length === 0 || filters.users.includes(log.userName);
 
             // Role Filter
-            const matchesRole = filters.userRoles.length === 0 || filters.userRoles.includes(log.userRole);
+            const matchesRole = filters.userRoles.length === 0 || filters.userRoles.some(r => r.toLowerCase() === (log.userRole || '').toLowerCase());
 
             // Search Query
             const matchesSearch = log.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||

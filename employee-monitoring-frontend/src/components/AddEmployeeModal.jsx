@@ -169,7 +169,7 @@ export function AddEmployeeModal({ isOpen, onClose, initialTab = 'single' }) {
 
             const res = await inviteEmployee(payload);
             toast.success(`Employee "${singleForm.fullName}" added to database successfully!`);
-            logAction(user?.name || 'Admin', 'Owner', 'Create', 'Employee', `Created employee: "${singleForm.fullName}"`);
+            logAction(user?.name || 'Admin', user?.role || 'Admin', 'Create', 'Employee', `Created employee: "${singleForm.fullName}"`);
 
             await fetchEmployees();
 
