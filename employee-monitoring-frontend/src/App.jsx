@@ -156,7 +156,11 @@ function App() {
                                                 <Payroll />
                                             </RoleRoute>
                                         } />
-                                        <Route path="alerts" element={<Alerts />} />
+                                        <Route path="alerts" element={
+                                            <RoleRoute allowedRoles={['ADMIN', 'MANAGER']}>
+                                                <Alerts />
+                                            </RoleRoute>
+                                        } />
                                         <Route path="employees" element={<EmployeeManagement />} />
                                         <Route path="employees/:id" element={<EmployeeProfile />} />
                                         <Route path="teams" element={<Teams />} />

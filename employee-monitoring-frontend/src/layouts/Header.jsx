@@ -20,6 +20,9 @@ export function Header({ onMenuClick }) {
     const rolePath = role?.toLowerCase() || 'admin';
     const resolveRolePath = (path) => {
         if (!path) return `/${rolePath}/notifications`;
+        if (role === 'EMPLOYEE' && path.includes('alerts')) {
+            return `/${rolePath}/notifications`;
+        }
         const clean = path.startsWith('/') ? path.slice(1) : path;
         if (clean.startsWith('admin/') || clean.startsWith('manager/') || clean.startsWith('employee/')) {
             return `/${clean}`;
@@ -106,7 +109,7 @@ export function Header({ onMenuClick }) {
                                             key={n.id}
                                             onClick={() => {
                                                 markNotificationAsRead(n.id);
-                                                if (n.link) {
+                                                if (n.link && !(role === 'EMPLOYEE' && n.link.includes('alerts'))) {
                                                     setShowNotifications(false);
                                                     navigate(resolveRolePath(n.link));
                                                 }
