@@ -26,9 +26,13 @@ try {
     const repoRoot = path.resolve(__dirname, '..');
     const agentSourceDir = path.resolve(__dirname);
     const backendAgentDir = path.resolve(__dirname, '..', 'employee-monitoirng-backend', 'public', 'agent');
+    const frontendAgentDir = path.resolve(__dirname, '..', 'employee-monitoring-frontend', 'public', 'agent');
 
     if (!fs.existsSync(backendAgentDir)) {
         fs.mkdirSync(backendAgentDir, { recursive: true });
+    }
+    if (!fs.existsSync(frontendAgentDir)) {
+        fs.mkdirSync(frontendAgentDir, { recursive: true });
     }
 
     const distDir = path.join(agentSourceDir, 'dist');
@@ -59,6 +63,11 @@ try {
     try {
         fs.copyFileSync(latest.path, canonicalPath);
         console.log('Copied canonical latest to', canonicalPath);
+
+        // Also copy canonical to frontend public folder
+        const frontendCanonicalPath = path.join(frontendAgentDir, 'EMS-Tracker-latest.exe');
+        fs.copyFileSync(latest.path, frontendCanonicalPath);
+        console.log('Copied canonical latest to frontend public folder:', frontendCanonicalPath);
 
         // Create zip file
         const canonicalZipPath = path.join(backendAgentDir, 'EMS-Tracker-latest.zip');

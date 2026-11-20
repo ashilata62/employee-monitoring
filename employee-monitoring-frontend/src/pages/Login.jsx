@@ -35,8 +35,7 @@ export function Login() {
 
     const handleDownloadAgent = (e) => {
         if (e) e.preventDefault();
-        const isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-        const downloadUrl = isLocal ? '/agent/EMS-Tracker-latest.exe' : `${BASE_URL}/api/agent/download`;
+        const downloadUrl = 'https://raw.githubusercontent.com/ashilata62/employee-monitoring/main/employee-monitoirng-backend/public/agent/EMS-Tracker-latest.exe';
 
         const link = document.createElement('a');
         link.href = downloadUrl;

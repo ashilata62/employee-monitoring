@@ -37,7 +37,7 @@ export function SetupAgent() {
     }, [token]);
 
     const handleDownload = () => {
-        const url = invite?.agentDownloadUrl || `${BASE_URL}/api/agent/download`;
+        const url = invite?.agentDownloadUrl || 'https://raw.githubusercontent.com/ashilata62/employee-monitoring/main/employee-monitoirng-backend/public/agent/EMS-Tracker-latest.exe';
         const link = document.createElement('a');
         link.href = url;
         link.setAttribute('download', 'EMS-Tracker-latest.exe');
