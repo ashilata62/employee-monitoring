@@ -384,15 +384,20 @@ async function getIntradayActivity(organizationId, employeeId = null, teamId = n
         }
     });
 
-    // Format for Recharts
+    // Format for Recharts - 2-hour aggregate buckets (08:00, 10:00, 12:00, 14:00, 16:00, 18:00, 20:00)
     const result = [];
-    for (let i = 8; i <= 20; i += 2) { // 8 AM to 8 PM roughly
+    for (let i = 8; i <= 20; i += 2) {
+        const activeSec = (hourlyData[i]?.active || 0) + (hourlyData[i + 1]?.active || 0);
+        const idleSec = (hourlyData[i]?.idle || 0) + (hourlyData[i + 1]?.idle || 0);
+        const breakSec = (hourlyData[i]?.break || 0) + (hourlyData[i + 1]?.break || 0);
+        const manualSec = (hourlyData[i]?.manual || 0) + (hourlyData[i + 1]?.manual || 0);
+
         result.push({
             name: `${i.toString().padStart(2, '0')}:00`,
-            active: Number((hourlyData[i].active / 3600).toFixed(2)),
-            idle: Number((hourlyData[i].idle / 3600).toFixed(2)),
-            break: Number((hourlyData[i].break / 3600).toFixed(2)),
-            manual: Number((hourlyData[i].manual / 3600).toFixed(2)),
+            active: Number((activeSec / 3600).toFixed(2)),
+            idle: Number((idleSec / 3600).toFixed(2)),
+            break: Number((breakSec / 3600).toFixed(2)),
+            manual: Number((manualSec / 3600).toFixed(2)),
         });
     }
 

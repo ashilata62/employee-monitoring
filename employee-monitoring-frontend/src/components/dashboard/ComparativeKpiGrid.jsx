@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
     Briefcase,
     Monitor,
@@ -12,6 +12,8 @@ import {
 import { useAuthStore } from '../../store/authStore';
 import { useSessionTimer } from '../../hooks/useLiveTime';
 import { formatSecondsToHMS } from '../../utils/timeFormat';
+import { subscribeStaffStatus } from '../../utils/staffSync';
+import useSocket from '../../hooks/useSocket';
 
 const formatSecondsToHoursMins = (secs) => {
     if (secs === null || secs === undefined || isNaN(secs) || secs < 0) return '00:00 h';
@@ -21,7 +23,7 @@ const formatSecondsToHoursMins = (secs) => {
 };
 
 const formatToHMHour = (val) => {
-    if (!val) return '00:00 h';
+    if (!val && val !== 0) return '00:00 h';
     if (typeof val === 'number') {
         return formatSecondsToHoursMins(val);
     }
@@ -142,48 +144,343 @@ const KpiCard = ({
     );
 };
 
-export function ComparativeKpiGrid({ sec, stats, deltas, role, isToday = true, liveTick = false }) {
+// Helper: Determine accurate live operational status for any employee
+const resolveStaffLiveStatus = (emp, liveMatch) => {
+    const liveStatus = (liveMatch?.status || liveMatch?.accountStatus || '').toLowerCase();
+    const empStatus = (emp?.status || emp?.accountStatus || '').toLowerCase();
+
+    // 1. Explicit offline: if clocked out or marked offline, employee is OFFLINE
+    const isExplicitOffline = liveStatus === 'offline' || 
+                              liveMatch?.isOnline === false || 
+                              liveMatch?.isClockedIn === false || 
+                              empStatus === 'offline' || 
+                              emp?.isClockedIn === false;
+
+    if (isExplicitOffline) {
+        return { isActive: false, isIdle: false, isOnBreak: false, isOffline: true };
+    }
+
+    // 2. Break
+    const isBreak = liveStatus === 'break' || liveMatch?.isOnBreak === true || empStatus === 'break' || emp?.isOnBreak === true;
+    if (isBreak) {
+        return { isActive: false, isIdle: false, isOnBreak: true, isOffline: false };
+    }
+
+    // 3. Idle / AFK (>= 10 minutes or explicit idle)
+    const isIdle = liveStatus === 'idle' || liveStatus === 'afk' || liveMatch?.isIdle === true || (liveMatch?.idleTime || 0) >= 600 || empStatus === 'idle' || empStatus === 'afk';
+    if (isIdle) {
+        return { isActive: false, isIdle: true, isOnBreak: false, isOffline: false };
+    }
+
+    // 4. Working / Active
+    const isWorking = liveStatus === 'online' || liveStatus === 'active' || liveMatch?.isOnline === true || empStatus === 'online' || emp?.isOnline === true;
+    if (isWorking) {
+        return { isActive: true, isIdle: false, isOnBreak: false, isOffline: false };
+    }
+
+    return { isActive: false, isIdle: false, isOnBreak: false, isOffline: true };
+};
+
+export function ComparativeKpiGrid({
+    sec,
+    stats,
+    deltas,
+    role,
+    isToday = true,
+    activeFilter = {},
+    employees = []
+}) {
     const d = deltas || {};
-    const { isClockedIn } = useAuthStore();
+    const { isClockedIn, isOnBreak, isIdlePaused } = useAuthStore();
     const sessionSeconds = useSessionTimer();
-
     const isSessionUser = role?.toUpperCase() === 'EMPLOYEE';
+    const { socket } = useSocket();
 
-    // When Employee is viewing Today:
-    // If clocked out: ALL cards reset to 00h 00m 00s and 0% immediately with zero latency!
-    // If clocked in: session timer ticks live from 00h 00m 00s upwards in sync with top pill timer!
-    // For Admin: Displays genuine workforce/team aggregate metrics formatted as HH:MM h (e.g. 192:16 h)!
-    const effectiveWorkTime = isSessionUser && isToday
-        ? (isClockedIn ? formatSecondsToHMS(sessionSeconds) : '00h 00m 00s')
-        : formatToHMHour(stats?.summary?.workTime || sec?.workTime);
+    // Real-time socket and cross-tab staff live status map
+    const [liveStaffMap, setLiveStaffMap] = useState({});
 
-    const effectiveActiveTime = isSessionUser && isToday
-        ? (isClockedIn ? formatSecondsToHMS(sessionSeconds) : '00h 00m 00s')
-        : formatToHMHour(stats?.summary?.activeTime || sec?.activeTime);
+    // 1. Cross-tab sync via BroadcastChannel & window events
+    useEffect(() => {
+        const unsubscribe = subscribeStaffStatus((data) => {
+            if (data?.employeeId) {
+                setLiveStaffMap(prev => ({
+                    ...prev,
+                    [String(data.employeeId)]: data
+                }));
+            }
+        });
+        return unsubscribe;
+    }, []);
 
-    const effectiveIdleTime = isSessionUser && isToday
-        ? '00h 00m 00s'
-        : formatToHMHour(stats?.summary?.idleTime || sec?.idleTime);
+    // 2. Real-Time Socket.IO listeners for instantaneous status updates across all clients/browsers
+    useEffect(() => {
+        if (!socket) return;
 
-    const effectiveManualTime = isSessionUser && isToday
-        ? '00h 00m 00s'
-        : formatToHMHour(stats?.summary?.manualTime || sec?.manualTime);
+        const handleStatus = ({ employeeId, status }) => {
+            if (!employeeId) return;
+            const raw = (status || '').toLowerCase();
+            const isOnline = raw === 'online' || raw === 'active';
+            const isBreak = raw === 'break';
+            const isIdle = raw === 'idle' || raw === 'afk';
+            setLiveStaffMap(prev => ({
+                ...prev,
+                [String(employeeId)]: {
+                    employeeId: String(employeeId),
+                    status: isOnline ? 'online' : (isBreak ? 'break' : (isIdle ? 'idle' : 'offline')),
+                    isOnline,
+                    isOnBreak: isBreak,
+                    isIdle
+                }
+            }));
+        };
 
-    const effectiveProductiveTime = isSessionUser && isToday
-        ? (isClockedIn ? formatSecondsToHMS(sessionSeconds) : '00h 00m 00s')
-        : formatToHMHour(stats?.summary?.productiveTime || sec?.productiveTime);
+        const handleAttendance = (data) => {
+            if (!data?.employeeId) return;
+            const type = String(data.type || '').toLowerCase();
+            if (type === 'break-end' || type === 'clock-in') {
+                setLiveStaffMap(prev => ({
+                    ...prev,
+                    [String(data.employeeId)]: {
+                        employeeId: String(data.employeeId),
+                        status: 'online',
+                        isOnline: true,
+                        isOnBreak: false,
+                        isIdle: false
+                    }
+                }));
+            } else if (type === 'break-start') {
+                setLiveStaffMap(prev => ({
+                    ...prev,
+                    [String(data.employeeId)]: {
+                        employeeId: String(data.employeeId),
+                        status: 'break',
+                        isOnline: false,
+                        isOnBreak: true,
+                        isIdle: false
+                    }
+                }));
+            } else if (type === 'clock-out') {
+                setLiveStaffMap(prev => ({
+                    ...prev,
+                    [String(data.employeeId)]: {
+                        employeeId: String(data.employeeId),
+                        status: 'offline',
+                        isOnline: false,
+                        isOnBreak: false,
+                        isIdle: false
+                    }
+                }));
+            }
+        };
 
-    const effectiveUnproductiveTime = isSessionUser && isToday
-        ? '00h 00m 00s'
-        : formatToHMHour(stats?.summary?.unproductiveTime || sec?.unproductiveTime);
+        const handleResumed = (data) => {
+            if (!data?.employeeId) return;
+            setLiveStaffMap(prev => ({
+                ...prev,
+                [String(data.employeeId)]: {
+                    employeeId: String(data.employeeId),
+                    status: 'online',
+                    isOnline: true,
+                    isOnBreak: false,
+                    isIdle: false
+                }
+            }));
+        };
 
-    const effectiveNeutralTime = isSessionUser && isToday
-        ? '00h 00m 00s'
-        : formatToHMHour(stats?.summary?.neutralTime || sec?.neutralTime);
+        socket.on('employee:status', handleStatus);
+        socket.on('attendance:update', handleAttendance);
+        socket.on('employee:idle_resumed', handleResumed);
 
-    const effectiveProductivity = isSessionUser && isToday
-        ? (isClockedIn ? '100%' : '0%')
-        : (stats?.summary?.utilization !== undefined ? `${stats.summary.utilization}%` : (stats?.summary?.productivity !== undefined ? `${stats.summary.productivity}%` : '0%'));
+        return () => {
+            socket.off('employee:status', handleStatus);
+            socket.off('attendance:update', handleAttendance);
+            socket.off('employee:idle_resumed', handleResumed);
+        };
+    }, [socket]);
+
+    const filteredEmployeeId = activeFilter?.employeeId ? String(activeFilter.employeeId) : null;
+
+    // Calculate live staff status counts and active multipliers
+    const staffCounts = useMemo(() => {
+        if (isSessionUser) {
+            if (!isClockedIn) {
+                return { activeCount: 0, idleCount: 0, breakCount: 0, isCurrentIdle: false, isCurrentActive: false, isCurrentBreak: false };
+            }
+            if (isOnBreak) {
+                return { activeCount: 0, idleCount: 0, breakCount: 1, isCurrentIdle: false, isCurrentActive: false, isCurrentBreak: true };
+            }
+            if (isIdlePaused) {
+                return { activeCount: 0, idleCount: 1, breakCount: 0, isCurrentIdle: true, isCurrentActive: false, isCurrentBreak: false };
+            }
+            return { activeCount: 1, idleCount: 0, breakCount: 0, isCurrentIdle: false, isCurrentActive: true, isCurrentBreak: false };
+        }
+
+        if (filteredEmployeeId) {
+            const liveData = liveStaffMap[filteredEmployeeId];
+            const emp = employees.find(e => 
+                String(e.id) === filteredEmployeeId || 
+                String(e.userId) === filteredEmployeeId || 
+                String(e.employeeId) === filteredEmployeeId
+            );
+            const resolved = resolveStaffLiveStatus(emp, liveData);
+            return {
+                activeCount: resolved.isActive ? 1 : 0,
+                idleCount: resolved.isIdle ? 1 : 0,
+                breakCount: resolved.isOnBreak ? 1 : 0,
+                isCurrentIdle: resolved.isIdle,
+                isCurrentActive: resolved.isActive,
+                isCurrentBreak: resolved.isOnBreak
+            };
+        }
+
+        // Viewing all staff / team
+        let activeCount = 0;
+        let idleCount = 0;
+        let breakCount = 0;
+
+        employees.forEach(e => {
+            // Ignore admin accounts from monitored employee count
+            const r = (e.role || e.user?.role || '').toUpperCase();
+            const nm = (e.fullName || e.name || '').toLowerCase();
+            const em = (e.email || '').toLowerCase();
+            if (r === 'ADMIN' || nm.includes('admin demo') || em.startsWith('admin@')) return;
+
+            const id = String(e.id || e.employeeId || e.userId);
+            const live = liveStaffMap[id] || (e.email ? Object.values(liveStaffMap).find(lm => lm.email && lm.email.toLowerCase() === e.email.toLowerCase()) : null);
+            const resolved = resolveStaffLiveStatus(e, live);
+            if (resolved.isActive) activeCount++;
+            else if (resolved.isIdle) idleCount++;
+            else if (resolved.isOnBreak) breakCount++;
+        });
+
+        return {
+            activeCount,
+            idleCount,
+            breakCount,
+            isCurrentIdle: idleCount > 0 && activeCount === 0,
+            isCurrentActive: activeCount > 0,
+            isCurrentBreak: breakCount > 0 && activeCount === 0 && idleCount === 0
+        };
+    }, [isSessionUser, isClockedIn, isOnBreak, isIdlePaused, filteredEmployeeId, liveStaffMap, employees]);
+
+    // Live ticking stopwatch: increments every 1 second by exact active and idle staff counts
+    const [elapsedActive, setElapsedActive] = useState(0);
+    const [elapsedIdle, setElapsedIdle] = useState(0);
+
+    const baseSignature = `${filteredEmployeeId || 'all'}_${sec?.workTime || 0}_${sec?.activeTime || 0}_${sec?.idleTime || 0}_${sec?.unproductiveTime || 0}`;
+
+    useEffect(() => {
+        setElapsedActive(0);
+        setElapsedIdle(0);
+    }, [baseSignature]);
+
+    useEffect(() => {
+        if (!isToday) return undefined;
+
+        // If no active employees and no idle employees (e.g. all on break or offline), DO NOT TICK!
+        if (staffCounts.activeCount === 0 && staffCounts.idleCount === 0) {
+            return undefined;
+        }
+
+        const interval = setInterval(() => {
+            setElapsedActive(prev => prev + staffCounts.activeCount);
+            setElapsedIdle(prev => prev + staffCounts.idleCount);
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [isToday, staffCounts.activeCount, staffCounts.idleCount]);
+
+    // Raw base seconds from backend
+    const baseWork = Number(sec?.workTime) || 0;
+    const baseActive = Number(sec?.activeTime) || 0;
+    const baseIdle = Number(sec?.idleTime) || 0;
+    const baseProductive = Number(sec?.productiveTime) || 0;
+    const baseUnproductive = Number(sec?.unproductiveTime) || Number(sec?.idleTime) || 0;
+    const baseNeutral = Number(sec?.neutralTime) || 0;
+    const baseManual = Number(sec?.manualTime) || 0;
+
+    // Calculate real-time seconds dynamically based on employee active/idle state
+    let curWork = baseWork;
+    let curActive = baseActive;
+    let curIdle = baseIdle;
+    let curProductive = baseProductive;
+    let curUnproductive = baseUnproductive;
+    let curNeutral = baseNeutral;
+    let curManual = baseManual;
+
+    if (isSessionUser && isToday) {
+        if (isClockedIn) {
+            if (staffCounts.isCurrentIdle) {
+                curWork = sessionSeconds + elapsedIdle;
+                curActive = sessionSeconds; // Active is frozen!
+                curIdle = baseIdle + elapsedIdle; // Idle ticks!
+                curUnproductive = baseUnproductive + elapsedIdle; // Unproductive ticks!
+                curProductive = sessionSeconds;
+            } else if (staffCounts.isCurrentBreak) {
+                // On Break: Freeze timers!
+                curWork = sessionSeconds;
+                curActive = sessionSeconds;
+                curIdle = baseIdle;
+                curUnproductive = baseUnproductive;
+                curProductive = sessionSeconds;
+            } else {
+                // Active Working
+                curWork = sessionSeconds;
+                curActive = sessionSeconds;
+                curIdle = baseIdle;
+                curUnproductive = baseUnproductive;
+                curProductive = sessionSeconds;
+            }
+        } else {
+            curWork = 0;
+            curActive = 0;
+            curIdle = 0;
+            curProductive = 0;
+            curUnproductive = 0;
+            curNeutral = 0;
+            curManual = 0;
+        }
+    } else if (isToday) {
+        // For Admin / Manager:
+        // Active work increments work, active, and productive time
+        // Idle increments work, idle, and unproductive time
+        // When everyone is on break: elapsedActive = 0, elapsedIdle = 0 -> All timers stay 100% frozen!
+        curWork = baseWork + elapsedActive + elapsedIdle;
+        curActive = baseActive + elapsedActive;
+        curProductive = baseProductive + elapsedActive;
+        curIdle = baseIdle + elapsedIdle;
+        curUnproductive = baseUnproductive + elapsedIdle;
+    }
+
+    // Display values: When viewing Today, format in detailed HMS (e.g. 03h 52m 14s)
+    const effectiveWorkTime = isToday ? formatSecondsToHMS(curWork) : formatToHMHour(stats?.summary?.workTime || baseWork);
+    const effectiveActiveTime = isToday ? formatSecondsToHMS(curActive) : formatToHMHour(stats?.summary?.activeTime || baseActive);
+    const effectiveIdleTime = isToday ? formatSecondsToHMS(curIdle) : formatToHMHour(stats?.summary?.idleTime || baseIdle);
+    const effectiveManualTime = isToday ? formatSecondsToHMS(curManual) : formatToHMHour(stats?.summary?.manualTime || baseManual);
+    const effectiveProductiveTime = isToday ? formatSecondsToHMS(curProductive) : formatToHMHour(stats?.summary?.productiveTime || baseProductive);
+    const effectiveUnproductiveTime = isToday ? formatSecondsToHMS(curUnproductive) : formatToHMHour(stats?.summary?.unproductiveTime || baseUnproductive);
+    const effectiveNeutralTime = isToday ? formatSecondsToHMS(curNeutral) : formatToHMHour(stats?.summary?.neutralTime || baseNeutral);
+
+    const effectiveProductivity = useMemo(() => {
+        if (isSessionUser && isToday) {
+            return isClockedIn ? '100%' : '0%';
+        }
+        if (curWork > 0) {
+            const pct = Math.min(100, Math.round((curProductive / curWork) * 100));
+            return `${pct}%`;
+        }
+        if (stats?.summary?.utilization !== undefined) return `${stats.summary.utilization}%`;
+        if (stats?.summary?.productivity !== undefined) return `${stats.summary.productivity}%`;
+        return '0%';
+    }, [isSessionUser, isToday, isClockedIn, curProductive, curWork, stats?.summary]);
+
+    // Live tick pulsing dot: ONLY on when actual staff members are active or idle!
+    // When all employees are on break or offline: ALL TICK INDICATORS ARE OFF (false)!
+    const tickWork = isToday && (staffCounts.activeCount > 0 || staffCounts.idleCount > 0);
+    const tickActive = isToday && staffCounts.activeCount > 0;
+    const tickIdle = isToday && staffCounts.idleCount > 0;
+    const tickProductive = isToday && staffCounts.activeCount > 0;
+    const tickUnproductive = isToday && staffCounts.idleCount > 0;
 
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5 mb-6 sm:mb-8">
@@ -191,7 +488,7 @@ export function ComparativeKpiGrid({ sec, stats, deltas, role, isToday = true, l
                 title="Work Time"
                 displayValue={effectiveWorkTime}
                 delta={d.workTime}
-                liveTick={liveTick}
+                liveTick={tickWork}
                 icon={Briefcase}
             />
 
@@ -199,7 +496,7 @@ export function ComparativeKpiGrid({ sec, stats, deltas, role, isToday = true, l
                 title="Active Time"
                 displayValue={effectiveActiveTime}
                 delta={d.activeTime}
-                liveTick={liveTick}
+                liveTick={tickActive}
                 icon={Monitor}
             />
 
@@ -208,6 +505,7 @@ export function ComparativeKpiGrid({ sec, stats, deltas, role, isToday = true, l
                 displayValue={effectiveIdleTime}
                 delta={d.idleTime}
                 inverse={true}
+                liveTick={tickIdle}
                 icon={MonitorOff}
             />
 
@@ -222,6 +520,7 @@ export function ComparativeKpiGrid({ sec, stats, deltas, role, isToday = true, l
                 title="Productive Time"
                 displayValue={effectiveProductiveTime}
                 delta={d.productiveTime}
+                liveTick={tickProductive}
                 icon={TrendingUp}
             />
 
@@ -230,6 +529,7 @@ export function ComparativeKpiGrid({ sec, stats, deltas, role, isToday = true, l
                 displayValue={effectiveUnproductiveTime}
                 delta={d.unproductiveTime}
                 inverse={true}
+                liveTick={tickUnproductive}
                 icon={Zap}
             />
 
@@ -241,10 +541,10 @@ export function ComparativeKpiGrid({ sec, stats, deltas, role, isToday = true, l
             />
 
             <KpiCard
-                title="Utilization"
+                title={role?.toUpperCase() === 'ADMIN' ? 'Utilization' : 'Productivity'}
                 displayValue={effectiveProductivity}
                 delta={d.utilization || d.productivity}
-                icon={Activity}
+                icon={role?.toUpperCase() === 'ADMIN' ? Activity : TrendingUp}
             />
         </div>
     );

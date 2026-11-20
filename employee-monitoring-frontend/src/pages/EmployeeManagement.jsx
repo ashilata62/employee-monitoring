@@ -786,33 +786,38 @@ const EmployeeRow = ({ employee, onEdit, onDelete, onTransparencyClick, visibleC
         (rt.email && employee.email && rt.email.toLowerCase() === employee.email.toLowerCase())
     );
 
-    const liveStatus = (liveMatch?.status || liveMatch?.accountStatus || '').toLowerCase();
+    const liveStatus = (liveMatch?.status || '').toLowerCase();
     const dbStatus = (employee.status || '').toLowerCase();
 
-    const isExplicitlyWorking = (liveStatus === 'online' || liveStatus === 'active') && 
-                                liveMatch?.isOnBreak !== true && 
-                                liveMatch?.isIdle !== true;
+    // Explicit offline check: if clocked out or marked offline, employee is OFFLINE
+    const isExplicitlyOffline = liveStatus === 'offline' || 
+                                liveMatch?.isOnline === false || 
+                                dbStatus === 'offline' || 
+                                liveMatch?.isClockedIn === false ||
+                                employee.isClockedIn === false;
 
-    const isLiveBreak = !isExplicitlyWorking && (
+    // Break check: only if not explicitly offline
+    const isLiveBreak = !isExplicitlyOffline && (
         liveMatch?.isOnBreak === true || 
         liveStatus === 'break' || 
-        (dbStatus === 'break' && liveStatus !== 'online' && liveStatus !== 'active')
+        dbStatus === 'break'
     );
 
-    const isLiveIdle = !isLiveBreak && !isExplicitlyWorking && (
-        liveStatus === 'idle' || liveStatus === 'afk' || liveStatus === 'passive' || liveStatus === 'idle_warning' ||
+    // Idle / AFK check: 10 minutes or explicit AFK status
+    const isLiveIdle = !isExplicitlyOffline && !isLiveBreak && (
+        liveStatus === 'idle' || liveStatus === 'afk' ||
         liveMatch?.isIdle === true ||
-        (liveMatch?.idleTime || 0) >= 60 ||
-        (liveMatch?.idleMinutes || 0) >= 1 ||
-        (typeof employee.idle === 'number' && employee.idle >= 60 && liveStatus !== 'online') ||
-        (dbStatus === 'idle' || dbStatus === 'afk')
+        (liveMatch?.idleTime || 0) >= 600 ||
+        dbStatus === 'idle' || dbStatus === 'afk'
     );
 
-    const isLiveOnline = isExplicitlyWorking ||
-                         liveStatus === 'online' || liveStatus === 'active' ||
-                         dbStatus === 'online' || dbStatus === 'active' ||
-                         liveMatch?.isOnline || liveMatch?.agentStatus === 'active' ||
-                         isLiveIdle || isLiveBreak;
+    // Working check: only if active/online, clocked in, and NOT offline/break/idle
+    const isExplicitlyWorking = !isExplicitlyOffline && !isLiveBreak && !isLiveIdle && (
+        liveStatus === 'online' || 
+        liveMatch?.isOnline === true ||
+        (liveMatch?.isClockedIn === true && !isLiveBreak && !isLiveIdle) ||
+        (employee.isClockedIn === true && (liveStatus === 'online' || dbStatus === 'online'))
+    );
 
     let badgeText = 'Offline';
     let badgeClass = 'bg-[#EEE8DD] text-[#777367] dark:bg-[#1E2419] dark:text-[#B8B3A7] border border-[#D6CDBC] dark:border-[#384232]';
@@ -834,7 +839,7 @@ const EmployeeRow = ({ employee, onEdit, onDelete, onTransparencyClick, visibleC
         badgeText = 'AFK';
         badgeClass = 'bg-amber-100/90 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-300 dark:border-amber-800';
         dotClass = 'bg-amber-500 animate-pulse';
-    } else if (isLiveOnline) {
+    } else if (isExplicitlyWorking) {
         badgeText = 'Working';
         badgeClass = 'bg-[#EAEFEA] dark:bg-[#1E2B20] text-[#5E7D64] dark:text-[#8BB394] border border-[#C5D7C7] dark:border-[#325238]';
         dotClass = 'bg-[#5E7D64] animate-pulse';

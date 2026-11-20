@@ -9,7 +9,8 @@ export const broadcastStaffStatus = ({
     isIdle = false,
     isOnBreak = false,
     activeApp = 'Active Work',
-    currentActivity = 'Active / Logged In'
+    currentActivity = 'Active / Logged In',
+    idleSeconds = 0
 }) => {
     if (!employeeId) return;
 
@@ -21,6 +22,7 @@ export const broadcastStaffStatus = ({
         isOnBreak: !!isOnBreak,
         activeApp,
         currentActivity,
+        idleSeconds: Number(idleSeconds) || 0,
         timestamp: Date.now()
     };
 
@@ -57,8 +59,8 @@ export const broadcastStaffStatus = ({
                             accountStatus: status === 'online' ? 'active' : status,
                             isIdle: !!isIdle,
                             isOnBreak: !!isOnBreak,
-                            idleTime: isIdle ? (e.idleTime || 60) : 0,
-                            idleMinutes: isIdle ? (e.idleMinutes || 1) : 0,
+                            idleTime: isIdle ? (idleSeconds || e.idleTime || 60) : 0,
+                            idleMinutes: isIdle ? Math.floor((idleSeconds || e.idleTime || 60) / 60) : 0,
                             activeApp: activeApp || (isIdle ? 'Away from Computer (Idle)' : 'Active Work'),
                             currentActivity: currentActivity || (isIdle ? 'Away from Computer (Idle)' : 'Active / Logged In'),
                             lastSeen: new Date().toISOString()

@@ -42,6 +42,9 @@ export function WebTrackerAgent() {
                 activeApp: 'On Break',
                 currentActivity: 'On Break'
             });
+            if (socket) {
+                socket.emit('employee:status_override', { status: 'BREAK' });
+            }
         } else if (isClockedIn) {
             broadcastStaffStatus({
                 employeeId: resolvedEmpId,
@@ -51,8 +54,23 @@ export function WebTrackerAgent() {
                 activeApp: isTrackerActive ? 'Active Work (Screen Recording)' : 'Active Work',
                 currentActivity: 'Active / Logged In'
             });
+            if (socket) {
+                socket.emit('employee:status_override', { status: 'ONLINE' });
+            }
+        } else {
+            broadcastStaffStatus({
+                employeeId: resolvedEmpId,
+                status: 'offline',
+                isIdle: false,
+                isOnBreak: false,
+                activeApp: 'Offline',
+                currentActivity: 'Offline'
+            });
+            if (socket) {
+                socket.emit('employee:status_override', { status: 'OFFLINE' });
+            }
         }
-    }, [user, isClockedIn, isOnBreak, isTrackerActive, isMonitoredEmployee]);
+    }, [user, isClockedIn, isOnBreak, isTrackerActive, isMonitoredEmployee, socket]);
 
     // Sync task ID with Electron Desktop Agent whenever it changes
     useEffect(() => {
@@ -195,63 +213,38 @@ export function WebTrackerAgent() {
             const idleSec = Math.round((now - lastActivityRef.current) / 1000);
             const resolvedEmpId = user?.employeeId || user?.employee?.id || user?.id;
 
-            // 0. AUTO CLOCK-OUT: 15 minutes (900 seconds) of inactivity / freeze
-            if (idleSec >= 15 * 60) {
-                console.log(`[WebTrackerAgent] 15 minutes of inactivity detected (${idleSec}s). Auto clocking out.`);
-                showIdleModalRef.current = false;
-                setShowIdleModal(false);
-                idleStatusRef.current = 'OFFLINE';
+            // Guard: If employee is on break, no need to process idle
+            if (isOnBreak) {
+                return;
+            }
 
-                // Stop tracker recording if active
-                if (useAuthStore.getState().isTrackerActive) {
-                    useAuthStore.getState().setTrackerActive(false);
-                }
-
-                // Execute auto clock-out
-                useAuthStore.getState().clockOut();
-
-                toast.error('Auto Clock-Out: You have been clocked out due to 15 minutes of inactivity.');
-
-                if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-                    try {
-                        new window.Notification('Auto Clock-Out', {
-                            body: 'You have been automatically clocked out due to 15 minutes of inactivity.',
-                            icon: '/favicon.ico'
-                        });
-                    } catch (e) {}
-                }
-
-                if (socket) {
-                    socket.emit('employee:status_override', { status: 'OFFLINE' });
-                }
-
+            // Continuous Idle Heartbeat: When modal is showing (user hasn't answered yet), keep broadcasting live idle status & seconds
+            if (showIdleModalRef.current) {
                 broadcastStaffStatus({
                     employeeId: resolvedEmpId,
-                    status: 'offline',
-                    isIdle: false,
+                    status: 'idle',
+                    isIdle: true,
                     isOnBreak: false,
-                    activeApp: 'Offline (Auto Clock-Out)',
-                    currentActivity: 'Offline'
+                    activeApp: 'Away from Computer (Idle)',
+                    currentActivity: 'Away from Computer (Idle)',
+                    idleSeconds: idleSec
                 });
 
-                if (resolvedEmpId) {
-                    api.post('/agent/idle-activity', {
-                        employeeId: resolvedEmpId,
-                        status: 'AUTO_CLOCKED_OUT',
-                        idleDuration: idleSec,
-                        source: 'WEB_AGENT'
-                    }).catch(() => {});
+                if (socket) {
+                    socket.emit('employee:status_override', { status: 'IDLE', idleTime: idleSec });
+                    socket.emit('employee:activity', {
+                        activeApp: 'Away from Computer (Idle)',
+                        activeWindow: 'Away from Computer (Idle)',
+                        idleTime: idleSec,
+                        keystrokes: 0,
+                        mouseClicks: 0
+                    });
                 }
                 return;
             }
 
-            // Guard: If employee is on break or modal is already showing (within the 15 min window), skip opening duplicate prompts
-            if (isOnBreak || showIdleModalRef.current) {
-                return;
-            }
-
-            // 1. Stage: IDLE (1 minute / 60 seconds - triggers Employee Inactivity Alert)
-            if (idleSec >= 60) {
+            // 1. Stage: IDLE POPUP & AFK (10 minutes / 600 seconds - triggers Employee Inactivity Alert modal)
+            if (idleSec >= 10 * 60) {
                 if (idleStatusRef.current !== 'IDLE') {
                     idleStatusRef.current = 'IDLE';
                     if (!idleStartTimeRef.current) {
@@ -260,7 +253,7 @@ export function WebTrackerAgent() {
 
                     if (!hasSentIdleAlertRef.current) {
                         hasSentIdleAlertRef.current = true;
-                        setIdleMinutesPrompt(1);
+                        setIdleMinutesPrompt(10);
                         showIdleModalRef.current = true;
                         setShowIdleModal(true);
 
@@ -274,13 +267,13 @@ export function WebTrackerAgent() {
                         storeState.pauseSessionForIdle(currentSessionSec);
 
                         // Trigger In-App Alert Toast Notification
-                        toast.error('Employee Inactivity Alert: You have been inactive for 1 minute. Please resume your work.');
+                        toast.error('Employee Inactivity Alert: You have been inactive for 10 minutes. Please resume your work.');
 
                         // Trigger Browser Native Desktop Notification
                         if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
                             try {
                                 new window.Notification('Employee Inactivity Alert', {
-                                    body: 'You have been inactive for 1 minute. Please resume your work.',
+                                    body: 'You have been inactive for 10 minutes. Please resume your work.',
                                     icon: '/favicon.ico'
                                 });
                             } catch (e) {
@@ -294,11 +287,12 @@ export function WebTrackerAgent() {
                             isIdle: true,
                             isOnBreak: false,
                             activeApp: 'Away from Computer (Idle)',
-                            currentActivity: 'Away from Computer (Idle)'
+                            currentActivity: 'Away from Computer (Idle)',
+                            idleSeconds: idleSec
                         });
 
                         if (socket) {
-                            socket.emit('employee:status_override', { status: 'IDLE' });
+                            socket.emit('employee:status_override', { status: 'IDLE', idleTime: idleSec });
                             socket.emit('employee:activity', {
                                 activeApp: 'Away from Computer (Idle)',
                                 activeWindow: 'Away from Computer (Idle)',
@@ -321,8 +315,8 @@ export function WebTrackerAgent() {
                     }
                 }
             }
-            // 2. Stage: IDLE WARNING (45 seconds reminder)
-            else if (idleSec >= 45) {
+            // 2. Stage: IDLE WARNING NOTIFICATION (5 minutes / 300 seconds reminder notification with dynamic time duration)
+            else if (idleSec >= 5 * 60) {
                 if (idleStatusRef.current !== 'IDLE_WARNING' && idleStatusRef.current !== 'IDLE') {
                     idleStatusRef.current = 'IDLE_WARNING';
                     if (!idleStartTimeRef.current) {
@@ -331,7 +325,23 @@ export function WebTrackerAgent() {
 
                     if (!hasSentWarningAlertRef.current) {
                         hasSentWarningAlertRef.current = true;
-                        toast.warning('Activity Reminder: No recent mouse or keyboard activity detected.');
+
+                        const startTime = new Date(now - idleSec * 1000);
+                        const endTime = new Date(now);
+                        const formatTime = (d) => d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+                        const timeRange = `(from ${formatTime(startTime)} to ${formatTime(endTime)})`;
+                        const warningMsg = `Activity Reminder: You have been inactive for 5 minutes ${timeRange}. Please resume your work.`;
+
+                        toast.warning(warningMsg);
+
+                        if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+                            try {
+                                new window.Notification('Activity Reminder', {
+                                    body: warningMsg,
+                                    icon: '/favicon.ico'
+                                });
+                            } catch (e) {}
+                        }
 
                         if (resolvedEmpId) {
                             api.post('/agent/idle-activity', {
@@ -346,8 +356,8 @@ export function WebTrackerAgent() {
                     }
                 }
             }
-            // 3. Stage: PASSIVE (30 seconds initial inactivity detection)
-            else if (idleSec >= 30) {
+            // 3. Stage: PASSIVE (1 minute / 60 seconds initial inactivity detection)
+            else if (idleSec >= 60) {
                 if (idleStatusRef.current === 'ACTIVE') {
                     idleStatusRef.current = 'PASSIVE';
                     if (!hasSentPassiveAlertRef.current) {
@@ -902,7 +912,7 @@ export function WebTrackerAgent() {
                         </h3>
 
                         <p className="text-sm text-[#9E988A] leading-relaxed mb-6 font-medium">
-                            You have been inactive for 1 minute. Please resume your work.
+                            You have been inactive for {idleMinutesPrompt || 10} minutes. Please resume your work.
                         </p>
 
                         <div className="flex flex-col sm:flex-row gap-3 justify-center">
