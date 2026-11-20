@@ -163,13 +163,24 @@ export function Header({ onMenuClick }) {
                                     </div>
                                 )}
                             </div>
-                            <div className="border-t border-[#E5DED2] dark:border-[#384232] p-2.5 text-center bg-[#EEE8DD]/50 dark:bg-[#1E2419]">
+                            <div className="border-t border-[#E5DED2] dark:border-[#384232] p-2.5 flex items-center justify-between gap-2 bg-[#EEE8DD]/50 dark:bg-[#1E2419]">
+                                {(role === 'ADMIN' || role === 'MANAGER') && (
+                                    <button
+                                        onClick={() => {
+                                            setShowNotifications(false);
+                                            navigate(`/${rolePath}/alerts`);
+                                        }}
+                                        className="text-xs font-semibold text-[#A84B4B] hover:text-[#8C3A3A] transition-colors py-0.5 cursor-pointer"
+                                    >
+                                        Alerts & Rules →
+                                    </button>
+                                )}
                                 <button
                                     onClick={() => {
                                         setShowNotifications(false);
                                         navigate(resolveRolePath('/notifications'));
                                     }}
-                                    className="text-xs font-semibold text-[#B9955B] hover:text-[#A17D45] transition-colors w-full py-0.5 block"
+                                    className="text-xs font-semibold text-[#B9955B] hover:text-[#A17D45] transition-colors py-0.5 cursor-pointer ml-auto"
                                 >
                                     View All Notifications
                                 </button>
