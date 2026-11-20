@@ -1616,10 +1616,11 @@ export function RealTimeProvider({ children }) {
         const targetEmail = user?.email;
         const currentEmpId = user?.employeeId || user?.id;
         const currentEmpName = (user?.fullName || user?.name || '').toLowerCase().trim();
+        const currentRole = (role || '').toUpperCase();
 
-        // 1. Scoped alerts: for EMPLOYEE, only include alerts that belong to this employee!
+        // 1. Scoped alerts: strictly role-separated
         let scopedAlerts = state.alerts || [];
-        if (role === 'EMPLOYEE') {
+        if (currentRole === 'EMPLOYEE') {
             scopedAlerts = scopedAlerts.filter(a => {
                 if (currentEmpId && String(a.employeeId) === String(currentEmpId)) return true;
                 if (targetEmail && a.employeeEmail === targetEmail) return true;
@@ -1628,6 +1629,25 @@ export function RealTimeProvider({ children }) {
                     if (aName && aName === currentEmpName) return true;
                     if (a.message && a.message.toLowerCase().includes(currentEmpName)) return true;
                 }
+                return false;
+            });
+        } else if (currentRole === 'MANAGER') {
+            const myTeam = state.employees.filter(e => {
+                if (user?.teamId && e.teamId === user?.teamId) return true;
+                if (user?.team && (e.team === user?.team || e.teamName === user?.team)) return true;
+                if (String(e.id) === String(currentEmpId)) return true;
+                return false;
+            });
+            const myTeamIds = new Set(myTeam.map(e => String(e.id)));
+            const myTeamNames = myTeam.map(e => (e.fullName || e.name || '').toLowerCase().trim()).filter(Boolean);
+
+            scopedAlerts = scopedAlerts.filter(a => {
+                if (currentEmpId && String(a.employeeId) === String(currentEmpId)) return true;
+                if (myTeamIds.has(String(a.employeeId))) return true;
+                if (user?.teamId && a.teamId === user?.teamId) return true;
+                if (user?.team && (a.team || '').toLowerCase() === user?.team.toLowerCase()) return true;
+                const aName = (a.employeeName || '').toLowerCase().trim();
+                if (aName && myTeamNames.includes(aName)) return true;
                 return false;
             });
         }
@@ -1641,7 +1661,7 @@ export function RealTimeProvider({ children }) {
             type: a.severity === 'critical' ? 'alert' : (a.severity === 'warning' ? 'warning' : 'info'),
             time: a.date || (a.createdAt ? new Date(a.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now'),
             unread: !a.read,
-            link: role === 'EMPLOYEE' ? null : '/alerts',
+            link: currentRole === 'EMPLOYEE' ? null : '/alerts',
             createdAt: a.createdAt || a.date || new Date().toISOString()
         }));
 
@@ -1657,21 +1677,63 @@ export function RealTimeProvider({ children }) {
             }
         }
 
-        if (!isAuthenticated || role === 'ADMIN' || role === 'MANAGER') {
-            return {
-                employees: currentEmployees,
-                tasks: state.tasks,
-                projects: state.projects,
-                goals: state.goals,
-                teams: state.teams,
-                activityLogs: state.activityLogs,
-                alerts: scopedAlerts,
-                notifications: mergedNotifications
-            };
-        }
-
-        if (role === 'EMPLOYEE') {
+        // 4. Role-specific notification filtering
+        if (currentRole === 'EMPLOYEE') {
             const filteredEmployees = currentEmployees.filter(e => e.email === targetEmail);
+            const myEmp = filteredEmployees[0];
+            const myName = (myEmp?.fullName || myEmp?.name || user?.fullName || user?.name || '').toLowerCase().trim();
+            const myId = String(myEmp?.id || user?.id || '');
+
+            const employeeFilteredNotifs = mergedNotifications.filter(n => {
+                // Keep all alert-synthesized notifications (they are already scoped to this employee)
+                if (String(n.id).startsWith('alert_') || n.alertId) return true;
+
+                const title = (n.title || '').toLowerCase();
+                const desc = (n.description || '').toLowerCase();
+
+                // Exclude all admin/system notifications
+                if (title.includes('compliance setting') || title.includes('geofence') ||
+                    title.includes('employee added') || title.includes('employee removed') ||
+                    title.includes('team created') || title.includes('team removed') ||
+                    title.includes('goal defined') || title.includes('setting updated') ||
+                    title.includes('live screen stream') || title.includes('screenshot from')) {
+                    return false;
+                }
+
+                // If it is a coworker status event, filter out unless it's the current employee
+                const isStatusEvent = title.includes('went online') || title.includes('went offline') ||
+                    title.includes('clocked in') || title.includes('clocked out') ||
+                    title.includes('checked in') || desc.includes('clocked in') || desc.includes('clocked out') ||
+                    title.includes('went on break') || title.includes('returned from break') ||
+                    title.includes('login successful');
+
+                if (isStatusEvent) {
+                    if (myName && (title.includes(myName) || desc.includes(myName))) return true;
+                    if (myId && (title.includes(myId) || desc.includes(myId))) return true;
+                    return false;
+                }
+
+                // If description contains a raw UUID of someone else, filter out
+                if (desc.includes('employee ') && !desc.includes(myId) && (!myName || !desc.includes(myName))) {
+                    return false;
+                }
+
+                // Keep personal task assignments
+                if (title.includes('assigned to you') || title.includes('your team was changed')) {
+                    return true;
+                }
+
+                // Keep announcements
+                if (n.type === 'announcement' || n.type === 'broadcast') return true;
+
+                // Explicit target for this employee
+                if (n.targetUserId && (String(n.targetUserId) === myId || String(n.targetUserId) === String(user?.userId || user?.id))) {
+                    return true;
+                }
+
+                return false;
+            });
+
             return {
                 employees: filteredEmployees,
                 tasks: state.tasks, // Server already filters tasks for employees, don't double-filter here
@@ -1680,9 +1742,89 @@ export function RealTimeProvider({ children }) {
                 teams: [],
                 activityLogs: state.activityLogs.filter(l => l.employeeId === filteredEmployees[0]?.id),
                 alerts: scopedAlerts,
-                notifications: mergedNotifications
+                notifications: employeeFilteredNotifs
             };
         }
+
+        if (currentRole === 'MANAGER') {
+            const myTeam = state.employees.filter(e => {
+                if (user?.teamId && e.teamId === user?.teamId) return true;
+                if (user?.team && (e.team === user?.team || e.teamName === user?.team)) return true;
+                if (String(e.id) === String(currentEmpId)) return true;
+                return false;
+            });
+            const myTeamIds = new Set(myTeam.map(e => String(e.id)));
+            const myTeamNames = myTeam.map(e => (e.fullName || e.name || '').toLowerCase().trim()).filter(Boolean);
+
+            const managerFilteredNotifs = mergedNotifications.filter(n => {
+                // Keep team alerts (already scoped)
+                if (String(n.id).startsWith('alert_') || n.alertId) return true;
+
+                const title = (n.title || '').toLowerCase();
+                const desc = (n.description || '').toLowerCase();
+
+                // Exclude admin-only system config modifications
+                if (title.includes('compliance setting') || title.includes('geofence') ||
+                    title.includes('setting updated') || title.includes('employees merged')) {
+                    return false;
+                }
+
+                // Exclude other staff's personal team change messages
+                if (title.includes('your team was changed') && !desc.includes(currentEmpName)) {
+                    return false;
+                }
+
+                // Check-in / clock-out / status events: only show if in manager's team
+                const isStatusEvent = title.includes('went online') || title.includes('went offline') ||
+                    title.includes('clocked in') || title.includes('clocked out') ||
+                    title.includes('checked in') || desc.includes('clocked in') || desc.includes('clocked out') ||
+                    title.includes('went on break') || title.includes('returned from break');
+
+                if (isStatusEvent) {
+                    const mentionsTeamMember = myTeamNames.some(name => title.includes(name) || desc.includes(name));
+                    const mentionsTeamId = Array.from(myTeamIds).some(id => title.includes(id) || desc.includes(id));
+                    return mentionsTeamMember || mentionsTeamId || myTeamNames.length === 0;
+                }
+
+                // Exclude raw employee UUIDs not in this manager's team
+                if (desc.includes('employee ')) {
+                    const matchesMyTeam = Array.from(myTeamIds).some(id => desc.includes(id));
+                    if (!matchesMyTeam && myTeamIds.size > 0) return false;
+                }
+
+                return true;
+            });
+
+            return {
+                employees: currentEmployees.filter(e => myTeamIds.has(String(e.id)) || myTeamIds.size === 0),
+                tasks: state.tasks,
+                projects: state.projects,
+                goals: state.goals,
+                teams: state.teams.filter(t => !user?.teamId || t.id === user?.teamId),
+                activityLogs: state.activityLogs.filter(l => myTeamIds.has(String(l.employeeId)) || myTeamIds.size === 0),
+                alerts: scopedAlerts,
+                notifications: managerFilteredNotifs
+            };
+        }
+
+        // ADMIN: Sees all organization-level administrative notifications
+        const adminFilteredNotifs = mergedNotifications.filter(n => {
+            const title = (n.title || '').toLowerCase();
+            // Don't show personal employee self-toasts (e.g. personal "Your team was changed")
+            if (title.includes('your team was changed')) return false;
+            return true;
+        });
+
+        return {
+            employees: currentEmployees,
+            tasks: state.tasks,
+            projects: state.projects,
+            goals: state.goals,
+            teams: state.teams,
+            activityLogs: state.activityLogs,
+            alerts: scopedAlerts,
+            notifications: adminFilteredNotifs
+        };
 
         return { ...state, employees: currentEmployees, alerts: scopedAlerts, notifications: mergedNotifications };
     }, [state.alerts, state.notifications, state.tasks, state.projects, state.goals, state.teams, state.activityLogs, role, isAuthenticated, stats.empMetrics, user]);

@@ -43,7 +43,7 @@ export function Header({ onMenuClick }) {
     const unreadCount = liveNotifications.filter(n => n.unread).length;
 
     return (
-        <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-[#E5DED2] bg-[#F5F1E9]/95 px-2.5 sm:px-4 md:px-8 backdrop-blur-md dark:border-[#384232] dark:bg-[#1A1F18]/95 transition-colors">
+        <header className="sticky top-0 z-50 flex h-16 w-full items-center justify-between border-b border-[#E5DED2] bg-[#F5F1E9]/95 px-2.5 sm:px-4 md:px-8 backdrop-blur-md dark:border-[#384232] dark:bg-[#1A1F18]/95 transition-colors">
             <div className="flex items-center gap-2 sm:gap-4">
                 <button
                     onClick={onMenuClick}
@@ -85,7 +85,7 @@ export function Header({ onMenuClick }) {
                     </button>
 
                     {showNotifications && (
-                        <div className="fixed left-4 right-4 top-[4.5rem] w-auto md:absolute md:right-0 md:top-full md:left-auto md:w-96 md:mt-2 origin-top-right rounded-2xl border border-[#E5DED2] bg-[#FBF9F5] shadow-2xl dark:border-[#384232] dark:bg-[#252B20] animate-in fade-in slide-in-from-top-1 z-50 overflow-hidden">
+                        <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 max-w-[calc(100vw-2rem)] origin-top-right rounded-2xl border border-[#E5DED2] bg-[#FBF9F5] shadow-2xl dark:border-[#384232] dark:bg-[#252B20] animate-in fade-in slide-in-from-top-1 z-[100] overflow-hidden">
                             <div className="flex items-center justify-between border-b border-[#E5DED2] px-4 py-3 dark:border-[#384232]">
                                 <div className="flex items-center gap-2">
                                     <h3 className="text-sm font-semibold text-[#29291F] dark:text-[#F5F1E9]">Notifications</h3>
@@ -163,13 +163,24 @@ export function Header({ onMenuClick }) {
                                     </div>
                                 )}
                             </div>
-                            <div className="border-t border-[#E5DED2] dark:border-[#384232] p-2.5 text-center bg-[#EEE8DD]/50 dark:bg-[#1E2419]">
+                            <div className="border-t border-[#E5DED2] dark:border-[#384232] p-2.5 flex items-center justify-between gap-2 bg-[#EEE8DD]/50 dark:bg-[#1E2419]">
+                                {(role === 'ADMIN' || role === 'MANAGER') && (
+                                    <button
+                                        onClick={() => {
+                                            setShowNotifications(false);
+                                            navigate(`/${rolePath}/alerts`);
+                                        }}
+                                        className="text-xs font-semibold text-[#A84B4B] hover:text-[#8C3A3A] transition-colors py-0.5 cursor-pointer"
+                                    >
+                                        Alerts & Rules →
+                                    </button>
+                                )}
                                 <button
                                     onClick={() => {
                                         setShowNotifications(false);
                                         navigate(resolveRolePath('/notifications'));
                                     }}
-                                    className="text-xs font-semibold text-[#B9955B] hover:text-[#A17D45] transition-colors w-full py-0.5 block"
+                                    className="text-xs font-semibold text-[#B9955B] hover:text-[#A17D45] transition-colors py-0.5 cursor-pointer ml-auto"
                                 >
                                     View All Notifications
                                 </button>

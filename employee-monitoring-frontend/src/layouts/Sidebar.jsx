@@ -30,6 +30,7 @@ const navItems = [
     { name: 'Dashboard', icon: LayoutDashboard, path: '/', key: 'dashboard' },
     { name: 'Monitoring Agents', icon: Monitor, path: '/agents', key: 'agents' },
     { name: 'Real-time Insights', icon: Zap, path: '/real-time', key: 'realtime' },
+    { name: 'Alerts & Incidents', icon: Bell, path: '/alerts', key: 'alerts' },
     { name: 'Employees', icon: Users, path: '/employees', key: 'employees' },
     { name: 'Teams', icon: Users, path: '/teams', key: 'teams' },
     { name: 'Screenshots', icon: Monitor, path: '/screenshots', key: 'screenshots' },

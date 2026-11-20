@@ -56,7 +56,7 @@ async function main() {
         {
             name: 'rahul',
             email: 'rahul@gmail.com',
-            role: 'EMPLOYEE',
+            role: 'MANAGER',
         },
         {
             name: 'Test Employee',
