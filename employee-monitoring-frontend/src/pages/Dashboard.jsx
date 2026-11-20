@@ -382,7 +382,7 @@ export function Dashboard() {
 
     const sec = useMemo(() => {
         const rawSec = stats?.summarySeconds || {};
-        const isSessionUser = role?.toUpperCase() === 'EMPLOYEE' || role?.toUpperCase() === 'MANAGER';
+        const isSessionUser = role?.toUpperCase() === 'EMPLOYEE';
         if (!isSessionUser) {
             return rawSec;
         }
@@ -406,12 +406,14 @@ export function Dashboard() {
     }, [role, stats?.summarySeconds, isToday, isClockedIn, sessionSeconds]);
 
     const liveTick = useMemo(() => {
-        const isSessionUser = role?.toUpperCase() === 'EMPLOYEE' || role?.toUpperCase() === 'MANAGER';
-        if (!isSessionUser) return false;
+        const isSessionUser = role?.toUpperCase() === 'EMPLOYEE';
+        if (!isSessionUser) {
+            return Boolean(stats?.isLive || (isToday && isClockedIn && !isOnBreak));
+        }
         if (!isToday) return false;
         // Only tick when clocked in and not on break
         return isClockedIn && !isOnBreak;
-    }, [role, isToday, isClockedIn, isOnBreak]);
+    }, [role, isToday, isClockedIn, isOnBreak, stats?.isLive]);
 
     const chartData = stats.intradayActivity?.length
         ? stats.intradayActivity

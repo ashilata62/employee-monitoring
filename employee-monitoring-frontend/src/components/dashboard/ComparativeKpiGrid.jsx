@@ -132,12 +132,12 @@ export function ComparativeKpiGrid({ sec, stats, deltas, role, isToday = true, l
     const { isClockedIn } = useAuthStore();
     const sessionSeconds = useSessionTimer();
 
-    const isSessionUser = role?.toUpperCase() === 'EMPLOYEE' || role?.toUpperCase() === 'MANAGER';
+    const isSessionUser = role?.toUpperCase() === 'EMPLOYEE';
 
-    // When Employee or Manager is viewing Today:
+    // When Employee is viewing Today:
     // If clocked out: ALL cards reset to 00h 00m 00s and 0% immediately with zero latency!
     // If clocked in: session timer ticks live from 00h 00m 00s upwards in sync with top pill timer!
-    // For Admin: Displays genuine workforce/team aggregate metrics from stats.summary!
+    // For Manager & Admin: Displays genuine workforce/team aggregate metrics from stats.summary!
     const effectiveWorkTime = isSessionUser && isToday
         ? (isClockedIn ? formatSecondsToHMS(sessionSeconds) : '00h 00m 00s')
         : (stats?.summary?.workTime || formatSecondsToHMS(sec?.workTime));

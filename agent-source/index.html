@@ -1,4 +1,5 @@
 <html>
+
 <head>
     <title>Insightful Agent Setup</title>
     <style>
@@ -132,11 +133,12 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container" id="setup-view">
         <h1>Insightful</h1>
         <p>Complete setup to start monitoring.</p>
-        
+
         <div class="form-group">
             <label>Employee Name</label>
             <input type="text" id="name" placeholder="John Doe">
@@ -154,7 +156,8 @@
 
         <label class="consent">
             <input type="checkbox" id="consent">
-            <span>I agree to the tracking of my screen, active windows, and idle time for work monitoring purposes.</span>
+            <span>I agree to the tracking of my screen, active windows, and idle time for work monitoring
+                purposes.</span>
         </label>
 
         <button id="submit-btn" disabled>Complete Setup</button>
@@ -167,51 +170,63 @@
     <div class="container" id="permissions-view" style="display: none;">
         <h1 style="font-size: 1.25rem;">Allow Permissions</h1>
         <p style="margin-bottom: 1.5rem;">Access is required for work monitoring.</p>
-        
+
         <div style="text-align: left; margin-bottom: 1.5rem;">
             <div class="perm-item" id="perm-screen-card">
                 <div style="display: flex; align-items: center; gap: 0.75rem;">
-                    <div style="background: rgba(99, 102, 241, 0.1); padding: 0.5rem; border-radius: 0.5rem; color: var(--primary);">
+                    <div
+                        style="background: rgba(99, 102, 241, 0.1); padding: 0.5rem; border-radius: 0.5rem; color: var(--primary);">
                         <svg style="width: 18px; height: 18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
+                            </path>
                         </svg>
                     </div>
                     <div style="flex: 1;">
                         <div style="font-size: 0.8125rem; font-weight: 700;">Screen Recording</div>
                         <div style="font-size: 0.7rem; color: var(--text-muted);">Proof of work screenshots</div>
                     </div>
-                    <button class="perm-btn" id="btn-screen" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.75rem;">Allow</button>
+                    <button class="perm-btn" id="btn-screen"
+                        style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.75rem;">Allow</button>
                 </div>
             </div>
 
             <div class="perm-item" id="perm-location-card">
                 <div style="display: flex; align-items: center; gap: 0.75rem;">
-                    <div style="background: rgba(16, 185, 129, 0.1); padding: 0.5rem; border-radius: 0.5rem; color: #10b981;">
+                    <div
+                        style="background: rgba(16, 185, 129, 0.1); padding: 0.5rem; border-radius: 0.5rem; color: #10b981;">
                         <svg style="width: 18px; height: 18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z">
+                            </path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                         </svg>
                     </div>
                     <div style="flex: 1;">
                         <div style="font-size: 0.8125rem; font-weight: 700;">Live Location</div>
                         <div style="font-size: 0.7rem; color: var(--text-muted);">Real-time map updates</div>
                     </div>
-                    <button class="perm-btn" id="btn-location" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.75rem;">Allow</button>
+                    <button class="perm-btn" id="btn-location"
+                        style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.75rem;">Allow</button>
                 </div>
             </div>
 
             <div class="perm-item" id="perm-idle-card">
                 <div style="display: flex; align-items: center; gap: 0.75rem;">
-                    <div style="background: rgba(245, 158, 11, 0.1); padding: 0.5rem; border-radius: 0.5rem; color: #f59e0b;">
+                    <div
+                        style="background: rgba(245, 158, 11, 0.1); padding: 0.5rem; border-radius: 0.5rem; color: #f59e0b;">
                         <svg style="width: 18px; height: 18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
                     </div>
                     <div style="flex: 1;">
                         <div style="font-size: 0.8125rem; font-weight: 700;">Activity Sync</div>
                         <div style="font-size: 0.7rem; color: var(--text-muted);">App usage & idle time</div>
                     </div>
-                    <button class="perm-btn" id="btn-idle" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.75rem;">Enable</button>
+                    <button class="perm-btn" id="btn-idle"
+                        style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.75rem;">Enable</button>
                 </div>
             </div>
         </div>
@@ -224,16 +239,21 @@
         <p>Monitoring is active in the background. Minimizes to System Tray.</p>
         <div style="margin: 1.5rem 0; color: #10b981;">
             <svg style="width: 56px; height: 56px; margin: 0 auto;" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                <path fill-rule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clip-rule="evenodd"></path>
             </svg>
         </div>
 
-        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 0.75rem; padding: 0.75rem 1rem; margin-bottom: 1.25rem; text-align: left;">
+        <div
+            style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 0.75rem; padding: 0.75rem 1rem; margin-bottom: 1.25rem; text-align: left;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
                 <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">ACTIVE PROJECT</span>
-                <span id="detected-project-badge" style="font-size: 0.75rem; color: #818cf8; font-weight: 600;">Auto-detecting...</span>
+                <span id="detected-project-badge"
+                    style="font-size: 0.75rem; color: #818cf8; font-weight: 600;">Auto-detecting...</span>
             </div>
-            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: var(--text-muted); cursor: pointer; margin: 0; text-transform: none; letter-spacing: normal;">
+            <label
+                style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: var(--text-muted); cursor: pointer; margin: 0; text-transform: none; letter-spacing: normal;">
                 <input type="checkbox" id="chk-autorun" style="width: auto; margin: 0;">
                 <span>Start automatically on Windows boot</span>
             </label>
@@ -241,7 +261,8 @@
 
         <button id="success-close-btn">Hide to System Tray</button>
         <div style="margin-top: 1rem;">
-            <a href="#" id="success-health-btn" style="color: var(--text-muted); font-size: 0.75rem; text-decoration: none;">System Health Check</a>
+            <a href="#" id="success-health-btn"
+                style="color: var(--text-muted); font-size: 0.75rem; text-decoration: none;">System Health Check</a>
         </div>
     </div>
 
@@ -250,23 +271,33 @@
         <p>Your registration is complete. Please wait for an administrator to approve your device to start tracking.</p>
         <div style="margin: 2rem 0; color: var(--primary);">
             <svg class="animate-spin" style="width: 40px; height: 40px; margin: 0 auto;" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" style="opacity: 0.25;"></circle>
-                <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"
+                    style="opacity: 0.25;"></circle>
+                <path fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                </path>
             </svg>
         </div>
-        <div style="font-size: 0.75rem; color: var(--primary); margin-bottom: 2rem;">Connecting to server for real-time activation...</div>
+        <div style="font-size: 0.75rem; color: var(--primary); margin-bottom: 2rem;">Connecting to server for real-time
+            activation...</div>
         <button id="pending-close-btn">Close Window</button>
         <div style="margin-top: 1rem;">
-            <a href="#" id="pending-health-btn" style="color: var(--text-muted); font-size: 0.75rem; text-decoration: none;">System Health Check</a>
+            <a href="#" id="pending-health-btn"
+                style="color: var(--text-muted); font-size: 0.75rem; text-decoration: none;">System Health Check</a>
         </div>
     </div>
 
     <div class="container" id="rejected-view" style="display: none;">
-        <h1 style="background: linear-gradient(to right, #f87171, #ef4444); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">Registration Rejected</h1>
-        <p>Your monitoring registration was not approved by the administrator. Please contact your manager for details.</p>
+        <h1
+            style="background: linear-gradient(to right, #f87171, #ef4444); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
+            Registration Rejected</h1>
+        <p>Your monitoring registration was not approved by the administrator. Please contact your manager for details.
+        </p>
         <div style="margin: 2rem 0; color: #ef4444;">
-            <svg style="width: 48px; height: 48px; margin: 0 auto;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            <svg style="width: 48px; height: 48px; margin: 0 auto;" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
         </div>
         <button id="rejected-close-btn" style="background-color: #ef4444;">Close Window</button>
@@ -277,25 +308,29 @@
         <p>Connecting to the monitoring server.</p>
         <div style="margin: 2rem 0; color: var(--primary);">
             <svg class="animate-spin" style="width: 40px; height: 40px; margin: 0 auto;" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" style="opacity: 0.25;"></circle>
-                <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"
+                    style="opacity: 0.25;"></circle>
+                <path fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                </path>
             </svg>
         </div>
     </div>
 
     </div>
-    
+
     <div class="container" id="diagnostic-view" style="display: none;">
         <h1>System Health</h1>
         <p>Diagnostic results for your computer.</p>
-        
+
         <div style="text-align: left; margin-bottom: 1.5rem;">
             <div class="health-item" id="health-connectivity">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <span style="font-size: 0.875rem; font-weight: 600;">Server Connection</span>
                     <span class="status-badge status-loading">Checking...</span>
                 </div>
-                <div class="status-msg" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Verifying link to Railway...</div>
+                <div class="status-msg" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+                    Verifying link to Railway...</div>
             </div>
 
             <div class="health-item" id="health-powershell">
@@ -303,7 +338,8 @@
                     <span style="font-size: 0.875rem; font-weight: 600;">Activity Tracking</span>
                     <span class="status-badge status-loading">Checking...</span>
                 </div>
-                <div class="status-msg" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Checking PowerShell capability...</div>
+                <div class="status-msg" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+                    Checking PowerShell capability...</div>
             </div>
 
             <div class="health-item" id="health-screen">
@@ -311,7 +347,8 @@
                     <span style="font-size: 0.875rem; font-weight: 600;">Screen Capture</span>
                     <span class="status-badge status-loading">Checking...</span>
                 </div>
-                <div class="status-msg" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Verifying OS permissions...</div>
+                <div class="status-msg" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+                    Verifying OS permissions...</div>
             </div>
 
             <div class="health-item" id="health-storage">
@@ -319,7 +356,8 @@
                     <span style="font-size: 0.875rem; font-weight: 600;">Data Storage</span>
                     <span class="status-badge status-loading">Checking...</span>
                 </div>
-                <div class="status-msg" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Checking write access to AppData...</div>
+                <div class="status-msg" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+                    Checking write access to AppData...</div>
             </div>
         </div>
 
@@ -350,16 +388,6 @@
 
         let inviteToken = null;
 
-        const validateRegistration = () => {
-            const isEmailValid = emailInput.value.includes('@') && emailInput.value.includes('.');
-            submitBtn.disabled = !(nameInput.value.length >= 2 && isEmailValid && passwordInput.value.length >= 6 && consentCheckbox.checked);
-        };
-
-        nameInput.oninput = validateRegistration;
-        emailInput.oninput = validateRegistration;
-        passwordInput.oninput = validateRegistration;
-        consentCheckbox.onchange = validateRegistration;
-
         const applyInvitePrefill = (invite) => {
             if (!invite?.email) return;
             inviteToken = invite.token || inviteToken;
@@ -373,18 +401,12 @@
             validateRegistration();
         };
 
-        if (window.agentAPI && window.agentAPI.getInvitePrefill) {
-            window.agentAPI.getInvitePrefill().then(applyInvitePrefill).catch(() => {});
-        }
-        if (window.agentAPI && window.agentAPI.onInviteLoaded) {
-            window.agentAPI.onInviteLoaded(applyInvitePrefill);
-        }
+        window.agentAPI.getInvitePrefill().then(applyInvitePrefill);
+        window.agentAPI.onInviteLoaded(applyInvitePrefill);
 
-        if (window.agentAPI && window.agentAPI.getDeviceInfo) {
-            window.agentAPI.getDeviceInfo().then(id => {
-                deviceIdSpan.textContent = id;
-            }).catch(() => {});
-        }
+        window.agentAPI.getDeviceInfo().then(id => {
+            deviceIdSpan.textContent = id;
+        });
 
         const showView = (viewId) => {
             [setupView, permissionsView, pendingView, successView, rejectedView, loadingView, diagnosticView].forEach(v => {
@@ -394,42 +416,26 @@
             if (target) target.style.display = 'block';
         };
 
-        // Check initial status with safe timeout guarantee
+        // Check initial status
         showView('loading-view');
-        
-        const initialStatusTimeout = setTimeout(() => {
-            if (loadingView && loadingView.style.display !== 'none') {
+
+        window.agentAPI.getApprovalStatus().then(status => {
+            if (status === 'approved') {
+                showView('success-view');
+            } else if (status === 'pending') {
+                showView('pending-view');
+            } else if (status === 'permissions') {
+                showView('permissions-view');
+            } else {
                 showView('setup-view');
             }
-        }, 1500);
-
-        if (window.agentAPI && window.agentAPI.getApprovalStatus) {
-            window.agentAPI.getApprovalStatus().then(status => {
-                clearTimeout(initialStatusTimeout);
-                if (status === 'approved') {
-                    showView('success-view');
-                } else if (status === 'pending') {
-                    showView('pending-view');
-                } else if (status === 'permissions') {
-                    showView('permissions-view');
-                } else {
-                    showView('setup-view');
-                }
-            }).catch(err => {
-                clearTimeout(initialStatusTimeout);
-                console.error('getApprovalStatus error:', err);
-                showView('setup-view');
-            });
-        } else {
-            clearTimeout(initialStatusTimeout);
-            showView('setup-view');
-        }
+        });
 
         // Health Check Runner
         const runHealthCheck = async () => {
             showView('diagnostic-view');
             const items = ['connectivity', 'powershell', 'screen', 'storage'];
-            
+
             // Reset results
             items.forEach(id => {
                 const badge = document.querySelector(`#health-${id} .status-badge`);
@@ -439,12 +445,12 @@
             });
 
             const results = await window.agentAPI.runHealthCheck();
-            
+
             items.forEach(id => {
                 const res = results[id];
                 const badge = document.querySelector(`#health-${id} .status-badge`);
                 const msg = document.querySelector(`#health-${id} .status-msg`);
-                
+
                 badge.textContent = res.status === 'pass' ? 'Pass' : 'Fail';
                 badge.className = `status-badge status-${res.status}`;
                 msg.textContent = res.message;
@@ -486,10 +492,20 @@
             }
         });
 
+        const validateRegistration = () => {
+            const isEmailValid = emailInput.value.includes('@') && emailInput.value.includes('.');
+            submitBtn.disabled = !(nameInput.value.length >= 2 && isEmailValid && passwordInput.value.length >= 6 && consentCheckbox.checked);
+        };
+
+        nameInput.oninput = validateRegistration;
+        emailInput.oninput = validateRegistration;
+        passwordInput.oninput = validateRegistration;
+        consentCheckbox.onchange = validateRegistration;
+
         submitBtn.onclick = async () => {
             submitBtn.disabled = true;
             submitBtn.textContent = 'Saving...';
-            
+
             const result = await window.agentAPI.completeSetup({
                 name: nameInput.value,
                 email: emailInput.value,
@@ -595,7 +611,7 @@
             if (window.electronAPI.getStartupAutoRun) {
                 window.electronAPI.getStartupAutoRun().then(enabled => {
                     if (autorunChk) autorunChk.checked = !!enabled;
-                }).catch(() => {});
+                }).catch(() => { });
             }
             if (autorunChk && window.electronAPI.setStartupAutoRun) {
                 autorunChk.onchange = (e) => {
@@ -607,7 +623,7 @@
                     if (projectBadge && proj && proj.projectName) {
                         projectBadge.textContent = proj.projectName;
                     }
-                }).catch(() => {});
+                }).catch(() => { });
             }
             if (window.electronAPI.onAutoProjectDetected) {
                 window.electronAPI.onAutoProjectDetected(proj => {
@@ -620,12 +636,13 @@
     </script>
     <style>
         .perm-item {
-            background: rgba(255,255,255,0.03);
+            background: rgba(255, 255, 255, 0.03);
             padding: 1rem;
             border-radius: 1rem;
             margin-bottom: 0.75rem;
-            border: 1px solid rgba(255,255,255,0.05);
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
+
         .perm-btn-success {
             background-color: #10b981 !important;
             color: white !important;
@@ -634,29 +651,48 @@
             border-radius: 0.75rem;
             font-weight: 600;
         }
+
         .status-badge {
             padding: 0.2rem 0.6rem;
             border-radius: 2rem;
             font-size: 0.7rem;
             font-weight: 700;
         }
-        .status-loading { background: rgba(148, 163, 184, 0.1); color: var(--text-muted); }
-        .status-pass { background: rgba(16, 185, 129, 0.1); color: #10b981; }
-        .status-fail { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
-        
+
+        .status-loading {
+            background: rgba(148, 163, 184, 0.1);
+            color: var(--text-muted);
+        }
+
+        .status-pass {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .status-fail {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
         .health-item {
-            background: rgba(255,255,255,0.03);
+            background: rgba(255, 255, 255, 0.03);
             padding: 1rem;
             border-radius: 1rem;
             margin-bottom: 0.75rem;
-            border: 1px solid rgba(255,255,255,0.05);
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .animate-spin {
             animation: spin 1s linear infinite;
         }
+
         @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
         }
-    </style>
+    </style>

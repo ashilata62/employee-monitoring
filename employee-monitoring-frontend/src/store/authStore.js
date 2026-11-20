@@ -32,7 +32,10 @@ export const useAuthStore = create(
                     agentStatus: user.agentStatus,
                     activeAttendance: hasOpenSession ? activeAtt : null,
                     isClockedIn: hasOpenSession,
-                    isOnBreak: empStatus === 'BREAK' || (hasOpenSession && !!activeAtt.openBreak)
+                    isOnBreak: empStatus === 'BREAK' || (hasOpenSession && !!activeAtt.openBreak),
+                    isIdlePaused: false,
+                    frozenIdleSeconds: null,
+                    idlePauseStartTime: null
                 });
             },
 
@@ -52,7 +55,10 @@ export const useAuthStore = create(
                             activeAttendance: hasOpenSession ? activeAtt : null,
                             isClockedIn: hasOpenSession,
                             isOnBreak: userData.status === 'BREAK' || (hasOpenSession && !!activeAtt.openBreak),
-                            isTrackerActive: false
+                            isTrackerActive: false,
+                            isIdlePaused: false,
+                            frozenIdleSeconds: null,
+                            idlePauseStartTime: null
                         });
                         toast.success('Login successful');
                         return response.data;
@@ -97,7 +103,10 @@ export const useAuthStore = create(
                         set({
                             activeAttendance: response.data,
                             isClockedIn: true,
-                            isOnBreak: false
+                            isOnBreak: false,
+                            isIdlePaused: false,
+                            frozenIdleSeconds: null,
+                            idlePauseStartTime: null
                         });
                         if (empId) {
                             broadcastStaffStatus({
@@ -125,7 +134,10 @@ export const useAuthStore = create(
                         set({
                             activeAttendance: existingAttendance,
                             isClockedIn: true,
-                            isOnBreak: false
+                            isOnBreak: false,
+                            isIdlePaused: false,
+                            frozenIdleSeconds: null,
+                            idlePauseStartTime: null
                         });
                         if (empId) {
                             broadcastStaffStatus({
