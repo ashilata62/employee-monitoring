@@ -697,9 +697,7 @@ const VideoPlaybackModal = memo(({ isOpen, onClose, playlist = [], initialIndex 
               {canDelete && (
                 <button
                   onClick={() => {
-                    if (window.confirm("Are you sure you want to delete this video recording?")) {
-                      onDeleteVideo(currentVideo.id);
-                    }
+                    onDeleteVideo(currentVideo.id);
                   }}
                   className="p-2 text-[#E58B8B] hover:text-white bg-[#A84B4B]/15 hover:bg-[#A84B4B]/30 border border-[#A84B4B]/30 rounded-xl transition cursor-pointer"
                   title="Delete Recording"
@@ -1249,36 +1247,50 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
 
             GenericSelectionModal.displayName = 'GenericSelectionModal';
 
-            const DeleteConfirmationModal = ({isOpen, onClose, onConfirm, isEmployee}) => {
+            const DeleteConfirmationModal = ({
+              isOpen,
+              onClose,
+              onConfirm,
+              isEmployee,
+              title,
+              description,
+              confirmText = "Delete",
+              isLoading = false
+            }) => {
   if (!isOpen) return null;
             return (
-            <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm animate-fade-in">
-              <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-scale-in border border-slate-200 dark:border-slate-800 p-6">
+            <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm animate-fade-in">
+              <div className="bg-[#FBF9F5] dark:bg-[#1E2419] w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-scale-in border border-[#D6CDBC] dark:border-[#384232] p-6">
                 <div className="flex items-center gap-4 mb-4">
-                  <div className="h-12 w-12 rounded-full bg-rose-100 dark:bg-rose-500/10 flex items-center justify-center text-rose-600">
+                  <div className="h-12 w-12 rounded-full bg-rose-100 dark:bg-rose-500/10 flex items-center justify-center text-rose-600 dark:text-rose-400 flex-shrink-0">
                     <Trash2 size={24} />
                   </div>
                   <div>
-                    <h3 className="text-lg font-black text-slate-900 dark:text-white">Delete Screenshot?</h3>
+                    <h3 className="text-lg font-black text-slate-900 dark:text-white">
+                      {title || "Delete Screenshot?"}
+                    </h3>
                     <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-                      {isEmployee
+                      {description || (isEmployee
                         ? "This will hide it from your view, but it may still be visible to admins."
-                        : "This will permanently remove the screenshot from the database and disk."}
+                        : "This will permanently remove the item from the database and disk.")}
                     </p>
                   </div>
                 </div>
                 <div className="flex justify-end gap-3 translate-y-2">
                   <button
                     onClick={onClose}
-                    className="px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 rounded-xl text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
+                    disabled={isLoading}
+                    className="px-4 py-2 border border-[#D6CDBC] dark:border-[#384232] bg-white dark:bg-[#252B20] text-slate-700 dark:text-slate-300 rounded-xl text-sm font-bold hover:bg-slate-50 dark:hover:bg-[#2A3125] transition-all disabled:opacity-50"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={onConfirm}
-                    className="px-6 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-rose-500/20 active:scale-95 transition-all"
+                    disabled={isLoading}
+                    className="px-6 py-2 bg-rose-500 hover:bg-rose-600 disabled:opacity-50 text-white rounded-xl text-sm font-bold shadow-lg shadow-rose-500/20 active:scale-95 transition-all flex items-center gap-2"
                   >
-                    Delete
+                    {isLoading && <RefreshCw size={16} className="animate-spin" />}
+                    <span>{confirmText}</span>
                   </button>
                 </div>
               </div>
@@ -1646,6 +1658,14 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
             const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
             const [screenshotToDelete, setScreenshotToDelete] = useState(null);
 
+            // Video Deletion Modal State
+            const [isVideoDeleteModalOpen, setIsVideoDeleteModalOpen] = useState(false);
+            const [videoToDelete, setVideoToDelete] = useState(null);
+            const [isDeletingVideo, setIsDeletingVideo] = useState(false);
+
+            // Bulk Deletion Modal State
+            const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
+
             // Selection Mode State
             const [isSelectionMode, setIsSelectionMode] = useState(false);
             const [selectedIds, setSelectedIds] = useState([]);
@@ -1666,24 +1686,36 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
               setSelectedIds(filteredScreenshots.map(s => s.id));
   };
 
-  const handleBulkDelete = async () => {
-    if (selectedIds.length === 0) return;
-            if (!window.confirm(`Are you sure you want to delete ${selectedIds.length} screenshots?`)) return;
+  const handleConfirmDeleteVideo = useCallback(async () => {
+    if (!videoToDelete) return;
+    setIsDeletingVideo(true);
+    try {
+      await handleDeleteVideo(videoToDelete);
+      setIsVideoDeleteModalOpen(false);
+      setVideoToDelete(null);
+    } finally {
+      setIsDeletingVideo(false);
+    }
+  }, [handleDeleteVideo, videoToDelete]);
 
-            setIsBulkDeleting(true);
-            try {
+  const handleConfirmBulkDelete = async () => {
+    if (selectedIds.length === 0) return;
+
+    setIsBulkDeleting(true);
+    try {
       const res = await screenshotService.bulkDelete(selectedIds);
-            if (res.success) {
-              setBackendScreenshots(prev => prev.filter(s => !selectedIds.includes(s.id)));
-            setSelectedIds([]);
-            setIsSelectionMode(false);
-            if (addNotification) addNotification('Success', `${res.message}`, 'success');
+      if (res.success) {
+        setBackendScreenshots(prev => prev.filter(s => !selectedIds.includes(s.id)));
+        setSelectedIds([]);
+        setIsSelectionMode(false);
+        setIsBulkDeleteModalOpen(false);
+        if (addNotification) addNotification('Success', `${res.message}`, 'success');
       }
     } catch (err) {
-              console.error('Bulk delete failed:', err);
-            if (addNotification) addNotification('Error', 'Bulk delete failed', 'error');
+      console.error('Bulk delete failed:', err);
+      if (addNotification) addNotification('Error', 'Bulk delete failed', 'error');
     } finally {
-              setIsBulkDeleting(false);
+      setIsBulkDeleting(false);
     }
   };
 
@@ -2503,7 +2535,9 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                                   {selectedIds.length} Selected
                                 </span>
                                 <button
-                                  onClick={handleBulkDelete}
+                                  onClick={() => {
+                                    if (selectedIds.length > 0) setIsBulkDeleteModalOpen(true);
+                                  }}
                                   disabled={selectedIds.length === 0 || isBulkDeleting}
                                   className="ml-auto px-6 py-2.5 bg-rose-500 hover:bg-rose-600 disabled:opacity-50 text-white rounded-xl text-sm font-bold shadow-lg shadow-rose-500/20 transition-all flex items-center gap-2 active:scale-95"
                                 >
@@ -2885,9 +2919,8 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                                             {role === 'ADMIN' && (
                                               <button
                                                 onClick={() => {
-                                                  if (window.confirm("Are you sure you want to delete this video recording?")) {
-                                                    handleDeleteVideo(recording.id);
-                                                  }
+                                                  setVideoToDelete(recording.id);
+                                                  setIsVideoDeleteModalOpen(true);
                                                 }}
                                                 className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-colors"
                                                 title="Delete Recording"
@@ -2925,7 +2958,10 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                       }}
                       playlist={activeVideoPlaylist}
                       initialIndex={activeVideoIndex}
-                      onDeleteVideo={handleDeleteVideo}
+                      onDeleteVideo={(videoId) => {
+                        setVideoToDelete(videoId);
+                        setIsVideoDeleteModalOpen(true);
+                      }}
                       canDelete={role === 'ADMIN'}
                     />
 
@@ -3158,6 +3194,27 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                       onClose={() => setIsDeleteModalOpen(false)}
                       onConfirm={handleConfirmDelete}
                       isEmployee={role === 'EMPLOYEE'}
+                    />
+                    <DeleteConfirmationModal
+                      isOpen={isVideoDeleteModalOpen}
+                      onClose={() => {
+                        setIsVideoDeleteModalOpen(false);
+                        setVideoToDelete(null);
+                      }}
+                      onConfirm={handleConfirmDeleteVideo}
+                      title="Delete Video Recording?"
+                      description="Are you sure you want to delete this video recording? This will permanently remove the video from storage and disk."
+                      confirmText="Delete Video"
+                      isLoading={isDeletingVideo}
+                    />
+                    <DeleteConfirmationModal
+                      isOpen={isBulkDeleteModalOpen}
+                      onClose={() => setIsBulkDeleteModalOpen(false)}
+                      onConfirm={handleConfirmBulkDelete}
+                      title={`Delete ${selectedIds.length} Screenshot${selectedIds.length === 1 ? '' : 's'}?`}
+                      description={`This will permanently remove ${selectedIds.length} selected screenshot${selectedIds.length === 1 ? '' : 's'} from the database and disk.`}
+                      confirmText="Delete All"
+                      isLoading={isBulkDeleting}
                     />
                   </>
                 );
