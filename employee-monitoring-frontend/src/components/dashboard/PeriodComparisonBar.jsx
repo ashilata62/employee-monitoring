@@ -5,6 +5,7 @@ import {
     Plus,
     Filter,
     Download,
+    Bell,
     FileSpreadsheet,
     FileText,
     LogIn,
