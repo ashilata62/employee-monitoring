@@ -1326,6 +1326,13 @@ export function RealTimeProvider({ children }) {
             };
 
             const backendStatus = statusMap[status] || 'BACKLOG';
+            const isFinalized = backendStatus === 'FINALIZED';
+            if (isFinalized) {
+                const timerState = useTaskStore.getState();
+                if (timerState.isRunning && timerState.activeTask?.id === taskId) {
+                    await timerState.stopTask();
+                }
+            }
             const res = await taskService.updateTaskStatus(taskId, backendStatus);
 
             if (res.success) {
@@ -1396,6 +1403,13 @@ export function RealTimeProvider({ children }) {
                 dueDate: taskData.dueDate && taskData.dueDate !== 'No Date' ? new Date(taskData.dueDate).toISOString() : undefined,
                 employeeId: taskData.assigneeId || undefined,
             };
+            const isFinalized = backendPayload.status === 'FINALIZED';
+            if (isFinalized) {
+                const timerState = useTaskStore.getState();
+                if (timerState.isRunning && timerState.activeTask?.id === id) {
+                    await timerState.stopTask();
+                }
+            }
             const res = await taskService.updateTask(id, backendPayload);
             if (res.success) {
                 setState(prev => ({
@@ -1685,10 +1699,16 @@ export function RealTimeProvider({ children }) {
 
         // 4. Role-specific notification filtering
         if (currentRole === 'EMPLOYEE') {
-            const filteredEmployees = currentEmployees.filter(e => e.email === targetEmail);
-            const myEmp = filteredEmployees[0];
-            const myName = (myEmp?.fullName || myEmp?.name || user?.fullName || user?.name || '').toLowerCase().trim();
-            const myId = String(myEmp?.id || user?.id || '');
+            const myEmpId = String(user?.employeeId || user?.employee?.id || user?.id || '');
+            const myEmail = (user?.email || '').toLowerCase().trim();
+            const myFullName = (user?.fullName || user?.name || user?.employee?.fullName || '').toLowerCase().trim();
+            const myFirstName = myFullName.split(' ')[0] || '';
+
+            const filteredEmployees = currentEmployees.filter(e => {
+                if (myEmpId && String(e.id) === myEmpId) return true;
+                if (myEmail && (e.email || '').toLowerCase() === myEmail) return true;
+                return false;
+            });
 
             const employeeFilteredNotifs = mergedNotifications.filter(n => {
                 // Keep all alert-synthesized notifications (they are already scoped to this employee)
@@ -1697,31 +1717,33 @@ export function RealTimeProvider({ children }) {
                 const title = (n.title || '').toLowerCase();
                 const desc = (n.description || '').toLowerCase();
 
-                // Exclude all admin/system notifications
+                // Exclude all admin/manager system configurations
                 if (title.includes('compliance setting') || title.includes('geofence') ||
                     title.includes('employee added') || title.includes('employee removed') ||
                     title.includes('team created') || title.includes('team removed') ||
                     title.includes('goal defined') || title.includes('setting updated') ||
-                    title.includes('live screen stream') || title.includes('screenshot from')) {
+                    title.includes('live screen stream') || title.includes('screenshot from') ||
+                    title.includes('employees merged')) {
                     return false;
                 }
 
-                // If it is a coworker status event, filter out unless it's the current employee
-                const isStatusEvent = title.includes('went online') || title.includes('went offline') ||
-                    title.includes('clocked in') || title.includes('clocked out') ||
-                    title.includes('checked in') || desc.includes('clocked in') || desc.includes('clocked out') ||
+                // Employees must NEVER see anyone (coworker or manager) going online or offline
+                if (title.includes('went online') || title.includes('went offline') ||
+                    desc.includes('went online') || desc.includes('went offline')) {
+                    return false;
+                }
+
+                // Personal work session / clock-in / clock-out: only for self
+                const isSessionEvent = title.includes('work session') || title.includes('clocked in') ||
+                    title.includes('clocked out') || title.includes('checked in') ||
                     title.includes('went on break') || title.includes('returned from break') ||
-                    title.includes('login successful');
+                    desc.includes('clocked in') || desc.includes('clocked out');
 
-                if (isStatusEvent) {
-                    if (myName && (title.includes(myName) || desc.includes(myName))) return true;
-                    if (myId && (title.includes(myId) || desc.includes(myId))) return true;
-                    return false;
-                }
-
-                // If description contains a raw UUID of someone else, filter out
-                if (desc.includes('employee ') && !desc.includes(myId) && (!myName || !desc.includes(myName))) {
-                    return false;
+                if (isSessionEvent) {
+                    const mentionsMyId = myEmpId && (title.includes(myEmpId.toLowerCase()) || desc.includes(myEmpId.toLowerCase()));
+                    const mentionsMyName = myFullName && (title.includes(myFullName) || desc.includes(myFullName));
+                    const isGenericSelf = !desc.includes('employee ') && (title.includes('work session started') || title.includes('work session ended'));
+                    return Boolean(mentionsMyId || mentionsMyName || isGenericSelf);
                 }
 
                 // Keep personal task assignments
@@ -1729,24 +1751,32 @@ export function RealTimeProvider({ children }) {
                     return true;
                 }
 
-                // Keep announcements
+                // Keep announcements / broadcasts
                 if (n.type === 'announcement' || n.type === 'broadcast') return true;
 
                 // Explicit target for this employee
-                if (n.targetUserId && (String(n.targetUserId) === myId || String(n.targetUserId) === String(user?.userId || user?.id))) {
+                if (n.targetUserId && (String(n.targetUserId) === myEmpId || String(n.targetUserId) === String(user?.userId || user?.id))) {
                     return true;
                 }
 
                 return false;
+            }).map(n => {
+                // Clean up any raw UUID in descriptions for pleasant UI
+                let cleanDesc = n.description || '';
+                if (myEmpId && cleanDesc.includes(myEmpId)) {
+                    cleanDesc = cleanDesc.replace(new RegExp(`Employee\\s+${myEmpId}`, 'gi'), 'You');
+                    cleanDesc = cleanDesc.replace(new RegExp(myEmpId, 'gi'), 'you');
+                }
+                return { ...n, description: cleanDesc };
             });
 
             return {
                 employees: filteredEmployees,
-                tasks: state.tasks, // Server already filters tasks for employees, don't double-filter here
-                projects: state.projects.filter(p => p.memberIds?.includes(filteredEmployees[0]?.id)),
-                goals: state.goals.filter(g => g.stakeholders?.some(s => s.employeeId === filteredEmployees[0]?.id)),
+                tasks: state.tasks, // Server already filters tasks for employees
+                projects: state.projects.filter(p => p.memberIds?.includes(filteredEmployees[0]?.id || myEmpId)),
+                goals: state.goals.filter(g => g.stakeholders?.some(s => s.employeeId === (filteredEmployees[0]?.id || myEmpId))),
                 teams: [],
-                activityLogs: state.activityLogs.filter(l => l.employeeId === filteredEmployees[0]?.id),
+                activityLogs: state.activityLogs.filter(l => l.employeeId === (filteredEmployees[0]?.id || myEmpId)),
                 alerts: scopedAlerts,
                 notifications: employeeFilteredNotifs
             };
@@ -1780,7 +1810,7 @@ export function RealTimeProvider({ children }) {
                     return false;
                 }
 
-                // Check-in / clock-out / status events: only show if in manager's team
+                // Check-in / clock-out / status events: only show if in manager's team or manager themselves
                 const isStatusEvent = title.includes('went online') || title.includes('went offline') ||
                     title.includes('clocked in') || title.includes('clocked out') ||
                     title.includes('checked in') || desc.includes('clocked in') || desc.includes('clocked out') ||
@@ -1789,7 +1819,9 @@ export function RealTimeProvider({ children }) {
                 if (isStatusEvent) {
                     const mentionsTeamMember = myTeamNames.some(name => title.includes(name) || desc.includes(name));
                     const mentionsTeamId = Array.from(myTeamIds).some(id => title.includes(id) || desc.includes(id));
-                    return mentionsTeamMember || mentionsTeamId || myTeamNames.length === 0;
+                    const mentionsMe = (currentEmpName && (title.includes(currentEmpName) || desc.includes(currentEmpName))) ||
+                                       (currentEmpId && (title.includes(String(currentEmpId)) || desc.includes(String(currentEmpId))));
+                    return mentionsTeamMember || mentionsTeamId || mentionsMe;
                 }
 
                 // Exclude raw employee UUIDs not in this manager's team
@@ -1802,12 +1834,12 @@ export function RealTimeProvider({ children }) {
             });
 
             return {
-                employees: currentEmployees.filter(e => myTeamIds.has(String(e.id)) || myTeamIds.size === 0),
+                employees: currentEmployees.filter(e => myTeamIds.has(String(e.id)) || String(e.id) === String(currentEmpId) || String(e.email) === String(user?.email)),
                 tasks: state.tasks,
                 projects: state.projects,
                 goals: state.goals,
                 teams: state.teams.filter(t => !user?.teamId || t.id === user?.teamId),
-                activityLogs: state.activityLogs.filter(l => myTeamIds.has(String(l.employeeId)) || myTeamIds.size === 0),
+                activityLogs: state.activityLogs.filter(l => myTeamIds.has(String(l.employeeId)) || String(l.employeeId) === String(currentEmpId)),
                 alerts: scopedAlerts,
                 notifications: managerFilteredNotifs
             };

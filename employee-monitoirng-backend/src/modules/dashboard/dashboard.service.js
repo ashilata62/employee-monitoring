@@ -641,6 +641,10 @@ const getManagerDashboard = async (organizationId, teamId, startDate = null, end
 };
 
 const getEmployeeDashboard = async (organizationId, employeeId, startDate = null, endDate = null, compareStartDate = null, compareEndDate = null) => {
+    if (!employeeId) {
+        throw new Error('Employee ID is required for employee dashboard');
+    }
+
     const [activityLogs, attendanceList, tasks, screenshots] = await Promise.all([
         prisma.activityLog.findMany({
             where: { organizationId, employeeId },
@@ -681,7 +685,8 @@ const getEmployeeDashboard = async (organizationId, employeeId, startDate = null
         productivityScore: summary.utilization,
         summary,
         intradayActivity,
-        // RBAC: Empty peer data for Employees
+        // RBAC: Empty peer/manager/admin data for Employees
+        employees: [],
         topProductive: [],
         topUnproductive: [],
         teams: [],
