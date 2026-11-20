@@ -230,8 +230,9 @@ export function PeriodComparisonBar({
                         <>
                             <button
                                 onClick={() => navigate(`${rolePrefix}/employees`)}
-                                className="px-4 py-2 rounded-xl bg-[#5932EA] hover:bg-[#4A28C7] text-white text-xs font-semibold shadow-xs transition flex items-center gap-1.5 cursor-pointer"
+                                className="px-4 py-2 rounded-xl bg-[#30382B] hover:bg-[#3C4536] text-[#FDFBF7] dark:bg-[#C9A96E] dark:hover:bg-[#d8b87d] dark:text-[#161C14] text-xs font-bold shadow-warm-xs transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
                             >
+                                <Plus size={14} className="text-[#D3B98D] dark:text-[#161C14]" />
                                 <span>Add New Employee</span>
                             </button>
 

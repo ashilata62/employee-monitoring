@@ -169,8 +169,8 @@ let lastViolation = {
 const VIOLATION_COOLDOWN_MS = 60 * 1000; // 60s cooldown for same continuous violation
 
 // ─── Smart Idle & Inactivity Monitoring Configuration (Requirements 2, 3, 4, 5) ──
-const DEFAULT_IDLE_THRESHOLD_SECONDS = 600; // 10 minutes (600s) - Idle classification & Alert
-const WARNING_THRESHOLD_SECONDS = 300; // 5 minutes (300s) - Warning reminder
+const DEFAULT_IDLE_THRESHOLD_SECONDS = 180; // 3 minutes (180s) - Idle classification & Alert
+const WARNING_THRESHOLD_SECONDS = 120; // 2 minutes (120s) - Warning reminder
 const PASSIVE_THRESHOLD_SECONDS = 60; // 1 minute (60s) - Initial inactivity detection
 
 let idleConfig = {
@@ -649,11 +649,11 @@ async function checkIdleActivity() {
     const idleSeconds = getSystemInactivitySeconds();
     idleState.lastIdleSeconds = idleSeconds;
     const now = Date.now();
-    const idleThreshold = idleConfig.thresholdSeconds; // 600s (10 min)
-    const warningThreshold = idleConfig.warningSeconds; // 300s (5 min)
+    const idleThreshold = idleConfig.thresholdSeconds; // 180s (3 min)
+    const warningThreshold = idleConfig.warningSeconds; // 120s (2 min)
     const passiveThreshold = idleConfig.passiveSeconds; // 60s (1 min)
 
-    // 1. Stage: IDLE (>= 10 minutes / 600s)
+    // 1. Stage: IDLE (>= 3 minutes / 180s)
     if (idleSeconds >= idleThreshold) {
         if (idleState.currentStatus !== 'IDLE') {
             idleState.currentStatus = 'IDLE';
@@ -671,7 +671,7 @@ async function checkIdleActivity() {
                     try {
                         new Notification({
                             title: 'Employee Inactivity Alert',
-                            body: 'You have been inactive for 10 minutes. Please resume your work.'
+                            body: 'You have been inactive for 3 minutes. Please resume your work.'
                         }).show();
                     } catch (e) { }
                 }
@@ -689,7 +689,7 @@ async function checkIdleActivity() {
                 if (mainWindow && !mainWindow.isDestroyed()) {
                     mainWindow.webContents.send('idle:prompt', {
                         title: 'Employee Inactivity Alert',
-                        message: 'You have been inactive for 10 minutes. Please resume your work.',
+                        message: 'You have been inactive for 3 minutes. Please resume your work.',
                         idleDuration: idleSeconds,
                         idleStartTime: idleState.idleStartTime
                     });
@@ -702,7 +702,7 @@ async function checkIdleActivity() {
             }
         }
     }
-    // 2. Stage: IDLE WARNING (>= 5 minutes / 300s)
+    // 2. Stage: IDLE WARNING (>= 2 minutes / 120s)
     else if (idleSeconds >= warningThreshold) {
         if (idleState.currentStatus !== 'IDLE_WARNING' && idleState.currentStatus !== 'IDLE') {
             idleState.currentStatus = 'IDLE_WARNING';
@@ -717,7 +717,7 @@ async function checkIdleActivity() {
                 const startD = new Date(now - (idleSeconds * 1000));
                 const endD = new Date(now);
                 const formatTime = (d) => d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
-                const warningMsg = `You have been inactive for 5 minutes (from ${formatTime(startD)} to ${formatTime(endD)}). Please resume your work.`;
+                const warningMsg = `You have been inactive for 2 minutes (from ${formatTime(startD)} to ${formatTime(endD)}). Please resume your work.`;
 
                 // Non-intrusive reminder notification
                 if (Notification && typeof Notification.isSupported === 'function' && Notification.isSupported()) {

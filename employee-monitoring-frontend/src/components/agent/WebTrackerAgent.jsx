@@ -115,7 +115,7 @@ export function WebTrackerAgent() {
     // ─── Cursor Activity & Inactivity Monitoring State (Requirements 2, 3, 4, 5) ─
     const [showIdleModal, setShowIdleModal] = useState(false);
     const showIdleModalRef = useRef(false);
-    const [idleMinutesPrompt, setIdleMinutesPrompt] = useState(10);
+    const [idleMinutesPrompt, setIdleMinutesPrompt] = useState(3);
     const lastActivityRef = useRef(Date.now());
     const idleStatusRef = useRef('ACTIVE'); // 'ACTIVE' | 'PASSIVE' | 'IDLE_WARNING' | 'IDLE' | 'BREAK'
     const idleStartTimeRef = useRef(null);
@@ -243,8 +243,8 @@ export function WebTrackerAgent() {
                 return;
             }
 
-            // 1. Stage: IDLE POPUP & AFK (10 minutes / 600 seconds - triggers Employee Inactivity Alert modal)
-            if (idleSec >= 10 * 60) {
+            // 1. Stage: IDLE POPUP & AFK (3 minutes / 180 seconds - triggers Employee Inactivity Alert modal)
+            if (idleSec >= 3 * 60) {
                 if (idleStatusRef.current !== 'IDLE') {
                     idleStatusRef.current = 'IDLE';
                     if (!idleStartTimeRef.current) {
@@ -253,7 +253,7 @@ export function WebTrackerAgent() {
 
                     if (!hasSentIdleAlertRef.current) {
                         hasSentIdleAlertRef.current = true;
-                        setIdleMinutesPrompt(10);
+                        setIdleMinutesPrompt(3);
                         showIdleModalRef.current = true;
                         setShowIdleModal(true);
 
@@ -267,13 +267,13 @@ export function WebTrackerAgent() {
                         storeState.pauseSessionForIdle(currentSessionSec);
 
                         // Trigger In-App Alert Toast Notification
-                        toast.error('Employee Inactivity Alert: You have been inactive for 10 minutes. Please resume your work.');
+                        toast.error('Employee Inactivity Alert: You have been inactive for 3 minutes. Please resume your work.');
 
                         // Trigger Browser Native Desktop Notification
                         if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
                             try {
                                 new window.Notification('Employee Inactivity Alert', {
-                                    body: 'You have been inactive for 10 minutes. Please resume your work.',
+                                    body: 'You have been inactive for 3 minutes. Please resume your work.',
                                     icon: '/favicon.ico'
                                 });
                             } catch (e) {
@@ -315,8 +315,8 @@ export function WebTrackerAgent() {
                     }
                 }
             }
-            // 2. Stage: IDLE WARNING NOTIFICATION (5 minutes / 300 seconds reminder notification with dynamic time duration)
-            else if (idleSec >= 5 * 60) {
+            // 2. Stage: IDLE WARNING NOTIFICATION (2 minutes / 120 seconds reminder notification with dynamic time duration)
+            else if (idleSec >= 2 * 60) {
                 if (idleStatusRef.current !== 'IDLE_WARNING' && idleStatusRef.current !== 'IDLE') {
                     idleStatusRef.current = 'IDLE_WARNING';
                     if (!idleStartTimeRef.current) {
@@ -330,7 +330,7 @@ export function WebTrackerAgent() {
                         const endTime = new Date(now);
                         const formatTime = (d) => d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
                         const timeRange = `(from ${formatTime(startTime)} to ${formatTime(endTime)})`;
-                        const warningMsg = `Activity Reminder: You have been inactive for 5 minutes ${timeRange}. Please resume your work.`;
+                        const warningMsg = `Activity Reminder: You have been inactive for 2 minutes ${timeRange}. Please resume your work.`;
 
                         toast.warning(warningMsg);
 
@@ -388,7 +388,7 @@ export function WebTrackerAgent() {
         if (!user || !isMonitoredEmployee) return;
         if (window.electronAPI?.onIdlePrompt) {
             const cleanup = window.electronAPI.onIdlePrompt((data) => {
-                setIdleMinutesPrompt(Math.floor((data.idleDuration || 600) / 60));
+                setIdleMinutesPrompt(Math.floor((data.idleDuration || 180) / 60));
                 showIdleModalRef.current = true;
                 setShowIdleModal(true);
                 const storeState = useAuthStore.getState();
@@ -912,7 +912,7 @@ export function WebTrackerAgent() {
                         </h3>
 
                         <p className="text-sm text-[#9E988A] leading-relaxed mb-6 font-medium">
-                            You have been inactive for {idleMinutesPrompt || 10} minutes. Please resume your work.
+                            You have been inactive for {idleMinutesPrompt || 3} minutes. Please resume your work.
                         </p>
 
                         <div className="flex flex-col sm:flex-row gap-3 justify-center">

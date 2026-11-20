@@ -12,7 +12,8 @@ import {
     Calendar,
     Download,
     History,
-    Loader2
+    Loader2,
+    Unlock
 } from 'lucide-react';
 import { timesheetService, mondayOf, addDaysStr, fmtMoney, fmtH } from '../../services/timesheetService';
 import { useAuthStore } from '../../store/authStore';
@@ -32,6 +33,8 @@ export function WeeklyTimesheetsView({ employees = [] }) {
     const [timesheetsList, setTimesheetsList] = useState([]);
     const [loading, setLoading] = useState(false);
     const [submittingId, setSubmittingId] = useState(null);
+    const [actionLoadingId, setActionLoadingId] = useState(null);
+    const [rejectModal, setRejectModal] = useState({ open: false, timesheet: null, comment: '' });
     const [activeDayModal, setActiveDayModal] = useState(null);
 
     // Filter employees: If manager, only show employees in their assigned team. Filter out ADMIN role.
@@ -179,13 +182,66 @@ export function WeeklyTimesheetsView({ employees = [] }) {
         try {
             const res = await timesheetService.submit(weekStart, targetEmpId);
             if (res.success) {
-                toast.success('Timesheet submitted for manager approval!');
+                toast.success('Timesheet submitted for approval!');
                 loadTimesheet();
             }
         } catch (err) {
             toast.error(err.response?.data?.message || err.message || 'Submission failed');
         } finally {
             setSubmittingId(null);
+        }
+    };
+
+    const handleApprove = async (ts) => {
+        if (!ts.timesheetId) return;
+        setActionLoadingId(ts.timesheetId);
+        try {
+            const res = await timesheetService.approve(ts.timesheetId, 'Approved by Administrator');
+            if (res.success) {
+                toast.success(`Timesheet for ${ts.employeeName} approved and locked!`);
+                loadTimesheet();
+            }
+        } catch (err) {
+            toast.error(err.response?.data?.message || err.message || 'Approval failed');
+        } finally {
+            setActionLoadingId(null);
+        }
+    };
+
+    const handleUnlock = async (ts) => {
+        if (!ts.timesheetId) return;
+        setActionLoadingId(ts.timesheetId);
+        try {
+            const res = await timesheetService.reopen(ts.timesheetId, 'Unlocked by Administrator');
+            if (res.success) {
+                toast.success(`Timesheet for ${ts.employeeName} unlocked and reverted to Draft!`);
+                loadTimesheet();
+            }
+        } catch (err) {
+            toast.error(err.response?.data?.message || err.message || 'Failed to unlock timesheet');
+        } finally {
+            setActionLoadingId(null);
+        }
+    };
+
+    const handleConfirmReject = async () => {
+        if (!rejectModal.timesheet || !rejectModal.comment.trim()) {
+            toast.error('Please enter a rejection comment');
+            return;
+        }
+        const ts = rejectModal.timesheet;
+        setActionLoadingId(ts.timesheetId);
+        try {
+            const res = await timesheetService.reject(ts.timesheetId, rejectModal.comment.trim());
+            if (res.success) {
+                toast.success(`Timesheet for ${ts.employeeName} rejected.`);
+                setRejectModal({ open: false, timesheet: null, comment: '' });
+                loadTimesheet();
+            }
+        } catch (err) {
+            toast.error(err.response?.data?.message || err.message || 'Rejection failed');
+        } finally {
+            setActionLoadingId(null);
         }
     };
 
@@ -318,31 +374,84 @@ export function WeeklyTimesheetsView({ employees = [] }) {
                                         </div>
                                     </div>
 
-                                    {/* Submit Button - Only for Manager and Employee roles */}
-                                    {role !== 'ADMIN' && (data.status === 'DRAFT' || data.status === 'REJECTED') && (
-                                        <button
-                                            onClick={() => handleSubmit(data.employeeId)}
-                                            disabled={submittingId === data.employeeId || data.totalMinutes === 0}
-                                            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#30382B] hover:bg-[#3C4536] text-[#FDFBF7] font-semibold text-xs uppercase tracking-wider shadow-warm-xs transition disabled:opacity-50 cursor-pointer active:scale-95"
-                                        >
-                                            {submittingId === data.employeeId ? <Loader2 size={14} className="animate-spin text-[#D3B98D]" /> : <Send size={14} className="text-[#D3B98D]" />}
-                                            <span>{data.status === 'REJECTED' ? 'Resubmit for Approval' : 'Submit for Approval'}</span>
-                                        </button>
-                                    )}
+                                    {/* Action Buttons Hub */}
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        {/* If DRAFT or REJECTED: Show Submit for Approval */}
+                                        {(data.status === 'DRAFT' || data.status === 'REJECTED') && (
+                                            <button
+                                                onClick={() => handleSubmit(data.employeeId)}
+                                                disabled={submittingId === data.employeeId || data.totalMinutes === 0}
+                                                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#30382B] hover:bg-[#3C4536] text-[#FDFBF7] font-semibold text-xs uppercase tracking-wider shadow-warm-xs transition disabled:opacity-50 cursor-pointer active:scale-95"
+                                            >
+                                                {submittingId === data.employeeId ? (
+                                                    <Loader2 size={13} className="animate-spin text-[#D3B98D]" />
+                                                ) : (
+                                                    <Send size={13} className="text-[#D3B98D]" />
+                                                )}
+                                                <span>{data.status === 'REJECTED' ? 'Resubmit for Approval' : 'Submit for Approval'}</span>
+                                            </button>
+                                        )}
 
-                            {data.status === 'SUBMITTED' && (
-                                <span className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#FAF0E1] dark:bg-[#2C2415] text-[#C98A3C] dark:text-[#E5B56D] text-xs font-bold border border-[#E8D4B8] dark:border-[#5C4A28]">
-                                    <Clock size={13} />
-                                    Submitted · Awaiting Review
-                                </span>
-                            )}
+                                        {/* If SUBMITTED: Admin and Manager see Approve & Reject directly */}
+                                        {data.status === 'SUBMITTED' && (
+                                            <div className="flex items-center gap-2">
+                                                {(role === 'ADMIN' || role === 'MANAGER') ? (
+                                                    <>
+                                                        <button
+                                                            onClick={() => handleApprove(data)}
+                                                            disabled={actionLoadingId === data.timesheetId}
+                                                            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#5E7D64] hover:bg-[#4E6A54] text-white text-xs font-bold uppercase tracking-wider shadow-warm-xs transition cursor-pointer active:scale-95 disabled:opacity-50"
+                                                        >
+                                                            {actionLoadingId === data.timesheetId ? (
+                                                                <Loader2 size={13} className="animate-spin" />
+                                                            ) : (
+                                                                <CheckCircle2 size={13} />
+                                                            )}
+                                                            <span>Approve</span>
+                                                        </button>
+                                                        <button
+                                                            onClick={() => setRejectModal({ open: true, timesheet: data, comment: '' })}
+                                                            disabled={actionLoadingId === data.timesheetId}
+                                                            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#FAF3F2] dark:bg-[#2E1E1E] hover:bg-[#F2D6D3] dark:hover:bg-[#3D2525] text-[#A84B4B] dark:text-[#E07A7A] border border-[#F2D6D3] dark:border-[#572E2E] text-xs font-bold uppercase tracking-wider transition cursor-pointer active:scale-95 disabled:opacity-50"
+                                                        >
+                                                            <XCircle size={13} />
+                                                            <span>Reject</span>
+                                                        </button>
+                                                    </>
+                                                ) : (
+                                                    <span className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#FAF0E1] dark:bg-[#2C2415] text-[#C98A3C] dark:text-[#E5B56D] text-xs font-bold border border-[#E8D4B8] dark:border-[#5C4A28]">
+                                                        <Clock size={13} />
+                                                        Submitted · Awaiting Review
+                                                    </span>
+                                                )}
+                                            </div>
+                                        )}
 
-                            {data.status === 'APPROVED' && (
-                                <span className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#EAEFEA] dark:bg-[#1E2B20] text-[#5E7D64] dark:text-[#8BB394] text-xs font-bold border border-[#C5D7C7] dark:border-[#325238]">
-                                    <CheckCircle2 size={13} />
-                                    Approved & Locked
-                                </span>
-                            )}
+                                        {/* If APPROVED: Show badge, and for ADMIN show Unlock button */}
+                                        {data.status === 'APPROVED' && (
+                                            <div className="flex items-center gap-2">
+                                                <span className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#EAEFEA] dark:bg-[#1E2B20] text-[#5E7D64] dark:text-[#8BB394] text-xs font-bold border border-[#C5D7C7] dark:border-[#325238]">
+                                                    <CheckCircle2 size={13} />
+                                                    Approved & Locked
+                                                </span>
+                                                {role === 'ADMIN' && (
+                                                    <button
+                                                        onClick={() => handleUnlock(data)}
+                                                        disabled={actionLoadingId === data.timesheetId}
+                                                        className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#F5F1E9] hover:bg-[#E5DDCF] dark:bg-[#1E2419] dark:hover:bg-[#283025] text-[#B9955B] dark:text-[#D3B98D] border border-[#D6CDBC] dark:border-[#384232] text-xs font-bold uppercase tracking-wider shadow-warm-xs transition cursor-pointer active:scale-95 disabled:opacity-50"
+                                                        title="Unlock timesheet and return to draft"
+                                                    >
+                                                        {actionLoadingId === data.timesheetId ? (
+                                                            <Loader2 size={13} className="animate-spin" />
+                                                        ) : (
+                                                            <Unlock size={13} />
+                                                        )}
+                                                        <span>Unlock Timesheet</span>
+                                                    </button>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
                         </div>
                     </div>
 
@@ -546,6 +655,68 @@ export function WeeklyTimesheetsView({ employees = [] }) {
                         className="px-4 py-2 rounded-xl bg-[#30382B] dark:bg-[#3C4536] hover:bg-[#3C4536] dark:hover:bg-[#495442] text-white text-xs font-semibold transition cursor-pointer"
                     >
                         Close
+                    </button>
+                </div>
+            </div>
+        </div>,
+        document.body
+    )}
+
+    {/* Reject Timesheet Modal - Rendered via Portal */}
+    {rejectModal.open && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-200">
+            <div className="bg-[#F5F1E9] dark:bg-[#1E2419] rounded-2xl max-w-md w-full p-6 shadow-2xl border border-[#D6CDBC] dark:border-[#384232] space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-[#D6CDBC]/70 dark:border-[#384232]">
+                    <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-lg bg-[#FAF3F2] dark:bg-[#2E1E1E] flex items-center justify-center text-[#A84B4B] dark:text-[#E07A7A] border border-[#F2D6D3] dark:border-[#572E2E]">
+                            <XCircle size={18} />
+                        </div>
+                        <div>
+                            <h3 className="font-serif text-base font-bold text-[#29291F] dark:text-[#F5F1E9]">
+                                Reject Timesheet
+                            </h3>
+                            <p className="text-xs text-[#777367] dark:text-[#B8B3A7]">
+                                Employee: <span className="font-semibold text-[#29291F] dark:text-[#F5F1E9]">{rejectModal.timesheet?.employeeName}</span>
+                            </p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={() => setRejectModal({ open: false, timesheet: null, comment: '' })}
+                        className="w-8 h-8 rounded-full hover:bg-[#E5DDCF] dark:hover:bg-[#252B20] flex items-center justify-center text-[#777367] dark:text-[#B8B3A7] font-bold cursor-pointer transition"
+                    >
+                        ✕
+                    </button>
+                </div>
+
+                <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-[#29291F] dark:text-[#F5F1E9]">
+                        Rejection Reason <span className="text-[#A84B4B]">*</span>
+                    </label>
+                    <textarea
+                        rows={3}
+                        value={rejectModal.comment}
+                        onChange={(e) => setRejectModal(prev => ({ ...prev, comment: e.target.value }))}
+                        placeholder="Please provide specific feedback on why this timesheet is being rejected..."
+                        className="w-full text-xs p-3 rounded-xl bg-[#EEE8DD] dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] text-[#29291F] dark:text-[#F5F1E9] placeholder-[#777367] focus:outline-none focus:ring-1 focus:ring-[#B9955B]"
+                    />
+                </div>
+
+                <div className="pt-3 border-t border-[#D6CDBC]/70 dark:border-[#384232] flex items-center justify-end gap-2">
+                    <button
+                        onClick={() => setRejectModal({ open: false, timesheet: null, comment: '' })}
+                        className="px-4 py-2 rounded-xl bg-[#E5DDCF] dark:bg-[#252B20] hover:bg-[#D6CDBC] dark:hover:bg-[#384232] text-[#29291F] dark:text-[#F5F1E9] text-xs font-semibold transition cursor-pointer"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={handleConfirmReject}
+                        disabled={actionLoadingId === rejectModal.timesheet?.timesheetId || !rejectModal.comment.trim()}
+                        className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#A84B4B] hover:bg-[#933D3D] text-white text-xs font-bold uppercase tracking-wider transition cursor-pointer disabled:opacity-50"
+                    >
+                        {actionLoadingId === rejectModal.timesheet?.timesheetId && (
+                            <Loader2 size={13} className="animate-spin" />
+                        )}
+                        <span>Confirm Rejection</span>
                     </button>
                 </div>
             </div>

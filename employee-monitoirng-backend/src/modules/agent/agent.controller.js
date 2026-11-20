@@ -612,7 +612,7 @@ const handleIdleActivity = async (req, res) => {
                 });
             }
         } else if (status === 'IDLE') {
-            // 10-min idle threshold reached
+            // Dynamic Inactivity / Idle threshold reached (3-min threshold)
             const parsedStartTime = idleStartTime
                 ? new Date(idleStartTime)
                 : new Date(now.getTime() - parsedIdleDuration * 1000);
@@ -634,7 +634,7 @@ const handleIdleActivity = async (req, res) => {
                         lastActivityAt: employee.lastActiveAt || parsedStartTime,
                         idleStartTime: parsedStartTime,
                         idleDuration: parsedIdleDuration,
-                        notificationType: 'IDLE_ALERT_10MIN',
+                        notificationType: 'IDLE_ALERT',
                         notificationSentAt: now,
                         agentConnectionStatus: 'CONNECTED',
                         source: effectiveSource
@@ -660,8 +660,24 @@ const handleIdleActivity = async (req, res) => {
                 }
             });
 
+            // Calculate actual dynamic idle duration in minutes
+            const actualIdleMinutes = Math.max(1, Math.round(parsedIdleDuration / 60));
+            const realInactivityMsg = `Employee ${employee.fullName} has been inactive for ${actualIdleMinutes} ${actualIdleMinutes === 1 ? 'minute' : 'minutes'}.`;
+
+            // Cooldown check: Prevent duplicate spam alerts for same employee within 15 minutes
+            const recentIdleAlert = await prisma.alertLog.findFirst({
+                where: {
+                    employeeId,
+                    ruleType: 'IDLE_TIMEOUT',
+                    createdAt: { gte: new Date(now.getTime() - 15 * 60 * 1000) }
+                },
+                orderBy: { createdAt: 'desc' }
+            });
+
+            const shouldCreateAlert = isFirstIdleNotification && !recentIdleAlert;
+
             let alertRecord = null;
-            if (isFirstIdleNotification) {
+            if (shouldCreateAlert) {
                 // 3. Save in ActivityLog for timesheet compatibility (once on initial entry)
                 await prisma.activityLog.create({
                     data: {
@@ -676,18 +692,19 @@ const handleIdleActivity = async (req, res) => {
                     }
                 });
 
-                // 4. Log Alert in AlertLog (once per session)
+                // 4. Log Alert in AlertLog (once per session with dynamic real message)
                 try {
                     alertRecord = await prisma.alertLog.create({
                         data: {
                             organizationId,
                             employeeId,
                             ruleType: 'IDLE_TIMEOUT',
-                            trigger: '10_MIN_INACTIVITY',
+                            trigger: `${actualIdleMinutes}_MIN_INACTIVITY`,
                             severity: 'warning',
-                            message: `Employee ${employee.fullName} has been inactive for 10 minutes.`,
+                            message: realInactivityMsg,
                             metadata: JSON.stringify({
                                 idleDuration: parsedIdleDuration,
+                                idleMinutes: actualIdleMinutes,
                                 idleStartTime: parsedStartTime,
                                 lastActivityAt: employee.lastActiveAt || parsedStartTime,
                                 source: effectiveSource
@@ -750,7 +767,7 @@ const handleIdleActivity = async (req, res) => {
                     timestamp: now
                 });
 
-                if (isFirstIdleNotification) {
+                if (shouldCreateAlert) {
                     io.to(room).emit('alert:idle', {
                         employeeId,
                         employeeName: employee.fullName,
@@ -764,10 +781,10 @@ const handleIdleActivity = async (req, res) => {
                         employeeId,
                         employeeName: employee.fullName,
                         title: 'Employee Inactivity Alert',
-                        message: `Employee ${employee.fullName} has been inactive for 10 minutes.`,
+                        message: realInactivityMsg,
                         severity: 'warning',
                         ruleType: 'IDLE_TIMEOUT',
-                        trigger: '10_MIN_INACTIVITY',
+                        trigger: `${actualIdleMinutes}_MIN_INACTIVITY`,
                         idleDuration: parsedIdleDuration,
                         createdAt: now
                     });

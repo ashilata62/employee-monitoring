@@ -660,8 +660,12 @@ export function RealTimeProvider({ children }) {
             }
             recentAdminAlertsRef.current.set(empKey, now);
 
+            const idleSec = Number(data.idleDuration || data.idleTime || 0);
+            const idleMinutes = idleSec > 0 ? Math.max(1, Math.round(idleSec / 60)) : 3;
+            const idleMessage = data.message || `Employee ${data.employeeName || 'Employee'} has been inactive for ${idleMinutes} ${idleMinutes === 1 ? 'minute' : 'minutes'}.`;
+
             playAlertChime();
-            toast.warning(`Inactivity Alert: ${data.employeeName || 'Employee'} has been inactive for 10 minutes.`);
+            toast.warning(`Inactivity Alert: ${idleMessage}`);
             setState(prev => ({
                 ...prev,
                 alerts: [
@@ -670,7 +674,7 @@ export function RealTimeProvider({ children }) {
                         employeeId: data.employeeId,
                         employeeName: data.employeeName,
                         title: 'Employee Inactivity Alert',
-                        message: `Employee ${data.employeeName || 'Employee'} has been inactive for 10 minutes.`,
+                        message: idleMessage,
                         severity: 'warning',
                         createdAt: new Date().toISOString()
                     },
@@ -1798,26 +1802,57 @@ export function RealTimeProvider({ children }) {
         }
 
         // 2. Synthesize alert notifications so all alert messages appear in the Header Bell dropdown
-        const alertNotifications = scopedAlerts.map(a => ({
-            id: `alert_${a.id}`,
-            alertId: a.id,
-            title: a.title || (a.severity === 'critical' ? 'Critical Alert' : (a.severity === 'warning' ? 'Inactivity Alert' : 'System Alert')),
-            description: a.message || `Employee ${a.employeeName || 'Staff'} alert notification.`,
-            type: a.severity === 'critical' ? 'alert' : (a.severity === 'warning' ? 'warning' : 'info'),
-            time: a.date || (a.createdAt ? new Date(a.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now'),
-            unread: !a.read,
-            link: currentRole === 'EMPLOYEE' ? null : '/alerts',
-            createdAt: a.createdAt || a.date || new Date().toISOString()
-        }));
+        const alertNotifications = scopedAlerts.map(a => {
+            let desc = a.message || `Employee ${a.employeeName || 'Staff'} alert notification.`;
 
-        // 3. Merge alerts with state.notifications and deduplicate
+            // If it's an inactivity alert, dynamically compute real minutes from metadata or duration
+            if (a.ruleType === 'IDLE_TIMEOUT' || (a.trigger && String(a.trigger).includes('INACTIVITY')) || a.type === 'idle' || desc.toLowerCase().includes('inactive for')) {
+                let realMinutes = null;
+                if (a.metadata) {
+                    try {
+                        const meta = typeof a.metadata === 'string' ? JSON.parse(a.metadata) : a.metadata;
+                        if (meta.idleMinutes) realMinutes = Number(meta.idleMinutes);
+                        else if (meta.idleDuration) realMinutes = Math.max(1, Math.round(Number(meta.idleDuration) / 60));
+                    } catch (e) {}
+                }
+                if (!realMinutes && a.idleDuration) {
+                    realMinutes = Math.max(1, Math.round(Number(a.idleDuration) / 60));
+                }
+
+                if (realMinutes) {
+                    desc = `Employee ${a.employeeName || 'Staff'} has been inactive for ${realMinutes} ${realMinutes === 1 ? 'minute' : 'minutes'}.`;
+                } else if (desc.includes('10 minutes')) {
+                    desc = desc.replace('10 minutes', '3 minutes');
+                }
+            }
+
+            return {
+                id: `alert_${a.id}`,
+                alertId: a.id,
+                alertEmployeeId: a.employeeId,
+                title: a.title || (a.severity === 'critical' ? 'Critical Alert' : (a.severity === 'warning' ? 'Inactivity Alert' : 'System Alert')),
+                description: desc,
+                type: a.severity === 'critical' ? 'alert' : (a.severity === 'warning' ? 'warning' : 'info'),
+                time: a.date || (a.createdAt ? new Date(a.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now'),
+                unread: !a.read,
+                link: currentRole === 'EMPLOYEE' ? null : '/alerts',
+                createdAt: a.createdAt || a.date || new Date().toISOString()
+            };
+        });
+
+        // 3. Merge alerts with state.notifications and deduplicate repeated notifications
         const combinedNotifs = [...alertNotifications, ...(state.notifications || [])];
         const seenNotif = new Set();
         const mergedNotifications = [];
         for (const n of combinedNotifs) {
-            const key = n.id ? String(n.id) : `${n.title}_${n.description}`;
-            if (!seenNotif.has(key)) {
-                seenNotif.add(key);
+            // Deduplicate: If an employee already has an inactivity alert, only keep the latest one (prevent 30 duplicate items)
+            const isIdleAlert = (n.title || '').toLowerCase().includes('inactivity') || (n.description || '').toLowerCase().includes('inactive');
+            const dedupeKey = isIdleAlert
+                ? `idle_alert_${n.alertEmployeeId || n.targetUserId || 'self'}`
+                : (n.id ? String(n.id) : `${n.title}_${n.description}`);
+
+            if (!seenNotif.has(dedupeKey)) {
+                seenNotif.add(dedupeKey);
                 mergedNotifications.push(n);
             }
         }

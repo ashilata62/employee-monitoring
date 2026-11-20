@@ -57,7 +57,7 @@ async function sendIdleAlertEmail({ employee, manager, idleDuration, taskId, tim
     const employeeName = employee?.fullName || employee?.name || 'Employee';
     const employeeEmail = employee?.email || 'N/A';
     const teamName = employee?.team?.name || 'General Team';
-    const idleMinutes = Math.round((idleDuration || 600) / 60);
+    const idleMinutes = Math.round((idleDuration || 180) / 60);
 
     const subject = `⚠️ Inactivity Alert: ${employeeName} is Idle (${idleMinutes} mins)`;
     

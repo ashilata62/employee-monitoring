@@ -149,7 +149,7 @@ const initSocketServer = (server) => {
                 
                 if (session.status === 'DEACTIVATED') return;
 
-                let newStatus = session.status === 'BREAK' ? 'BREAK' : (idleTime >= 600 ? 'IDLE' : 'ONLINE');
+                let newStatus = session.status === 'BREAK' ? 'BREAK' : (idleTime >= 180 ? 'IDLE' : 'ONLINE');
                 
                 if (session.status !== newStatus) {
                     session.status = newStatus;
@@ -174,7 +174,7 @@ const initSocketServer = (server) => {
                     }
                 });
 
-                const activityType = idleTime >= 300 ? 'IDLE' : 'ACTIVE';
+                const activityType = idleTime >= 180 ? 'IDLE' : 'ACTIVE';
                 const session = liveSessions.get(employeeId);
                 const employeeTeamId = session?.teamId || socket.user?.teamId || null;
                 const { cleanAppName, productivity, appCategory, appDomain } = await resolveAppActivityForOrg(

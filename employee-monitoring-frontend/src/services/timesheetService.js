@@ -51,6 +51,14 @@ export const timesheetService = {
     },
 
     /**
+     * Reopen / Unlock timesheet (Admin/Manager)
+     */
+    reopen: async (timesheetId, reason = 'Unlocked by Administrator') => {
+        const res = await api.post(`/timesheets/${timesheetId}/reopen`, { reason });
+        return res.data;
+    },
+
+    /**
      * Bulk approve timesheets
      */
     bulkApprove: async (timesheetIds) => {
