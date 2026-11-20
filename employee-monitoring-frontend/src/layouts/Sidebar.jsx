@@ -82,7 +82,7 @@ export function Sidebar({ collapsed, setCollapsed, onMobileClose }) {
             className={cn(
                 "h-full border-r border-[#3C4536] bg-[#30382B] text-[#F5F1E9] transition-all duration-300 ease-in-out relative flex flex-col",
                 "w-[80vw] max-w-[280px] md:max-w-none shadow-2xl md:shadow-none",
-                collapsed ? "md:w-20" : "md:w-60"
+                collapsed ? "md:w-20" : "md:w-64"
             )}
         >
             {/* Header Brand Section */}
