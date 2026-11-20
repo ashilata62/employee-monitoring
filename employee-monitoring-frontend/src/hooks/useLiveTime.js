@@ -9,17 +9,20 @@ import { useAuthStore } from '../store/authStore';
  * When idle paused: returns frozen seconds directly.
  */
 export function getActiveSessionSeconds(activeAttendance, isClockedIn, isOnBreak, isIdlePaused = false, frozenSeconds = null) {
-    if (!isClockedIn || !activeAttendance?.clockIn) return 0;
-    if (isIdlePaused && typeof frozenSeconds === 'number' && !isNaN(frozenSeconds)) {
+    if (!isClockedIn) return 0;
+    if (isIdlePaused && typeof frozenSeconds === 'number' && !isNaN(frozenSeconds) && frozenSeconds > 0) {
         return Math.max(0, Math.floor(frozenSeconds));
     }
 
-    const clockInMs = new Date(activeAttendance.clockIn).getTime();
+    const clockInRaw = activeAttendance?.clockIn || activeAttendance?.createdAt;
+    if (!clockInRaw) return 0;
+    const clockInMs = new Date(clockInRaw).getTime();
     if (isNaN(clockInMs)) return 0;
-    const breakSec = Math.max(0, Math.floor(Number(activeAttendance.totalBreakSeconds) || 0));
-    const idleDeduction = Math.max(0, Math.floor(Number(activeAttendance.totalIdleDeductionSeconds) || 0));
 
-    if (isOnBreak && activeAttendance.openBreak) {
+    const breakSec = Math.max(0, Math.floor(Number(activeAttendance?.totalBreakSeconds) || 0));
+    const idleDeduction = Math.max(0, Math.floor(Number(activeAttendance?.totalIdleDeductionSeconds) || 0));
+
+    if (isOnBreak && activeAttendance?.openBreak) {
         const breakStartMs = new Date(activeAttendance.openBreak).getTime();
         if (!isNaN(breakStartMs)) {
             return Math.max(0, Math.floor((breakStartMs - clockInMs) / 1000) - breakSec - idleDeduction);
@@ -62,6 +65,7 @@ export function useSessionTimer() {
         isIdlePaused,
         frozenIdleSeconds,
         activeAttendance?.clockIn,
+        activeAttendance?.createdAt,
         activeAttendance?.openBreak,
         activeAttendance?.totalBreakSeconds,
         activeAttendance?.totalIdleDeductionSeconds
