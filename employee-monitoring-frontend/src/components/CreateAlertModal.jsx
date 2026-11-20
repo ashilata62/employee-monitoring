@@ -4,6 +4,7 @@ import { X, ChevronDown, Check, Loader2 } from 'lucide-react';
 import alertService from '../services/alertService';
 import { useToast } from '../context/ToastContext';
 import { useRealTime } from '../hooks/RealTimeContext';
+import { useEmployeeStore } from '../store/employeeStore';
 
 const ALERT_TYPE_OPTIONS = [
     { value: 'Activity Level', label: 'Activity Level', category: 'activity' },
@@ -19,14 +20,37 @@ const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 export function CreateAlertModal({ isOpen, onClose, onSuccess }) {
     const { toast } = useToast();
     const { teams = [] } = useRealTime() || {};
+    const { employees = [], fetchEmployees } = useEmployeeStore();
 
     const [alertType, setAlertType] = useState('Activity Level');
     const [name, setName] = useState('');
     const [scope, setScope] = useState('All Employees');
     const [selectedDays, setSelectedDays] = useState(['Mon', 'Tue', 'Wed', 'Thu', 'Fri']);
-    const [recipient, setRecipient] = useState('Only Me');
+    const [recipientType, setRecipientType] = useState('Admin'); // 'Admin' | 'Manager' | 'Specific Employee'
+    const [selectedManager, setSelectedManager] = useState('team_manager');
+    const [selectedEmployee, setSelectedEmployee] = useState('');
     const [delivery, setDelivery] = useState(['In App']);
     const [isSaving, setIsSaving] = useState(false);
+
+    useEffect(() => {
+        if (isOpen) {
+            fetchEmployees();
+        }
+    }, [isOpen, fetchEmployees]);
+
+    const managers = useMemo(() => {
+        return employees.filter(emp => (emp.role || '').toUpperCase() === 'MANAGER');
+    }, [employees]);
+
+    const nonAdminEmployees = useMemo(() => {
+        return employees.filter(emp => (emp.role || '').toUpperCase() !== 'ADMIN');
+    }, [employees]);
+
+    useEffect(() => {
+        if (nonAdminEmployees.length > 0 && !selectedEmployee) {
+            setSelectedEmployee(nonAdminEmployees[0].name || nonAdminEmployees[0].fullName || '');
+        }
+    }, [nonAdminEmployees, selectedEmployee]);
 
     // Dynamic scope options from real teams + presets
     const scopeOptions = useMemo(() => {
@@ -256,18 +280,22 @@ export function CreateAlertModal({ isOpen, onClose, onSuccess }) {
                         </div>
 
                         {/* Recipients */}
-                        <div className="space-y-2">
+                        <div className="space-y-2.5">
                             <label className="block text-[10px] font-bold uppercase tracking-[0.14em] text-[#777367] dark:text-[#B8B3A7]">
-                                Recipients
+                                Recipients (Who receives this alert?)
                             </label>
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                                {['Only Me', 'Specific Users', 'All Admins'].map(opt => {
-                                    const isSelected = recipient === opt;
+                                {[
+                                    { id: 'Admin', label: 'Admin (Me)' },
+                                    { id: 'Manager', label: 'Manager' },
+                                    { id: 'Specific Employee', label: 'Specific Employee' }
+                                ].map(opt => {
+                                    const isSelected = recipientType === opt.id;
                                     return (
                                         <button
-                                            key={opt}
+                                            key={opt.id}
                                             type="button"
-                                            onClick={() => setRecipient(opt)}
+                                            onClick={() => setRecipientType(opt.id)}
                                             className={`flex items-center gap-2.5 px-3.5 py-3 border rounded-xl transition cursor-pointer ${
                                                 isSelected
                                                     ? 'border-[#30382B] bg-[#30382B]/10 text-[#30382B] dark:border-[#B9955B] dark:bg-[#B9955B]/15 dark:text-[#F5F1E9]'
@@ -279,11 +307,73 @@ export function CreateAlertModal({ isOpen, onClose, onSuccess }) {
                                             }`}>
                                                 {isSelected && <div className="w-1.5 h-1.5 bg-[#30382B] dark:bg-[#B9955B] rounded-full" />}
                                             </div>
-                                            <span className="text-xs font-semibold">{opt}</span>
+                                            <span className="text-xs font-semibold">{opt.label}</span>
                                         </button>
                                     );
                                 })}
                             </div>
+
+                            {/* Manager Selection Dropdown */}
+                            {recipientType === 'Manager' && (
+                                <div className="p-3.5 rounded-xl border border-[#D6CDBC] dark:border-[#384232] bg-[#F5F1E9]/60 dark:bg-[#1E2419]/60 space-y-1.5 animate-in fade-in duration-200">
+                                    <label className="block text-[9px] font-bold uppercase tracking-[0.14em] text-[#777367] dark:text-[#B8B3A7]">
+                                        Choose Manager Target
+                                    </label>
+                                    <div className="relative">
+                                        <select
+                                            value={selectedManager}
+                                            onChange={(e) => setSelectedManager(e.target.value)}
+                                            className="w-full bg-[#FAF8F5] dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] rounded-xl px-4 py-2.5 text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] focus:border-[#B9955B] outline-none transition appearance-none cursor-pointer"
+                                        >
+                                            <option value="team_manager">Respective Team Manager (Default - Employee's direct manager)</option>
+                                            <option value="all_managers">All Managers (Broadcast to all managers)</option>
+                                            {managers.map(mgr => (
+                                                <option key={mgr.id} value={mgr.name || mgr.fullName}>
+                                                    Manager: {mgr.name || mgr.fullName} {mgr.team ? `(${typeof mgr.team === 'object' ? mgr.team.name : mgr.team})` : ''}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <ChevronDown size={15} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#777367] dark:text-[#B8B3A7] pointer-events-none" />
+                                    </div>
+                                    <p className="text-[10px] text-[#777367] dark:text-[#8E9789] pt-0.5">
+                                        {selectedManager === 'team_manager' 
+                                            ? "Alert will automatically be routed to whichever manager heads the offending employee's team."
+                                            : selectedManager === 'all_managers'
+                                            ? "All organizational managers will receive this notification."
+                                            : `Alert will specifically be routed to Manager ${selectedManager}.`}
+                                    </p>
+                                </div>
+                            )}
+
+                            {/* Specific Employee Selection Dropdown */}
+                            {recipientType === 'Specific Employee' && (
+                                <div className="p-3.5 rounded-xl border border-[#D6CDBC] dark:border-[#384232] bg-[#F5F1E9]/60 dark:bg-[#1E2419]/60 space-y-1.5 animate-in fade-in duration-200">
+                                    <label className="block text-[9px] font-bold uppercase tracking-[0.14em] text-[#777367] dark:text-[#B8B3A7]">
+                                        Select Specific Employee to Notify
+                                    </label>
+                                    <div className="relative">
+                                        <select
+                                            value={selectedEmployee}
+                                            onChange={(e) => setSelectedEmployee(e.target.value)}
+                                            className="w-full bg-[#FAF8F5] dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] rounded-xl px-4 py-2.5 text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] focus:border-[#B9955B] outline-none transition appearance-none cursor-pointer"
+                                        >
+                                            {nonAdminEmployees.map(emp => {
+                                                const empName = emp.name || emp.fullName || 'Employee';
+                                                const empTeam = typeof emp.team === 'object' ? (emp.team?.name || 'No Team') : (emp.team || 'No Team');
+                                                return (
+                                                    <option key={emp.id} value={empName}>
+                                                        {empName} — {empTeam} ({emp.email || 'No email'})
+                                                    </option>
+                                                );
+                                            })}
+                                        </select>
+                                        <ChevronDown size={15} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#777367] dark:text-[#B8B3A7] pointer-events-none" />
+                                    </div>
+                                    <p className="text-[10px] text-[#777367] dark:text-[#8E9789] pt-0.5">
+                                        This specific employee will receive this alert notification.
+                                    </p>
+                                </div>
+                            )}
                         </div>
 
                         {/* Delivery */}
