@@ -219,7 +219,7 @@ export function TimeAndAttendance() {
 
 
     return (
-        <div className="min-h-screen bg-[#F5F1E9] dark:bg-[#1A1F18] pb-12 px-2 sm:px-4 lg:px-6 transition-colors duration-200">
+        <div className="w-full pb-12 transition-colors duration-200">
             {/* Top Bar */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 py-6 mb-4">
                 <div>
