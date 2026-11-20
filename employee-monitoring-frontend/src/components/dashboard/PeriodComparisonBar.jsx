@@ -5,7 +5,6 @@ import {
     Plus,
     Filter,
     Download,
-    Bell,
     FileSpreadsheet,
     FileText,
     LogIn,
@@ -219,21 +218,6 @@ export function PeriodComparisonBar({
                     <p className="text-xs font-medium text-[#777367] dark:text-[#B8B3A7] mt-0.5">
                         Workforce performance & productivity intelligence
                     </p>
-                </div>
-
-                <div className="flex items-center gap-3">
-                    <button
-                        onClick={() => navigate(`${rolePrefix}/alerts`)}
-                        className="relative w-10 h-10 rounded-xl bg-[#EEE8DD] dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] flex items-center justify-center text-[#29291F] dark:text-[#F5F1E9] hover:bg-[#E5DED2] transition-colors cursor-pointer"
-                        title="Alerts & Notifications"
-                    >
-                        <Bell size={17} className="text-[#777367]" />
-                        {unreadCount > 0 && (
-                            <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 bg-[#A84B4B] text-white text-[9px] font-bold rounded-full flex items-center justify-center border-2 border-[#F5F1E9] dark:border-[#1A1F18]">
-                                {unreadCount > 99 ? '99+' : unreadCount}
-                            </span>
-                        )}
-                    </button>
                 </div>
             </div>
 
