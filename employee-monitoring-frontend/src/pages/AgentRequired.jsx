@@ -76,7 +76,7 @@ export const AgentRequired = () => {
                         {/* Action Area */}
                         <div className="space-y-4">
                             <a 
-                                href={`${API_BASE_URL}/agent/download`}
+                                href="https://raw.githubusercontent.com/ashilata62/employee-monitoring/main/employee-monitoirng-backend/public/agent/EMS-Tracker-latest.exe"
                                 download="EMS-Tracker-latest.exe"
                                 className="w-full py-5 px-8 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-lg shadow-lg shadow-indigo-200 dark:shadow-none transition-all flex items-center justify-center gap-3 active:scale-95 group"
                             >

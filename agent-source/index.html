@@ -350,6 +350,16 @@
 
         let inviteToken = null;
 
+        const validateRegistration = () => {
+            const isEmailValid = emailInput.value.includes('@') && emailInput.value.includes('.');
+            submitBtn.disabled = !(nameInput.value.length >= 2 && isEmailValid && passwordInput.value.length >= 6 && consentCheckbox.checked);
+        };
+
+        nameInput.oninput = validateRegistration;
+        emailInput.oninput = validateRegistration;
+        passwordInput.oninput = validateRegistration;
+        consentCheckbox.onchange = validateRegistration;
+
         const applyInvitePrefill = (invite) => {
             if (!invite?.email) return;
             inviteToken = invite.token || inviteToken;
@@ -363,12 +373,18 @@
             validateRegistration();
         };
 
-        window.agentAPI.getInvitePrefill().then(applyInvitePrefill);
-        window.agentAPI.onInviteLoaded(applyInvitePrefill);
+        if (window.agentAPI && window.agentAPI.getInvitePrefill) {
+            window.agentAPI.getInvitePrefill().then(applyInvitePrefill).catch(() => {});
+        }
+        if (window.agentAPI && window.agentAPI.onInviteLoaded) {
+            window.agentAPI.onInviteLoaded(applyInvitePrefill);
+        }
 
-        window.agentAPI.getDeviceInfo().then(id => {
-            deviceIdSpan.textContent = id;
-        });
+        if (window.agentAPI && window.agentAPI.getDeviceInfo) {
+            window.agentAPI.getDeviceInfo().then(id => {
+                deviceIdSpan.textContent = id;
+            }).catch(() => {});
+        }
 
         const showView = (viewId) => {
             [setupView, permissionsView, pendingView, successView, rejectedView, loadingView, diagnosticView].forEach(v => {
@@ -378,20 +394,36 @@
             if (target) target.style.display = 'block';
         };
 
-        // Check initial status
+        // Check initial status with safe timeout guarantee
         showView('loading-view');
         
-        window.agentAPI.getApprovalStatus().then(status => {
-            if (status === 'approved') {
-                showView('success-view');
-            } else if (status === 'pending') {
-                showView('pending-view');
-            } else if (status === 'permissions') {
-                showView('permissions-view');
-            } else {
+        const initialStatusTimeout = setTimeout(() => {
+            if (loadingView && loadingView.style.display !== 'none') {
                 showView('setup-view');
             }
-        });
+        }, 1500);
+
+        if (window.agentAPI && window.agentAPI.getApprovalStatus) {
+            window.agentAPI.getApprovalStatus().then(status => {
+                clearTimeout(initialStatusTimeout);
+                if (status === 'approved') {
+                    showView('success-view');
+                } else if (status === 'pending') {
+                    showView('pending-view');
+                } else if (status === 'permissions') {
+                    showView('permissions-view');
+                } else {
+                    showView('setup-view');
+                }
+            }).catch(err => {
+                clearTimeout(initialStatusTimeout);
+                console.error('getApprovalStatus error:', err);
+                showView('setup-view');
+            });
+        } else {
+            clearTimeout(initialStatusTimeout);
+            showView('setup-view');
+        }
 
         // Health Check Runner
         const runHealthCheck = async () => {
@@ -453,16 +485,6 @@
                 alert('Your device was removed by the administrator. Please re-register if needed.');
             }
         });
-
-        const validateRegistration = () => {
-            const isEmailValid = emailInput.value.includes('@') && emailInput.value.includes('.');
-            submitBtn.disabled = !(nameInput.value.length >= 2 && isEmailValid && passwordInput.value.length >= 6 && consentCheckbox.checked);
-        };
-
-        nameInput.oninput = validateRegistration;
-        emailInput.oninput = validateRegistration;
-        passwordInput.oninput = validateRegistration;
-        consentCheckbox.onchange = validateRegistration;
 
         submitBtn.onclick = async () => {
             submitBtn.disabled = true;

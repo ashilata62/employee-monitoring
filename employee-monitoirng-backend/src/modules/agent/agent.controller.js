@@ -355,15 +355,19 @@ const GITHUB_AGENT_DOWNLOAD_URL = 'https://raw.githubusercontent.com/ashilata62/
 
 const downloadAgent = async (req, res) => {
     try {
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+
         const primaryPath = path.join(__dirname, '../../../public/agent/EMS-Tracker-latest.exe');
-        const altPath = path.join(__dirname, '../../../public/agent/Insightful Agent Setup 1.0.2.exe');
-        const targetPath = fs.existsSync(primaryPath) ? primaryPath : (fs.existsSync(altPath) ? altPath : null);
-        
-        if (targetPath) {
-            return res.download(targetPath, 'EMS-Tracker-latest.exe');
+        if (fs.existsSync(primaryPath)) {
+            const stat = fs.statSync(primaryPath);
+            if (stat.size >= 77500000) {
+                return res.download(primaryPath, 'EMS-Tracker-latest.exe');
+            }
         }
         
-        // If executable not present in local container disk, redirect to GitHub global CDN
+        // If executable not present in local container disk or is stale, redirect to GitHub global CDN
         return res.redirect(GITHUB_AGENT_DOWNLOAD_URL);
     } catch (error) {
         console.error('Agent download error:', error);
