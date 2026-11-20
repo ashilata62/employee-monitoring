@@ -552,6 +552,12 @@ const handleIdleActivity = async (req, res) => {
             return errorResponse(res, 'Employee not found', 404);
         }
 
+        // Bypassing inactivity and idle tracking for administrators and managers
+        const empRole = (employee.role || '').toUpperCase();
+        if (empRole === 'ADMIN' || empRole === 'MANAGER') {
+            return successResponse(res, { message: 'Inactivity tracking is bypassed for administrative and managerial roles.' });
+        }
+
         const organizationId = employee.organizationId;
         const parsedIdleDuration = parseInt(idleDuration, 10) || 0;
         const now = new Date();
@@ -804,6 +810,29 @@ const handleIdleActivity = async (req, res) => {
             }
 
             console.log(`[AgentController] RESUMED activity event recorded for ${employee.fullName} after ${finalDuration}s idle. Status: ACTIVE.`);
+        } else if (status === 'AUTO_CLOCKED_OUT') {
+            console.log(`[AgentController] AUTO_CLOCKED_OUT received for ${employee.fullName} (${employeeId}).`);
+            try {
+                const attendanceService = require('../attendance/attendance.service');
+                await attendanceService.clockOut(employeeId);
+            } catch (cErr) {
+                // If already clocked out, ignore
+            }
+            await prisma.employee.update({
+                where: { id: employeeId },
+                data: { status: 'OFFLINE' }
+            });
+            if (io && room) {
+                io.to(room).emit('employee:status', {
+                    employeeId,
+                    status: 'OFFLINE'
+                });
+                io.to(room).emit('attendance:update', {
+                    employeeId,
+                    type: 'clock-out',
+                    auto: true
+                });
+            }
         }
 
         return successResponse(res, {

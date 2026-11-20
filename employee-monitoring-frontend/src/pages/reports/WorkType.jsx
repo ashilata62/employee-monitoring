@@ -488,9 +488,10 @@ export function WorkType() {
                                             </td>
                                         </tr>
                                     ) : (
-                                        categoriesList.map((cat) => {
+                                        categoriesList.map((cat, catIdx) => {
                                             const isHoveredLocation = hoveredLocationCat === cat.name;
                                             const isHoveredProd = hoveredProductivityCat === cat.name;
+                                            const isBottomRows = catIdx >= Math.max(2, categoriesList.length - 4);
 
                                             const cur = cat.current || {};
                                             const comp = cat.comparison || {};
@@ -601,7 +602,7 @@ export function WorkType() {
 
                                                         {/* Locations Interactive Popover (Matching Image 1) */}
                                                         {isHoveredLocation && (
-                                                            <div className="absolute right-4 top-12 w-72 bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl shadow-2xl border border-[#D6CDBC] dark:border-[#384232] p-4 z-50 animate-in fade-in zoom-in-95 duration-150 pointer-events-none">
+                                                            <div className={`absolute right-4 ${isBottomRows ? 'bottom-8' : 'top-12'} w-72 bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl shadow-2xl border border-[#D6CDBC] dark:border-[#384232] p-4 z-50 animate-in fade-in zoom-in-95 duration-150 pointer-events-none`}>
                                                                 <h4 className="font-serif text-xs font-bold text-[#29291F] dark:text-[#F5F1E9] mb-2">
                                                                     {cat.name}
                                                                 </h4>
@@ -738,7 +739,7 @@ export function WorkType() {
 
                                                         {/* Productivity Interactive Popover (Matching Image 1) */}
                                                         {isHoveredProd && (
-                                                            <div className="absolute right-6 top-12 w-72 bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl shadow-2xl border border-[#D6CDBC] dark:border-[#384232] p-4 z-50 animate-in fade-in zoom-in-95 duration-150 pointer-events-none">
+                                                            <div className={`absolute right-6 ${isBottomRows ? 'bottom-8' : 'top-12'} w-72 bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl shadow-2xl border border-[#D6CDBC] dark:border-[#384232] p-4 z-50 animate-in fade-in zoom-in-95 duration-150 pointer-events-none`}>
                                                                 <h4 className="font-serif text-xs font-bold text-[#29291F] dark:text-[#F5F1E9] mb-2">
                                                                     {cat.name}
                                                                 </h4>
