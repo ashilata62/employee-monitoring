@@ -31,6 +31,7 @@ import { useFilterStore } from '../store/filterStore';
 import { format, addDays, startOfWeek, parseISO, isWithinInterval, isSameDay } from 'date-fns';
 import { createPortal } from 'react-dom';
 import { useAuthStore } from '../store/authStore';
+import { toast } from '../utils/toastManager';
 import { WeeklyTimesheetsView } from '../components/timesheets/WeeklyTimesheetsView';
 import { ApprovalsQueueView } from '../components/timesheets/ApprovalsQueueView';
 
@@ -79,6 +80,7 @@ export function TimeAndAttendance() {
         fetchShifts,
         fetchTimeOffs,
         addShift,
+        addManualTime,
         clockIn,
         clockOut
     } = useAttendanceStore();
@@ -226,8 +228,16 @@ export function TimeAndAttendance() {
                     <h1 className="font-serif text-3xl font-normal text-[#29291F] dark:text-[#F5F1E9] tracking-tight">Time & Attendance</h1>
                     <p className="text-xs font-medium text-[#777367] dark:text-[#B8B3A7] mt-0.5">Daily timesheets, attendance logs and approval workflows</p>
                 </div>
-                <div className="flex items-center gap-4">
-                    {/* Actions and view toggles removed */}
+                <div className="flex items-center gap-3">
+                    {(role === 'ADMIN' || role === 'MANAGER') && (
+                        <button
+                            onClick={() => setIsManualTimeModalOpen(true)}
+                            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#B9955B] hover:bg-[#A17D45] text-white font-semibold text-xs tracking-wider shadow-warm-xs transition-all cursor-pointer active:scale-95"
+                        >
+                            <Clock size={15} />
+                            <span>+ Add Manual Time</span>
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -701,6 +711,28 @@ export function TimeAndAttendance() {
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* Modal for Manager / Admin to Add Manual Time */}
+            {isManualTimeModalOpen && (
+                <AddManualTimeModal
+                    isOpen={isManualTimeModalOpen}
+                    onClose={() => setIsManualTimeModalOpen(false)}
+                    employees={employees.filter(e => (e.role || '').toUpperCase() !== 'ADMIN')}
+                    onSave={async (formData) => {
+                        try {
+                            await addManualTime(formData);
+                            toast.success('Manual time added successfully!');
+                            // Refresh timesheets to reflect the newly added manual time instantly
+                            const start = dateRange?.start;
+                            const end = dateRange?.end;
+                            fetchTimesheets({ startDate: start, endDate: end });
+                            fetchManualTimes({ startDate: start, endDate: end });
+                        } catch (err) {
+                            toast.error(err.message || 'Failed to add manual time');
+                        }
+                    }}
+                />
             )}
         </div>
     );
