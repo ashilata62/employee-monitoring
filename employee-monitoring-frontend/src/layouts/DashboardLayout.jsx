@@ -37,7 +37,7 @@ export function DashboardLayout({ children }) {
             
             {/* Mobile Overlay */}
             <div
-                className={`fixed inset-0 z-40 bg-black/50 backdrop-blur-xs transition-opacity lg:hidden ${
+                className={`fixed inset-0 z-40 bg-black/50 backdrop-blur-xs transition-opacity md:hidden ${
                     mobileOpen ? "opacity-100 pointer-events-auto" : "pointer-events-none opacity-0"
                 }`}
                 onClick={() => setMobileOpen(false)}

@@ -73,7 +73,7 @@ export function PeriodComparisonBar({
             </button>
 
             {showExportMenu && (
-                <div className={`absolute top-full ${menuAlignLeft ? 'left-0' : 'right-0'} mt-2 w-52 bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl shadow-2xl border border-[#D6CDBC] dark:border-[#384232] p-2 z-[9999] animate-in fade-in duration-150`}>
+                <div className={`absolute top-full ${menuAlignLeft ? 'left-0' : 'right-0'} mt-2 w-52 max-w-[calc(100vw-2rem)] bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl shadow-2xl border border-[#D6CDBC] dark:border-[#384232] p-2 z-[9999] animate-in fade-in duration-150`}>
                     <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-[#777367] dark:text-[#B8B3A7] border-b border-[#D6CDBC]/50 dark:border-[#384232]/50 mb-1">
                         Export Report
                     </div>
@@ -238,7 +238,7 @@ export function PeriodComparisonBar({
                         </button>
 
                         {showRefDropdown && (
-                            <div className="absolute top-full left-0 mt-2 w-64 bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl shadow-xl border border-[#D6CDBC] dark:border-[#384232] p-2 z-50 animate-in fade-in duration-150">
+                            <div className="absolute top-full left-0 mt-2 w-64 max-w-[calc(100vw-2rem)] bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl shadow-xl border border-[#D6CDBC] dark:border-[#384232] p-2 z-50 animate-in fade-in duration-150">
                                 <p className="px-3 py-1.5 text-[9px] font-bold text-[#777367] uppercase tracking-[0.15em]">Select Range</p>
                                 {[
                                     { label: 'Today', start: todayStr, end: todayStr },
@@ -273,14 +273,14 @@ export function PeriodComparisonBar({
                         </p>
                         <button
                             onClick={() => setShowCompDropdown(!showCompDropdown)}
-                            className="flex items-center gap-2.5 px-4 py-2 bg-[#EEE8DD] dark:bg-[#252B20] rounded-xl border border-[#D6CDBC] dark:border-[#384232] text-xs font-semibold text-[#777367] dark:text-[#B8B3A7] hover:border-[#B9955B] transition-all shadow-warm-xs cursor-pointer"
+                            className="flex items-center gap-2.5 px-4 py-2 bg-[#EEE8DD] dark:bg-[#252B20] rounded-xl border border-[#D6CDBC] dark:border-[#384232] text-xs font-semibold text-[#777367] dark:text-[#B8B3A7] hover:border-[#B9955B] transition-all shadow-warm-xs cursor-pointer max-w-full"
                         >
-                            <Calendar size={13} className="text-[#777367]" />
-                            <span>{compStartStr} → {compEndStr}</span>
+                            <Calendar size={13} className="text-[#777367] shrink-0" />
+                            <span className="truncate">{compStartStr} → {compEndStr}</span>
                         </button>
 
                         {showCompDropdown && (
-                            <div className="absolute top-full left-0 mt-2 w-64 bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl shadow-xl border border-[#D6CDBC] dark:border-[#384232] p-2 z-50 animate-in fade-in duration-150">
+                            <div className="absolute top-full left-0 mt-2 w-64 max-w-[calc(100vw-2rem)] bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl shadow-xl border border-[#D6CDBC] dark:border-[#384232] p-2 z-50 animate-in fade-in duration-150">
                                 <p className="px-3 py-1.5 text-[9px] font-bold text-[#777367] uppercase tracking-[0.15em]">Select Comparison Range</p>
                                 {[
                                     { label: 'Prior Period (Equal Duration)', start: null, end: null },
@@ -318,7 +318,7 @@ export function PeriodComparisonBar({
                         </button>
 
                         {showFilterPopover && (
-                            <div className="absolute top-full left-0 mt-2 w-72 bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl shadow-2xl border border-[#D6CDBC] dark:border-[#384232] p-4 z-50 animate-in fade-in duration-150 space-y-3">
+                            <div className="absolute top-full left-0 sm:left-auto right-auto sm:right-0 mt-2 w-72 max-w-[calc(100vw-2rem)] bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl shadow-2xl border border-[#D6CDBC] dark:border-[#384232] p-4 z-50 animate-in fade-in duration-150 space-y-3">
                                 <div className="flex items-center justify-between pb-2 border-b border-[#D6CDBC] dark:border-[#384232]">
                                     <span className="text-xs font-bold text-[#29291F] dark:text-[#F5F1E9] flex items-center gap-1.5">
                                         <Filter size={13} className="text-[#B9955B]" /> Filter Analytics

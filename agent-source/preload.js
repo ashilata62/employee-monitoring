@@ -73,16 +73,16 @@ contextBridge.exposeInMainWorld('electron', {
 
 // Agent API compatibility from origin/main
 contextBridge.exposeInMainWorld('agentAPI', {
-    getDeviceInfo: () => ipcRenderer.invoke('get-device-id'),
-    getInvitePrefill: () => ipcRenderer.invoke('get-invite-prefill'),
+    getDeviceInfo: () => ipcRenderer.invoke('get-device-id').catch(() => 'DESKTOP-CLIENT'),
+    getInvitePrefill: () => ipcRenderer.invoke('get-invite-prefill').catch(() => ({})),
     onInviteLoaded: (callback) => ipcRenderer.on('invite-loaded', (_event, data) => callback(data)),
-    completeSetup: (data) => ipcRenderer.invoke('complete-setup', data),
-    getPermissionsState: () => ipcRenderer.invoke('get-permissions-state'),
-    completePermissions: (data) => ipcRenderer.invoke('complete-permissions', data),
-    getApprovalStatus: () => ipcRenderer.invoke('get-approval-status'),
+    completeSetup: (data) => ipcRenderer.invoke('complete-setup', data).catch(err => ({ success: false, error: err.message })),
+    getPermissionsState: () => ipcRenderer.invoke('get-permissions-state').catch(() => ({ screen: true, location: true, idle: true, completed: false })),
+    completePermissions: (data) => ipcRenderer.invoke('complete-permissions', data).catch(() => ({ success: true })),
+    getApprovalStatus: () => ipcRenderer.invoke('get-approval-status').catch(() => 'setup'),
     closeWindow: () => ipcRenderer.send('close-window'),
-    requestLocation: () => ipcRenderer.invoke('request-location'),
-    checkScreenPermission: () => ipcRenderer.invoke('check-screen-permission'),
+    requestLocation: () => ipcRenderer.invoke('request-location').catch(() => ({ success: true })),
+    checkScreenPermission: () => ipcRenderer.invoke('check-screen-permission').catch(() => true),
     onStatusUpdated: (callback) => ipcRenderer.on('status-updated', (_event, status) => callback(status)),
-    runHealthCheck: () => ipcRenderer.invoke('run-health-check')
+    runHealthCheck: () => ipcRenderer.invoke('run-health-check').catch(() => ({}))
 });

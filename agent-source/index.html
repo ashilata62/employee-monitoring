@@ -1,3 +1,703 @@
+<<<<<<< HEAD
+<html>
+
+<head>
+    <title>Insightful Agent Setup</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            padding: 2rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, #818cf8, #c084fc);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            text-align: left;
+            margin-bottom: 1.25rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 0.75rem;
+            background: #0f172a;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.75rem;
+            color: white;
+            box-sizing: border-box;
+            transition: all 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        .consent {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            text-align: left;
+        }
+
+        .consent input {
+            margin-top: 0.25rem;
+        }
+
+        button {
+            width: 100%;
+            padding: 0.875rem;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 0.75rem;
+            font-weight: 700;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button:disabled {
+            background-color: #475569;
+            cursor: not-allowed;
+        }
+
+        .footer {
+            margin-top: 1.5rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container" id="setup-view">
+        <h1>Insightful</h1>
+        <p>Complete setup to start monitoring.</p>
+
+        <div class="form-group">
+            <label>Employee Name</label>
+            <input type="text" id="name" placeholder="John Doe">
+        </div>
+
+        <div class="form-group">
+            <label>Work Email</label>
+            <input type="email" id="email" placeholder="john@company.com">
+        </div>
+
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="password" placeholder="••••••••">
+        </div>
+
+        <label class="consent">
+            <input type="checkbox" id="consent">
+            <span>I agree to the tracking of my screen, active windows, and idle time for work monitoring
+                purposes.</span>
+        </label>
+
+        <button id="submit-btn" disabled>Complete Setup</button>
+
+        <div class="footer">
+            Device ID: <span id="device-id">Detecting...</span>
+        </div>
+    </div>
+
+    <div class="container" id="permissions-view" style="display: none;">
+        <h1 style="font-size: 1.25rem;">Allow Permissions</h1>
+        <p style="margin-bottom: 1.5rem;">Access is required for work monitoring.</p>
+
+        <div style="text-align: left; margin-bottom: 1.5rem;">
+            <div class="perm-item" id="perm-screen-card">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <div
+                        style="background: rgba(99, 102, 241, 0.1); padding: 0.5rem; border-radius: 0.5rem; color: var(--primary);">
+                        <svg style="width: 18px; height: 18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
+                            </path>
+                        </svg>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-size: 0.8125rem; font-weight: 700;">Screen Recording</div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted);">Proof of work screenshots</div>
+                    </div>
+                    <button class="perm-btn" id="btn-screen"
+                        style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.75rem;">Allow</button>
+                </div>
+            </div>
+
+            <div class="perm-item" id="perm-location-card">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <div
+                        style="background: rgba(16, 185, 129, 0.1); padding: 0.5rem; border-radius: 0.5rem; color: #10b981;">
+                        <svg style="width: 18px; height: 18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z">
+                            </path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-size: 0.8125rem; font-weight: 700;">Live Location</div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted);">Real-time map updates</div>
+                    </div>
+                    <button class="perm-btn" id="btn-location"
+                        style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.75rem;">Allow</button>
+                </div>
+            </div>
+
+            <div class="perm-item" id="perm-idle-card">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <div
+                        style="background: rgba(245, 158, 11, 0.1); padding: 0.5rem; border-radius: 0.5rem; color: #f59e0b;">
+                        <svg style="width: 18px; height: 18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-size: 0.8125rem; font-weight: 700;">Activity Sync</div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted);">App usage & idle time</div>
+                    </div>
+                    <button class="perm-btn" id="btn-idle"
+                        style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.75rem;">Enable</button>
+                </div>
+            </div>
+        </div>
+
+        <button id="perm-continue-btn" disabled style="opacity: 0.5;">Finish Setup</button>
+    </div>
+
+    <div class="container" id="success-view" style="display: none;">
+        <h1 style="color: #10b981;">Agent Active</h1>
+        <p>Monitoring is active in the background. Minimizes to System Tray.</p>
+        <div style="margin: 1.5rem 0; color: #10b981;">
+            <svg style="width: 56px; height: 56px; margin: 0 auto;" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clip-rule="evenodd"></path>
+            </svg>
+        </div>
+
+        <div
+            style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 0.75rem; padding: 0.75rem 1rem; margin-bottom: 1.25rem; text-align: left;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">ACTIVE PROJECT</span>
+                <span id="detected-project-badge"
+                    style="font-size: 0.75rem; color: #818cf8; font-weight: 600;">Auto-detecting...</span>
+            </div>
+            <label
+                style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: var(--text-muted); cursor: pointer; margin: 0; text-transform: none; letter-spacing: normal;">
+                <input type="checkbox" id="chk-autorun" style="width: auto; margin: 0;">
+                <span>Start automatically on Windows boot</span>
+            </label>
+        </div>
+
+        <button id="success-close-btn">Hide to System Tray</button>
+        <div style="margin-top: 1rem;">
+            <a href="#" id="success-health-btn"
+                style="color: var(--text-muted); font-size: 0.75rem; text-decoration: none;">System Health Check</a>
+        </div>
+    </div>
+
+    <div class="container" id="pending-view" style="display: none;">
+        <h1>Awaiting Approval</h1>
+        <p>Your registration is complete. Please wait for an administrator to approve your device to start tracking.</p>
+        <div style="margin: 2rem 0; color: var(--primary);">
+            <svg class="animate-spin" style="width: 40px; height: 40px; margin: 0 auto;" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"
+                    style="opacity: 0.25;"></circle>
+                <path fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                </path>
+            </svg>
+        </div>
+        <div style="font-size: 0.75rem; color: var(--primary); margin-bottom: 2rem;">Connecting to server for real-time
+            activation...</div>
+        <button id="pending-close-btn">Close Window</button>
+        <div style="margin-top: 1rem;">
+            <a href="#" id="pending-health-btn"
+                style="color: var(--text-muted); font-size: 0.75rem; text-decoration: none;">System Health Check</a>
+        </div>
+    </div>
+
+    <div class="container" id="rejected-view" style="display: none;">
+        <h1
+            style="background: linear-gradient(to right, #f87171, #ef4444); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
+            Registration Rejected</h1>
+        <p>Your monitoring registration was not approved by the administrator. Please contact your manager for details.
+        </p>
+        <div style="margin: 2rem 0; color: #ef4444;">
+            <svg style="width: 48px; height: 48px; margin: 0 auto;" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+        </div>
+        <button id="rejected-close-btn" style="background-color: #ef4444;">Close Window</button>
+    </div>
+
+    <div class="container" id="loading-view" style="display: none;">
+        <h1>Verifying...</h1>
+        <p>Connecting to the monitoring server.</p>
+        <div style="margin: 2rem 0; color: var(--primary);">
+            <svg class="animate-spin" style="width: 40px; height: 40px; margin: 0 auto;" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"
+                    style="opacity: 0.25;"></circle>
+                <path fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                </path>
+            </svg>
+        </div>
+    </div>
+
+    </div>
+
+    <div class="container" id="diagnostic-view" style="display: none;">
+        <h1>System Health</h1>
+        <p>Diagnostic results for your computer.</p>
+
+        <div style="text-align: left; margin-bottom: 1.5rem;">
+            <div class="health-item" id="health-connectivity">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 0.875rem; font-weight: 600;">Server Connection</span>
+                    <span class="status-badge status-loading">Checking...</span>
+                </div>
+                <div class="status-msg" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+                    Verifying link to Railway...</div>
+            </div>
+
+            <div class="health-item" id="health-powershell">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 0.875rem; font-weight: 600;">Activity Tracking</span>
+                    <span class="status-badge status-loading">Checking...</span>
+                </div>
+                <div class="status-msg" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+                    Checking PowerShell capability...</div>
+            </div>
+
+            <div class="health-item" id="health-screen">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 0.875rem; font-weight: 600;">Screen Capture</span>
+                    <span class="status-badge status-loading">Checking...</span>
+                </div>
+                <div class="status-msg" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+                    Verifying OS permissions...</div>
+            </div>
+
+            <div class="health-item" id="health-storage">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 0.875rem; font-weight: 600;">Data Storage</span>
+                    <span class="status-badge status-loading">Checking...</span>
+                </div>
+                <div class="status-msg" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+                    Checking write access to AppData...</div>
+            </div>
+        </div>
+
+        <button id="health-back-btn">Back to Home</button>
+    </div>
+
+    <script>
+        const setupView = document.getElementById('setup-view');
+        const permissionsView = document.getElementById('permissions-view');
+        const pendingView = document.getElementById('pending-view');
+        const successView = document.getElementById('success-view');
+        const rejectedView = document.getElementById('rejected-view');
+        const loadingView = document.getElementById('loading-view');
+        const diagnosticView = document.getElementById('diagnostic-view');
+
+        const nameInput = document.getElementById('name');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const consentCheckbox = document.getElementById('consent');
+        const submitBtn = document.getElementById('submit-btn');
+        const deviceIdSpan = document.getElementById('device-id');
+
+        const permissions = {
+            screen: false,
+            location: false,
+            idle: false
+        };
+
+        let inviteToken = null;
+
+        const applyInvitePrefill = (invite) => {
+            if (!invite?.email) return;
+            inviteToken = invite.token || inviteToken;
+            emailInput.value = invite.email;
+            if (invite.fullName) nameInput.value = invite.fullName;
+            if (invite.emailLocked) {
+                emailInput.readOnly = true;
+                emailInput.style.opacity = '0.85';
+                emailInput.title = 'This email was assigned by your administrator';
+            }
+            validateRegistration();
+        };
+
+        window.agentAPI.getInvitePrefill().then(applyInvitePrefill);
+        window.agentAPI.onInviteLoaded(applyInvitePrefill);
+
+        window.agentAPI.getDeviceInfo().then(id => {
+            deviceIdSpan.textContent = id;
+        });
+
+        const showView = (viewId) => {
+            [setupView, permissionsView, pendingView, successView, rejectedView, loadingView, diagnosticView].forEach(v => {
+                if (v) v.style.display = 'none';
+            });
+            const target = document.getElementById(viewId);
+            if (target) target.style.display = 'block';
+        };
+
+        // Check initial status
+        showView('loading-view');
+
+        window.agentAPI.getApprovalStatus().then(status => {
+            if (status === 'approved') {
+                showView('success-view');
+            } else if (status === 'pending') {
+                showView('pending-view');
+            } else if (status === 'permissions') {
+                showView('permissions-view');
+            } else {
+                showView('setup-view');
+            }
+        });
+
+        // Health Check Runner
+        const runHealthCheck = async () => {
+            showView('diagnostic-view');
+            const items = ['connectivity', 'powershell', 'screen', 'storage'];
+
+            // Reset results
+            items.forEach(id => {
+                const badge = document.querySelector(`#health-${id} .status-badge`);
+                badge.className = 'status-badge status-loading';
+                badge.textContent = 'Checking...';
+                document.querySelector(`#health-${id} .status-msg`).textContent = 'Verifying...';
+            });
+
+            const results = await window.agentAPI.runHealthCheck();
+
+            items.forEach(id => {
+                const res = results[id];
+                const badge = document.querySelector(`#health-${id} .status-badge`);
+                const msg = document.querySelector(`#health-${id} .status-msg`);
+
+                badge.textContent = res.status === 'pass' ? 'Pass' : 'Fail';
+                badge.className = `status-badge status-${res.status}`;
+                msg.textContent = res.message;
+            });
+        };
+
+        const healthBtnSuccess = document.getElementById('success-health-btn');
+        const healthBtnPending = document.getElementById('pending-health-btn');
+        const healthBackBtn = document.getElementById('health-back-btn');
+
+        if (healthBtnSuccess) healthBtnSuccess.onclick = (e) => { e.preventDefault(); runHealthCheck(); };
+        if (healthBtnPending) healthBtnPending.onclick = (e) => { e.preventDefault(); runHealthCheck(); };
+        if (healthBackBtn) healthBackBtn.onclick = () => {
+            window.agentAPI.getApprovalStatus().then(status => {
+                if (status === 'approved') showView('success-view');
+                else if (status === 'pending') showView('pending-view');
+                else showView('setup-view');
+            });
+        };
+
+        // Listen for status updates (Socket or Poll)
+        window.agentAPI.onStatusUpdated((status) => {
+            if (status === 'approved') {
+                // Only skip to success if the user is NOT currently on the permissions view
+                if (permissionsView.style.display !== 'block') {
+                    showView('success-view');
+                }
+            } else if (status === 'pending') {
+                if (permissionsView.style.display !== 'block') {
+                    showView('pending-view');
+                }
+            } else if (status === 'permissions') {
+                showView('permissions-view');
+            } else if (status === 'rejected') {
+                showView('rejected-view');
+            } else if (status === 'deleted') {
+                showView('setup-view');
+                alert('Your device was removed by the administrator. Please re-register if needed.');
+            }
+        });
+
+        const validateRegistration = () => {
+            const isEmailValid = emailInput.value.includes('@') && emailInput.value.includes('.');
+            submitBtn.disabled = !(nameInput.value.length >= 2 && isEmailValid && passwordInput.value.length >= 6 && consentCheckbox.checked);
+        };
+
+        nameInput.oninput = validateRegistration;
+        emailInput.oninput = validateRegistration;
+        passwordInput.oninput = validateRegistration;
+        consentCheckbox.onchange = validateRegistration;
+
+        submitBtn.onclick = async () => {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Saving...';
+
+            const result = await window.agentAPI.completeSetup({
+                name: nameInput.value,
+                email: emailInput.value,
+                password: passwordInput.value,
+                inviteToken: inviteToken
+            });
+
+            if (result?.success) {
+                showView('permissions-view');
+            } else {
+                alert(result?.error || 'Setup failed. Please check your connection or password.');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Complete Setup';
+            }
+        };
+
+        // PERMISSIONS LOGIC
+        const btnScreen = document.getElementById('btn-screen');
+        const btnLocation = document.getElementById('btn-location');
+        const btnIdle = document.getElementById('btn-idle');
+        const btnContinue = document.getElementById('perm-continue-btn');
+
+        const validatePermissions = () => {
+            const allAllowed = permissions.screen && permissions.location && permissions.idle;
+            btnContinue.disabled = !allAllowed;
+            btnContinue.style.opacity = allAllowed ? '1' : '0.5';
+        };
+
+        btnScreen.onclick = async () => {
+            btnScreen.textContent = 'Checking...';
+            const ok = await window.agentAPI.checkScreenPermission();
+            if (ok) {
+                permissions.screen = true;
+                btnScreen.textContent = 'Allowed';
+                btnScreen.style.backgroundColor = '#10b981';
+                btnScreen.disabled = true;
+            } else {
+                btnScreen.textContent = 'Retry';
+                alert('Screen access required. Please allow entire screen sharing when the dialog appears.');
+            }
+            validatePermissions();
+        };
+
+        btnLocation.onclick = async () => {
+            btnLocation.textContent = 'Requesting...';
+            const res = await window.agentAPI.requestLocation();
+            if (res.success) {
+                permissions.location = true;
+                btnLocation.textContent = 'Allowed';
+                btnLocation.style.backgroundColor = '#10b981';
+                btnLocation.disabled = true;
+            } else {
+                btnLocation.textContent = 'Retry';
+                alert('Location access denied: ' + (res.error || 'Please enable location services.'));
+            }
+            validatePermissions();
+        };
+
+        btnIdle.onclick = () => {
+            permissions.idle = true;
+            btnIdle.textContent = 'Enabled';
+            btnIdle.style.backgroundColor = '#10b981';
+            btnIdle.disabled = true;
+            validatePermissions();
+        };
+
+        btnContinue.onclick = async () => {
+            await window.agentAPI.completePermissions({
+                screen: permissions.screen,
+                location: permissions.location,
+                idle: permissions.idle,
+                completed: true,
+                grantedAt: new Date().toISOString()
+            });
+            showView('loading-view');
+            // Re-check status to either show pending or success
+            window.agentAPI.getApprovalStatus().then(status => {
+                if (status === 'approved') {
+                    showView('success-view');
+                } else {
+                    showView('pending-view');
+                }
+            });
+        };
+
+        // Close handlers & stealth mode
+        ['pending-close-btn', 'rejected-close-btn', 'success-close-btn'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.onclick = () => {
+                if (window.electronAPI?.hideToTray) {
+                    window.electronAPI.hideToTray();
+                } else if (window.agentAPI?.closeWindow) {
+                    window.agentAPI.closeWindow();
+                }
+            };
+        });
+
+        // Initialize Windows Startup Auto-Run and Auto-Project Watchers
+        const autorunChk = document.getElementById('chk-autorun');
+        const projectBadge = document.getElementById('detected-project-badge');
+
+        if (window.electronAPI) {
+            if (window.electronAPI.getStartupAutoRun) {
+                window.electronAPI.getStartupAutoRun().then(enabled => {
+                    if (autorunChk) autorunChk.checked = !!enabled;
+                }).catch(() => { });
+            }
+            if (autorunChk && window.electronAPI.setStartupAutoRun) {
+                autorunChk.onchange = (e) => {
+                    window.electronAPI.setStartupAutoRun(e.target.checked);
+                };
+            }
+            if (window.electronAPI.getAutoProject) {
+                window.electronAPI.getAutoProject().then(proj => {
+                    if (projectBadge && proj && proj.projectName) {
+                        projectBadge.textContent = proj.projectName;
+                    }
+                }).catch(() => { });
+            }
+            if (window.electronAPI.onAutoProjectDetected) {
+                window.electronAPI.onAutoProjectDetected(proj => {
+                    if (projectBadge) {
+                        projectBadge.textContent = proj.projectName || 'Auto-detecting...';
+                    }
+                });
+            }
+        }
+    </script>
+    <style>
+        .perm-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 1rem;
+            border-radius: 1rem;
+            margin-bottom: 0.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .perm-btn-success {
+            background-color: #10b981 !important;
+            color: white !important;
+            width: auto;
+            padding: 0.5rem 1rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            padding: 0.2rem 0.6rem;
+            border-radius: 2rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+
+        .status-loading {
+            background: rgba(148, 163, 184, 0.1);
+            color: var(--text-muted);
+        }
+
+        .status-pass {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .status-fail {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        .health-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 1rem;
+            border-radius: 1rem;
+            margin-bottom: 0.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+=======
 <html>
 <head>
     <title>Insightful Agent Setup</title>
@@ -350,16 +1050,6 @@
 
         let inviteToken = null;
 
-        const validateRegistration = () => {
-            const isEmailValid = emailInput.value.includes('@') && emailInput.value.includes('.');
-            submitBtn.disabled = !(nameInput.value.length >= 2 && isEmailValid && passwordInput.value.length >= 6 && consentCheckbox.checked);
-        };
-
-        nameInput.oninput = validateRegistration;
-        emailInput.oninput = validateRegistration;
-        passwordInput.oninput = validateRegistration;
-        consentCheckbox.onchange = validateRegistration;
-
         const applyInvitePrefill = (invite) => {
             if (!invite?.email) return;
             inviteToken = invite.token || inviteToken;
@@ -373,17 +1063,21 @@
             validateRegistration();
         };
 
-        if (window.agentAPI && window.agentAPI.getInvitePrefill) {
+        if (window.agentAPI?.getInvitePrefill) {
             window.agentAPI.getInvitePrefill().then(applyInvitePrefill).catch(() => {});
         }
-        if (window.agentAPI && window.agentAPI.onInviteLoaded) {
+        if (window.agentAPI?.onInviteLoaded) {
             window.agentAPI.onInviteLoaded(applyInvitePrefill);
         }
 
-        if (window.agentAPI && window.agentAPI.getDeviceInfo) {
+        if (window.agentAPI?.getDeviceInfo) {
             window.agentAPI.getDeviceInfo().then(id => {
-                deviceIdSpan.textContent = id;
-            }).catch(() => {});
+                deviceIdSpan.textContent = id || 'DESKTOP-CLIENT';
+            }).catch(() => {
+                deviceIdSpan.textContent = 'DESKTOP-CLIENT';
+            });
+        } else {
+            deviceIdSpan.textContent = 'DESKTOP-CLIENT';
         }
 
         const showView = (viewId) => {
@@ -394,18 +1088,11 @@
             if (target) target.style.display = 'block';
         };
 
-        // Check initial status with safe timeout guarantee
+        // Check initial status
         showView('loading-view');
         
-        const initialStatusTimeout = setTimeout(() => {
-            if (loadingView && loadingView.style.display !== 'none') {
-                showView('setup-view');
-            }
-        }, 1500);
-
-        if (window.agentAPI && window.agentAPI.getApprovalStatus) {
+        if (window.agentAPI?.getApprovalStatus) {
             window.agentAPI.getApprovalStatus().then(status => {
-                clearTimeout(initialStatusTimeout);
                 if (status === 'approved') {
                     showView('success-view');
                 } else if (status === 'pending') {
@@ -416,12 +1103,10 @@
                     showView('setup-view');
                 }
             }).catch(err => {
-                clearTimeout(initialStatusTimeout);
-                console.error('getApprovalStatus error:', err);
+                console.warn('Could not determine approval status, defaulting to setup view:', err);
                 showView('setup-view');
             });
         } else {
-            clearTimeout(initialStatusTimeout);
             showView('setup-view');
         }
 
@@ -458,11 +1143,15 @@
         if (healthBtnSuccess) healthBtnSuccess.onclick = (e) => { e.preventDefault(); runHealthCheck(); };
         if (healthBtnPending) healthBtnPending.onclick = (e) => { e.preventDefault(); runHealthCheck(); };
         if (healthBackBtn) healthBackBtn.onclick = () => {
-            window.agentAPI.getApprovalStatus().then(status => {
-                if (status === 'approved') showView('success-view');
-                else if (status === 'pending') showView('pending-view');
-                else showView('setup-view');
-            });
+            if (window.agentAPI?.getApprovalStatus) {
+                window.agentAPI.getApprovalStatus().then(status => {
+                    if (status === 'approved') showView('success-view');
+                    else if (status === 'pending') showView('pending-view');
+                    else showView('setup-view');
+                }).catch(() => showView('setup-view'));
+            } else {
+                showView('setup-view');
+            }
         };
 
         // Listen for status updates (Socket or Poll)
@@ -485,6 +1174,16 @@
                 alert('Your device was removed by the administrator. Please re-register if needed.');
             }
         });
+
+        const validateRegistration = () => {
+            const isEmailValid = emailInput.value.includes('@') && emailInput.value.includes('.');
+            submitBtn.disabled = !(nameInput.value.length >= 2 && isEmailValid && passwordInput.value.length >= 6 && consentCheckbox.checked);
+        };
+
+        nameInput.oninput = validateRegistration;
+        emailInput.oninput = validateRegistration;
+        passwordInput.oninput = validateRegistration;
+        consentCheckbox.onchange = validateRegistration;
 
         submitBtn.onclick = async () => {
             submitBtn.disabled = true;
@@ -566,13 +1265,19 @@
             });
             showView('loading-view');
             // Re-check status to either show pending or success
-            window.agentAPI.getApprovalStatus().then(status => {
-                if (status === 'approved') {
-                    showView('success-view');
-                } else {
+            if (window.agentAPI?.getApprovalStatus) {
+                window.agentAPI.getApprovalStatus().then(status => {
+                    if (status === 'approved') {
+                        showView('success-view');
+                    } else {
+                        showView('pending-view');
+                    }
+                }).catch(() => {
                     showView('pending-view');
-                }
-            });
+                });
+            } else {
+                showView('pending-view');
+            }
         };
 
         // Close handlers & stealth mode
@@ -659,4 +1364,5 @@
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
-    </style>
+    </style>
+>>>>>>> 4c8737b (quickbook)
