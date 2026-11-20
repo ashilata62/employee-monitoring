@@ -173,7 +173,11 @@ const register = async (req, res) => {
         }
 
         // 3. Register Agent
-        const agent = await agentService.registerAgent(targetEmployeeId, effectiveDeviceId, systemInfo);
+        const formattedSystemInfo = typeof systemInfo === 'object' && systemInfo !== null
+            ? JSON.stringify(systemInfo)
+            : (systemInfo ? String(systemInfo) : null);
+
+        const agent = await agentService.registerAgent(targetEmployeeId, effectiveDeviceId, formattedSystemInfo);
 
         // Simple token for agent security
         const agentToken = Buffer.from(`${targetEmployeeId}:${effectiveDeviceId}:INSIGHTFUL`).toString('base64');
