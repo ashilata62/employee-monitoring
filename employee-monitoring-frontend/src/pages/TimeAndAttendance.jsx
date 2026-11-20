@@ -272,16 +272,18 @@ export function TimeAndAttendance() {
                     <GlobalCalendar />
 
                     <div className="ml-auto flex items-center gap-3">
-                        <div className="relative group w-full md:w-64">
-                            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-500 transition-colors" />
-                            <input
-                                type="text"
-                                placeholder="Search employee or team"
-                                value={generalSearch}
-                                onChange={(e) => setGeneralSearch(e.target.value)}
-                                className="w-full bg-[#F5F1E9] dark:bg-[#1E2419] border border-[#D6CDBC] dark:border-[#384232] rounded-xl pl-9 pr-4 py-2 text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] focus:border-[#B9955B] outline-none transition-all placeholder-[#777367]"
-                            />
-                        </div>
+                        {role !== 'EMPLOYEE' && (
+                            <div className="relative group w-full md:w-64">
+                                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-500 transition-colors" />
+                                <input
+                                    type="text"
+                                    placeholder="Search employee or team"
+                                    value={generalSearch}
+                                    onChange={(e) => setGeneralSearch(e.target.value)}
+                                    className="w-full bg-[#F5F1E9] dark:bg-[#1E2419] border border-[#D6CDBC] dark:border-[#384232] rounded-xl pl-9 pr-4 py-2 text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] focus:border-[#B9955B] outline-none transition-all placeholder-[#777367]"
+                                />
+                            </div>
+                        )}
                         {activeTab === 'Daily Attendance' && (
                             <button
                                 onClick={handleDownload}
