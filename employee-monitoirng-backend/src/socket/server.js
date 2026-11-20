@@ -120,13 +120,15 @@ const initSocketServer = (server) => {
             }
         }
 
-        // Handle Status Override (like 'ON_BREAK')
+        // Handle Status Override (like 'ON_BREAK' or 'ONLINE')
         socket.on('employee:status_override', async ({ status }) => {
             if (!employeeId) return;
             const session = liveSessions.get(employeeId);
             if (session) {
                 session.status = status;
                 session.lastActivity = new Date(); // Reset timeout
+            }
+            if (organizationId) {
                 io.to(`org_${organizationId}`).emit('employee:status', {
                     employeeId,
                     status
@@ -147,7 +149,7 @@ const initSocketServer = (server) => {
                 
                 if (session.status === 'DEACTIVATED') return;
 
-                let newStatus = session.status === 'BREAK' ? 'BREAK' : (idleTime > 300 ? 'OFFLINE' : (idleTime > 60 ? 'IDLE' : 'ONLINE'));
+                let newStatus = session.status === 'BREAK' ? 'BREAK' : (idleTime >= 600 ? 'IDLE' : 'ONLINE');
                 
                 if (session.status !== newStatus) {
                     session.status = newStatus;
@@ -172,7 +174,7 @@ const initSocketServer = (server) => {
                     }
                 });
 
-                const activityType = idleTime > 60 ? 'IDLE' : 'ACTIVE';
+                const activityType = idleTime >= 300 ? 'IDLE' : 'ACTIVE';
                 const session = liveSessions.get(employeeId);
                 const employeeTeamId = session?.teamId || socket.user?.teamId || null;
                 const { cleanAppName, productivity, appCategory, appDomain } = await resolveAppActivityForOrg(

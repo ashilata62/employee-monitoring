@@ -155,38 +155,40 @@ export function AdminExecutiveDashboard({
             );
 
             // Determine status from both liveMatch (socket/real-time) and database record (emp)
-            const liveStatus = (liveMatch?.status || liveMatch?.accountStatus || '').toLowerCase();
+            const liveStatus = (liveMatch?.status || '').toLowerCase();
             const dbStatus = (emp.status || '').toLowerCase();
 
-            // 1. Explicit working check:
-            // If live status is online/active AND liveMatch is not flagged on break/idle, they are DEFINITELY WORKING!
-            const isExplicitlyWorking = (liveStatus === 'online' || liveStatus === 'active') && 
-                                        liveMatch?.isOnBreak !== true && 
-                                        liveMatch?.isIdle !== true;
+            // 1. Explicit offline check: if clocked out or marked offline, employee is OFFLINE
+            const isExplicitlyOffline = liveStatus === 'offline' || 
+                                        liveMatch?.isOnline === false || 
+                                        dbStatus === 'offline' || 
+                                        liveMatch?.isClockedIn === false ||
+                                        emp.isClockedIn === false;
 
-            // 2. Break check:
-            // Break ONLY if not explicitly working, AND (liveMatch is on break OR db has break without active live override)
-            const isBreak = !isExplicitlyWorking && (
+            // 2. Break check: only if not explicitly offline
+            const isBreak = !isExplicitlyOffline && (
                 liveMatch?.isOnBreak === true || 
                 liveStatus === 'break' || 
-                (dbStatus === 'break' && liveStatus !== 'online' && liveStatus !== 'active')
+                dbStatus === 'break'
             );
             
-            // 3. Idle / AFK check:
-            const isIdle = !isBreak && !isExplicitlyWorking && (
-                liveStatus === 'idle' || liveStatus === 'afk' || liveStatus === 'passive' || liveStatus === 'idle_warning' ||
+            // 3. Idle / AFK check: 10 minutes (600s) or explicit AFK status
+            const isIdle = !isExplicitlyOffline && !isBreak && (
+                liveStatus === 'idle' || liveStatus === 'afk' ||
                 liveMatch?.isIdle === true ||
-                (liveMatch?.idleTime || 0) >= 60 ||
-                (liveMatch?.idleMinutes || 0) >= 1 ||
-                (typeof emp.idle === 'number' && emp.idle >= 60 && liveStatus !== 'online') ||
-                (dbStatus === 'idle' || dbStatus === 'afk')
+                (liveMatch?.idleTime || 0) >= 600 ||
+                dbStatus === 'idle' || dbStatus === 'afk'
             );
 
-            const isOnline = isExplicitlyWorking || 
-                             liveStatus === 'online' || liveStatus === 'active' ||
-                             dbStatus === 'online' || dbStatus === 'active' ||
-                             liveMatch?.isOnline || liveMatch?.agentStatus === 'active' ||
-                             isIdle || isBreak;
+            // 4. Working check: only if active/online, clocked in, and NOT offline/break/idle
+            const isExplicitlyWorking = !isExplicitlyOffline && !isBreak && !isIdle && (
+                liveStatus === 'online' || 
+                liveMatch?.isOnline === true ||
+                (liveMatch?.isClockedIn === true && !isBreak && !isIdle) ||
+                (emp.isClockedIn === true && (liveStatus === 'online' || dbStatus === 'online'))
+            );
+
+            const isOnline = !isExplicitlyOffline && (isExplicitlyWorking || isIdle || isBreak);
 
             const isOnBreak = isBreak;
             const idleMinutes = liveMatch?.idleTime 
@@ -199,11 +201,13 @@ export function AdminExecutiveDashboard({
                 : (isIdle ? 'Away from Computer (Idle)' : rawApp);
 
             let currentActivity = 'Offline';
-            if (isOnBreak) {
+            if (!isOnline) {
+                currentActivity = 'Offline';
+            } else if (isOnBreak) {
                 currentActivity = 'On Break';
             } else if (isIdle) {
                 currentActivity = 'Away from Computer (Idle)';
-            } else if (isOnline) {
+            } else if (isExplicitlyWorking) {
                 currentActivity = currentApp ? `Working on ${currentApp}` : 'Active / Logged In';
             }
 

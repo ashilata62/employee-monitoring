@@ -4,7 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const bcrypt = require('bcrypt');
 const prisma = require('../../config/db');
-const { getIO } = require('../../socket/server');
+const { getIO, updateSessionStatus } = require('../../socket/server');
 const { getOrganizationId } = require('../../utils/orgId');
 
 const invitationService = require('../auth/invitation.service');
@@ -609,6 +609,8 @@ const handleIdleActivity = async (req, res) => {
                 orderBy: { createdAt: 'desc' }
             });
 
+            const isFirstIdleNotification = !openSession;
+
             if (!openSession) {
                 openSession = await prisma.idleSession.create({
                     data: {
@@ -624,6 +626,15 @@ const handleIdleActivity = async (req, res) => {
                         source: effectiveSource
                     }
                 });
+            } else {
+                // Update ongoing idle session duration without creating duplicate alert records
+                await prisma.idleSession.update({
+                    where: { id: openSession.id },
+                    data: {
+                        idleDuration: parsedIdleDuration,
+                        lastActivityAt: employee.lastActiveAt || parsedStartTime
+                    }
+                }).catch(() => {});
             }
 
             // 2. Update Employee status in DB
@@ -635,75 +646,77 @@ const handleIdleActivity = async (req, res) => {
                 }
             });
 
-            // 3. Save in ActivityLog for timesheet compatibility
-            await prisma.activityLog.create({
-                data: {
-                    activityType: 'IDLE',
-                    productivity: 'UNPRODUCTIVE',
-                    duration: parsedIdleDuration,
-                    timestamp: timestamp ? new Date(timestamp) : now,
-                    appWebsite: 'Away from Computer (Idle)',
-                    employeeId,
-                    taskId: validTaskIdForDb,
-                    organizationId
-                }
-            });
-
-            // 4. Log Alert in AlertLog
             let alertRecord = null;
-            try {
-                alertRecord = await prisma.alertLog.create({
+            if (isFirstIdleNotification) {
+                // 3. Save in ActivityLog for timesheet compatibility (once on initial entry)
+                await prisma.activityLog.create({
                     data: {
-                        organizationId,
+                        activityType: 'IDLE',
+                        productivity: 'UNPRODUCTIVE',
+                        duration: parsedIdleDuration,
+                        timestamp: timestamp ? new Date(timestamp) : now,
+                        appWebsite: 'Away from Computer (Idle)',
                         employeeId,
-                        ruleType: 'IDLE_TIMEOUT',
-                        trigger: '10_MIN_INACTIVITY',
-                        severity: 'warning',
-                        message: `Employee ${employee.fullName} has been inactive for 10 minutes.`,
-                        metadata: JSON.stringify({
-                            idleDuration: parsedIdleDuration,
-                            idleStartTime: parsedStartTime,
-                            lastActivityAt: employee.lastActiveAt || parsedStartTime,
-                            source: effectiveSource
-                        })
+                        taskId: validTaskIdForDb,
+                        organizationId
                     }
                 });
-            } catch (alertErr) {
-                console.error('[AgentController] Error creating AlertLog:', alertErr.message);
-            }
 
-            // 5. Find assigned Manager or Admin for Email Alert
-            let manager = null;
-            if (employee.teamId) {
-                manager = await prisma.employee.findFirst({
-                    where: { teamId: employee.teamId, role: 'MANAGER' }
-                });
-            }
-            if (!manager) {
-                manager = await prisma.employee.findFirst({
-                    where: { organizationId, role: 'MANAGER' }
-                });
-            }
-            if (!manager) {
-                const adminUser = await prisma.user.findFirst({
-                    where: { role: 'ADMIN' }
-                });
-                if (adminUser) {
-                    manager = { fullName: adminUser.name || 'Administrator', email: adminUser.email };
+                // 4. Log Alert in AlertLog (once per session)
+                try {
+                    alertRecord = await prisma.alertLog.create({
+                        data: {
+                            organizationId,
+                            employeeId,
+                            ruleType: 'IDLE_TIMEOUT',
+                            trigger: '10_MIN_INACTIVITY',
+                            severity: 'warning',
+                            message: `Employee ${employee.fullName} has been inactive for 10 minutes.`,
+                            metadata: JSON.stringify({
+                                idleDuration: parsedIdleDuration,
+                                idleStartTime: parsedStartTime,
+                                lastActivityAt: employee.lastActiveAt || parsedStartTime,
+                                source: effectiveSource
+                            })
+                        }
+                    });
+                } catch (alertErr) {
+                    console.error('[AgentController] Error creating AlertLog:', alertErr.message);
                 }
-            }
 
-            // 6. Send Email Notification via Nodemailer
-            try {
-                emailResult = await sendIdleAlertEmail({
-                    employee,
-                    manager,
-                    idleDuration: parsedIdleDuration,
-                    taskId: validatedTaskId,
-                    timestamp: timestamp || now.toISOString()
-                });
-            } catch (emailErr) {
-                console.error('[AgentController] Error sending idle notification email:', emailErr.message);
+                // 5. Find assigned Manager or Admin for Email Alert
+                let manager = null;
+                if (employee.teamId) {
+                    manager = await prisma.employee.findFirst({
+                        where: { teamId: employee.teamId, role: 'MANAGER' }
+                    });
+                }
+                if (!manager) {
+                    manager = await prisma.employee.findFirst({
+                        where: { organizationId, role: 'MANAGER' }
+                    });
+                }
+                if (!manager) {
+                    const adminUser = await prisma.user.findFirst({
+                        where: { role: 'ADMIN' }
+                    });
+                    if (adminUser) {
+                        manager = { fullName: adminUser.name || 'Administrator', email: adminUser.email };
+                    }
+                }
+
+                // 6. Send Email Notification via Nodemailer
+                try {
+                    emailResult = await sendIdleAlertEmail({
+                        employee,
+                        manager,
+                        idleDuration: parsedIdleDuration,
+                        taskId: validatedTaskId,
+                        timestamp: timestamp || now.toISOString()
+                    });
+                } catch (emailErr) {
+                    console.error('[AgentController] Error sending idle notification email:', emailErr.message);
+                }
             }
 
             // 7. Emit Socket.IO real-time events to update Admin Dashboard
@@ -722,34 +735,37 @@ const handleIdleActivity = async (req, res) => {
                     taskId: validatedTaskId,
                     timestamp: now
                 });
-                io.to(room).emit('alert:idle', {
-                    employeeId,
-                    employeeName: employee.fullName,
-                    idleDuration: parsedIdleDuration,
-                    idleStartTime: parsedStartTime,
-                    managerEmail: manager?.email || null,
-                    timestamp: now
-                });
-                io.to(room).emit('alert:new', {
-                    id: alertRecord?.id || `idle-${Date.now()}`,
-                    employeeId,
-                    employeeName: employee.fullName,
-                    title: 'Employee Inactivity Alert',
-                    message: `Employee ${employee.fullName} has been inactive for 10 minutes.`,
-                    severity: 'warning',
-                    ruleType: 'IDLE_TIMEOUT',
-                    trigger: '10_MIN_INACTIVITY',
-                    idleDuration: parsedIdleDuration,
-                    createdAt: now
-                });
-                io.to(room).emit('admin:idle_alert', {
-                    employeeId,
-                    employeeName: employee.fullName,
-                    idleDuration: parsedIdleDuration,
-                    idleStartTime: parsedStartTime,
-                    lastActivityAt: employee.lastActiveAt || parsedStartTime,
-                    status: 'IDLE'
-                });
+
+                if (isFirstIdleNotification) {
+                    io.to(room).emit('alert:idle', {
+                        employeeId,
+                        employeeName: employee.fullName,
+                        idleDuration: parsedIdleDuration,
+                        idleStartTime: parsedStartTime,
+                        managerEmail: manager?.email || null,
+                        timestamp: now
+                    });
+                    io.to(room).emit('alert:new', {
+                        id: alertRecord?.id || `idle-${Date.now()}`,
+                        employeeId,
+                        employeeName: employee.fullName,
+                        title: 'Employee Inactivity Alert',
+                        message: `Employee ${employee.fullName} has been inactive for 10 minutes.`,
+                        severity: 'warning',
+                        ruleType: 'IDLE_TIMEOUT',
+                        trigger: '10_MIN_INACTIVITY',
+                        idleDuration: parsedIdleDuration,
+                        createdAt: now
+                    });
+                    io.to(room).emit('admin:idle_alert', {
+                        employeeId,
+                        employeeName: employee.fullName,
+                        idleDuration: parsedIdleDuration,
+                        idleStartTime: parsedStartTime,
+                        lastActivityAt: employee.lastActiveAt || parsedStartTime,
+                        status: 'IDLE'
+                    });
+                }
             }
 
             console.log(`[AgentController] IDLE event recorded for ${employee.fullName} (${parsedIdleDuration}s). Alert email sent: ${emailResult?.sent ? 'Yes' : 'Simulated'}`);
@@ -891,6 +907,9 @@ const handleIdleResponse = async (req, res) => {
                 where: { id: employeeId },
                 data: { status: 'BREAK' }
             });
+            if (typeof updateSessionStatus === 'function') {
+                updateSessionStatus(employeeId, 'BREAK');
+            }
             if (io && room) {
                 io.to(room).emit('employee:status', { employeeId, status: 'break' });
             }
@@ -899,6 +918,9 @@ const handleIdleResponse = async (req, res) => {
                 where: { id: employeeId },
                 data: { status: 'ACTIVE', lastActiveAt: now, idleStartTime: null }
             });
+            if (typeof updateSessionStatus === 'function') {
+                updateSessionStatus(employeeId, 'ONLINE');
+            }
             if (io && room) {
                 io.to(room).emit('employee:status', { employeeId, status: 'online', lastActiveAt: now });
                 io.to(room).emit('employee:idle_resumed', {

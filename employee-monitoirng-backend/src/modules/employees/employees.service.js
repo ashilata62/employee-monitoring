@@ -105,7 +105,25 @@ const getEmployees = async (organizationId, filter = {}) => {
         const manualHours = Number((manualSec / 3600).toFixed(2));
         const computerActivityHours = Number((activeSec / 3600).toFixed(2));
 
-        const isOnline = (emp.status === 'ACTIVE' || emp.status === 'ONLINE' || (emp.agent && emp.agent.status === 'active'));
+        // Accurate attendance & live presence determination
+        const openAttendance = (emp.attendance || []).find(a => a.clockIn && !a.clockOut);
+        const isClockedIn = !!openAttendance;
+        const isOnBreak = openAttendance ? (openAttendance.isOnBreak === true || emp.status === 'BREAK') : false;
+        const isIdle = openAttendance ? (emp.status === 'IDLE' || emp.status === 'AFK') : false;
+        const isOnline = isClockedIn && !isOnBreak && !isIdle;
+
+        let liveStatus = 'offline';
+        if (emp.status === 'DEACTIVATED') {
+            liveStatus = 'deactivated';
+        } else if (emp.status === 'PENDING' || emp.status === 'INVITED') {
+            liveStatus = emp.status.toLowerCase();
+        } else if (isClockedIn) {
+            if (isOnBreak) liveStatus = 'break';
+            else if (isIdle) liveStatus = 'idle';
+            else liveStatus = 'online';
+        } else {
+            liveStatus = 'offline';
+        }
 
         let productivityScore = 0;
         if (activeSec > 0) {
@@ -156,8 +174,12 @@ const getEmployees = async (organizationId, filter = {}) => {
 
         return {
             ...emp,
-            status: isOnline ? 'online' : (emp.status || 'offline').toLowerCase(),
-            accountStatus: (emp.status || 'offline').toLowerCase(),
+            status: liveStatus,
+            accountStatus: (emp.status || 'active').toLowerCase(),
+            isClockedIn,
+            isOnline,
+            isOnBreak,
+            isIdle,
             productivityScore,
             utilizationScore,
             totalWorkHours,

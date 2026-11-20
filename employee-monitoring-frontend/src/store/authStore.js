@@ -117,6 +117,10 @@ export const useAuthStore = create(
                                 activeApp: 'Active Work',
                                 currentActivity: 'Active / Logged In'
                             });
+                            import('../hooks/useSocket').then(({ getSharedSocket }) => {
+                                const s = getSharedSocket(get().token || localStorage.getItem('token'));
+                                if (s) s.emit('employee:status_override', { status: 'ONLINE' });
+                            }).catch(() => {});
                         }
                         toast.success('Work session started');
                     }
@@ -148,6 +152,10 @@ export const useAuthStore = create(
                                 activeApp: 'Active Work',
                                 currentActivity: 'Active / Logged In'
                             });
+                            import('../hooks/useSocket').then(({ getSharedSocket }) => {
+                                const s = getSharedSocket(get().token || localStorage.getItem('token'));
+                                if (s) s.emit('employee:status_override', { status: 'ONLINE' });
+                            }).catch(() => {});
                         }
                         toast.success('Work session resumed');
                         return { success: true, data: existingAttendance };
@@ -179,6 +187,10 @@ export const useAuthStore = create(
                         activeApp: 'Offline',
                         currentActivity: 'Offline'
                     });
+                    import('../hooks/useSocket').then(({ getSharedSocket }) => {
+                        const s = getSharedSocket(get().token || localStorage.getItem('token'));
+                        if (s) s.emit('employee:status_override', { status: 'OFFLINE' });
+                    }).catch(() => {});
                 }
                 if (typeof window !== 'undefined') {
                     window.dispatchEvent(new Event('stop-web-tracker'));
@@ -224,6 +236,10 @@ export const useAuthStore = create(
                                 activeApp: 'On Break',
                                 currentActivity: 'On Break'
                             });
+                            import('../hooks/useSocket').then(({ getSharedSocket }) => {
+                                const s = getSharedSocket(get().token || localStorage.getItem('token'));
+                                if (s) s.emit('employee:status_override', { status: 'BREAK' });
+                            }).catch(() => {});
                         }
                         toast.success('Break started');
                     } else {
@@ -247,6 +263,10 @@ export const useAuthStore = create(
                                 activeApp: 'Active Work',
                                 currentActivity: 'Active / Logged In'
                             });
+                            import('../hooks/useSocket').then(({ getSharedSocket }) => {
+                                const s = getSharedSocket(get().token || localStorage.getItem('token'));
+                                if (s) s.emit('employee:status_override', { status: 'ONLINE' });
+                            }).catch(() => {});
                         }
                         toast.success('Break ended');
                     }
@@ -275,6 +295,10 @@ export const useAuthStore = create(
                                 activeApp: 'On Break',
                                 currentActivity: 'On Break'
                             });
+                            import('../hooks/useSocket').then(({ getSharedSocket }) => {
+                                const s = getSharedSocket(get().token || localStorage.getItem('token'));
+                                if (s) s.emit('employee:status_override', { status: 'BREAK' });
+                            }).catch(() => {});
                         }
                         toast.success('Break started');
                     } else {
@@ -294,6 +318,10 @@ export const useAuthStore = create(
                                 activeApp: 'Active Work',
                                 currentActivity: 'Active / Logged In'
                             });
+                            import('../hooks/useSocket').then(({ getSharedSocket }) => {
+                                const s = getSharedSocket(get().token || localStorage.getItem('token'));
+                                if (s) s.emit('employee:status_override', { status: 'ONLINE' });
+                            }).catch(() => {});
                         }
                         toast.success('Break ended');
                     }

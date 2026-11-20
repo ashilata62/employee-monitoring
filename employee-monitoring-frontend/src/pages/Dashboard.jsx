@@ -356,14 +356,15 @@ export function Dashboard() {
         if (!base) return realTimeStats;
 
         const raw = base.summary || {};
+        const rawSecBackend = raw.rawSeconds || base.rawSeconds || {};
         const summarySeconds = {
-            workTime: parseTimeValueToSeconds(raw.workTime),
-            activeTime: parseTimeValueToSeconds(raw.activeTime),
-            idleTime: parseTimeValueToSeconds(raw.idleTime),
-            manualTime: parseTimeValueToSeconds(raw.manualTime),
-            productiveTime: parseTimeValueToSeconds(raw.productiveTime),
-            unproductiveTime: parseTimeValueToSeconds(raw.unproductiveTime),
-            neutralTime: parseTimeValueToSeconds(raw.neutralTime),
+            workTime: typeof rawSecBackend.workTime === 'number' ? rawSecBackend.workTime : parseTimeValueToSeconds(raw.workTime),
+            activeTime: typeof rawSecBackend.activeTime === 'number' ? rawSecBackend.activeTime : parseTimeValueToSeconds(raw.activeTime),
+            idleTime: typeof rawSecBackend.idleTime === 'number' ? rawSecBackend.idleTime : parseTimeValueToSeconds(raw.idleTime),
+            manualTime: typeof rawSecBackend.manualTime === 'number' ? rawSecBackend.manualTime : parseTimeValueToSeconds(raw.manualTime),
+            productiveTime: typeof rawSecBackend.productiveTime === 'number' ? rawSecBackend.productiveTime : parseTimeValueToSeconds(raw.productiveTime),
+            unproductiveTime: typeof rawSecBackend.unproductiveTime === 'number' ? rawSecBackend.unproductiveTime : parseTimeValueToSeconds(raw.unproductiveTime),
+            neutralTime: typeof rawSecBackend.neutralTime === 'number' ? rawSecBackend.neutralTime : parseTimeValueToSeconds(raw.neutralTime),
         };
 
         return {
@@ -681,6 +682,8 @@ export function Dashboard() {
                         liveTick={liveTick}
                         role={role}
                         isToday={isToday}
+                        activeFilter={activeFilter}
+                        employees={contextEmployees.length ? contextEmployees : (dashboardData?.employees || [])}
                     />
 
                     {/* Main Visualizations: Stacked Productivity, Activities & Timeline (Insightful Image 2) */}

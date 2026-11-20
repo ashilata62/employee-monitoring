@@ -169,9 +169,9 @@ let lastViolation = {
 const VIOLATION_COOLDOWN_MS = 60 * 1000; // 60s cooldown for same continuous violation
 
 // ─── Smart Idle & Inactivity Monitoring Configuration (Requirements 2, 3, 4, 5) ──
-const DEFAULT_IDLE_THRESHOLD_SECONDS = 60; // 1 minute (60s) - Idle classification & Alert (testing mode)
-const WARNING_THRESHOLD_SECONDS = 45; // 45 seconds - Warning reminder
-const PASSIVE_THRESHOLD_SECONDS = 30; // 30 seconds - Initial inactivity detection
+const DEFAULT_IDLE_THRESHOLD_SECONDS = 600; // 10 minutes (600s) - Idle classification & Alert
+const WARNING_THRESHOLD_SECONDS = 300; // 5 minutes (300s) - Warning reminder
+const PASSIVE_THRESHOLD_SECONDS = 60; // 1 minute (60s) - Initial inactivity detection
 
 let idleConfig = {
     thresholdSeconds: DEFAULT_IDLE_THRESHOLD_SECONDS,
@@ -671,7 +671,7 @@ async function checkIdleActivity() {
                     try {
                         new Notification({
                             title: 'Employee Inactivity Alert',
-                            body: 'You have been inactive for 1 minute. Please resume your work.'
+                            body: 'You have been inactive for 10 minutes. Please resume your work.'
                         }).show();
                     } catch (e) { }
                 }
@@ -689,7 +689,7 @@ async function checkIdleActivity() {
                 if (mainWindow && !mainWindow.isDestroyed()) {
                     mainWindow.webContents.send('idle:prompt', {
                         title: 'Employee Inactivity Alert',
-                        message: 'You have been inactive for 1 minute. Please resume your work.',
+                        message: 'You have been inactive for 10 minutes. Please resume your work.',
                         idleDuration: idleSeconds,
                         idleStartTime: idleState.idleStartTime
                     });
@@ -714,12 +714,17 @@ async function checkIdleActivity() {
             if (!idleState.hasSentWarningAlert) {
                 idleState.hasSentWarningAlert = true;
 
+                const startD = new Date(now - (idleSeconds * 1000));
+                const endD = new Date(now);
+                const formatTime = (d) => d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+                const warningMsg = `You have been inactive for 5 minutes (from ${formatTime(startD)} to ${formatTime(endD)}). Please resume your work.`;
+
                 // Non-intrusive reminder notification
                 if (Notification && typeof Notification.isSupported === 'function' && Notification.isSupported()) {
                     try {
                         new Notification({
                             title: 'Activity Reminder',
-                            body: 'No recent mouse or keyboard activity has been detected. Please check your activity status.'
+                            body: warningMsg
                         }).show();
                     } catch (e) { }
                 }
@@ -736,7 +741,7 @@ async function checkIdleActivity() {
                 if (mainWindow && !mainWindow.isDestroyed()) {
                     mainWindow.webContents.send('idle:warning', {
                         title: 'Activity Reminder',
-                        message: 'No recent mouse or keyboard activity has been detected. Please check your activity status.',
+                        message: warningMsg,
                         idleDuration: idleSeconds
                     });
                     mainWindow.webContents.send('idle:state-changed', {

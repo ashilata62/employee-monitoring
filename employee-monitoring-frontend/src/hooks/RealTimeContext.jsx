@@ -123,6 +123,7 @@ export function RealTimeProvider({ children }) {
     const [isLoading, setIsLoading] = useState(true);
     const timerInterval = useRef(null);
     const employeesRef = useRef(state.employees);
+    const recentAdminAlertsRef = useRef(new Map());
 
     useEffect(() => {
         employeesRef.current = state.employees;
@@ -226,6 +227,7 @@ export function RealTimeProvider({ children }) {
     useEffect(() => {
         const unsubscribe = subscribeStaffStatus((msg) => {
             const { employeeId, status, isIdle, isOnBreak, activeApp, currentActivity } = msg;
+            const isOff = status === 'offline';
             setState(prev => ({
                 ...prev,
                 employees: prev.employees.map(e => {
@@ -235,15 +237,17 @@ export function RealTimeProvider({ children }) {
                     if (match) {
                         return {
                             ...e,
-                            status: status === 'online' ? 'online' : status,
-                            accountStatus: status === 'online' ? 'active' : status,
-                            isIdle: !!isIdle,
-                            isOnBreak: !!isOnBreak,
+                            status: isOff ? 'offline' : (status === 'online' ? 'online' : status),
+                            accountStatus: isOff ? 'offline' : (status === 'online' ? 'active' : status),
+                            isOnline: !isOff && status === 'online',
+                            isClockedIn: !isOff,
+                            isIdle: !isOff && !!isIdle,
+                            isOnBreak: !isOff && !!isOnBreak,
                             idleTime: isIdle ? (e.idleTime || 60) : 0,
                             idleMinutes: isIdle ? (e.idleMinutes || 1) : 0,
-                            activeApp: activeApp || (isIdle ? 'Away from Computer (Idle)' : 'Active Work'),
-                            activeWindow: activeApp || (isIdle ? 'Away from Computer (Idle)' : 'Active Work'),
-                            currentActivity: currentActivity || (isIdle ? 'Away from Computer (Idle)' : 'Active / Logged In'),
+                            activeApp: activeApp || (isOff ? 'Offline' : (isIdle ? 'Away from Computer (Idle)' : 'Active Work')),
+                            activeWindow: activeApp || (isOff ? 'Offline' : (isIdle ? 'Away from Computer (Idle)' : 'Active Work')),
+                            currentActivity: currentActivity || (isOff ? 'Offline' : (isOnBreak ? 'On Break' : (isIdle ? 'Away from Computer (Idle)' : 'Active / Logged In'))),
                             lastSeen: new Date().toISOString()
                         };
                     }
@@ -251,7 +255,7 @@ export function RealTimeProvider({ children }) {
                 })
             }));
             if (employeeId && status) {
-                useEmployeeStore.getState().updateEmployeeStatus(employeeId, status === 'online' ? 'ACTIVE' : status.toUpperCase());
+                useEmployeeStore.getState().updateEmployeeStatus(employeeId, isOff ? 'OFFLINE' : (status === 'online' ? 'ACTIVE' : status.toUpperCase()));
             }
         });
         return unsubscribe;
@@ -302,26 +306,25 @@ export function RealTimeProvider({ children }) {
 
                         const name = emp.fullName || emp.name || 'Unknown User';
                         const st = (emp.status || 'offline').toLowerCase();
-                        const isBreakFromApi = st === 'break';
+                        const existingStatus = (existing?.status || '').toLowerCase();
+                        const isExplicitlyOffline = st === 'offline' || 
+                                                    emp.isClockedIn === false || 
+                                                    existingStatus === 'offline' || 
+                                                    existing?.isOnline === false ||
+                                                    existing?.isClockedIn === false;
 
-                        // Live active state preservation with correct precedence
-                        const isLiveWorking = existing && existing.status === 'online' && !existing.isIdle && !existing.isOnBreak;
-                        const isLiveBreak = existing && existing.isOnBreak && existing.status === 'break';
-                        const isLiveIdle = existing && existing.isIdle && existing.status === 'idle';
-
+                        // Accurate status resolution with real-time break resumption support
                         let normalizedStatus = 'offline';
-                        if (isLiveWorking) {
-                            normalizedStatus = 'online';
-                        } else if (isLiveBreak || isBreakFromApi) {
+                        if (isExplicitlyOffline) {
+                            normalizedStatus = 'offline';
+                        } else if (st === 'break' || (existing && existing.isOnBreak)) {
                             normalizedStatus = 'break';
-                        } else if (isLiveIdle) {
+                        } else if (st === 'idle' || st === 'afk' || (existing && existing.isIdle)) {
                             normalizedStatus = 'idle';
-                        } else if (st === 'active' || st === 'online') {
+                        } else if (st === 'online' || (existing && existing.status === 'online')) {
                             normalizedStatus = 'online';
-                        } else if (st === 'idle' || st === 'afk') {
-                            normalizedStatus = 'idle';
                         } else {
-                            normalizedStatus = st;
+                            normalizedStatus = 'offline';
                         }
 
                         const isNowIdle = normalizedStatus === 'idle';
@@ -600,7 +603,12 @@ export function RealTimeProvider({ children }) {
 
         const handleEmployeeStatus = ({ employeeId, status, idleStartTime, idleDuration, lastActiveAt }) => {
             const raw = (status || 'offline').toLowerCase();
-            const normalized = (raw === 'active' || raw === 'online') ? 'online' : raw;
+            const isOff = raw === 'offline';
+            const isBrk = raw === 'break';
+            const isIdl = raw === 'idle' || raw === 'afk';
+            const isOnl = (raw === 'active' || raw === 'online') && !isOff;
+            const normalized = isOff ? 'offline' : (isBrk ? 'break' : (isIdl ? 'idle' : (isOnl ? 'online' : raw)));
+
             setState(prev => ({
                 ...prev,
                 employees: prev.employees.map(e =>
@@ -609,8 +617,15 @@ export function RealTimeProvider({ children }) {
                             ...e,
                             status: normalized,
                             accountStatus: raw,
-                            isIdle: normalized === 'idle' || normalized === 'afk',
-                            ...(normalized === 'online' ? { lastSeen: new Date().toISOString(), idleTime: 0, isIdle: false } : {}),
+                            isIdle: isIdl,
+                            isOnBreak: isBrk,
+                            isOnline: isOnl,
+                            isClockedIn: !isOff,
+                            activeApp: isOff ? 'Offline' : (isBrk ? 'On Break' : (isIdl ? 'Away from Computer (Idle)' : 'Active Work')),
+                            currentActivity: isOff ? 'Offline' : (isBrk ? 'On Break' : (isIdl ? 'Away from Computer (Idle)' : 'Active / Logged In')),
+                            ...(isOnl ? { lastSeen: new Date().toISOString(), idleTime: 0, isIdle: false, isOnBreak: false } : {}),
+                            ...(isBrk ? { isOnBreak: true, isIdle: false, isOnline: false } : {}),
+                            ...(isOff ? { isOnline: false, isOnBreak: false, isIdle: false } : {}),
                             ...(idleStartTime ? { idleStartTime } : {}),
                             ...(idleDuration !== undefined ? { idleTime: idleDuration, idleMinutes: Math.floor(idleDuration / 60) } : {}),
                             ...(lastActiveAt ? { lastActiveAt } : {})
@@ -618,7 +633,7 @@ export function RealTimeProvider({ children }) {
                         : e
                 )
             }));
-            useEmployeeStore.getState().updateEmployeeStatus(employeeId, raw);
+            useEmployeeStore.getState().updateEmployeeStatus(employeeId, isOff ? 'OFFLINE' : raw);
         };
 
         const handleAdminIdleAlert = (data) => {
@@ -629,6 +644,16 @@ export function RealTimeProvider({ children }) {
             if (alertRole === 'ADMIN' || alertRole === 'MANAGER' || name.includes('admin')) {
                 return;
             }
+
+            // Debounce: ensure at least 60s between duplicate alerts for same employee
+            const empKey = String(data.employeeId || name);
+            const now = Date.now();
+            const lastShown = recentAdminAlertsRef.current.get(empKey) || 0;
+            if (now - lastShown < 60000) {
+                return;
+            }
+            recentAdminAlertsRef.current.set(empKey, now);
+
             playAlertChime();
             toast.warning(`Inactivity Alert: ${data.employeeName || 'Employee'} has been inactive for 10 minutes.`);
             setState(prev => ({
@@ -714,6 +739,62 @@ export function RealTimeProvider({ children }) {
 
         const handleAttendanceUpdate = (data) => {
             console.log('RealTimeContext: Attendance updated:', data);
+            const normType = String(data.type || data.status || '').toLowerCase().replace(/_/g, '-');
+
+            if (data?.employeeId) {
+                const isResume = normType === 'break-end' || normType === 'clock-in';
+                const isBreakStart = normType === 'break-start';
+                const isClockOut = normType === 'clock-out';
+
+                setState(prev => ({
+                    ...prev,
+                    employees: prev.employees.map(e => {
+                        const match = String(e.id) === String(data.employeeId) || 
+                                      String(e.userId) === String(data.employeeId) || 
+                                      String(e.employeeId) === String(data.employeeId);
+                        if (!match) return e;
+                        if (isResume) {
+                            return {
+                                ...e,
+                                status: 'online',
+                                accountStatus: 'active',
+                                isOnline: true,
+                                isOnBreak: false,
+                                isIdle: false,
+                                idleTime: 0,
+                                currentActivity: 'Active / Logged In',
+                                activeApp: 'Active Work'
+                            };
+                        }
+                        if (isBreakStart) {
+                            return {
+                                ...e,
+                                status: 'break',
+                                accountStatus: 'break',
+                                isOnline: false,
+                                isOnBreak: true,
+                                isIdle: false,
+                                currentActivity: 'On Break',
+                                activeApp: 'On Break'
+                            };
+                        }
+                        if (isClockOut) {
+                            return {
+                                ...e,
+                                status: 'offline',
+                                accountStatus: 'offline',
+                                isOnline: false,
+                                isOnBreak: false,
+                                isIdle: false,
+                                currentActivity: 'Offline',
+                                activeApp: 'Offline'
+                            };
+                        }
+                        return e;
+                    })
+                }));
+            }
+
             syncEmployees();
             syncLogs();
 
@@ -721,7 +802,6 @@ export function RealTimeProvider({ children }) {
             const currentEmps = employeesRef.current || [];
             const emp = currentEmps.find(e => String(e.id) === String(data.employeeId));
             const empName = emp ? (emp.fullName || emp.name) : 'An employee';
-            const normType = String(data.type || data.status || '').toLowerCase().replace(/_/g, '-');
 
             if (currentRole === 'ADMIN' || currentRole === 'MANAGER') {
                 if (normType === 'clock-in') {
