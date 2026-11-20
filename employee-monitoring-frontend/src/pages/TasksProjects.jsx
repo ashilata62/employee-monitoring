@@ -576,18 +576,11 @@ const EditTaskModal = ({ isOpen, onClose, onSave, task, employees = [], projects
 
 const GoalStreamModal = ({ goal, onClose }) => {
     if (!goal) return null;
-    const stream = (goal.activities && goal.activities.length > 0) ? goal.activities : [
-        { id: 1, title: "Initial Roadmap Defined", date: "3 weeks ago", status: "Completed", type: "milestone" },
-        { id: 2, title: "Resource Allocation Phase", date: "2 weeks ago", status: "Completed", type: "ops" },
-        { id: 3, title: "Mid-Cycle Performance Review", date: "4 days ago", status: "In Progress", type: "review" },
-        { id: 4, title: "Final Integration Sprint", date: "Expected next week", status: "Pending", type: "upcoming" },
-    ];
+    const stream = (goal.activities && goal.activities.length > 0) ? goal.activities : [];
 
     return createPortal(
         <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/75 backdrop-blur-lg animate-in fade-in duration-300 p-3 sm:p-4">
             <div className="bg-[#FBF9F5] dark:bg-[#1C2419] rounded-2xl sm:rounded-[2.5rem] p-5 sm:p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto custom-scrollbar shadow-2xl border border-[#D6CDBC] dark:border-[#384232] animate-in zoom-in-95 duration-300 relative overflow-hidden text-left">
-                <div className={cn("absolute top-0 right-0 h-48 w-48 translate-x-16 -translate-y-16 rounded-full opacity-[0.03] animate-pulse", goal.color)} />
-
                 <div className="flex justify-between items-start mb-8 pb-4 border-b border-[#D6CDBC]/60 dark:border-[#384232]">
                     <div className="flex items-center gap-4 sm:gap-5">
                         <div className={cn("h-14 w-14 rounded-2xl flex items-center justify-center shadow-warm-xs text-white", goal.color || "bg-[#30382B] text-white")}>
@@ -598,32 +591,33 @@ const GoalStreamModal = ({ goal, onClose }) => {
                             <p className="text-xs font-bold uppercase text-[#B9955B] tracking-widest mt-0.5">{goal.sub}</p>
                         </div>
                     </div>
-                    <button onClick={onClose} className="p-2 hover:bg-[#EEE8DD] dark:hover:bg-[#252B20] text-[#777367] hover:text-[#29291F] dark:hover:text-[#F5F1E9] rounded-xl transition-all cursor-pointer">
-                        <X size={20} />
-                    </button>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
                     <div className="md:col-span-2 space-y-8">
                         <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Activity Stream</h4>
-                        <div className="space-y-6 relative before:absolute before:left-4 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-100 dark:before:bg-slate-800">
-                            {stream.map((item, idx) => (
-                                <div key={item.id} className="relative pl-12 group">
-                                    <div className={cn(
-                                        "absolute left-2.5 top-1.5 h-3.5 w-3.5 rounded-full border-2 border-white dark:border-slate-900 z-10 transition-transform group-hover:scale-125",
-                                        item.status === "Completed" ? "bg-emerald-500" : item.status === "In Progress" ? "bg-amber-500" : "bg-slate-300"
-                                    )} />
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">{item.date}</span>
-                                        <span className="text-sm font-black text-slate-800 dark:text-slate-200">{item.title}</span>
-                                        <span className={cn(
-                                            "text-[9px] font-black uppercase tracking-widest mt-1.5",
-                                            item.status === "Completed" ? "text-emerald-500" : item.status === "In Progress" ? "text-amber-500" : "text-slate-400"
-                                        )}>{item.status}</span>
+                        {stream.length > 0 ? (
+                            <div className="space-y-6 relative before:absolute before:left-4 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-100 dark:before:bg-slate-800">
+                                {stream.map((item, idx) => (
+                                    <div key={item.id} className="relative pl-12 group">
+                                        <div className={cn(
+                                            "absolute left-2.5 top-1.5 h-3.5 w-3.5 rounded-full border-2 border-white dark:border-slate-900 z-10 transition-transform group-hover:scale-125",
+                                            item.status === "Completed" ? "bg-emerald-500" : item.status === "In Progress" ? "bg-amber-500" : "bg-slate-300"
+                                        )} />
+                                        <div className="flex flex-col">
+                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">{item.date}</span>
+                                            <span className="text-sm font-black text-slate-800 dark:text-slate-200">{item.title}</span>
+                                            <span className={cn(
+                                                "text-[9px] font-black uppercase tracking-widest mt-1.5",
+                                                item.status === "Completed" ? "text-emerald-500" : item.status === "In Progress" ? "text-amber-500" : "text-slate-400"
+                                            )}>{item.status}</span>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-xs text-[#777367] dark:text-[#B8B3A7] italic">No activity stream recorded for this goal yet.</p>
+                        )}
                     </div>
 
                     <div className="space-y-8">
@@ -656,8 +650,8 @@ const GoalStreamModal = ({ goal, onClose }) => {
                     </div>
                 </div>
 
-                <div className="mt-12 pt-8 border-t border-slate-50 dark:border-slate-800 flex justify-end">
-                    <button onClick={onClose} className="px-8 py-3 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-black uppercase tracking-widest shadow-xl transition-all hover:scale-105 active:scale-95">Close Stream</button>
+                <div className="mt-12 pt-8 border-t border-[#D6CDBC]/50 dark:border-[#384232] flex justify-end">
+                    <button onClick={onClose} className="px-8 py-3 rounded-xl bg-[#30382B] hover:bg-[#3C4536] text-[#FDFBF7] dark:bg-[#C9A96E] dark:hover:bg-[#d8b87d] dark:text-[#161C14] text-xs font-bold uppercase tracking-widest shadow-warm-xs transition-all hover:scale-105 active:scale-95 cursor-pointer">Close Stream</button>
                 </div>
             </div>
         </div>,
@@ -774,9 +768,16 @@ const KanbanColumn = ({ title, tasks, status, color, onAdd, updateTaskStatus, on
                         };
                         const targetStage = nextStageMap[status];
                         if (targetStage && updateTaskStatus) {
+                            if (targetStage === 'Finalized' && timer.isRunning && timer.currentTask === task.id) {
+                                await stopTask();
+                            }
                             await updateTaskStatus(task.id, targetStage);
                         }
                     };
+
+                    const isManagerOrAdmin = role?.toUpperCase() === 'ADMIN' || role?.toUpperCase() === 'MANAGER';
+                    const isFinalized = status === 'FINALIZED' || task.status === 'FINALIZED' || task.status === 'Finalized' || task.stage === 'FINALIZED' || task.stage === 'Finalized';
+                    const canEdit = !isFinalized || isManagerOrAdmin;
 
                     return (
                         <div
@@ -815,13 +816,15 @@ const KanbanColumn = ({ title, tasks, status, color, onAdd, updateTaskStatus, on
                                                 <ArrowRight size={8} strokeWidth={2.5} />
                                             </button>
                                         )}
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); onEdit && onEdit(task); }}
-                                            className="h-5 w-5 flex items-center justify-center rounded bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors cursor-pointer"
-                                            title="Edit Task"
-                                        >
-                                            <Edit2 size={10} strokeWidth={2.5} />
-                                        </button>
+                                        {canEdit && (
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); onEdit && onEdit(task); }}
+                                                className="h-5 w-5 flex items-center justify-center rounded bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors cursor-pointer"
+                                                title="Edit Task"
+                                            >
+                                                <Edit2 size={10} strokeWidth={2.5} />
+                                            </button>
+                                        )}
                                         <button
                                             onClick={(e) => { e.stopPropagation(); onDelete && onDelete(task.id); }}
                                             className="h-5 w-5 flex items-center justify-center rounded bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
@@ -892,9 +895,15 @@ const KanbanColumn = ({ title, tasks, status, color, onAdd, updateTaskStatus, on
                             <div className="flex items-center justify-between pt-2.5 gap-2 border-t border-slate-100 dark:border-slate-800/70">
                                 {isUnassigned ? (
                                     <div 
-                                        onClick={(e) => { e.stopPropagation(); onEdit && onEdit(task); }}
-                                        className="flex items-center gap-1.5 min-w-0 cursor-pointer group/assign hover:opacity-80 transition-opacity"
-                                        title="Click to assign an employee"
+                                        onClick={(e) => { 
+                                            e.stopPropagation(); 
+                                            if (canEdit) onEdit && onEdit(task); 
+                                        }}
+                                        className={cn(
+                                            "flex items-center gap-1.5 min-w-0 transition-opacity",
+                                            canEdit ? "cursor-pointer group/assign hover:opacity-80" : "cursor-default"
+                                        )}
+                                        title={canEdit ? "Click to assign an employee" : undefined}
                                     >
                                         <div className="h-6 w-6 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-dashed border-amber-300 dark:border-amber-700/60 flex items-center justify-center text-amber-500 shrink-0">
                                             <UserX size={12} />
@@ -943,7 +952,15 @@ const KanbanColumn = ({ title, tasks, status, color, onAdd, updateTaskStatus, on
                                         </span>
                                     </div>
 
-                                    {role === 'EMPLOYEE' && (
+                                    {status === 'FINALIZED' ? (
+                                        <div 
+                                            className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-800/60 shadow-xs shrink-0 select-none"
+                                            title="Task Completed"
+                                        >
+                                            <CheckSquare size={11} strokeWidth={2.5} />
+                                            <span className="text-[9px] font-bold uppercase tracking-wider">Done</span>
+                                        </div>
+                                    ) : role === 'EMPLOYEE' && (
                                         timer.isRunning && timer.currentTask === task.id ? (
                                             <button 
                                                 onClick={async (e) => { 
@@ -1023,11 +1040,15 @@ export function TasksProjects() {
 
     const scopedEmployees = useMemo(() => {
         if (!employees) return [];
+        if (role === 'EMPLOYEE') {
+            const currentEmpId = user?.employeeId || employees.find(e => e.email === user?.email)?.id || user?.id;
+            return employees.filter(e => e.id === currentEmpId || e.email === user?.email);
+        }
         if (role === 'MANAGER') {
             return employees.filter(e => e.role !== 'ADMIN' && e.user?.role !== 'ADMIN');
         }
         return employees;
-    }, [employees, role]);
+    }, [employees, role, user]);
 
     // Board, Logs, Projects (Time Tracking + Productivity), Performance (KPIs), Goals
     const [activeTab, setActiveTab] = useState('board');
@@ -1127,6 +1148,11 @@ export function TasksProjects() {
 
     // Edit / Delete handlers
     const handleEditTask = (task) => {
+        const isManagerOrAdmin = role?.toUpperCase() === 'ADMIN' || role?.toUpperCase() === 'MANAGER';
+        const isFinalized = task.status === 'FINALIZED' || task.status === 'Finalized' || task.stage === 'FINALIZED' || task.stage === 'Finalized';
+        if (!isManagerOrAdmin && isFinalized) {
+            return;
+        }
         setEditingTask(task);
         setIsEditModalOpen(true);
     };
@@ -1138,6 +1164,11 @@ export function TasksProjects() {
     };
 
     const handleUpdateTask = async (id, taskData) => {
+        if (taskData.status === 'FINALIZED' || taskData.status === 'Finalized') {
+            if (timer.isRunning && timer.currentTask === id) {
+                await stopTask();
+            }
+        }
         await updateTask(id, taskData);
     };
 
@@ -1220,11 +1251,11 @@ export function TasksProjects() {
         }
 
         // 3. Dynamic Billable / Tracked Hours
-        // Sum from tasks actual tracked time & timer
+        // Sum from tasks actual tracked time & active live timer
         const taskSeconds = relevantTasks.reduce((acc, t) => {
-            const fromTimer = taskDurations?.[t.id] || 0;
+            const fromTimer = (timer.isRunning && timer.currentTask === t.id) ? timer.seconds : 0;
             const fromTask = t.actualSeconds || (t.actualHours ? t.actualHours * 3600 : 0);
-            return acc + Math.max(fromTimer, fromTask);
+            return acc + fromTimer + fromTask;
         }, 0);
         const taskHours = taskSeconds / 3600;
 
@@ -2002,7 +2033,7 @@ export function TasksProjects() {
 
                 {/* 5. CYCLE TIME & BOTTLENECK ANALYTICS VIEW */}
                 {activeTab === 'cycle-time' && (
-                    <CycleTimeAnalyticsView employees={scopedEmployees} projects={projects} />
+                    <CycleTimeAnalyticsView employees={scopedEmployees} projects={projects} role={role} />
                 )}
             </div>
 

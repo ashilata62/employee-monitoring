@@ -141,6 +141,11 @@ export const useTaskStore = create(
                     return false;
                 }
 
+                if (task.status === 'FINALIZED' || task.status === 'Finalized') {
+                    toast.info('Completed tasks cannot be tracked.');
+                    return false;
+                }
+
                 // Guard against concurrent running tasks
                 if (state.isRunning) {
                     if (state.activeTask?.id === task.id) {
@@ -319,9 +324,14 @@ export const useTaskStore = create(
 
             updateTaskStatus: async (taskId, status) => {
                 try {
+                    const state = get();
+                    const isFinalized = status === 'FINALIZED' || status === 'Finalized';
+                    if (isFinalized && state.isRunning && state.activeTask?.id === taskId) {
+                        await get().stopTask();
+                    }
                     await taskService.updateTaskStatus(taskId, status);
                     await get().fetchBoardTasks();
-                    toast.success('Task status updated');
+                    toast.success(isFinalized ? 'Task marked as Completed' : 'Task status updated');
                 } catch (error) {
                     set({ error: error.message });
                     throw error;

@@ -81,17 +81,17 @@ export function Projects() {
             </div>
 
             {/* Search & Actions Bar */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                 <div className="relative group w-full md:max-w-md">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <Search size={16} className="text-slate-400 group-focus-within:text-primary-500 transition-colors" strokeWidth={2.5} />
+                        <Search size={16} className="text-[#777367] dark:text-[#B8B3A7] group-focus-within:text-[#B9955B] transition-colors" strokeWidth={2.5} />
                     </div>
                     <input
                         type="text"
                         placeholder="Search projects by name..."
                         value={projectSearch}
                         onChange={(e) => setProjectSearch(e.target.value)}
-                        className="w-full h-12 bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-2xl pl-12 pr-4 text-[13px] font-bold text-slate-700 dark:text-slate-200 focus:ring-4 focus:ring-primary-500/5 focus:border-primary-500 outline-none transition-all placeholder:text-slate-400 shadow-sm hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700"
+                        className="w-full h-11 bg-[#EEE8DD] dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] rounded-xl pl-11 pr-4 text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] focus:ring-2 focus:ring-[#B9955B]/20 focus:border-[#B9955B] outline-none transition-all placeholder:text-[#777367] dark:placeholder:text-[#888173] shadow-warm-xs"
                     />
                 </div>
 
@@ -100,20 +100,20 @@ export function Projects() {
                         <button
                             onClick={handleDownload}
                             title="Download CSV report"
-                            className="h-12 px-5 flex items-center justify-center gap-2 bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 text-slate-500 hover:text-primary-600 hover:border-primary-200 hover:bg-primary-50/30 dark:hover:bg-primary-900/10 transition-all rounded-2xl shadow-sm group hover:scale-[1.02] active:scale-95"
+                            className="h-11 px-4 flex items-center justify-center gap-2 bg-[#EEE8DD] dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] text-[#29291F] dark:text-[#F5F1E9] hover:bg-[#E5DDCF] dark:hover:bg-[#2E362A] transition-all rounded-xl shadow-warm-xs active:scale-95 cursor-pointer text-xs font-semibold"
                         >
-                            <Download size={18} strokeWidth={2.5} className="group-hover:translate-y-0.5 transition-transform" />
-                            <span className="text-[11px] font-black uppercase tracking-wider">Export Report</span>
+                            <Download size={14} className="text-[#B9955B]" />
+                            <span className="uppercase tracking-wider">Export Report</span>
                         </button>
                     )}
                 </div>
             </div>
 
             {/* Main Content Area */}
-            <div className="space-y-6">
+            <div className="space-y-4">
                     {/* Table Layout (Hidden on Mobile) */}
-                    <div className="hidden lg:block">
-                        <div className="grid grid-cols-12 px-6 py-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center border-b border-slate-100 dark:border-slate-800">
+                    <div className="hidden lg:block bg-[#F5F1E9]/40 dark:bg-[#1E2419]/60 rounded-xl border border-[#E5DED2] dark:border-[#384232]">
+                        <div className="grid grid-cols-12 px-6 py-3 text-[11px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-wider text-center">
                             <div className="text-left col-span-4">Project Name</div>
                             <div className="col-span-2">Assignees</div>
                             <div className="col-span-2">Tasks</div>
@@ -130,26 +130,26 @@ export function Projects() {
                     </div>
 
                     {/* Product Rows / Mobile Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 md:gap-6 lg:gap-0 lg:space-y-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 md:gap-4 lg:gap-0 lg:space-y-2.5">
                         {(() => {
-                            if (loading) return <div className="text-center py-20 font-bold text-slate-400 animate-pulse">Fetching project data...</div>;
+                            if (loading) return <div className="text-center py-20 font-semibold text-xs text-[#777367] dark:text-[#B8B3A7] animate-pulse">Fetching project data...</div>;
 
                                 const filtered = projects.filter(p => (p.projectName || p.name || '').toLowerCase().includes(projectSearch.toLowerCase()));
                                 if (filtered.length === 0) {
                                     return (
-                                        <div className="flex flex-col items-center justify-center py-20 text-center col-span-full">
-                                            <div className="h-20 w-20 rounded-full bg-slate-50 dark:bg-slate-900 flex items-center justify-center mb-4">
-                                                <Search size={32} className="text-slate-200 dark:text-slate-800" />
+                                        <div className="flex flex-col items-center justify-center py-20 text-center col-span-full bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl border border-[#D6CDBC] dark:border-[#384232] p-8">
+                                            <div className="h-16 w-16 rounded-full bg-[#EEE8DD] dark:bg-[#1E2419] flex items-center justify-center mb-3">
+                                                <Search size={24} className="text-[#B9955B]" />
                                             </div>
-                                            <h3 className="text-xl font-black text-slate-300 dark:text-slate-800 select-none">
+                                            <h3 className="text-base font-serif font-bold text-[#29291F] dark:text-[#F5F1E9]">
                                                 {role === 'EMPLOYEE' && !projectSearch
                                                     ? 'No Projects Assigned'
                                                     : 'No Projects Found'}
                                             </h3>
-                                            <p className="text-xs font-bold text-slate-400 mt-2">
+                                            <p className="text-xs text-[#777367] dark:text-[#B8B3A7] mt-1">
                                                 {role === 'EMPLOYEE' && !projectSearch
                                                     ? 'No projects assigned to you yet. Contact your manager.'
-                                                    : 'Try adjusting your search or filters'}
+                                                    : 'Try adjusting your search'}
                                             </p>
                                         </div>
                                     );
@@ -158,53 +158,53 @@ export function Projects() {
                                     <div 
                                         key={idx} 
                                         onClick={() => setViewingProject(project)}
-                                        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[1.5rem] lg:rounded-2xl p-5 md:p-6 lg:p-4 hover:shadow-xl hover:border-primary-100 dark:hover:border-primary-900/30 transition-all group lg:grid lg:grid-cols-12 lg:items-center cursor-pointer"
+                                        className="bg-[#FBF9F5] dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] rounded-2xl p-4 sm:p-5 hover:shadow-warm-md hover:border-[#B9955B]/40 transition-all group lg:grid lg:grid-cols-12 lg:items-center cursor-pointer shadow-warm-xs"
                                     >
                                         {/* Desktop-only hidden / Mobile visible labels */}
-                                        <div className="lg:col-span-4 flex items-center gap-4 mb-4 lg:mb-0">
-                                            <div className="h-12 w-12 lg:h-9 lg:lg:w-9 rounded-2xl lg:rounded-xl bg-primary-600 flex items-center justify-center text-xs lg:text-[10px] font-black text-white shadow-lg shadow-primary-200 dark:shadow-none transition-transform group-hover:scale-105">
+                                        <div className="lg:col-span-4 flex items-center gap-3.5 mb-3 lg:mb-0">
+                                            <div className="h-10 w-10 rounded-xl bg-[#30382B] text-[#D3B98D] flex items-center justify-center text-xs font-bold font-serif shadow-xs transition-transform group-hover:scale-105 shrink-0">
                                                 {(project.projectName || project.name || 'PR').substring(0, 2).toUpperCase()}
                                             </div>
-                                            <div className="flex flex-col lg:flex-row lg:items-center gap-0.5 lg:gap-0">
-                                                <span className="text-sm lg:text-xs font-black text-slate-900 dark:text-slate-100">{project.projectName || project.name}</span>
-                                                <span className="lg:hidden text-[10px] font-bold text-slate-400 uppercase tracking-wider">{project.tasks} Tasks active</span>
+                                            <div className="flex flex-col gap-0.5 min-w-0">
+                                                <span className="text-xs sm:text-sm font-bold text-[#29291F] dark:text-[#F5F1E9] truncate">{project.projectName || project.name}</span>
+                                                <span className="lg:hidden text-[10px] text-[#777367] dark:text-[#B8B3A7]">{project.tasks} Tasks active</span>
                                             </div>
                                         </div>
 
                                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-8 gap-4 lg:gap-0 lg:col-span-8 items-center">
                                         {/* Assignees */}
-                                        <div className="flex flex-col lg:items-center gap-1 lg:col-span-2">
-                                            <span className="lg:hidden text-[9px] font-black text-slate-400 uppercase tracking-widest">Assignees</span>
-                                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{project.assignees}</span>
+                                        <div className="flex flex-col lg:items-center gap-0.5 lg:col-span-2">
+                                            <span className="lg:hidden text-[9px] font-bold text-[#777367] uppercase tracking-wider">Assignees</span>
+                                            <span className="text-xs font-bold text-[#29291F] dark:text-[#F5F1E9]">{project.assignees}</span>
                                         </div>
                                         {/* Tasks */}
-                                        <div className="hidden lg:flex flex-col lg:items-center gap-1 lg:col-span-2">
-                                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{project.tasks}</span>
+                                        <div className="hidden lg:flex flex-col lg:items-center gap-0.5 lg:col-span-2">
+                                            <span className="text-xs font-bold text-[#29291F] dark:text-[#F5F1E9]">{project.tasks}</span>
                                         </div>
                                         {role !== 'EMPLOYEE' ? (
                                             <>
                                                 {/* Bill Rate */}
-                                                <div className="flex flex-col lg:items-center gap-1 lg:col-span-1">
-                                                    <span className="lg:hidden text-[9px] font-black text-emerald-500/70 uppercase tracking-widest">Rate</span>
-                                                    <span className="text-xs font-black text-emerald-600 dark:text-emerald-400">${project.billRate}</span>
+                                                <div className="flex flex-col lg:items-center gap-0.5 lg:col-span-1">
+                                                    <span className="lg:hidden text-[9px] font-bold text-[#5E7D64] uppercase tracking-wider">Rate</span>
+                                                    <span className="text-xs font-bold text-[#5E7D64] dark:text-[#8BB394]">${project.billRate}</span>
                                                 </div>
                                                 {/* Total Costs */}
-                                                <div className="flex flex-col lg:items-center gap-1 lg:col-span-1">
-                                                    <span className="lg:hidden text-[9px] font-black text-primary-500/70 uppercase tracking-widest">Costs</span>
-                                                    <span className="text-sm lg:text-xs font-black text-primary-600 dark:text-primary-400">${project.totalCosts}</span>
+                                                <div className="flex flex-col lg:items-center gap-0.5 lg:col-span-1">
+                                                    <span className="lg:hidden text-[9px] font-bold text-[#B9955B] uppercase tracking-wider">Costs</span>
+                                                    <span className="text-xs font-bold text-[#B9955B]">${project.totalCosts}</span>
                                                 </div>
 
                                                 {/* Actions */}
                                                 <div className="flex items-center justify-center gap-2 lg:col-span-2">
                                                     <button
                                                         onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setViewingProject(project);
+                                                             e.stopPropagation();
+                                                             setViewingProject(project);
                                                         }}
-                                                        className="h-8 w-8 flex items-center justify-center rounded-lg bg-slate-50 dark:bg-slate-800 text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all shadow-sm"
+                                                        className="h-8 w-8 flex items-center justify-center rounded-xl bg-[#EEE8DD] dark:bg-[#1E2419] text-[#777367] hover:text-[#29291F] dark:hover:text-[#F5F1E9] border border-[#D6CDBC] dark:border-[#384232] transition-all cursor-pointer"
                                                         title="View Project Details"
                                                     >
-                                                        <Eye size={16} />
+                                                        <Eye size={14} />
                                                     </button>
                                                     <button
                                                         onClick={(e) => {
@@ -212,10 +212,10 @@ export function Projects() {
                                                             setEditingProject(project);
                                                             setIsModalOpen(true);
                                                         }}
-                                                        className="h-8 w-8 flex items-center justify-center rounded-lg bg-slate-50 dark:bg-slate-800 text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-all shadow-sm"
+                                                        className="h-8 w-8 flex items-center justify-center rounded-xl bg-[#EEE8DD] dark:bg-[#1E2419] text-[#B9955B] hover:text-[#A17D45] border border-[#D6CDBC] dark:border-[#384232] transition-all cursor-pointer"
                                                         title="Edit Project"
                                                     >
-                                                        <Edit3 size={16} />
+                                                        <Edit3 size={14} />
                                                     </button>
                                                     {role === 'ADMIN' && (
                                                         <button
@@ -225,17 +225,17 @@ export function Projects() {
                                                                     deleteProject(project.id);
                                                                 }
                                                             }}
-                                                            className="h-8 w-8 flex items-center justify-center rounded-lg bg-slate-50 dark:bg-slate-800 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all shadow-sm"
+                                                            className="h-8 w-8 flex items-center justify-center rounded-xl bg-[#FAF3F2] dark:bg-[#3D2525] text-[#A84B4B] hover:bg-[#A84B4B] hover:text-white border border-[#E8CECE] dark:border-[#522929] transition-all cursor-pointer"
                                                             title="Delete Project"
                                                         >
-                                                            <Trash2 size={16} />
+                                                            <Trash2 size={14} />
                                                         </button>
                                                     )}
                                                 </div>
                                                 </>
                                             ) : (
                                                 <div className="flex items-center justify-center gap-2 lg:col-span-4">
-                                                    <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">
+                                                    <span className="text-[10px] font-bold text-[#5E7D64] dark:text-[#8BB394] bg-[#5E7D64]/15 px-3 py-1 rounded-full border border-[#5E7D64]/30">
                                                         Active Project
                                                     </span>
                                                     <button
@@ -243,20 +243,20 @@ export function Projects() {
                                                             e.stopPropagation();
                                                             setViewingProject(project);
                                                         }}
-                                                        className="h-7 px-2.5 flex items-center gap-1 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 text-[10px] font-black uppercase tracking-wider transition-all shadow-sm cursor-pointer"
+                                                        className="h-7 px-3 flex items-center gap-1 rounded-xl bg-[#EEE8DD] dark:bg-[#1E2419] text-[#B9955B] hover:bg-[#B9955B] hover:text-white border border-[#D6CDBC] dark:border-[#384232] text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer"
                                                         title="View Project Tasks"
                                                     >
-                                                        <Eye size={13} />
+                                                        <Eye size={12} />
                                                         <span>View</span>
                                                     </button>
                                                 </div>
                                             )}
-                                        </div>
                                     </div>
-                                ));
-                            })() }
-                        </div>
+                                </div>
+                            ));
+                        })()}
                     </div>
+            </div>
 
             <NewProjectModal
                 isOpen={isModalOpen}

@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
     Calendar,
-    Monitor,
     Download,
     ArrowUpDown,
     ArrowUp,
@@ -23,13 +22,6 @@ import { ReportsCalendar } from '../../components/ReportsCalendar';
 import { executeExport } from '../../utils/exportEngine';
 import { toast } from '../../utils/toastManager';
 
-const TAB_HELP = {
-    category:
-        'Time split by application and website category with location distribution and productivity level breakdown.',
-    tags:
-        'Time split by your custom labels (Focus, Collaborative, Distraction, etc.) assigned in Settings → Productivity.',
-};
-
 // CSS Striped patterns matching Image 1
 const STRIPED_PURPLE = 'repeating-linear-gradient(45deg, #a5b4fc, #a5b4fc 4px, #c7d2fe 4px, #c7d2fe 8px)';
 const STRIPED_BLUE = 'repeating-linear-gradient(45deg, #38bdf8, #38bdf8 3px, #bae6fd 3px, #bae6fd 6px)';
@@ -49,7 +41,6 @@ export function WorkType() {
     const { reportData, fetchReportData, loading } = useReportsStore();
     const { selectedEmployee, selectedTeam } = useFilterStore();
 
-    const [activeTab, setActiveTab] = useState('category');
     const [activePeriod, setActivePeriod] = useState('Today');
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState(new Date());
@@ -131,7 +122,6 @@ export function WorkType() {
                 teamId: selectedTeam,
             };
             fetchReportData('work-type', params);
-            fetchReportData('work-type-tags', params);
         };
 
         loadData();
@@ -140,7 +130,6 @@ export function WorkType() {
     }, [activePeriod, fetchReportData, selectedEmployee, selectedTeam]);
 
     const workTypeRaw = reportData['work-type'] || [];
-    const tagsRaw = reportData['work-type-tags'] || [];
 
     // Extract categories array and summary
     const categoriesList = useMemo(() => {
@@ -170,11 +159,12 @@ export function WorkType() {
     const summaryData = useMemo(() => {
         if (workTypeRaw.summary) return workTypeRaw.summary;
         const totalSec = categoriesList.reduce((acc, c) => acc + (c.current?.totalSeconds || 0), 0);
+        const prodSec = categoriesList.reduce((acc, c) => acc + (c.current?.productivity?.productiveSeconds || 0), 0);
         return {
             totalHours: Math.round((totalSec / 3600) * 10) / 10,
             formattedTotal: `${Math.floor(totalSec / 3600)}:${String(Math.floor((totalSec % 3600) / 60)).padStart(2, '0')} h`,
-            productivityScore: 75,
-            trackedAppsCount: categoriesList.length
+            productivityScore: totalSec > 0 ? Math.round((prodSec / totalSec) * 100) : 0,
+            trackedAppsCount: categoriesList.filter(c => (c.current?.totalSeconds || 0) > 0).length
         };
     }, [workTypeRaw, categoriesList]);
 
@@ -186,24 +176,7 @@ export function WorkType() {
         };
     }, [workTypeRaw, activePeriod]);
 
-    // Tags Data
-    const tagsData = useMemo(
-        () =>
-            tagsRaw.map((item, idx) => ({
-                name: item.tagName,
-                hours: Math.round((item.duration / 3600) * 10) / 10,
-                color: 'transition-all duration-700',
-                barStyle: {
-                    width: '0%',
-                    backgroundColor: item.tagColor || '#94a3b8',
-                },
-                tagColor: item.tagColor,
-                key: item.tagName || idx,
-            })),
-        [tagsRaw]
-    );
-
-    const totalHours = activeTab === 'category' ? summaryData.totalHours : tagsData.reduce((acc, curr) => acc + curr.hours, 0);
+    const totalHours = summaryData.totalHours;
 
     const handleApplyCalendar = () => {
         setActivePeriod(selectedPreset);
@@ -221,63 +194,46 @@ export function WorkType() {
 
     const handleExport = (format = 'csv') => {
         try {
-            if (activeTab === 'category') {
-                const exportRows = categoriesList.map(c => ({
-                    Category: c.name,
-                    'Current Total Hours': c.current?.formattedTotal || '00:00 h',
-                    'Comparison Total Hours': c.comparison?.formattedTotal || '00:00 h',
-                    'Office Hours (Current)': c.current?.locations?.formattedOffice || '00:00 h',
-                    'Remote Hours (Current)': c.current?.locations?.formattedRemote || '00:00 h',
-                    'Productive Hours (Current)': c.current?.productivity?.formattedProductive || '00:00 h',
-                    'Unproductive Hours (Current)': c.current?.productivity?.formattedUnproductive || '00:00 h',
-                    'Neutral Hours (Current)': c.current?.productivity?.formattedNeutral || '00:00 h',
-                    'Office %': `${c.current?.locations?.officePct || 0}%`,
-                    'Remote %': `${c.current?.locations?.remotePct || 0}%`,
-                    'Productive %': `${c.current?.productivity?.productivePct || 0}%`
-                }));
+            const exportRows = categoriesList.map(c => ({
+                Category: c.name,
+                'Current Total Hours': c.current?.formattedTotal || '00:00 h',
+                'Comparison Total Hours': c.comparison?.formattedTotal || '00:00 h',
+                'Office Hours (Current)': c.current?.locations?.formattedOffice || '00:00 h',
+                'Remote Hours (Current)': c.current?.locations?.formattedRemote || '00:00 h',
+                'Productive Hours (Current)': c.current?.productivity?.formattedProductive || '00:00 h',
+                'Unproductive Hours (Current)': c.current?.productivity?.formattedUnproductive || '00:00 h',
+                'Neutral Hours (Current)': c.current?.productivity?.formattedNeutral || '00:00 h',
+                'Office %': `${c.current?.locations?.officePct || 0}%`,
+                'Remote %': `${c.current?.locations?.remotePct || 0}%`,
+                'Productive %': `${c.current?.productivity?.productivePct || 0}%`
+            }));
 
-                const columns = [
-                    { header: 'Category', key: 'Category' },
-                    { header: 'Current Total Hours', key: 'Current Total Hours' },
-                    { header: 'Comparison Total Hours', key: 'Comparison Total Hours' },
-                    { header: 'Office Hours (Current)', key: 'Office Hours (Current)' },
-                    { header: 'Remote Hours (Current)', key: 'Remote Hours (Current)' },
-                    { header: 'Productive Hours (Current)', key: 'Productive Hours (Current)' },
-                    { header: 'Unproductive Hours (Current)', key: 'Unproductive Hours (Current)' },
-                    { header: 'Neutral Hours (Current)', key: 'Neutral Hours (Current)' },
-                    { header: 'Office %', key: 'Office %' },
-                    { header: 'Remote %', key: 'Remote %' },
-                    { header: 'Productive %', key: 'Productive %' }
-                ];
+            const columns = [
+                { header: 'Category', key: 'Category' },
+                { header: 'Current Total Hours', key: 'Current Total Hours' },
+                { header: 'Comparison Total Hours', key: 'Comparison Total Hours' },
+                { header: 'Office Hours (Current)', key: 'Office Hours (Current)' },
+                { header: 'Remote Hours (Current)', key: 'Remote Hours (Current)' },
+                { header: 'Productive Hours (Current)', key: 'Productive Hours (Current)' },
+                { header: 'Unproductive Hours (Current)', key: 'Unproductive Hours (Current)' },
+                { header: 'Neutral Hours (Current)', key: 'Neutral Hours (Current)' },
+                { header: 'Office %', key: 'Office %' },
+                { header: 'Remote %', key: 'Remote %' },
+                { header: 'Productive %', key: 'Productive %' }
+            ];
 
-                executeExport({
-                    data: exportRows,
-                    columns,
-                    fileName: `category-usage-overview-${toYMD(new Date())}`,
-                    format,
-                    metadata: {
-                        title: 'Category Usage Overview Report',
-                        dateRange: `${dateRanges.current?.formatted || activePeriod} vs ${dateRanges.comparison?.formatted || 'Prior Period'}`,
-                        filters: selectedEmployee ? `Filtered Employee` : 'All Staff'
-                    }
-                });
-                toast.success(`Category Usage exported successfully as ${format.toUpperCase()}`);
-            } else {
-                executeExport({
-                    data: tagsData,
-                    columns: [
-                        { header: 'Tag Name', key: 'name' },
-                        { header: 'Hours Tracked', key: 'hours', formatter: v => `${v}h` }
-                    ],
-                    fileName: `tags-work-type-${toYMD(new Date())}`,
-                    format,
-                    metadata: {
-                        title: 'Work Type by Tags Report',
-                        dateRange: activePeriod
-                    }
-                });
-                toast.success(`Tags Report exported successfully as ${format.toUpperCase()}`);
-            }
+            executeExport({
+                data: exportRows,
+                columns,
+                fileName: `category-usage-overview-${toYMD(new Date())}`,
+                format,
+                metadata: {
+                    title: 'Category Usage Overview Report',
+                    dateRange: `${dateRanges.current?.formatted || activePeriod} vs ${dateRanges.comparison?.formatted || 'Prior Period'}`,
+                    filters: selectedEmployee ? `Filtered Employee` : 'All Staff'
+                }
+            });
+            toast.success(`Category Usage exported successfully as ${format.toUpperCase()}`);
         } catch (err) {
             console.error('Export error', err);
             toast.error('Failed to export report');
@@ -288,42 +244,12 @@ export function WorkType() {
 
     return (
         <div className="space-y-6 w-full">
-            {/* Top Header & Navigation Bar */}
+            {/* Top Header & Controls Bar */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 className="font-serif text-3xl font-normal text-[#29291F] dark:text-[#F5F1E9] tracking-tight">Reports</h1>
-                    <div className="mt-3 flex items-center border-b border-[#E5DED2] dark:border-[#384232]">
-                        <button
-                            type="button"
-                            onClick={() => setActiveTab('category')}
-                            className={`px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all relative cursor-pointer ${
-                                activeTab === 'category'
-                                    ? 'text-[#B9955B]'
-                                    : 'text-[#777367] hover:text-[#29291F] dark:hover:text-[#F5F1E9]'
-                            }`}
-                        >
-                            Category
-                            {activeTab === 'category' && (
-                                <div className="absolute bottom-0 left-0 w-full h-[2.5px] bg-[#B9955B] rounded-full" />
-                            )}
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setActiveTab('tags')}
-                            className={`px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all relative cursor-pointer ${
-                                activeTab === 'tags'
-                                    ? 'text-[#B9955B]'
-                                    : 'text-[#777367] hover:text-[#29291F] dark:hover:text-[#F5F1E9]'
-                            }`}
-                        >
-                            Tags
-                            {activeTab === 'tags' && (
-                                <div className="absolute bottom-0 left-0 w-full h-[2.5px] bg-[#B9955B] rounded-full" />
-                            )}
-                        </button>
-                    </div>
-                    <p className="mt-2 text-xs font-medium text-[#777367] dark:text-[#B8B3A7] max-w-xl">
-                        {TAB_HELP[activeTab]}
+                    <p className="mt-1 text-xs font-medium text-[#777367] dark:text-[#B8B3A7] max-w-xl">
+                        Time split by application and website category with location distribution and productivity level breakdown.
                     </p>
                 </div>
 
@@ -395,10 +321,9 @@ export function WorkType() {
                 </div>
             </div>
 
-            {/* TAB 1: CATEGORY USAGE OVERVIEW (Image 1 Exact Layout & Design) */}
-            {activeTab === 'category' && (
-                <div className="space-y-6">
-                    {/* Top Summary Banner */}
+            {/* CATEGORY USAGE OVERVIEW (Image 1 Exact Layout & Design) */}
+            <div className="space-y-6">
+                {/* Top Summary Banner */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 sm:gap-4">
                         <div className="bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl border border-[#D6CDBC] dark:border-[#384232] p-4 sm:p-5 shadow-warm-xs flex items-center gap-4">
                             <div className="h-10 w-10 rounded-xl bg-[#30382B] text-[#D3B98D] flex items-center justify-center shrink-0">
@@ -558,44 +483,52 @@ export function WorkType() {
                                                             {/* Current Period Row */}
                                                             <div className="flex items-center gap-3">
                                                                 <span className="text-xs font-semibold text-[#777367] dark:text-[#B8B3A7] w-24 shrink-0 truncate">
-                                                                    {curLoc.dominantLabel || '100% Remote'}
+                                                                    {cur.totalSeconds > 0 ? (curLoc.dominantLabel || '-') : '-'}
                                                                 </span>
                                                                 <div className="flex-1 max-w-[120px] h-2.5 bg-slate-100 dark:bg-slate-800 rounded-sm overflow-hidden flex">
-                                                                    <div
-                                                                        className="h-full bg-[#38BDF8] transition-all duration-300"
-                                                                        style={{ width: `${curLoc.officePct || 0}%` }}
-                                                                        title={`Office: ${curLoc.officePct}%`}
-                                                                    />
-                                                                    <div
-                                                                        className="h-full bg-[#FACC15] transition-all duration-300"
-                                                                        style={{ width: `${curLoc.remotePct || 0}%` }}
-                                                                        title={`Remote: ${curLoc.remotePct}%`}
-                                                                    />
+                                                                    {cur.totalSeconds > 0 && (
+                                                                        <>
+                                                                            <div
+                                                                                className="h-full bg-[#38BDF8] transition-all duration-300"
+                                                                                style={{ width: `${curLoc.officePct || 0}%` }}
+                                                                                title={`Office: ${curLoc.officePct}%`}
+                                                                            />
+                                                                            <div
+                                                                                className="h-full bg-[#FACC15] transition-all duration-300"
+                                                                                style={{ width: `${curLoc.remotePct || 0}%` }}
+                                                                                title={`Remote: ${curLoc.remotePct}%`}
+                                                                            />
+                                                                        </>
+                                                                    )}
                                                                 </div>
                                                             </div>
 
                                                             {/* Comparison Period Row (Striped Blue / Yellow) */}
                                                             <div className="flex items-center gap-3">
                                                                 <span className="text-xs font-medium text-[#9E988A] dark:text-[#888173] w-24 shrink-0 truncate">
-                                                                    {compLoc.dominantLabel || '100% Remote'}
+                                                                    {comp.totalSeconds > 0 ? (compLoc.dominantLabel || '-') : '-'}
                                                                 </span>
                                                                 <div className="flex-1 max-w-[120px] h-2.5 bg-slate-100 dark:bg-slate-800 rounded-sm overflow-hidden flex">
-                                                                    <div
-                                                                        className="h-full transition-all duration-300"
-                                                                        style={{
-                                                                            width: `${compLoc.officePct || 0}%`,
-                                                                            backgroundImage: STRIPED_BLUE
-                                                                        }}
-                                                                        title={`Office: ${compLoc.officePct}%`}
-                                                                    />
-                                                                    <div
-                                                                        className="h-full transition-all duration-300"
-                                                                        style={{
-                                                                            width: `${compLoc.remotePct || 0}%`,
-                                                                            backgroundImage: STRIPED_YELLOW
-                                                                        }}
-                                                                        title={`Remote: ${compLoc.remotePct}%`}
-                                                                    />
+                                                                    {comp.totalSeconds > 0 && (
+                                                                        <>
+                                                                            <div
+                                                                                className="h-full transition-all duration-300"
+                                                                                style={{
+                                                                                    width: `${compLoc.officePct || 0}%`,
+                                                                                    backgroundImage: STRIPED_BLUE
+                                                                                }}
+                                                                                title={`Office: ${compLoc.officePct}%`}
+                                                                            />
+                                                                            <div
+                                                                                className="h-full transition-all duration-300"
+                                                                                style={{
+                                                                                    width: `${compLoc.remotePct || 0}%`,
+                                                                                    backgroundImage: STRIPED_YELLOW
+                                                                                }}
+                                                                                title={`Remote: ${compLoc.remotePct}%`}
+                                                                            />
+                                                                        </>
+                                                                    )}
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -682,57 +615,65 @@ export function WorkType() {
                                                             {/* Current Period Row */}
                                                             <div className="flex items-center gap-3">
                                                                 <span className="text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] w-32 shrink-0 truncate">
-                                                                    {curProd.dominantLabel || '00:00 h Productive'}
+                                                                    {cur.totalSeconds > 0 ? (curProd.dominantLabel || '-') : '-'}
                                                                 </span>
                                                                 <div className="flex-1 max-w-[120px] h-2.5 bg-slate-100 dark:bg-slate-800 rounded-sm overflow-hidden flex">
-                                                                    <div
-                                                                        className="h-full bg-[#34D399] transition-all duration-300"
-                                                                        style={{ width: `${curProd.productivePct || 0}%` }}
-                                                                        title={`Productive: ${curProd.productivePct}%`}
-                                                                    />
-                                                                    <div
-                                                                        className="h-full bg-[#FB7185] transition-all duration-300"
-                                                                        style={{ width: `${curProd.unproductivePct || 0}%` }}
-                                                                        title={`Unproductive: ${curProd.unproductivePct}%`}
-                                                                    />
-                                                                    <div
-                                                                        className="h-full bg-[#94A3B8] transition-all duration-300"
-                                                                        style={{ width: `${curProd.neutralPct || 0}%` }}
-                                                                        title={`Neutral: ${curProd.neutralPct}%`}
-                                                                    />
+                                                                    {cur.totalSeconds > 0 && (
+                                                                        <>
+                                                                            <div
+                                                                                className="h-full bg-[#34D399] transition-all duration-300"
+                                                                                style={{ width: `${curProd.productivePct || 0}%` }}
+                                                                                title={`Productive: ${curProd.productivePct}%`}
+                                                                            />
+                                                                            <div
+                                                                                className="h-full bg-[#FB7185] transition-all duration-300"
+                                                                                style={{ width: `${curProd.unproductivePct || 0}%` }}
+                                                                                title={`Unproductive: ${curProd.unproductivePct}%`}
+                                                                            />
+                                                                            <div
+                                                                                className="h-full bg-[#94A3B8] transition-all duration-300"
+                                                                                style={{ width: `${curProd.neutralPct || 0}%` }}
+                                                                                title={`Neutral: ${curProd.neutralPct}%`}
+                                                                            />
+                                                                        </>
+                                                                    )}
                                                                 </div>
                                                             </div>
 
                                                             {/* Comparison Period Row (Striped) */}
                                                             <div className="flex items-center gap-3">
                                                                 <span className="text-xs font-medium text-[#777367] dark:text-[#B8B3A7] w-32 shrink-0 truncate">
-                                                                    {compProd.dominantLabel || '00:00 h Productive'}
+                                                                    {comp.totalSeconds > 0 ? (compProd.dominantLabel || '-') : '-'}
                                                                 </span>
                                                                 <div className="flex-1 max-w-[120px] h-2.5 bg-slate-100 dark:bg-slate-800 rounded-sm overflow-hidden flex">
-                                                                    <div
-                                                                        className="h-full transition-all duration-300"
-                                                                        style={{
-                                                                            width: `${compProd.productivePct || 0}%`,
-                                                                            backgroundImage: STRIPED_GREEN
-                                                                        }}
-                                                                        title={`Productive: ${compProd.productivePct}%`}
-                                                                    />
-                                                                    <div
-                                                                        className="h-full transition-all duration-300"
-                                                                        style={{
-                                                                            width: `${compProd.unproductivePct || 0}%`,
-                                                                            backgroundImage: STRIPED_RED
-                                                                        }}
-                                                                        title={`Unproductive: ${compProd.unproductivePct}%`}
-                                                                    />
-                                                                    <div
-                                                                        className="h-full transition-all duration-300"
-                                                                        style={{
-                                                                            width: `${compProd.neutralPct || 0}%`,
-                                                                            backgroundImage: STRIPED_GREY
-                                                                        }}
-                                                                        title={`Neutral: ${compProd.neutralPct}%`}
-                                                                    />
+                                                                    {comp.totalSeconds > 0 && (
+                                                                        <>
+                                                                            <div
+                                                                                className="h-full transition-all duration-300"
+                                                                                style={{
+                                                                                    width: `${compProd.productivePct || 0}%`,
+                                                                                    backgroundImage: STRIPED_GREEN
+                                                                                }}
+                                                                                title={`Productive: ${compProd.productivePct}%`}
+                                                                            />
+                                                                            <div
+                                                                                className="h-full transition-all duration-300"
+                                                                                style={{
+                                                                                    width: `${compProd.unproductivePct || 0}%`,
+                                                                                    backgroundImage: STRIPED_RED
+                                                                                }}
+                                                                                title={`Unproductive: ${compProd.unproductivePct}%`}
+                                                                            />
+                                                                            <div
+                                                                                className="h-full transition-all duration-300"
+                                                                                style={{
+                                                                                    width: `${compProd.neutralPct || 0}%`,
+                                                                                    backgroundImage: STRIPED_GREY
+                                                                                }}
+                                                                                title={`Neutral: ${compProd.neutralPct}%`}
+                                                                            />
+                                                                        </>
+                                                                    )}
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -837,80 +778,6 @@ export function WorkType() {
                         </div>
                     </div>
                 </div>
-            )}
-
-            {/* TAB 2: TAGS VIEW (Retained and Cleanly Styled) */}
-            {activeTab === 'tags' && (
-                <div className="grid gap-6">
-                    {tagsData.length > 0 ? (
-                        <div className="grid gap-6 md:grid-cols-2">
-                            <div className="rounded-2xl border border-[#D6CDBC] dark:border-[#384232] bg-[#FBF9F5] dark:bg-[#252B20] p-6 shadow-warm-xs">
-                                <h3 className="mb-6 font-serif text-lg font-semibold text-[#29291F] dark:text-[#F5F1E9]">
-                                    Distribution by Tags
-                                </h3>
-                                <div className="space-y-6">
-                                    {tagsData.map((item) => {
-                                        const pct = totalHours > 0 ? Math.round((item.hours / totalHours) * 100) : 0;
-                                        const barWidth = totalHours > 0 ? `${pct}%` : '0%';
-                                        return (
-                                            <div key={item.key || item.name} className="space-y-2">
-                                                <div className="flex items-center justify-between text-sm">
-                                                    <span className="font-semibold text-[#29291F] dark:text-[#F5F1E9] flex items-center gap-2">
-                                                        {item.tagColor && (
-                                                            <span
-                                                                className="h-2.5 w-2.5 rounded-full shrink-0"
-                                                                style={{ backgroundColor: item.tagColor }}
-                                                            />
-                                                        )}
-                                                        {item.name}
-                                                    </span>
-                                                    <span className="font-bold font-mono text-[#29291F] dark:text-[#F5F1E9]">
-                                                        {item.hours}h ({pct}%)
-                                                    </span>
-                                                </div>
-                                                <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-                                                    <div
-                                                        className="h-full rounded-full transition-all duration-500"
-                                                        style={{ width: barWidth, backgroundColor: item.tagColor || '#B9955B' }}
-                                                    />
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-
-                            <div className="rounded-2xl border border-[#D6CDBC] dark:border-[#384232] bg-[#30382B] p-6 shadow-warm-md text-white">
-                                <h3 className="mb-2 font-serif text-lg font-semibold text-[#D3B98D]">Total Tagged Time ({activePeriod})</h3>
-                                <p className="text-4xl font-black font-mono mt-2">{totalHours} Hours</p>
-                                <p className="mt-4 text-xs text-[#D2DACB]">
-                                    Based on customized labels from Productivity Settings.
-                                </p>
-                                <div className="mt-8 grid grid-cols-2 gap-4">
-                                    <div className="rounded-xl bg-white/10 p-3.5 backdrop-blur-md border border-white/10">
-                                        <p className="text-[10px] font-bold uppercase tracking-wider text-[#D3B98D]">Focus Score</p>
-                                        <p className="text-xl font-bold mt-0.5">{summaryData.productivityScore || 75} / 100</p>
-                                    </div>
-                                    <div className="rounded-xl bg-white/10 p-3.5 backdrop-blur-md border border-white/10">
-                                        <p className="text-[10px] font-bold uppercase tracking-wider text-[#D3B98D]">Tracked Tags</p>
-                                        <p className="text-xl font-bold mt-0.5">{tagsData.length}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="flex flex-col items-center justify-center p-20 rounded-3xl border border-dashed border-[#D6CDBC] dark:border-[#384232] bg-[#FBF9F5] dark:bg-[#252B20]">
-                            <div className="h-16 w-16 bg-[#EEE8DD] dark:bg-[#30382B] rounded-2xl flex items-center justify-center mb-4 text-[#B9955B]">
-                                <Monitor size={32} />
-                            </div>
-                            <h3 className="text-lg font-bold text-[#29291F] dark:text-[#F5F1E9] mb-1">No tag records found</h3>
-                            <p className="text-xs text-[#777367] dark:text-[#B8B3A7] text-center max-w-sm">
-                                Assign custom labels in Settings → Productivity to view time distribution by tags.
-                            </p>
-                        </div>
-                    )}
-                </div>
-            )}
         </div>
     );
 }
