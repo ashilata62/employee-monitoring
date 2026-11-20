@@ -33,7 +33,9 @@ import { GlobalCalendar } from '../components/GlobalCalendar';
 import { useRealTime } from '../hooks/RealTimeContext';
 import { useAuthStore } from '../store/authStore';
 import { useLiveTimeDisplay, useSessionTimer } from '../hooks/useLiveTime';
-import { parseTimeValueToSeconds } from '../utils/timeFormat';
+import { parseTimeValueToSeconds, formatSecondsToHMS } from '../utils/timeFormat';
+import { executeExport } from '../utils/exportEngine';
+import { useToast } from '../context/ToastContext';
 import { API_BASE_URL, BASE_URL } from '../config/api';
 
 const getImageUrl = (url) => {
@@ -218,7 +220,8 @@ import dashboardService from '../services/dashboardService';
 
 export function Dashboard() {
     const { socket, employees: contextEmployees, teams: contextTeams, stats: realTimeStats, notifications: contextNotifications, isLoading: isRealTimeLoading } = useRealTime();
-    const { role, isClockedIn, isOnBreak } = useAuthStore();
+    const { role, isClockedIn, isOnBreak, user } = useAuthStore();
+    const { toast } = useToast();
     const sessionSeconds = useSessionTimer();
     const { dateRange, setDateRange } = useFilterStore();
     const { start: startDate, end: endDate } = dateRange || {};
@@ -345,22 +348,6 @@ export function Dashboard() {
         };
     }, [socket]);
 
-    const handleDownload = () => {
-        const empMetricsData = realTimeStats.empMetrics || [];
-        const headers = ['Employee Name', 'Team', 'Productive (h)', 'Unproductive (h)', 'Utilization (%)'];
-        const rows = empMetricsData.map(e => [e.name, e.team, e.productive, e.unproductive, e.utilization]);
-        const csvContent = [headers, ...rows].map(r => r.join(',')).join('\n');
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', `productivity-report-${new Date().toISOString().slice(0, 10)}.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-    };
-
     const isToday = !startDate || new Date(startDate).toISOString().split('T')[0] === new Date().toISOString().split('T')[0];
 
     // Merge API data with Real-time stats
@@ -396,7 +383,7 @@ export function Dashboard() {
 
     const sec = useMemo(() => {
         const rawSec = stats?.summarySeconds || {};
-        const isSessionUser = role?.toUpperCase() === 'EMPLOYEE' || role?.toUpperCase() === 'MANAGER';
+        const isSessionUser = role?.toUpperCase() === 'EMPLOYEE';
         if (!isSessionUser) {
             return rawSec;
         }
@@ -420,12 +407,14 @@ export function Dashboard() {
     }, [role, stats?.summarySeconds, isToday, isClockedIn, sessionSeconds]);
 
     const liveTick = useMemo(() => {
-        const isSessionUser = role?.toUpperCase() === 'EMPLOYEE' || role?.toUpperCase() === 'MANAGER';
-        if (!isSessionUser) return false;
+        const isSessionUser = role?.toUpperCase() === 'EMPLOYEE';
+        if (!isSessionUser) {
+            return Boolean(stats?.isLive || (isToday && isClockedIn && !isOnBreak));
+        }
         if (!isToday) return false;
         // Only tick when clocked in and not on break
         return isClockedIn && !isOnBreak;
-    }, [role, isToday, isClockedIn, isOnBreak]);
+    }, [role, isToday, isClockedIn, isOnBreak, stats?.isLive]);
 
     const chartData = stats.intradayActivity?.length
         ? stats.intradayActivity
@@ -456,6 +445,123 @@ export function Dashboard() {
         }
         return 0;
     }, [stats.summary?.utilization, stats.summary?.productivity, liveTick]);
+
+    const handleDownload = useCallback((format = 'csv') => {
+        try {
+            const normalizedFormat = typeof format === 'string' && (format.toLowerCase() === 'pdf' || format.toLowerCase() === 'xlsx')
+                ? format.toLowerCase()
+                : 'csv';
+
+            const dateStr = new Date().toISOString().slice(0, 10);
+            const periodLabel = `${startDate || 'Today'} to ${endDate || 'Today'}`;
+
+            if (role === 'EMPLOYEE') {
+                const empName = user?.fullName || user?.name || user?.email || 'Employee';
+                const employeeColumns = [
+                    { header: 'Metric', key: 'metric' },
+                    { header: 'Value', key: 'value' },
+                    { header: 'Period / Context', key: 'period' },
+                    { header: 'Details', key: 'details' }
+                ];
+
+                const employeeData = [
+                    { metric: 'Employee Name', value: empName, period: periodLabel, details: `Email: ${user?.email || '-'}` },
+                    { metric: 'Designation / Role', value: user?.role || 'Employee', period: 'Current Profile', details: user?.department || user?.team?.name || 'General Team' },
+                    { metric: 'Work Time', value: formatSecondsToHMS(sec.workTime), period: 'Total Duration', details: 'Clocked hours' },
+                    { metric: 'Active Computer Time', value: formatSecondsToHMS(sec.activeTime), period: 'Active Duration', details: 'Keystrokes / mouse activity' },
+                    { metric: 'Idle Time', value: stats?.summary?.idleTime || '00h 00m 00s', period: 'Idle Duration', details: 'No device activity' },
+                    { metric: 'Manual Time', value: stats?.summary?.manualTime || '00h 00m 00s', period: 'Manual Logs', details: 'Offline work time' },
+                    { metric: 'Productive Time', value: formatSecondsToHMS(sec.productiveTime), period: 'Productive Duration', details: 'Approved productive applications' },
+                    { metric: 'Unproductive Time', value: stats?.summary?.unproductiveTime || '00h 00m 00s', period: 'Unproductive Duration', details: 'Non-work related applications' },
+                    { metric: 'Neutral Time', value: stats?.summary?.neutralTime || '00h 00m 00s', period: 'Neutral Duration', details: 'Uncategorized apps & websites' },
+                    { metric: 'Productivity Score', value: `${liveScore}%`, period: 'Performance Score', details: 'Overall productive efficiency' },
+                    { metric: 'Attendance Status', value: isClockedIn ? (isOnBreak ? 'ON BREAK' : 'CLOCKED IN') : 'CLOCKED OUT', period: 'Session Status', details: isClockedIn ? 'Active shift in progress' : 'Shift closed' }
+                ];
+
+                executeExport({
+                    data: employeeData,
+                    columns: employeeColumns,
+                    fileName: `employee-productivity-report-${dateStr}`,
+                    format: normalizedFormat,
+                    metadata: {
+                        title: `${empName} - Productivity Report`,
+                        dateRange: periodLabel,
+                        filters: `Role: ${user?.role || 'Employee'} | Status: ${isClockedIn ? 'Clocked In' : 'Clocked Out'}`
+                    }
+                });
+                toast.success(`${normalizedFormat.toUpperCase()} report downloaded successfully!`);
+            } else {
+                const managerColumns = [
+                    { header: 'Employee Name', key: 'name' },
+                    { header: 'Email', key: 'email' },
+                    { header: 'Team', key: 'team' },
+                    { header: 'Status', key: 'status' },
+                    { header: 'Work Time', key: 'workHours' },
+                    { header: 'Active Time', key: 'activeHours' },
+                    { header: 'Idle Time', key: 'idleHours' },
+                    { header: 'Productive Time', key: 'productive' },
+                    { header: 'Unproductive Time', key: 'unproductive' },
+                    { header: 'Productivity (%)', key: 'productivity' },
+                    { header: 'Utilization (%)', key: 'utilization' }
+                ];
+
+                const empMetricsData = (stats?.empMetrics && stats.empMetrics.length > 0)
+                    ? stats.empMetrics
+                    : (realTimeStats?.empMetrics && realTimeStats.empMetrics.length > 0)
+                        ? realTimeStats.empMetrics
+                        : (dashboardData?.employees || []);
+
+                let managerData = [];
+                if (empMetricsData.length > 0) {
+                    managerData = empMetricsData.map(e => ({
+                        name: e.fullName || e.name || 'Unknown',
+                        email: e.email || '-',
+                        team: e.team?.name || e.team || 'General',
+                        status: (e.status || 'offline').toUpperCase(),
+                        workHours: e.totalWorkHours !== undefined ? (typeof e.totalWorkHours === 'number' ? `${e.totalWorkHours.toFixed(1)}h` : String(e.totalWorkHours)) : (e.workHours || '0h'),
+                        activeHours: e.activeHours !== undefined ? (typeof e.activeHours === 'number' ? `${e.activeHours.toFixed(1)}h` : String(e.activeHours)) : '0h',
+                        idleHours: e.idleHours !== undefined ? (typeof e.idleHours === 'number' ? `${e.idleHours.toFixed(1)}h` : String(e.idleHours)) : '0h',
+                        productive: e.productive || (e.productiveHours ? `${Number(e.productiveHours).toFixed(1)}h` : '00:00'),
+                        unproductive: e.unproductive || (e.unproductiveHours ? `${Number(e.unproductiveHours).toFixed(1)}h` : '00:00'),
+                        productivity: `${e.productivity || e.productivityScore || 0}%`,
+                        utilization: `${e.utilization || e.utilizationScore || 0}%`
+                    }));
+                } else {
+                    managerData = [
+                        {
+                            name: 'Workforce Total',
+                            email: '-',
+                            team: 'Organization',
+                            status: 'SUMMARY',
+                            workHours: stats?.summary?.workTime || '00:00:00',
+                            activeHours: stats?.summary?.activeTime || '00:00:00',
+                            idleHours: stats?.summary?.idleTime || '00:00:00',
+                            productive: stats?.summary?.productiveTime || '00:00:00',
+                            unproductive: stats?.summary?.unproductiveTime || '00:00:00',
+                            productivity: `${stats?.summary?.productivity || 0}%`,
+                            utilization: `${stats?.summary?.utilization || 0}%`
+                        }
+                    ];
+                }
+
+                executeExport({
+                    data: managerData,
+                    columns: managerColumns,
+                    fileName: `workforce-productivity-report-${dateStr}`,
+                    format: normalizedFormat,
+                    metadata: {
+                        title: `${role === 'ADMIN' ? 'Executive Workforce' : 'Team Performance'} Productivity Report`,
+                        dateRange: periodLabel,
+                        filters: activeFilter.employeeId || activeFilter.teamId ? 'Filtered View' : 'All Staff'
+                    }
+                });
+                toast.success(`${normalizedFormat.toUpperCase()} report downloaded successfully!`);
+            }
+        } catch (error) {
+            console.error('Export download error:', error);
+            toast.error(error.message || 'Failed to download report');
+        }
+    }, [role, user, startDate, endDate, sec, stats, liveScore, isClockedIn, isOnBreak, realTimeStats, dashboardData, activeFilter, toast]);
 
     return (
         <div className="w-full">

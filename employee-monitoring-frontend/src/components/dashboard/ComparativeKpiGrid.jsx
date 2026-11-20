@@ -44,12 +44,12 @@ const FormattedDisplayValue = ({ value }) => {
     const matchHMS = value.match(/^(\d{1,3})h\s*(\d{2})m\s*(\d{2})s$/);
     if (matchHMS) {
         return (
-            <div className="flex items-baseline font-mono font-bold tracking-tight text-[#29291F] dark:text-[#F5F1E9] tabular-nums leading-none flex-wrap">
-                <span className="text-base sm:text-xl md:text-2xl">{matchHMS[1]}</span>
-                <span className="text-[10px] sm:text-xs font-semibold text-[#B9955B] ml-0.5 mr-1 sm:mr-1.5">h</span>
-                <span className="text-base sm:text-xl md:text-2xl">{matchHMS[2]}</span>
-                <span className="text-[10px] sm:text-xs font-semibold text-[#B9955B] ml-0.5 mr-1 sm:mr-1.5">m</span>
-                <span className="text-base sm:text-xl md:text-2xl text-[#29291F] dark:text-[#F5F1E9]">{matchHMS[3]}</span>
+            <div className="flex items-baseline font-mono font-bold tracking-tight text-[#29291F] dark:text-[#F5F1E9] tabular-nums leading-none flex-nowrap whitespace-nowrap">
+                <span className="text-base xs:text-lg sm:text-xl lg:text-2xl">{matchHMS[1]}</span>
+                <span className="text-[10px] sm:text-xs font-semibold text-[#B9955B] ml-0.5 mr-1">h</span>
+                <span className="text-base xs:text-lg sm:text-xl lg:text-2xl">{matchHMS[2]}</span>
+                <span className="text-[10px] sm:text-xs font-semibold text-[#B9955B] ml-0.5 mr-1">m</span>
+                <span className="text-base xs:text-lg sm:text-xl lg:text-2xl text-[#29291F] dark:text-[#F5F1E9]">{matchHMS[3]}</span>
                 <span className="text-[10px] sm:text-xs font-semibold text-[#B9955B] ml-0.5">s</span>
             </div>
         );
@@ -59,8 +59,8 @@ const FormattedDisplayValue = ({ value }) => {
     const matchHM = value.match(/^(\d{1,3}):(\d{2})\s*h$/);
     if (matchHM) {
         return (
-            <div className="flex items-baseline font-sans font-bold tracking-tight text-[#29291F] dark:text-[#F5F1E9] tabular-nums leading-none">
-                <span className="text-base sm:text-xl md:text-2xl">{matchHM[1]}:{matchHM[2]}</span>
+            <div className="flex items-baseline font-sans font-bold tracking-tight text-[#29291F] dark:text-[#F5F1E9] tabular-nums leading-none flex-nowrap whitespace-nowrap">
+                <span className="text-base xs:text-lg sm:text-xl lg:text-2xl">{matchHM[1]}:{matchHM[2]}</span>
                 <span className="text-[10px] sm:text-xs font-semibold text-[#777367] dark:text-[#9E988A] ml-1">h</span>
             </div>
         );
@@ -68,7 +68,7 @@ const FormattedDisplayValue = ({ value }) => {
 
     // Pattern 3: percentage like "75%" or other string
     return (
-        <span className="font-sans font-bold text-base sm:text-xl md:text-2xl text-[#29291F] dark:text-[#F5F1E9] tracking-tight tabular-nums leading-none">
+        <span className="font-sans font-bold text-base xs:text-lg sm:text-xl lg:text-2xl text-[#29291F] dark:text-[#F5F1E9] tracking-tight tabular-nums leading-none flex-nowrap whitespace-nowrap">
             {value}
         </span>
     );
@@ -98,11 +98,11 @@ const KpiCard = ({
     }
 
     return (
-        <div className="group bg-[#EEE8DD] dark:bg-[#252B20] rounded-xl sm:rounded-2xl border border-[#D6CDBC] dark:border-[#384232] p-3.5 sm:p-4 shadow-warm-xs hover:border-[#B9955B]/60 dark:hover:border-[#B9955B]/50 transition-all duration-200 flex flex-col justify-between">
+        <div className="group bg-[#EEE8DD] dark:bg-[#252B20] rounded-xl sm:rounded-2xl border border-[#D6CDBC] dark:border-[#384232] p-3 sm:p-4 shadow-warm-xs hover:border-[#B9955B]/60 dark:hover:border-[#B9955B]/50 transition-all duration-200 flex flex-col justify-between">
             {/* Top row: Title & Mini Icon */}
-            <div className="flex items-center justify-between gap-2 mb-2">
-                <div className="flex items-center gap-1.5 min-w-0">
-                    <span className="text-[10px] sm:text-[11px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-[0.12em] truncate">
+            <div className="flex items-center justify-between gap-1.5 mb-2">
+                <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                    <span className="text-[10px] sm:text-[11px] xl:text-xs font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-wider truncate" title={title}>
                         {title}
                     </span>
                     {liveTick && (
@@ -112,8 +112,8 @@ const KpiCard = ({
                         </span>
                     )}
                 </div>
-                <div className="h-7 w-7 rounded-lg bg-[#EEE8DD]/80 dark:bg-[#30382B] flex items-center justify-center text-[#B9955B] group-hover:bg-[#B9955B]/15 group-hover:text-[#A17D45] transition-colors shrink-0">
-                    <Icon size={14} strokeWidth={2} />
+                <div className="h-6 w-6 sm:h-7 sm:w-7 rounded-lg bg-[#EEE8DD]/80 dark:bg-[#30382B] flex items-center justify-center text-[#B9955B] group-hover:bg-[#B9955B]/15 group-hover:text-[#A17D45] transition-colors shrink-0">
+                    <Icon size={13} strokeWidth={2} />
                 </div>
             </div>
 
@@ -147,9 +147,9 @@ export function ComparativeKpiGrid({ sec, stats, deltas, role, isToday = true, l
     const { isClockedIn } = useAuthStore();
     const sessionSeconds = useSessionTimer();
 
-    const isSessionUser = role?.toUpperCase() === 'EMPLOYEE' || role?.toUpperCase() === 'MANAGER';
+    const isSessionUser = role?.toUpperCase() === 'EMPLOYEE';
 
-    // When Employee or Manager is viewing Today:
+    // When Employee is viewing Today:
     // If clocked out: ALL cards reset to 00h 00m 00s and 0% immediately with zero latency!
     // If clocked in: session timer ticks live from 00h 00m 00s upwards in sync with top pill timer!
     // For Admin: Displays genuine workforce/team aggregate metrics formatted as HH:MM h (e.g. 192:16 h)!
@@ -186,7 +186,7 @@ export function ComparativeKpiGrid({ sec, stats, deltas, role, isToday = true, l
         : (stats?.summary?.utilization !== undefined ? `${stats.summary.utilization}%` : (stats?.summary?.productivity !== undefined ? `${stats.summary.productivity}%` : '0%'));
 
     return (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 sm:gap-4 lg:gap-5 mb-6 sm:mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5 mb-6 sm:mb-8">
             <KpiCard
                 title="Work Time"
                 displayValue={effectiveWorkTime}

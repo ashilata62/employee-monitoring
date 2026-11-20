@@ -5,42 +5,42 @@ try {
     electron = {
         app: {
             whenReady: () => Promise.resolve(),
-            on: () => {},
-            quit: () => {},
+            on: () => { },
+            quit: () => { },
             requestSingleInstanceLock: () => true,
             getLoginItemSettings: () => ({ openAtLogin: false }),
-            setLoginItemSettings: () => {}
+            setLoginItemSettings: () => { }
         },
         BrowserWindow: class {
             constructor() {
-                this.webContents = { send: () => {} };
+                this.webContents = { send: () => { } };
             }
-            loadFile() {}
-            loadURL() {}
-            on() {}
-            show() {}
-            hide() {}
-            focus() {}
+            loadFile() { }
+            loadURL() { }
+            on() { }
+            show() { }
+            hide() { }
+            focus() { }
             isVisible() { return true; }
             isDestroyed() { return false; }
             isMinimized() { return false; }
-            restore() {}
+            restore() { }
         },
-        ipcMain: { on: () => {}, handle: () => {} },
+        ipcMain: { on: () => { }, handle: () => { } },
         Tray: class {
-            constructor() {}
-            setToolTip() {}
-            setContextMenu() {}
-            on() {}
-            destroy() {}
-            displayBalloon() {}
+            constructor() { }
+            setToolTip() { }
+            setContextMenu() { }
+            on() { }
+            destroy() { }
+            displayBalloon() { }
         },
         Menu: {
             buildFromTemplate: (tpl) => ({ items: tpl })
         },
         Notification: class {
-            constructor() {}
-            show() {}
+            constructor() { }
+            show() { }
             static isSupported() { return false; }
         },
         nativeImage: {
@@ -53,7 +53,7 @@ if (!electron.powerMonitor) {
     electron.powerMonitor = {
         getSystemIdleTime: () => 0,
         getSystemIdleState: () => 'active',
-        on: () => {}
+        on: () => { }
     };
 }
 const { app, BrowserWindow, ipcMain, powerMonitor, Tray, Menu, Notification, nativeImage } = electron;
@@ -84,7 +84,65 @@ try {
 }
 
 // ─── Desktop Agent Configuration & Runtime State ─────────────────────────────
-const API_URL = process.env.API_URL || 'http://localhost:5000';
+function resolveServerUrl() {
+    if (process.env.API_URL && process.env.API_URL.trim()) {
+        return process.env.API_URL.trim().replace(/\/api\/?$/, '').replace(/\/$/, '');
+    }
+    try {
+        const candidatePaths = [
+            path.join(process.resourcesPath || '', 'server-config.json'),
+            path.join(__dirname, 'server-config.json'),
+            path.join(__dirname, '..', 'server-config.json')
+        ];
+        for (const p of candidatePaths) {
+            if (fs.existsSync(p)) {
+                const raw = JSON.parse(fs.readFileSync(p, 'utf-8'));
+                if (raw && raw.SERVER_URL) {
+                    return raw.SERVER_URL.trim().replace(/\/api\/?$/, '').replace(/\/$/, '');
+                }
+            }
+        }
+    } catch (e) {}
+    return 'https://insight-pool-production.up.railway.app/api';
+}
+
+const API_URL = resolveServerUrl();
+console.log(`[Desktop Agent] Initialized with API_URL: ${API_URL}`);
+
+function getLocalConfigPath() {
+    try {
+        if (app && typeof app.getPath === 'function') {
+            const userDir = app.getPath('userData');
+            if (!fs.existsSync(userDir)) fs.mkdirSync(userDir, { recursive: true });
+            return path.join(userDir, 'agent-config.json');
+        }
+    } catch (e) {}
+    return path.join(__dirname, 'agent-config.json');
+}
+
+function saveLocalConfig(data) {
+    try {
+        const cfgPath = getLocalConfigPath();
+        const existing = loadLocalConfig() || {};
+        fs.writeFileSync(cfgPath, JSON.stringify({ ...existing, ...data, updatedAt: new Date().toISOString() }, null, 2), 'utf-8');
+    } catch (err) {
+        console.warn('[Config] Failed to save local config:', err.message);
+    }
+}
+
+function loadLocalConfig() {
+    try {
+        const cfgPath = getLocalConfigPath();
+        if (fs.existsSync(cfgPath)) {
+            const raw = fs.readFileSync(cfgPath, 'utf-8');
+            return JSON.parse(raw);
+        }
+    } catch (err) {
+        console.warn('[Config] Failed to read local config:', err.message);
+    }
+    return null;
+}
+
 let mainWindow = null;
 let socket = null;
 
@@ -94,6 +152,7 @@ let agentState = {
     deviceId: null,
     agentToken: null,
     status: 'inactive', // 'pending' | 'active' | 'inactive'
+    permissionsCompleted: false,
     activeTaskId: null, // Active Task ID linked from frontend
     activeTaskName: null,
     autoMappedProjectId: null,
@@ -197,6 +256,20 @@ function getDeviceId() {
 
 agentState.deviceId = getDeviceId();
 
+// Auto-restore saved session if present
+try {
+    const savedConfig = loadLocalConfig();
+    if (savedConfig) {
+        if (savedConfig.employeeId) agentState.employeeId = savedConfig.employeeId;
+        if (savedConfig.agentToken) agentState.agentToken = savedConfig.agentToken;
+        if (savedConfig.status) agentState.status = savedConfig.status;
+        if (savedConfig.permissionsCompleted !== undefined) agentState.permissionsCompleted = savedConfig.permissionsCompleted;
+        console.log(`[Desktop Agent] Restored session from AppData: Employee=${agentState.employeeId || 'None'}, Status=${agentState.status}`);
+    }
+} catch (e) {
+    console.warn('[Desktop Agent] Could not restore saved session:', e.message);
+}
+
 // ─── Active Task ID Linking (Requirement 2 & 5) ──────────────────────────────
 /**
  * Receive and update the active taskId from frontend
@@ -281,7 +354,7 @@ function matchAutoProject(windowTitle, appName) {
                         pattern: regex.toString()
                     };
                 }
-            } catch (err) {}
+            } catch (err) { }
         }
     }
 
@@ -394,7 +467,7 @@ function captureScreenBase64() {
                         const imgBuf = fs.readFileSync(tmpFile);
                         fs.unlinkSync(tmpFile);
                         return resolve(`data:image/jpeg;base64,${imgBuf.toString('base64')}`);
-                    } catch (e) {}
+                    } catch (e) { }
                 }
                 tryFallbackScreenshot(resolve, reject);
             });
@@ -407,7 +480,7 @@ function captureScreenBase64() {
                         const imgBuf = fs.readFileSync(tmpFile);
                         fs.unlinkSync(tmpFile);
                         return resolve(`data:image/jpeg;base64,${imgBuf.toString('base64')}`);
-                    } catch (e) {}
+                    } catch (e) { }
                 }
                 tryFallbackScreenshot(resolve, reject);
             });
@@ -425,7 +498,7 @@ function tryFallbackScreenshot(resolve, reject) {
         } catch {
             try {
                 screenshotDesktop = require('../employee-monitoring/employee-monitoring-frontend/node_modules/screenshot-desktop');
-            } catch {}
+            } catch { }
         }
         if (screenshotDesktop) {
             screenshotDesktop({ format: 'jpeg' })
@@ -509,7 +582,7 @@ async function handleViolationScreenshot(appName, windowTitle, violationType) {
 
     try {
         const screenshotUrl = await captureScreenBase64();
-        
+
         await sendActivityLog({
             activeApp: appName,
             activeWindow: windowTitle,
@@ -600,7 +673,7 @@ async function checkIdleActivity() {
                             title: 'Employee Inactivity Alert',
                             body: 'You have been inactive for 1 minute. Please resume your work.'
                         }).show();
-                    } catch (e) {}
+                    } catch (e) { }
                 }
 
                 await sendIdleActivityEvent({
@@ -628,7 +701,7 @@ async function checkIdleActivity() {
                 }
             }
         }
-    } 
+    }
     // 2. Stage: IDLE WARNING (>= 5 minutes / 300s)
     else if (idleSeconds >= warningThreshold) {
         if (idleState.currentStatus !== 'IDLE_WARNING' && idleState.currentStatus !== 'IDLE') {
@@ -648,7 +721,7 @@ async function checkIdleActivity() {
                             title: 'Activity Reminder',
                             body: 'No recent mouse or keyboard activity has been detected. Please check your activity status.'
                         }).show();
-                    } catch (e) {}
+                    } catch (e) { }
                 }
 
                 await sendIdleActivityEvent({
@@ -916,7 +989,7 @@ function getTrayIcon() {
             const iconPath = path.join(__dirname, 'icon.png');
             if (fs.existsSync(iconPath)) return nativeImage.createFromPath(iconPath);
         }
-    } catch (e) {}
+    } catch (e) { }
     return null;
 }
 
@@ -1093,7 +1166,7 @@ function createWindow() {
                         title: 'EMS Agent Running in Background',
                         body: 'The tracker agent is minimized to system tray and continuing background monitoring.'
                     }).show();
-                } catch (e) {}
+                } catch (e) { }
             }
             return false;
         }
@@ -1112,6 +1185,13 @@ function createWindow() {
 app.whenReady().then(() => {
     createWindow();
     createTray();
+
+    // Auto-resume background monitoring if previously authorized and active
+    if (agentState.agentToken && agentState.employeeId && agentState.permissionsCompleted && agentState.status === 'active') {
+        console.log(`[Desktop Agent] Active session detected. Auto-starting monitoring loops for employee: ${agentState.employeeId}...`);
+        startMonitoringLoops();
+    }
+
     syncProjectsFromBackend();
 
     app.on('activate', () => {
@@ -1228,7 +1308,7 @@ ipcMain.handle('autostart:set-status', (_event, enabled) => {
 ipcMain.handle('get-device-id', () => agentState.deviceId || os.hostname());
 ipcMain.handle('get-invite-prefill', () => ({}));
 ipcMain.handle('get-approval-status', () => {
-    const hasAuth = Boolean(agentState.agentToken || agentState.employeeId);
+    const hasAuth = Boolean(agentState.agentToken && agentState.employeeId);
     if (!hasAuth) return 'setup';
     if (!agentState.permissionsCompleted) return 'permissions';
     return agentState.status === 'active' ? 'approved' : 'pending';
@@ -1241,6 +1321,14 @@ ipcMain.handle('get-permissions-state', () => ({
 }));
 ipcMain.handle('complete-permissions', (_event, permissions) => {
     agentState.permissionsCompleted = true;
+    saveLocalConfig({
+        permissionsCompleted: true,
+        status: agentState.status
+    });
+
+    if (agentState.status === 'active') {
+        startMonitoringLoops();
+    }
     return { success: true };
 });
 ipcMain.handle('complete-setup', async (_event, data) => {
@@ -1248,12 +1336,46 @@ ipcMain.handle('complete-setup', async (_event, data) => {
         if (!data || !data.email || !data.password) {
             return { success: false, error: 'Email and password required' };
         }
-        agentState.employeeId = data.email;
-        agentState.status = 'active';
-        agentState.permissionsCompleted = true;
-        return { success: true };
+
+        const payload = {
+            name: data.name || data.email.split('@')[0],
+            email: data.email.trim(),
+            password: data.password,
+            deviceId: agentState.deviceId,
+            inviteToken: data.inviteToken || null,
+            systemInfo: {
+                hostname: os.hostname(),
+                platform: os.platform(),
+                arch: os.arch(),
+                release: os.release()
+            }
+        };
+
+        console.log(`[AgentSetup] Sending registration to ${API_URL}/api/agent/register for: ${payload.email}...`);
+        const res = await axios.post(`${API_URL}/api/agent/register`, payload, { timeout: 15000 });
+
+        if (res.data?.success && res.data?.data) {
+            agentState.employeeId = res.data.data.agent.employeeId;
+            agentState.agentToken = res.data.data.token;
+            agentState.status = res.data.data.agent.status || 'active';
+            agentState.permissionsCompleted = false;
+
+            saveLocalConfig({
+                employeeId: agentState.employeeId,
+                agentToken: agentState.agentToken,
+                deviceId: agentState.deviceId,
+                status: agentState.status,
+                permissionsCompleted: false
+            });
+
+            console.log(`[AgentSetup] Registration succeeded for: ${agentState.employeeId}. Status: ${agentState.status}`);
+            return { success: true, agent: res.data.data.agent };
+        }
+        return { success: false, error: res.data?.message || 'Registration failed on server' };
     } catch (err) {
-        return { success: false, error: err.message };
+        const errorMsg = err.response?.data?.message || err.message;
+        console.error('[AgentSetup] Registration failed:', errorMsg);
+        return { success: false, error: errorMsg };
     }
 });
 ipcMain.handle('request-location', async () => {
@@ -1263,8 +1385,22 @@ ipcMain.handle('check-screen-permission', async () => {
     return true;
 });
 ipcMain.handle('run-health-check', async () => {
+    let connectivityStatus = 'fail';
+    let connectivityMsg = 'Cannot reach backend server';
+    try {
+        if (axios) {
+            const res = await axios.get(`${API_URL}/api/agent/health`, { timeout: 8000 });
+            if (res.data?.success) {
+                connectivityStatus = 'pass';
+                connectivityMsg = 'Connected to live Railway server';
+            }
+        }
+    } catch (e) {
+        connectivityMsg = `Connection failed: ${e.message}`;
+    }
+
     return {
-        connectivity: { status: 'pass', message: 'Connected to live server' },
+        connectivity: { status: connectivityStatus, message: connectivityMsg },
         powershell: { status: 'pass', message: 'PowerShell capability active' },
         screen: { status: 'pass', message: 'Screen capture ready' },
         storage: { status: 'pass', message: 'Local storage healthy' }

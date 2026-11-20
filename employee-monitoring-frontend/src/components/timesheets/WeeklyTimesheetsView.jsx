@@ -71,34 +71,95 @@ export function WeeklyTimesheetsView({ employees = [] }) {
         return '<1m';
     };
 
-    // Auto-select first managed employee for manager if none selected
-    useEffect(() => {
-        if (role === 'MANAGER' && !selectedEmployeeId && selectableEmployees.length > 0) {
-            setSelectedEmployeeId(selectableEmployees[0].id);
+    const makeEmptyDays = (start) => {
+        const days = [];
+        for (let i = 0; i < 7; i++) {
+            const dStr = addDaysStr(start, i);
+            days.push({
+                date: dStr,
+                minutes: 0,
+                regularMinutes: 0,
+                overtimeMinutes: 0,
+                grossMinutes: 0,
+                breakMinutes: 0,
+                sessions: []
+            });
         }
-    }, [role, selectedEmployeeId, selectableEmployees]);
+        return days;
+    };
 
     // Initial load and filter change
     const loadTimesheet = async () => {
         if (role === 'MANAGER' && selectableEmployees.length === 0) {
-            setData(null);
+            setTimesheetsList([]);
             return;
         }
         setLoading(true);
         try {
-            const defaultEmpId = role === 'MANAGER' ? (selectableEmployees[0]?.id || null) : null;
-            const empId = role === 'EMPLOYEE' ? null : (selectedEmployeeId || defaultEmpId);
-            const res = await timesheetService.getWeek(weekStart, empId);
-            if (res.success) {
-                let list = Array.isArray(res.data) ? res.data : (res.data ? [res.data] : []);
-                // Exclude any ADMIN records
+            if (selectedEmployeeId) {
+                // Fetch single selected employee
+                const res = await timesheetService.getWeek(weekStart, selectedEmployeeId);
+                if (res.success && res.data) {
+                    const item = Array.isArray(res.data) ? res.data[0] : res.data;
+                    setTimesheetsList(item ? [item] : []);
+                } else {
+                    setTimesheetsList([]);
+                }
+            } else {
+                // "All Roles / Employees" selected: fetch for all selectable employees
+                const teamIdParam = role === 'MANAGER' ? effectiveManagerTeamId : null;
+                const res = await timesheetService.getWeek(weekStart, null, teamIdParam);
+                let list = (res.success && res.data) ? (Array.isArray(res.data) ? [...res.data] : [res.data]) : [];
+
+                // Filter out ADMIN records
                 list = list.filter(item => {
                     const empObj = employees.find(e => e.id === item.employeeId);
                     return (empObj?.role || '').toUpperCase() !== 'ADMIN' && (item.role || '').toUpperCase() !== 'ADMIN';
                 });
+
+                // Find any missing employees from selectableEmployees
+                const missingEmps = selectableEmployees.filter(emp => !list.some(item => item.employeeId === emp.id));
+                if (missingEmps.length > 0) {
+                    const extraResults = await Promise.all(
+                        missingEmps.map(async (emp) => {
+                            try {
+                                const individualRes = await timesheetService.getWeek(weekStart, emp.id);
+                                if (individualRes?.success && individualRes.data) {
+                                    return Array.isArray(individualRes.data) ? individualRes.data[0] : individualRes.data;
+                                }
+                            } catch (e) {
+                                // fallback below
+                            }
+                            return {
+                                timesheetId: `draft-${emp.id}`,
+                                employeeId: emp.id,
+                                employeeName: emp.fullName || emp.name,
+                                employeeEmail: emp.email,
+                                teamName: emp.team?.name || 'Developer Team',
+                                hourlyRate: emp.hourlyRate || 0,
+                                weekStart,
+                                weekEnd: addDaysStr(weekStart, 6),
+                                status: 'DRAFT',
+                                days: makeEmptyDays(weekStart),
+                                totalMinutes: 0,
+                                regularMinutes: 0,
+                                overtimeMinutes: 0,
+                                overThreshold: false,
+                                regularPay: 0,
+                                overtimePay: 0,
+                                totalPay: 0,
+                                totalGrossMinutes: 0,
+                                totalBreakMinutes: 0,
+                                approvals: []
+                            };
+                        })
+                    );
+                    list.push(...extraResults.filter(Boolean));
+                }
+
+                // Sort list by employee name
+                list.sort((a, b) => (a.employeeName || '').localeCompare(b.employeeName || ''));
                 setTimesheetsList(list);
-            } else {
-                setTimesheetsList([]);
             }
         } catch (err) {
             console.error('Failed to load weekly timesheets:', err);
@@ -110,7 +171,7 @@ export function WeeklyTimesheetsView({ employees = [] }) {
 
     useEffect(() => {
         loadTimesheet();
-    }, [weekStart, selectedEmployeeId]);
+    }, [weekStart, selectedEmployeeId, effectiveManagerTeamId, selectableEmployees.length]);
 
     const handleSubmit = async (targetEmpId) => {
         if (!targetEmpId) return;

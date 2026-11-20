@@ -48,7 +48,7 @@ api.interceptors.response.use(
             if (window.location.pathname !== '/login') {
                 window.location.href = '/login';
             }
-        } else if (error.response?.status !== 401 && !error.config?.skipToast && !error.config?.url?.includes('/notifications')) {
+        } else if (error.response?.status !== 401 && !error.config?.skipToast && !error.config?.url?.includes('notification')) {
             toast.error(message);
         }
         

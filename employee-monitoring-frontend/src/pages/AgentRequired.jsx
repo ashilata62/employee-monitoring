@@ -75,7 +75,7 @@ export const AgentRequired = () => {
 
                         {/* Action Area */}
                         <div className="space-y-4">
-                            <a 
+                            <a
                                 href={`${API_BASE_URL}/agent/download`}
                                 download="EMS-Tracker-latest.exe"
                                 className="w-full py-5 px-8 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-lg shadow-lg shadow-indigo-200 dark:shadow-none transition-all flex items-center justify-center gap-3 active:scale-95 group"
@@ -109,14 +109,14 @@ export const AgentRequired = () => {
                             >
                                 Manually refresh status <ArrowRight size={16} />
                             </button>
-                            
+
                             <button
                                 onClick={async () => {
                                     try {
-                                        await api.post('/agent/register', { 
-                                            employeeId: user.employeeId, 
+                                        await api.post('/agent/register', {
+                                            employeeId: user.employeeId,
                                             deviceId: 'SIMULATOR-' + Math.random().toString(36).substr(2, 9),
-                                            systemInfo: { os: 'Windows 11', browser: 'Simulation' } 
+                                            systemInfo: { os: 'Windows 11', browser: 'Simulation' }
                                         });
                                         const profileRes = await api.get('/auth/me');
                                         setSession(profileRes.data);
@@ -134,7 +134,7 @@ export const AgentRequired = () => {
                         </div>
                     </div>
                 </div>
-                
+
                 <p className="text-center mt-8 text-slate-400 dark:text-slate-600 text-sm">
                     Stuck? Contact system administrator or IT support for assistance.
                 </p>

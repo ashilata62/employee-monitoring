@@ -219,7 +219,7 @@ export function TimeAndAttendance() {
 
 
     return (
-        <div className="min-h-screen bg-[#F5F1E9] dark:bg-[#1A1F18] pb-12 px-2 sm:px-4 lg:px-6 transition-colors duration-200">
+        <div className="w-full pb-12 transition-colors duration-200">
             {/* Top Bar */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 py-6 mb-4">
                 <div>
@@ -272,16 +272,18 @@ export function TimeAndAttendance() {
                     <GlobalCalendar />
 
                     <div className="ml-auto flex items-center gap-3">
-                        <div className="relative group w-full md:w-64">
-                            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-500 transition-colors" />
-                            <input
-                                type="text"
-                                placeholder="Search employee or team"
-                                value={generalSearch}
-                                onChange={(e) => setGeneralSearch(e.target.value)}
-                                className="w-full bg-[#F5F1E9] dark:bg-[#1E2419] border border-[#D6CDBC] dark:border-[#384232] rounded-xl pl-9 pr-4 py-2 text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] focus:border-[#B9955B] outline-none transition-all placeholder-[#777367]"
-                            />
-                        </div>
+                        {role !== 'EMPLOYEE' && (
+                            <div className="relative group w-full md:w-64">
+                                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-500 transition-colors" />
+                                <input
+                                    type="text"
+                                    placeholder="Search employee or team"
+                                    value={generalSearch}
+                                    onChange={(e) => setGeneralSearch(e.target.value)}
+                                    className="w-full bg-[#F5F1E9] dark:bg-[#1E2419] border border-[#D6CDBC] dark:border-[#384232] rounded-xl pl-9 pr-4 py-2 text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] focus:border-[#B9955B] outline-none transition-all placeholder-[#777367]"
+                                />
+                            </div>
+                        )}
                         {activeTab === 'Daily Attendance' && (
                             <button
                                 onClick={handleDownload}
@@ -614,70 +616,86 @@ export function TimeAndAttendance() {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-[#D6CDBC]/50 dark:divide-[#384232]">
-                                    {shifts.map((shift) => {
-                                        const attendance = timesheets.find(t =>
-                                            t.employeeId === shift.employeeId &&
-                                            format(new Date(t.date), 'yyyy-MM-dd') === format(new Date(shift.date), 'yyyy-MM-dd')
-                                        );
+                                    {(() => {
+                                        const complianceList = filteredEmployees.filter(emp => (emp.role || 'EMPLOYEE').toUpperCase() !== 'ADMIN');
+                                        if (complianceList.length === 0) {
+                                            return (
+                                                <tr>
+                                                    <td colSpan="4" className="px-8 py-12 text-center text-xs text-[#777367] dark:text-[#B8B3A7]">
+                                                        No employees found for shift compliance review.
+                                                    </td>
+                                                </tr>
+                                            );
+                                        }
 
-                                        const actualStart = attendance?.clockIn ? format(new Date(attendance.clockIn), 'HH:mm') : null;
-                                        const actualEnd = attendance?.clockOut ? format(new Date(attendance.clockOut), 'HH:mm') : null;
+                                        const todayStr = format(new Date(), 'yyyy-MM-dd');
 
-                                        const status = checkShiftStatus(
-                                            shift.startTime,
-                                            shift.endTime,
-                                            actualStart,
-                                            actualEnd
-                                        );
+                                        return complianceList.map((emp) => {
+                                            // 1. Check if employee has a custom scheduled shift for today
+                                            const shift = shifts.find(s => 
+                                                s.employeeId === emp.id && 
+                                                (s.date ? format(new Date(s.date), 'yyyy-MM-dd') === todayStr : true)
+                                            );
 
-                                        return (
-                                            <tr key={shift.id} className="hover:bg-[#F5F1E9]/60 dark:hover:bg-[#1E2419]/60 transition-colors">
-                                                <td className="px-8 py-6">
-                                                    <div className="flex items-center gap-4">
-                                                        <div className="h-10 w-10 rounded-full bg-[#EEE8DD] dark:bg-[#252B20] border border-[#E5DED2] dark:border-[#384232] flex items-center justify-center text-xs font-bold text-[#30382B] dark:text-[#F5F1E9]">
-                                                            {shift.employee?.fullName?.split(' ').map(n => n[0]).join('')}
+                                            // 2. Check today's attendance record
+                                            const attendance = timesheets.find(t => 
+                                                t.employeeId === emp.id && 
+                                                (t.date ? format(new Date(t.date), 'yyyy-MM-dd') === todayStr : true)
+                                            ) || timesheets.find(t => t.employeeId === emp.id);
+
+                                            const actualStart = attendance?.clockIn ? format(new Date(attendance.clockIn), 'hh:mm a') : null;
+                                            const actualEnd = attendance?.clockOut ? format(new Date(attendance.clockOut), 'hh:mm a') : null;
+
+                                            const scheduledText = shift ? `${shift.startTime} – ${shift.endTime}` : '09:00 AM – 06:00 PM';
+
+                                            let statusBadge = null;
+                                            if (actualStart && !actualEnd) {
+                                                statusBadge = (
+                                                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EAEFEA] dark:bg-[#1E2B20] text-[#5E7D64] dark:text-[#8BB394] text-[10px] font-bold uppercase tracking-wider border border-[#C5D7C7] dark:border-[#325238]">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-[#5E7D64] animate-pulse" />
+                                                        Working / On Track
+                                                    </span>
+                                                );
+                                            } else if (actualStart && actualEnd) {
+                                                statusBadge = (
+                                                    <span className="inline-flex items-center px-3 py-1 rounded-full bg-[#EEE8DD] dark:bg-[#252B20] text-[#777367] dark:text-[#B8B3A7] text-[10px] font-bold uppercase tracking-wider border border-[#D6CDBC]/50 dark:border-[#384232]">
+                                                        Completed
+                                                    </span>
+                                                );
+                                            } else {
+                                                statusBadge = (
+                                                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#FAF3F2] dark:bg-[#2E1E1E] text-[#A84B4B] dark:text-[#E07A7A] text-[10px] font-bold uppercase tracking-wider border border-[#F2D6D3] dark:border-[#572E2E]">
+                                                        <ShieldAlert size={12} /> Not Clocked-in
+                                                    </span>
+                                                );
+                                            }
+
+                                            return (
+                                                <tr key={emp.id} className="hover:bg-[#F5F1E9]/60 dark:hover:bg-[#1E2419]/60 transition-colors">
+                                                    <td className="px-8 py-5">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="h-9 w-9 rounded-xl bg-[#EEE8DD] dark:bg-[#252B20] border border-[#E5DED2] dark:border-[#384232] flex items-center justify-center text-xs font-bold text-[#30382B] dark:text-[#F5F1E9]">
+                                                                {(emp.fullName || emp.name || '??').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                                                            </div>
+                                                            <div>
+                                                                <span className="text-xs font-bold text-[#29291F] dark:text-[#F5F1E9]">{emp.fullName || emp.name}</span>
+                                                                <p className="text-[10px] text-[#777367] dark:text-[#B8B3A7]">{typeof emp.team === 'object' ? (emp.team?.name || 'General') : (emp.team || 'General')}</p>
+                                                            </div>
                                                         </div>
-                                                        <span className="text-xs font-bold text-[#29291F] dark:text-[#F5F1E9]">{shift.employee?.fullName}</span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-8 py-6 text-xs font-bold text-[#777367] dark:text-[#B8B3A7]">
-                                                    {shift.startTime} – {shift.endTime}
-                                                </td>
-                                                <td className="px-8 py-6 text-xs font-bold text-[#29291F] dark:text-[#F5F1E9]">
-                                                    {actualStart ? `${actualStart} – ${actualEnd || '--:--'}` : '--'}
-                                                </td>
-                                                <td className="px-8 py-6">
-                                                    <div className="flex flex-wrap gap-2">
-                                                        {!actualStart ? (
-                                                            <span className="px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[10px] font-black uppercase tracking-widest border border-slate-200 dark:border-slate-700 flex items-center gap-1">
-                                                                <ShieldAlert size={12} /> Absent
-                                                            </span>
-                                                        ) : !status.warning && !status.overtime && !status.incomplete ? (
-                                                            <span className="px-3 py-1 rounded-full bg-[#EAEFEA] dark:bg-[#1E2B20] text-[#5E7D64] dark:text-[#8BB394] text-[10px] font-bold uppercase tracking-wider border border-[#C5D7C7] dark:border-[#325238]">On Track</span>
-                                                        ) : (
-                                                            <>
-                                                                {status.warning && (
-                                                                    <span className="px-3 py-1 rounded-full bg-[#FAF0E1] dark:bg-[#2C2415] text-[#C98A3C] dark:text-[#E5B56D] text-[10px] font-bold uppercase tracking-wider border border-[#E8D4B8] dark:border-[#5C4A28] flex items-center gap-1">
-                                                                        <AlertTriangle size={12} /> {status.message}
-                                                                    </span>
-                                                                )}
-                                                                {status.overtime && (
-                                                                    <span className="px-3 py-1 rounded-full bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 text-[10px] font-bold uppercase tracking-wider border border-rose-100 dark:border-rose-500/20 flex items-center gap-1">
-                                                                        <Zap size={12} /> Overtime
-                                                                    </span>
-                                                                )}
-                                                                {status.incomplete && (
-                                                                    <span className="px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider border border-slate-200 dark:border-slate-700 flex items-center gap-1">
-                                                                        <ShieldAlert size={12} /> {status.message}
-                                                                    </span>
-                                                                )}
-                                                            </>
-                                                        )}
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
+                                                    </td>
+                                                    <td className="px-8 py-5 text-xs font-bold text-[#777367] dark:text-[#B8B3A7]">
+                                                        {scheduledText}
+                                                    </td>
+                                                    <td className="px-8 py-5 text-xs font-bold text-[#29291F] dark:text-[#F5F1E9]">
+                                                        {actualStart ? `${actualStart} – ${actualEnd || 'Present'}` : '--'}
+                                                    </td>
+                                                    <td className="px-8 py-5">
+                                                        {statusBadge}
+                                                    </td>
+                                                </tr>
+                                            );
+                                        });
+                                    })()}
                                 </tbody>
                             </table>
                         </div>

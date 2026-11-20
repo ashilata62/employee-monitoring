@@ -5,7 +5,6 @@ import {
     Plus,
     Filter,
     Download,
-    Bell,
     FileSpreadsheet,
     FileText,
     LogIn,
@@ -37,6 +36,7 @@ export function PeriodComparisonBar({
     const [showCompDropdown, setShowCompDropdown] = useState(false);
     const [showFilterPopover, setShowFilterPopover] = useState(false);
     const [showExportMenu, setShowExportMenu] = useState(false);
+    const [menuAlignLeft, setMenuAlignLeft] = useState(false);
 
     // Filter states
     const [selectedEmployee, setSelectedEmployee] = useState('');
@@ -47,6 +47,62 @@ export function PeriodComparisonBar({
     const { isClockedIn, isOnBreak, clockIn, clockOut, toggleBreak } = useAuthStore();
     const sessionSeconds = useSessionTimer();
     const [isSessionLoading, setIsSessionLoading] = useState(false);
+
+    const handleToggleExport = () => {
+        if (!showExportMenu && exportRef.current) {
+            const rect = exportRef.current.getBoundingClientRect();
+            // If button is closer than 220px to left screen edge, anchor dropdown to left edge to prevent clipping off-screen
+            setMenuAlignLeft(rect.left < 220);
+        }
+        setShowExportMenu(prev => !prev);
+    };
+
+    const renderExportButton = () => (
+        <div className="relative self-end" ref={exportRef}>
+            <button
+                type="button"
+                onClick={handleToggleExport}
+                className={`p-2.5 rounded-xl border transition-all shadow-warm-xs active:scale-95 cursor-pointer ${
+                    showExportMenu
+                        ? 'bg-[#B9955B] text-white border-[#B9955B]'
+                        : 'bg-[#EEE8DD] dark:bg-[#252B20] border-[#D6CDBC] dark:border-[#384232] text-[#777367] hover:text-[#29291F] dark:hover:text-[#F5F1E9]'
+                }`}
+                title="Download / Export Report"
+            >
+                <Download size={15} />
+            </button>
+
+            {showExportMenu && (
+                <div className={`absolute top-full ${menuAlignLeft ? 'left-0' : 'right-0'} mt-2 w-52 max-w-[calc(100vw-2rem)] bg-[#FBF9F5] dark:bg-[#252B20] rounded-2xl shadow-2xl border border-[#D6CDBC] dark:border-[#384232] p-2 z-[9999] animate-in fade-in duration-150`}>
+                    <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-[#777367] dark:text-[#B8B3A7] border-b border-[#D6CDBC]/50 dark:border-[#384232]/50 mb-1">
+                        Export Report
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => {
+                            if (onExport) onExport('csv');
+                            setShowExportMenu(false);
+                        }}
+                        className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-[#29291F] dark:text-[#E2E8DE] hover:bg-[#EEE8DD] dark:hover:bg-[#2E362A] rounded-xl transition-colors cursor-pointer"
+                    >
+                        <FileSpreadsheet size={15} className="text-[#5E7D64]" />
+                        <span>Export as CSV (.csv)</span>
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => {
+                            if (onExport) onExport('pdf');
+                            setShowExportMenu(false);
+                        }}
+                        className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-[#29291F] dark:text-[#E2E8DE] hover:bg-[#EEE8DD] dark:hover:bg-[#2E362A] rounded-xl transition-colors cursor-pointer"
+                    >
+                        <FileText size={15} className="text-[#A84B4B]" />
+                        <span>Export as PDF (.pdf)</span>
+                    </button>
+                </div>
+            )}
+        </div>
+    );
 
     const handleClockIn = async () => {
         setIsSessionLoading(true);
@@ -204,7 +260,7 @@ export function PeriodComparisonBar({
                         </button>
 
                         {showRefDropdown && (
-                            <div className="absolute top-full left-0 mt-2 w-64 bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl shadow-xl border border-[#D6CDBC] dark:border-[#384232] p-2 z-50 animate-in fade-in duration-150">
+                            <div className="absolute top-full left-0 mt-2 w-64 max-w-[calc(100vw-2rem)] bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl shadow-xl border border-[#D6CDBC] dark:border-[#384232] p-2 z-50 animate-in fade-in duration-150">
                                 <p className="px-3 py-1.5 text-[9px] font-bold text-[#777367] uppercase tracking-[0.15em]">Select Range</p>
                                 {[
                                     { label: 'Today', start: todayStr, end: todayStr },
@@ -239,14 +295,14 @@ export function PeriodComparisonBar({
                         </p>
                         <button
                             onClick={() => setShowCompDropdown(!showCompDropdown)}
-                            className="flex items-center gap-2.5 px-4 py-2 bg-[#EEE8DD] dark:bg-[#252B20] rounded-xl border border-[#D6CDBC] dark:border-[#384232] text-xs font-semibold text-[#777367] dark:text-[#B8B3A7] hover:border-[#B9955B] transition-all shadow-warm-xs cursor-pointer"
+                            className="flex items-center gap-2.5 px-4 py-2 bg-[#EEE8DD] dark:bg-[#252B20] rounded-xl border border-[#D6CDBC] dark:border-[#384232] text-xs font-semibold text-[#777367] dark:text-[#B8B3A7] hover:border-[#B9955B] transition-all shadow-warm-xs cursor-pointer max-w-full"
                         >
-                            <Calendar size={13} className="text-[#777367]" />
-                            <span>{compStartStr} → {compEndStr}</span>
+                            <Calendar size={13} className="text-[#777367] shrink-0" />
+                            <span className="truncate">{compStartStr} → {compEndStr}</span>
                         </button>
 
                         {showCompDropdown && (
-                            <div className="absolute top-full left-0 mt-2 w-64 bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl shadow-xl border border-[#D6CDBC] dark:border-[#384232] p-2 z-50 animate-in fade-in duration-150">
+                            <div className="absolute top-full left-0 mt-2 w-64 max-w-[calc(100vw-2rem)] bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl shadow-xl border border-[#D6CDBC] dark:border-[#384232] p-2 z-50 animate-in fade-in duration-150">
                                 <p className="px-3 py-1.5 text-[9px] font-bold text-[#777367] uppercase tracking-[0.15em]">Select Comparison Range</p>
                                 {[
                                     { label: 'Prior Period (Equal Duration)', start: null, end: null },
@@ -284,7 +340,7 @@ export function PeriodComparisonBar({
                         </button>
 
                         {showFilterPopover && (
-                            <div className="absolute top-full left-0 mt-2 w-72 bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl shadow-2xl border border-[#D6CDBC] dark:border-[#384232] p-4 z-50 animate-in fade-in duration-150 space-y-3">
+                            <div className="absolute top-full left-0 sm:left-auto right-auto sm:right-0 mt-2 w-72 max-w-[calc(100vw-2rem)] bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl shadow-2xl border border-[#D6CDBC] dark:border-[#384232] p-4 z-50 animate-in fade-in duration-150 space-y-3">
                                 <div className="flex items-center justify-between pb-2 border-b border-[#D6CDBC] dark:border-[#384232]">
                                     <span className="text-xs font-bold text-[#29291F] dark:text-[#F5F1E9] flex items-center gap-1.5">
                                         <Filter size={13} className="text-[#B9955B]" /> Filter Analytics
@@ -410,43 +466,12 @@ export function PeriodComparisonBar({
                             )}
                         </div>
                     )}
+                    {/* For Employee view, render the Export button alongside filters so it stays cleanly grouped and never gets orphaned */}
+                    {role?.toUpperCase() === 'EMPLOYEE' && renderExportButton()}
                 </div>
 
-                {/* 4. Export Button */}
-                <div className="relative self-end mt-2 sm:mt-0" ref={exportRef}>
-                    <button
-                        onClick={() => setShowExportMenu(!showExportMenu)}
-                        className="p-2.5 bg-[#EEE8DD] dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] text-[#777367] hover:text-[#29291F] dark:hover:text-[#F5F1E9] rounded-xl transition-all shadow-warm-xs active:scale-95 cursor-pointer"
-                        title="Download / Export Report"
-                    >
-                        <Download size={15} />
-                    </button>
-
-                    {showExportMenu && (
-                        <div className="absolute top-full right-0 mt-2 w-48 bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl shadow-xl border border-[#D6CDBC] dark:border-[#384232] p-2 z-50 animate-in fade-in duration-150">
-                            <button
-                                onClick={() => {
-                                    if (onExport) onExport('csv');
-                                    setShowExportMenu(false);
-                                }}
-                                className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-[#29291F] dark:text-[#E2E8DE] hover:bg-[#EEE8DD] dark:hover:bg-[#2E362A] rounded-xl cursor-pointer"
-                            >
-                                <FileSpreadsheet size={14} className="text-[#5E7D64]" />
-                                <span>Export as CSV</span>
-                            </button>
-                            <button
-                                onClick={() => {
-                                    if (onExport) onExport('pdf');
-                                    setShowExportMenu(false);
-                                }}
-                                className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-[#29291F] dark:text-[#E2E8DE] hover:bg-[#EEE8DD] dark:hover:bg-[#2E362A] rounded-xl cursor-pointer"
-                            >
-                                <FileText size={14} className="text-[#A84B4B]" />
-                                <span>Export as PDF</span>
-                            </button>
-                        </div>
-                    )}
-                </div>
+                {/* For Manager / Admin, render Export button on the right */}
+                {role?.toUpperCase() !== 'EMPLOYEE' && renderExportButton()}
             </div>
         </div>
     );
