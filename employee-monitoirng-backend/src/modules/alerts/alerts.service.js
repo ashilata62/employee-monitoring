@@ -211,7 +211,7 @@ const alertsService = {
                 }
             });
 
-            // 7. Persist Notification before emission
+            // 7. Persist Notification before emission (targetUserId assigned so role scoping works)
             const notification = await prisma.notification.create({
                 data: {
                     organizationId,
@@ -219,7 +219,8 @@ const alertsService = {
                     description: message,
                     type: 'alert',
                     link: '/alerts',
-                    metadata: { alertId: alertLog.id, employeeId, diffMinutes }
+                    targetUserId: employeeId,
+                    metadata: JSON.stringify({ alertId: alertLog.id, employeeId, diffMinutes })
                 }
             });
 
@@ -318,7 +319,7 @@ const alertsService = {
                 }
             });
 
-            // Persist Notification before emission
+            // Persist Notification before emission (targetUserId assigned so role scoping works)
             const notification = await prisma.notification.create({
                 data: {
                     organizationId,
@@ -326,7 +327,8 @@ const alertsService = {
                     description: message,
                     type: 'alert',
                     link: '/alerts',
-                    metadata: { alertId: alertLog.id, employeeId, idleMinutes }
+                    targetUserId: employeeId,
+                    metadata: JSON.stringify({ alertId: alertLog.id, employeeId, idleMinutes })
                 }
             });
 
@@ -444,7 +446,7 @@ const alertsService = {
                 }
             });
 
-            // Persist Notification before emission
+            // Persist Notification before emission (targetUserId assigned so role scoping works)
             const notification = await prisma.notification.create({
                 data: {
                     organizationId,
@@ -452,12 +454,13 @@ const alertsService = {
                     description: message,
                     type: 'alert',
                     link: '/alerts',
-                    metadata: {
+                    targetUserId: employeeId,
+                    metadata: JSON.stringify({
                         alertId: alertLog.id,
                         employeeId,
                         appName: appTarget,
                         screenshotUrl
-                    }
+                    })
                 }
             });
 
