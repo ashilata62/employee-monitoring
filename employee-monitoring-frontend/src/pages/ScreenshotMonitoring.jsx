@@ -2173,10 +2173,17 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
   };
 
   const handleFilterSelection = (type, selectedIds) => {
-              setSelectedFilters(prev => ({
-                ...prev,
-                [type]: selectedIds
-              }));
+    setSelectedFilters(prev => ({
+      ...prev,
+      [type]: selectedIds
+    }));
+  };
+
+  const handleClearFilter = (type) => {
+    setSelectedFilters(prev => ({
+      ...prev,
+      [type]: []
+    }));
   };
 
   const getEmptyMessage = (type) => {
@@ -2264,9 +2271,17 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
                       {Object.entries(selectedFilters).map(([key, value]) => {
                         if (value.length === 0) return null;
                         return (
-                          <div key={key} className="flex items-center gap-2 bg-primary-50 dark:bg-primary-500/10 border border-primary-200 dark:border-primary-500/20 rounded-xl px-3 py-2 shadow-sm animate-in fade-in zoom-in duration-200">
-                            <span className="text-xs font-bold text-primary-700 dark:text-primary-400">{getFilterLabel(key)} <span className="text-primary-400 dark:text-primary-500">({value.length})</span></span>
-                            <button onClick={() => handleClearFilter(key)} className="p-0.5 hover:bg-primary-200 dark:hover:bg-primary-500/20 rounded-md text-primary-400 dark:text-primary-500 hover:text-primary-700 dark:hover:text-primary-300 transition-colors">
+                          <div key={key} className="flex items-center gap-2 bg-[#B9955B]/15 dark:bg-[#B9955B]/15 border border-[#B9955B]/30 rounded-xl px-3 py-2 shadow-sm animate-in fade-in zoom-in duration-200">
+                            <span className="text-xs font-bold text-[#B9955B] dark:text-[#D3B98D]">{getFilterLabel(key)} <span className="text-[#8E784D] dark:text-[#C5A876]">({value.length})</span></span>
+                            <button 
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleClearFilter(key);
+                              }} 
+                              className="p-1 hover:bg-[#B9955B]/25 rounded-md text-[#B9955B] dark:text-[#D3B98D] hover:text-[#30382B] dark:hover:text-[#F5F1E9] transition-colors cursor-pointer"
+                              title="Clear filter"
+                            >
                               <X size={14} />
                             </button>
                           </div>
