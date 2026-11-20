@@ -503,15 +503,10 @@ export function RealTimeProvider({ children }) {
         try {
             const res = await notificationService.getNotifications({ limit: 50 });
             if (res && res.notifications) {
-                setState(prev => {
-                    const serverIds = new Set(res.notifications.map(n => String(n.id)));
-                    // Preserve unread local notifications that might not yet be returned from the server
-                    const localPending = prev.notifications.filter(n => !serverIds.has(String(n.id)) && n.unread);
-                    return {
-                        ...prev,
-                        notifications: [...localPending, ...res.notifications].slice(0, 50)
-                    };
-                });
+                setState(prev => ({
+                    ...prev,
+                    notifications: res.notifications.slice(0, 50)
+                }));
             }
         } catch (err) {
             console.error('Failed to sync notifications:', err);
@@ -700,8 +695,19 @@ export function RealTimeProvider({ children }) {
                 )
             }));
             const currentRole = useAuthStore.getState().role?.toUpperCase();
-            if (currentRole === 'ADMIN' || currentRole === 'MANAGER') {
+            if (currentRole === 'ADMIN') {
                 addNotification(`New screenshot from ${data.employeeName || 'employee'}`, 'info');
+            } else if (currentRole === 'MANAGER') {
+                const currentEmps = employeesRef.current || [];
+                const authUser = useAuthStore.getState().user;
+                const myTeamIds = new Set(
+                    currentEmps
+                        .filter(e => (authUser?.teamId && e.teamId === authUser.teamId) || (authUser?.team && (e.team === authUser.team || e.teamName === authUser.team)))
+                        .map(e => String(e.id))
+                );
+                if (myTeamIds.has(String(data.employeeId))) {
+                    addNotification(`New screenshot from ${data.employeeName || 'employee'}`, 'info');
+                }
             }
         };
 
@@ -723,7 +729,7 @@ export function RealTimeProvider({ children }) {
             const empName = emp ? (emp.fullName || emp.name) : 'An employee';
             const normType = String(data.type || data.status || '').toLowerCase().replace(/_/g, '-');
 
-            if (currentRole === 'ADMIN' || currentRole === 'MANAGER') {
+            if (currentRole === 'ADMIN') {
                 if (normType === 'clock-in') {
                     addNotification(`${empName} checked in`, 'info');
                 } else if (normType === 'clock-out') {
@@ -732,6 +738,24 @@ export function RealTimeProvider({ children }) {
                     addNotification(`${empName} went on break`, 'info');
                 } else if (normType === 'break-end') {
                     addNotification(`${empName} returned from break`, 'info');
+                }
+            } else if (currentRole === 'MANAGER') {
+                const authUser = useAuthStore.getState().user;
+                const myTeamIds = new Set(
+                    currentEmps
+                        .filter(e => (authUser?.teamId && e.teamId === authUser.teamId) || (authUser?.team && (e.team === authUser.team || e.teamName === authUser.team)))
+                        .map(e => String(e.id))
+                );
+                if (myTeamIds.has(String(data.employeeId))) {
+                    if (normType === 'clock-in') {
+                        addNotification(`${empName} checked in`, 'info');
+                    } else if (normType === 'clock-out') {
+                        addNotification(`${empName} clocked out`, 'info');
+                    } else if (normType === 'break-start') {
+                        addNotification(`${empName} went on break`, 'info');
+                    } else if (normType === 'break-end') {
+                        addNotification(`${empName} returned from break`, 'info');
+                    }
                 }
             }
         };
@@ -926,15 +950,22 @@ export function RealTimeProvider({ children }) {
             const prevStatus = prevStatuses.current[emp.id];
             const currentStatus = emp.status;
             if (prevStatus && prevStatus !== currentStatus && currentStatus) {
-                if (currentStatus === 'online') {
-                    addNotification(`${emp.fullName || emp.name} went online`, 'info');
-                } else if (currentStatus === 'offline') {
-                    addNotification(`${emp.fullName || emp.name} went offline`, 'info');
+                // If manager, only notify for their own team members
+                const isTeamMember = role === 'ADMIN' || (
+                    (user?.teamId && emp.teamId === user.teamId) ||
+                    (user?.team && (emp.team === user.team || emp.teamName === user.team))
+                );
+                if (isTeamMember) {
+                    if (currentStatus === 'online') {
+                        addNotification(`${emp.fullName || emp.name} went online`, 'info');
+                    } else if (currentStatus === 'offline') {
+                        addNotification(`${emp.fullName || emp.name} went offline`, 'info');
+                    }
                 }
             }
             prevStatuses.current[emp.id] = currentStatus;
         });
-    }, [state.employees, role, isLoading, isAuthenticated, addNotification]);
+    }, [state.employees, role, isLoading, isAuthenticated, addNotification, user?.teamId, user?.team]);
 
     // 3. Employee team changes (Employee notifications)
     const prevEmployeeTeamRef = useRef(null);
@@ -1555,17 +1586,19 @@ export function RealTimeProvider({ children }) {
     }, []);
 
     const deleteNotification = useCallback(async (id) => {
+        const rawAlertId = String(id).startsWith('alert_') ? String(id).replace('alert_', '') : id;
         setState(prev => ({
             ...prev,
-            notifications: prev.notifications.filter(n => n.id !== id),
-            alerts: prev.alerts.filter(a => `alert_${a.id}` !== id && String(a.id) !== String(id))
+            notifications: prev.notifications.filter(n => String(n.id) !== String(id) && String(n.id) !== String(rawAlertId)),
+            alerts: prev.alerts.filter(a => `alert_${a.id}` !== id && String(a.id) !== String(id) && String(a.id) !== String(rawAlertId))
         }));
         try {
             if (String(id).startsWith('alert_')) {
-                const rawAlertId = String(id).replace('alert_', '');
-                await alertService.dismissAlert(rawAlertId);
+                await alertService.deleteAlert(rawAlertId).catch(() => {});
+                await notificationService.deleteNotification(rawAlertId).catch(() => {});
             } else {
-                await notificationService.deleteNotification(id);
+                await notificationService.deleteNotification(id).catch(() => {});
+                await alertService.deleteAlert(id).catch(() => {});
             }
         } catch (e) {
             console.error('Failed to delete notification:', e);
@@ -1573,9 +1606,26 @@ export function RealTimeProvider({ children }) {
     }, []);
 
     const deleteAllNotifications = useCallback(async () => {
-        setState(prev => ({ ...prev, notifications: [] }));
+        setState(prev => ({
+            ...prev,
+            notifications: [],
+            alerts: []
+        }));
         try {
-            await notificationService.deleteAllNotifications();
+            // Also clean local storage cache
+            const cached = localStorage.getItem(STORAGE_KEY);
+            if (cached) {
+                try {
+                    const parsed = JSON.parse(cached);
+                    parsed.notifications = [];
+                    parsed.alerts = [];
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+                } catch (pe) {}
+            }
+            await Promise.allSettled([
+                notificationService.deleteAllNotifications(),
+                alertService.deleteAllAlerts()
+            ]);
         } catch (e) {
             console.error('Failed to delete all notifications:', e);
         }
@@ -1703,12 +1753,15 @@ export function RealTimeProvider({ children }) {
             const myEmail = (user?.email || '').toLowerCase().trim();
             const myFullName = (user?.fullName || user?.name || user?.employee?.fullName || '').toLowerCase().trim();
             const myFirstName = myFullName.split(' ')[0] || '';
+            const myUserId = String(user?.userId || user?.id || '');
 
             const filteredEmployees = currentEmployees.filter(e => {
                 if (myEmpId && String(e.id) === myEmpId) return true;
                 if (myEmail && (e.email || '').toLowerCase() === myEmail) return true;
                 return false;
             });
+            const myEmp = filteredEmployees[0];
+            const myId = String(myEmp?.id || user?.id || '');
 
             const employeeFilteredNotifs = mergedNotifications.filter(n => {
                 // Keep all alert-synthesized notifications (they are already scoped to this employee)
@@ -1727,6 +1780,19 @@ export function RealTimeProvider({ children }) {
                     return false;
                 }
 
+                // If explicit targetUserId is present, check against employee's IDs
+                if (n.targetUserId) {
+                    const tId = String(n.targetUserId);
+                    if (tId === myId || tId === myEmpId || tId === myUserId) return true;
+                    return false; // Targeted to someone else!
+                }
+
+                // If metadata has employeeId, check if it matches myId or myEmpId
+                if (n.metadata) {
+                    const metaStr = typeof n.metadata === 'string' ? n.metadata : JSON.stringify(n.metadata);
+                    if ((myEmpId && metaStr.includes(myEmpId)) || (myId && metaStr.includes(myId)) || (myUserId && metaStr.includes(myUserId))) return true;
+                }
+
                 // Employees must NEVER see anyone (coworker or manager) going online or offline
                 if (title.includes('went online') || title.includes('went offline') ||
                     desc.includes('went online') || desc.includes('went offline')) {
@@ -1737,13 +1803,20 @@ export function RealTimeProvider({ children }) {
                 const isSessionEvent = title.includes('work session') || title.includes('clocked in') ||
                     title.includes('clocked out') || title.includes('checked in') ||
                     title.includes('went on break') || title.includes('returned from break') ||
+                    title.includes('login successful') ||
                     desc.includes('clocked in') || desc.includes('clocked out');
 
                 if (isSessionEvent) {
-                    const mentionsMyId = myEmpId && (title.includes(myEmpId.toLowerCase()) || desc.includes(myEmpId.toLowerCase()));
+                    const mentionsMyId = (myEmpId && (title.includes(myEmpId.toLowerCase()) || desc.includes(myEmpId.toLowerCase()))) ||
+                                         (myId && (title.includes(myId.toLowerCase()) || desc.includes(myId.toLowerCase())));
                     const mentionsMyName = myFullName && (title.includes(myFullName) || desc.includes(myFullName));
                     const isGenericSelf = !desc.includes('employee ') && (title.includes('work session started') || title.includes('work session ended'));
                     return Boolean(mentionsMyId || mentionsMyName || isGenericSelf);
+                }
+
+                // If description contains a raw UUID of someone else, filter out
+                if (desc.includes('employee ') && !desc.includes(myId) && !desc.includes(myEmpId) && (!myFullName || !desc.includes(myFullName))) {
+                    return false;
                 }
 
                 // Keep personal task assignments
@@ -1752,10 +1825,10 @@ export function RealTimeProvider({ children }) {
                 }
 
                 // Keep announcements / broadcasts
-                if (n.type === 'announcement' || n.type === 'broadcast') return true;
+                if (n.type === 'announcement' || n.type === 'broadcast' || n.type === 'general') return true;
 
                 // Explicit target for this employee
-                if (n.targetUserId && (String(n.targetUserId) === myEmpId || String(n.targetUserId) === String(user?.userId || user?.id))) {
+                if (n.targetUserId && (String(n.targetUserId) === myEmpId || String(n.targetUserId) === myUserId || String(n.targetUserId) === myId)) {
                     return true;
                 }
 
@@ -1791,6 +1864,8 @@ export function RealTimeProvider({ children }) {
             });
             const myTeamIds = new Set(myTeam.map(e => String(e.id)));
             const myTeamNames = myTeam.map(e => (e.fullName || e.name || '').toLowerCase().trim()).filter(Boolean);
+            const myEmpId = String(user?.employeeId || currentEmpId || '');
+            const myUserId = String(user?.userId || user?.id || '');
 
             const managerFilteredNotifs = mergedNotifications.filter(n => {
                 // Keep team alerts (already scoped)
@@ -1810,11 +1885,30 @@ export function RealTimeProvider({ children }) {
                     return false;
                 }
 
+                // If targeted to the manager themselves:
+                if (n.targetUserId) {
+                    const tId = String(n.targetUserId);
+                    if (tId === myEmpId || tId === myUserId) return true;
+                    // If targeted to an employee in this manager's team:
+                    if (myTeamIds.has(tId)) return true;
+                    // Otherwise targeted to someone outside this team!
+                    return false;
+                }
+
+                // If metadata has employeeId:
+                if (n.metadata) {
+                    const metaStr = typeof n.metadata === 'string' ? n.metadata : JSON.stringify(n.metadata);
+                    if (myEmpId && metaStr.includes(myEmpId)) return true;
+                    const matchesTeamMember = Array.from(myTeamIds).some(id => metaStr.includes(id));
+                    if (matchesTeamMember) return true;
+                }
+
                 // Check-in / clock-out / status events: only show if in manager's team or manager themselves
                 const isStatusEvent = title.includes('went online') || title.includes('went offline') ||
                     title.includes('clocked in') || title.includes('clocked out') ||
                     title.includes('checked in') || desc.includes('clocked in') || desc.includes('clocked out') ||
-                    title.includes('went on break') || title.includes('returned from break');
+                    title.includes('went on break') || title.includes('returned from break') ||
+                    title.includes('work session') || title.includes('break started') || title.includes('break ended');
 
                 if (isStatusEvent) {
                     const mentionsTeamMember = myTeamNames.some(name => title.includes(name) || desc.includes(name));
@@ -1824,13 +1918,41 @@ export function RealTimeProvider({ children }) {
                     return mentionsTeamMember || mentionsTeamId || mentionsMe;
                 }
 
+                // Screenshot notifications: only show if from this manager's team member
+                if (title.includes('screenshot from')) {
+                    const mentionsTeamMember = myTeamNames.some(name => title.includes(name) || desc.includes(name));
+                    const mentionsTeamId = Array.from(myTeamIds).some(id => title.includes(id) || desc.includes(id));
+                    return mentionsTeamMember || mentionsTeamId;
+                }
+
+                // Task events: only show if assigned to team member or manager
+                if (title.includes('task')) {
+                    const mentionsTeamMember = myTeamNames.some(name => title.includes(name) || desc.includes(name));
+                    const mentionsManager = currentEmpName && (title.includes(currentEmpName) || desc.includes(currentEmpName));
+                    return mentionsTeamMember || mentionsManager;
+                }
+
+                // Keep announcements / broadcasts
+                if (n.type === 'announcement' || n.type === 'broadcast' || n.type === 'general') {
+                    return true;
+                }
+
                 // Exclude raw employee UUIDs not in this manager's team
                 if (desc.includes('employee ')) {
                     const matchesMyTeam = Array.from(myTeamIds).some(id => desc.includes(id));
-                    if (!matchesMyTeam && myTeamIds.size > 0) return false;
+                    return matchesMyTeam;
                 }
 
-                return true;
+                // If it's a generic notification not belonging to other employees
+                if (!n.targetUserId && !n.metadata) {
+                    return true;
+                }
+
+                return false;
+            });
+                }
+
+                return false;
             });
 
             return {
@@ -1897,6 +2019,7 @@ export function RealTimeProvider({ children }) {
         setSelectedDate,
         addCheckIn,
         addNotification, markAllNotificationsRead, markNotificationAsRead, deleteNotification, deleteAllNotifications,
+        syncNotifications, syncAlerts,
         socket: socketInstance,
         // Live Screening
         startLiveScreen: (employeeId) => {
@@ -1924,6 +2047,7 @@ export function RealTimeProvider({ children }) {
         dismissAlert, dismissAllAlerts, updateComplianceSetting,
         setSelectedDate, addCheckIn,
         addNotification, markAllNotificationsRead, markNotificationAsRead, deleteNotification, deleteAllNotifications,
+        syncNotifications, syncAlerts,
     ]);
 
     return (
