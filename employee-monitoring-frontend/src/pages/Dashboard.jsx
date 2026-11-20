@@ -352,6 +352,35 @@ export function Dashboard() {
 
     // Merge API data with Real-time stats
     const stats = useMemo(() => {
+        const isSessionUser = role?.toUpperCase() === 'EMPLOYEE';
+
+        // Strict RBAC: Employee must NEVER receive organization-wide realTimeStats (Admin/Manager data)
+        if (isSessionUser) {
+            const raw = dashboardData?.summary || {};
+            const summarySeconds = {
+                workTime: parseTimeValueToSeconds(raw.workTime),
+                activeTime: parseTimeValueToSeconds(raw.activeTime),
+                idleTime: parseTimeValueToSeconds(raw.idleTime),
+                manualTime: parseTimeValueToSeconds(raw.manualTime),
+                productiveTime: parseTimeValueToSeconds(raw.productiveTime),
+                unproductiveTime: parseTimeValueToSeconds(raw.unproductiveTime),
+                neutralTime: parseTimeValueToSeconds(raw.neutralTime),
+            };
+
+            return {
+                summary: raw,
+                summarySeconds,
+                screenshots: dashboardData?.screenshots || [],
+                empMetrics: [],
+                topProductive: [],
+                topUnproductive: [],
+                teams: [],
+                intradayActivity: dashboardData?.intradayActivity || [],
+                productivityBreakdown: dashboardData?.productivityBreakdown || [],
+                comparison: dashboardData?.comparison || {}
+            };
+        }
+
         const base = dashboardData || realTimeStats;
         if (!base) return realTimeStats;
 
@@ -379,7 +408,7 @@ export function Dashboard() {
             topProductive: base.topProductive || (realTimeStats.topProductive || []),
             topUnproductive: base.topUnproductive || (realTimeStats.topUnproductive || [])
         };
-    }, [dashboardData, realTimeStats, isToday]);
+    }, [dashboardData, realTimeStats, isToday, role]);
 
     const sec = useMemo(() => {
         const rawSec = stats?.summarySeconds || {};
@@ -631,7 +660,7 @@ export function Dashboard() {
                                     : 'text-[#777367] dark:text-[#B8B3A7] hover:text-[#29291F] dark:hover:text-white'
                             }`}
                         >
-                            <Activity size={14} className={adminViewMode === 'radar' ? 'text-[#00C48C]' : ''} />
+                            <Activity size={14} className={adminViewMode === 'radar' ? 'text-[#B9955B]' : ''} />
                             <span>Live Staff Radar & Operations</span>
                         </button>
                     </div>
@@ -667,8 +696,8 @@ export function Dashboard() {
                         }}
                         onFilterChange={(filters) => setActiveFilter(filters)}
                         onExport={handleDownload}
-                        employees={dashboardData?.employees || []}
-                        teams={dashboardData?.teams || []}
+                        employees={role === 'EMPLOYEE' ? [] : (dashboardData?.employees || [])}
+                        teams={role === 'EMPLOYEE' ? [] : (dashboardData?.teams || [])}
                         role={role}
                         unreadCount={unreadCount}
                     />

@@ -65,21 +65,31 @@ import {
 
 const cn = (...inputs) => twMerge(clsx(inputs));
 
+export const normalizeTaskStatus = (status) => {
+    if (!status) return 'Backlog';
+    const s = String(status).toUpperCase().replace(/\s+/g, '_');
+    if (s === 'BACKLOG' || s === 'TO_DO' || s === 'TODO') return 'Backlog';
+    if (s === 'IN_OPERATIONS' || s === 'IN_OPERATION' || s === 'OPERATIONS' || s === 'IN_PROGRESS' || s === 'WORKING_ON_IT') return 'In Operations';
+    if (s === 'QUALITY_ASSURANCE' || s === 'QA' || s === 'IN_REVIEW') return 'Quality Assurance';
+    if (s === 'FINALIZED' || s === 'DONE' || s === 'COMPLETED') return 'Finalized';
+    return 'Backlog';
+};
+
 // --- Modals (Tasks & Objectives) ---
-const CreateTaskModal = ({ isOpen, onClose, onSave, defaultStatus = 'To Do', employees = [], projects = [] }) => {
+const CreateTaskModal = ({ isOpen, onClose, onSave, defaultStatus = 'Backlog', employees = [], projects = [] }) => {
     const { role } = useAuthStore();
     const [title, setTitle] = useState('');
     const [assignee, setAssignee] = useState('');
     const [priority, setPriority] = useState('Medium');
     const [dueDate, setDueDate] = useState('');
-    const [status, setStatus] = useState(defaultStatus);
+    const [status, setStatus] = useState(() => normalizeTaskStatus(defaultStatus));
     const [selectedProjectId, setSelectedProjectId] = useState('');
     const [assigneeId, setAssigneeId] = useState('');
     const [estimatedHours, setEstimatedHours] = useState('');
     const [showSuggestions, setShowSuggestions] = useState(false);
 
     useEffect(() => {
-        setStatus(defaultStatus);
+        setStatus(normalizeTaskStatus(defaultStatus));
     }, [defaultStatus, isOpen]);
 
     useEffect(() => {
@@ -115,7 +125,7 @@ const CreateTaskModal = ({ isOpen, onClose, onSave, defaultStatus = 'To Do', emp
             assigneeId: finalAssigneeId,
             priority,
             dueDate,
-            status,
+            status: normalizeTaskStatus(status),
             estimatedHours: estNum,
             project: project ? project.name : 'Internal',
             projectId: selectedProjectId
@@ -216,11 +226,11 @@ const CreateTaskModal = ({ isOpen, onClose, onSave, defaultStatus = 'To Do', emp
                     <div className="grid grid-cols-2 gap-3">
                         <div>
                             <label className="block text-[10px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-[0.14em] mb-1.5">Status</label>
-                            <select value={status} onChange={e => setStatus(e.target.value)} className="w-full h-11 px-3 rounded-xl bg-[#EEE8DD]/70 dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] outline-none focus:border-[#B9955B] focus:ring-1 focus:ring-[#B9955B] transition-all cursor-pointer">
-                                <option value="BACKLOG">Backlog</option>
-                                <option value="IN_OPERATIONS">In Operations</option>
-                                <option value="QUALITY_ASSURANCE">Quality Assurance</option>
-                                <option value="FINALIZED">Finalized</option>
+                            <select value={normalizeTaskStatus(status)} onChange={e => setStatus(e.target.value)} className="w-full h-11 px-3 rounded-xl bg-[#EEE8DD]/70 dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] outline-none focus:border-[#B9955B] focus:ring-1 focus:ring-[#B9955B] transition-all cursor-pointer">
+                                <option value="Backlog">Backlog</option>
+                                <option value="In Operations">In Operations</option>
+                                <option value="Quality Assurance">Quality Assurance</option>
+                                <option value="Finalized">Finalized</option>
                             </select>
                         </div>
                         <div>
@@ -399,7 +409,7 @@ const EditTaskModal = ({ isOpen, onClose, onSave, task, employees = [], projects
     const [assigneeId, setAssigneeId] = useState(task?.assigneeId || '');
     const [priority, setPriority] = useState(task?.priority || 'Medium');
     const [dueDate, setDueDate] = useState(task?.dueDate && task?.dueDate !== 'No Date' ? task.dueDate : '');
-    const [status, setStatus] = useState(task?.status || 'Backlog');
+    const [status, setStatus] = useState(() => normalizeTaskStatus(task?.status));
     const [estimatedHours, setEstimatedHours] = useState(task?.estimatedHours || '');
     const [showSuggestions, setShowSuggestions] = useState(false);
 
@@ -411,7 +421,7 @@ const EditTaskModal = ({ isOpen, onClose, onSave, task, employees = [], projects
             setAssigneeId(task.assigneeId || '');
             setPriority(task.priority || 'Medium');
             setDueDate(task.dueDate && task.dueDate !== 'No Date' ? task.dueDate : '');
-            setStatus(task.status || 'Backlog');
+            setStatus(normalizeTaskStatus(task.status));
             setEstimatedHours(task.estimatedHours || '');
         }
     }, [task]);
@@ -448,7 +458,7 @@ const EditTaskModal = ({ isOpen, onClose, onSave, task, employees = [], projects
             assigneeId: finalAssigneeId, 
             priority, 
             dueDate, 
-            status,
+            status: normalizeTaskStatus(status),
             estimatedHours: estNum 
         });
         onClose();
@@ -535,11 +545,11 @@ const EditTaskModal = ({ isOpen, onClose, onSave, task, employees = [], projects
                     <div className="grid grid-cols-2 gap-3">
                         <div>
                             <label className="block text-[10px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-[0.14em] mb-1.5">Status</label>
-                            <select value={status} onChange={e => setStatus(e.target.value)} className="w-full h-11 px-3 rounded-xl bg-[#EEE8DD]/70 dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] outline-none focus:border-[#B9955B] focus:ring-1 focus:ring-[#B9955B] transition-all cursor-pointer">
-                                <option value="BACKLOG">Backlog</option>
-                                <option value="IN_OPERATIONS">In Operations</option>
-                                <option value="QUALITY_ASSURANCE">Quality Assurance</option>
-                                <option value="FINALIZED">Finalized</option>
+                            <select value={normalizeTaskStatus(status)} onChange={e => setStatus(e.target.value)} className="w-full h-11 px-3 rounded-xl bg-[#EEE8DD]/70 dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] outline-none focus:border-[#B9955B] focus:ring-1 focus:ring-[#B9955B] transition-all cursor-pointer">
+                                <option value="Backlog">Backlog</option>
+                                <option value="In Operations">In Operations</option>
+                                <option value="Quality Assurance">Quality Assurance</option>
+                                <option value="Finalized">Finalized</option>
                             </select>
                         </div>
                         <div>
@@ -576,18 +586,11 @@ const EditTaskModal = ({ isOpen, onClose, onSave, task, employees = [], projects
 
 const GoalStreamModal = ({ goal, onClose }) => {
     if (!goal) return null;
-    const stream = (goal.activities && goal.activities.length > 0) ? goal.activities : [
-        { id: 1, title: "Initial Roadmap Defined", date: "3 weeks ago", status: "Completed", type: "milestone" },
-        { id: 2, title: "Resource Allocation Phase", date: "2 weeks ago", status: "Completed", type: "ops" },
-        { id: 3, title: "Mid-Cycle Performance Review", date: "4 days ago", status: "In Progress", type: "review" },
-        { id: 4, title: "Final Integration Sprint", date: "Expected next week", status: "Pending", type: "upcoming" },
-    ];
+    const stream = (goal.activities && goal.activities.length > 0) ? goal.activities : [];
 
     return createPortal(
         <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/75 backdrop-blur-lg animate-in fade-in duration-300 p-3 sm:p-4">
             <div className="bg-[#FBF9F5] dark:bg-[#1C2419] rounded-2xl sm:rounded-[2.5rem] p-5 sm:p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto custom-scrollbar shadow-2xl border border-[#D6CDBC] dark:border-[#384232] animate-in zoom-in-95 duration-300 relative overflow-hidden text-left">
-                <div className={cn("absolute top-0 right-0 h-48 w-48 translate-x-16 -translate-y-16 rounded-full opacity-[0.03] animate-pulse", goal.color)} />
-
                 <div className="flex justify-between items-start mb-8 pb-4 border-b border-[#D6CDBC]/60 dark:border-[#384232]">
                     <div className="flex items-center gap-4 sm:gap-5">
                         <div className={cn("h-14 w-14 rounded-2xl flex items-center justify-center shadow-warm-xs text-white", goal.color || "bg-[#30382B] text-white")}>
@@ -598,32 +601,33 @@ const GoalStreamModal = ({ goal, onClose }) => {
                             <p className="text-xs font-bold uppercase text-[#B9955B] tracking-widest mt-0.5">{goal.sub}</p>
                         </div>
                     </div>
-                    <button onClick={onClose} className="p-2 hover:bg-[#EEE8DD] dark:hover:bg-[#252B20] text-[#777367] hover:text-[#29291F] dark:hover:text-[#F5F1E9] rounded-xl transition-all cursor-pointer">
-                        <X size={20} />
-                    </button>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
                     <div className="md:col-span-2 space-y-8">
                         <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Activity Stream</h4>
-                        <div className="space-y-6 relative before:absolute before:left-4 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-100 dark:before:bg-slate-800">
-                            {stream.map((item, idx) => (
-                                <div key={item.id} className="relative pl-12 group">
-                                    <div className={cn(
-                                        "absolute left-2.5 top-1.5 h-3.5 w-3.5 rounded-full border-2 border-white dark:border-slate-900 z-10 transition-transform group-hover:scale-125",
-                                        item.status === "Completed" ? "bg-emerald-500" : item.status === "In Progress" ? "bg-amber-500" : "bg-slate-300"
-                                    )} />
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">{item.date}</span>
-                                        <span className="text-sm font-black text-slate-800 dark:text-slate-200">{item.title}</span>
-                                        <span className={cn(
-                                            "text-[9px] font-black uppercase tracking-widest mt-1.5",
-                                            item.status === "Completed" ? "text-emerald-500" : item.status === "In Progress" ? "text-amber-500" : "text-slate-400"
-                                        )}>{item.status}</span>
+                        {stream.length > 0 ? (
+                            <div className="space-y-6 relative before:absolute before:left-4 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-100 dark:before:bg-slate-800">
+                                {stream.map((item, idx) => (
+                                    <div key={item.id} className="relative pl-12 group">
+                                        <div className={cn(
+                                            "absolute left-2.5 top-1.5 h-3.5 w-3.5 rounded-full border-2 border-white dark:border-slate-900 z-10 transition-transform group-hover:scale-125",
+                                            item.status === "Completed" ? "bg-emerald-500" : item.status === "In Progress" ? "bg-amber-500" : "bg-slate-300"
+                                        )} />
+                                        <div className="flex flex-col">
+                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">{item.date}</span>
+                                            <span className="text-sm font-black text-slate-800 dark:text-slate-200">{item.title}</span>
+                                            <span className={cn(
+                                                "text-[9px] font-black uppercase tracking-widest mt-1.5",
+                                                item.status === "Completed" ? "text-emerald-500" : item.status === "In Progress" ? "text-amber-500" : "text-slate-400"
+                                            )}>{item.status}</span>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-xs text-[#777367] dark:text-[#B8B3A7] italic">No activity stream recorded for this goal yet.</p>
+                        )}
                     </div>
 
                     <div className="space-y-8">
@@ -656,8 +660,8 @@ const GoalStreamModal = ({ goal, onClose }) => {
                     </div>
                 </div>
 
-                <div className="mt-12 pt-8 border-t border-slate-50 dark:border-slate-800 flex justify-end">
-                    <button onClick={onClose} className="px-8 py-3 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-black uppercase tracking-widest shadow-xl transition-all hover:scale-105 active:scale-95">Close Stream</button>
+                <div className="mt-12 pt-8 border-t border-[#D6CDBC]/50 dark:border-[#384232] flex justify-end">
+                    <button onClick={onClose} className="px-8 py-3 rounded-xl bg-[#30382B] hover:bg-[#3C4536] text-[#FDFBF7] dark:bg-[#C9A96E] dark:hover:bg-[#d8b87d] dark:text-[#161C14] text-xs font-bold uppercase tracking-widest shadow-warm-xs transition-all hover:scale-105 active:scale-95 cursor-pointer">Close Stream</button>
                 </div>
             </div>
         </div>,
@@ -774,9 +778,16 @@ const KanbanColumn = ({ title, tasks, status, color, onAdd, updateTaskStatus, on
                         };
                         const targetStage = nextStageMap[status];
                         if (targetStage && updateTaskStatus) {
+                            if (targetStage === 'Finalized' && timer.isRunning && timer.currentTask === task.id) {
+                                await stopTask();
+                            }
                             await updateTaskStatus(task.id, targetStage);
                         }
                     };
+
+                    const isManager = role?.toUpperCase() === 'MANAGER';
+                    const canEdit = isManager;
+                    const canDelete = isManager;
 
                     return (
                         <div
@@ -815,20 +826,24 @@ const KanbanColumn = ({ title, tasks, status, color, onAdd, updateTaskStatus, on
                                                 <ArrowRight size={8} strokeWidth={2.5} />
                                             </button>
                                         )}
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); onEdit && onEdit(task); }}
-                                            className="h-5 w-5 flex items-center justify-center rounded bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors cursor-pointer"
-                                            title="Edit Task"
-                                        >
-                                            <Edit2 size={10} strokeWidth={2.5} />
-                                        </button>
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); onDelete && onDelete(task.id); }}
-                                            className="h-5 w-5 flex items-center justify-center rounded bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
-                                            title="Delete Task"
-                                        >
-                                            <Trash2 size={10} strokeWidth={2.5} />
-                                        </button>
+                                        {canEdit && (
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); onEdit && onEdit(task); }}
+                                                className="h-5 w-5 flex items-center justify-center rounded bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors cursor-pointer"
+                                                title="Edit Task"
+                                            >
+                                                <Edit2 size={10} strokeWidth={2.5} />
+                                            </button>
+                                        )}
+                                        {canDelete && (
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); onDelete && onDelete(task.id); }}
+                                                className="h-5 w-5 flex items-center justify-center rounded bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                                                title="Delete Task"
+                                            >
+                                                <Trash2 size={10} strokeWidth={2.5} />
+                                            </button>
+                                        )}
                                     </div>
 
                                     {/* Priority Badge */}
@@ -892,9 +907,15 @@ const KanbanColumn = ({ title, tasks, status, color, onAdd, updateTaskStatus, on
                             <div className="flex items-center justify-between pt-2.5 gap-2 border-t border-slate-100 dark:border-slate-800/70">
                                 {isUnassigned ? (
                                     <div 
-                                        onClick={(e) => { e.stopPropagation(); onEdit && onEdit(task); }}
-                                        className="flex items-center gap-1.5 min-w-0 cursor-pointer group/assign hover:opacity-80 transition-opacity"
-                                        title="Click to assign an employee"
+                                        onClick={(e) => { 
+                                            e.stopPropagation(); 
+                                            if (canEdit) onEdit && onEdit(task); 
+                                        }}
+                                        className={cn(
+                                            "flex items-center gap-1.5 min-w-0 transition-opacity",
+                                            canEdit ? "cursor-pointer group/assign hover:opacity-80" : "cursor-default"
+                                        )}
+                                        title={canEdit ? "Click to assign an employee" : undefined}
                                     >
                                         <div className="h-6 w-6 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-dashed border-amber-300 dark:border-amber-700/60 flex items-center justify-center text-amber-500 shrink-0">
                                             <UserX size={12} />
@@ -943,7 +964,15 @@ const KanbanColumn = ({ title, tasks, status, color, onAdd, updateTaskStatus, on
                                         </span>
                                     </div>
 
-                                    {role === 'EMPLOYEE' && (
+                                    {status === 'FINALIZED' ? (
+                                        <div 
+                                            className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-800/60 shadow-xs shrink-0 select-none"
+                                            title="Task Completed"
+                                        >
+                                            <CheckSquare size={11} strokeWidth={2.5} />
+                                            <span className="text-[9px] font-bold uppercase tracking-wider">Done</span>
+                                        </div>
+                                    ) : role === 'EMPLOYEE' && (
                                         timer.isRunning && timer.currentTask === task.id ? (
                                             <button 
                                                 onClick={async (e) => { 
@@ -1023,11 +1052,15 @@ export function TasksProjects() {
 
     const scopedEmployees = useMemo(() => {
         if (!employees) return [];
+        if (role === 'EMPLOYEE') {
+            const currentEmpId = user?.employeeId || employees.find(e => e.email === user?.email)?.id || user?.id;
+            return employees.filter(e => e.id === currentEmpId || e.email === user?.email);
+        }
         if (role === 'MANAGER') {
             return employees.filter(e => e.role !== 'ADMIN' && e.user?.role !== 'ADMIN');
         }
         return employees;
-    }, [employees, role]);
+    }, [employees, role, user]);
 
     // Board, Logs, Projects (Time Tracking + Productivity), Performance (KPIs), Goals
     const [activeTab, setActiveTab] = useState('board');
@@ -1125,20 +1158,38 @@ export function TasksProjects() {
         addProject(projectData);
     };
 
-    // Edit / Delete handlers
+    // Edit / Delete handlers (Exclusive to MANAGER)
     const handleEditTask = (task) => {
+        const isManager = role?.toUpperCase() === 'MANAGER';
+        if (!isManager) {
+            return;
+        }
         setEditingTask(task);
         setIsEditModalOpen(true);
     };
 
     const handleDeleteTask = async (taskId) => {
+        const isManager = role?.toUpperCase() === 'MANAGER';
+        if (!isManager) {
+            return;
+        }
         if (window.confirm('Delete this task? This cannot be undone.')) {
             await deleteTask(taskId);
         }
     };
 
     const handleUpdateTask = async (id, taskData) => {
-        await updateTask(id, taskData);
+        const isManager = role?.toUpperCase() === 'MANAGER';
+        if (!isManager) {
+            return;
+        }
+        const normStatus = normalizeTaskStatus(taskData.status);
+        if (normStatus === 'Finalized') {
+            if (timer.isRunning && timer.currentTask === id) {
+                await stopTask();
+            }
+        }
+        await updateTask(id, { ...taskData, status: normStatus });
     };
 
     // Filtered data — respects role-based assignment, search, calendar date range, and employee/team filter
@@ -1185,7 +1236,7 @@ export function TasksProjects() {
         });
     }, [tasks, searchQuery, quickFilter, dateRange, selectedEmployee, selectedTeam, employees, role, user]);
 
-    const getTasksByStatus = (status) => filteredTasks.filter(t => t.status === status);
+    const getTasksByStatus = (status) => filteredTasks.filter(t => normalizeTaskStatus(t.status) === normalizeTaskStatus(status));
 
     // 1. Calculate dynamic performance metrics
 
@@ -1193,7 +1244,7 @@ export function TasksProjects() {
     const derivedStats = useMemo(() => {
         const relevantTasks = role === 'EMPLOYEE' ? filteredTasks : tasks;
         const totalTasks = relevantTasks.length;
-        const completedTasks = relevantTasks.filter(t => t.status === 'Finalized').length;
+        const completedTasks = relevantTasks.filter(t => normalizeTaskStatus(t.status) === 'Finalized').length;
 
         // 1. Dynamic Task Completion Rate
         const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
@@ -1220,25 +1271,15 @@ export function TasksProjects() {
         }
 
         // 3. Dynamic Billable / Tracked Hours
-        // Sum from tasks actual tracked time & timer
+        // Sum from tasks actual tracked time & active live timer
         const taskSeconds = relevantTasks.reduce((acc, t) => {
-            const fromTimer = taskDurations?.[t.id] || 0;
+            const fromTimer = (timer.isRunning && timer.currentTask === t.id) ? timer.seconds : 0;
             const fromTask = t.actualSeconds || (t.actualHours ? t.actualHours * 3600 : 0);
-            return acc + Math.max(fromTimer, fromTask);
+            return acc + fromTimer + fromTask;
         }, 0);
         const taskHours = taskSeconds / 3600;
 
-        // Sum from activity / attendance logs
-        let logHours = 0;
-        if (role === 'EMPLOYEE') {
-            const currentEmpId = user?.employeeId || employees?.find(e => e.email === user?.email)?.id;
-            const myMetric = stats?.empMetrics?.find(e => e.id === currentEmpId || e.email === user?.email);
-            logHours = myMetric ? (myMetric.totalWorkHours || myMetric.activeHours || myMetric.productiveHours || 0) : 0;
-        } else {
-            logHours = stats?.empMetrics?.reduce((acc, emp) => acc + (emp.totalWorkHours || emp.activeHours || emp.productiveHours || 0), 0) || 0;
-        }
-
-        const totalHours = Math.max(taskHours, logHours);
+        const totalHours = taskHours;
         const formattedBillable = totalHours.toFixed(1);
         // Trend is work progress % towards standard 8h workday
         const billableProgress = totalHours > 0 ? Math.min(100, Math.round((totalHours / 8) * 100)) : null;
@@ -1274,8 +1315,11 @@ export function TasksProjects() {
             const empMetric = stats?.empMetrics?.find(m => m.id === emp.id || m.email === emp.email);
             const empTasks = (tasks || []).filter(t => t.assigneeId === emp.id || t.assignee === emp.name || t.assignee === emp.fullName);
             const totalCount = empTasks.length;
-            const completedTasks = empTasks.filter(t => t.status === 'Finalized');
-            const inOpsTasks = empTasks.filter(t => t.status === 'In Operations' || t.status === 'Quality Assurance');
+            const completedTasks = empTasks.filter(t => normalizeTaskStatus(t.status) === 'Finalized');
+            const inOpsTasks = empTasks.filter(t => {
+                const s = normalizeTaskStatus(t.status);
+                return s === 'In Operations' || s === 'Quality Assurance';
+            });
 
             // Overdue check
             const overdueTasks = empTasks.filter(t => {
@@ -1283,14 +1327,17 @@ export function TasksProjects() {
                 const d = new Date(t.dueDate);
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
-                return d < today && t.status !== 'Finalized';
+                return d < today && normalizeTaskStatus(t.status) !== 'Finalized';
             });
 
             // 1. Quality: Tasks progressing cleanly without overdue, plus QA achievements
             let quality = 0;
             if (totalCount > 0) {
-                const goodTasks = empTasks.filter(t => !overdueTasks.includes(t) && (t.status === 'Quality Assurance' || t.status === 'Finalized'));
-                const okTasks = empTasks.filter(t => !overdueTasks.includes(t) && t.status === 'In Operations');
+                const goodTasks = empTasks.filter(t => {
+                    const s = normalizeTaskStatus(t.status);
+                    return !overdueTasks.includes(t) && (s === 'Quality Assurance' || s === 'Finalized');
+                });
+                const okTasks = empTasks.filter(t => !overdueTasks.includes(t) && normalizeTaskStatus(t.status) === 'In Operations');
                 quality = Math.min(100, Math.max(0, Math.round(((goodTasks.length * 100) + (okTasks.length * 75) + ((totalCount - overdueTasks.length - goodTasks.length - okTasks.length) * 40)) / totalCount)));
             } else if (empMetric?.productivity) {
                 quality = Math.round(empMetric.productivity);
@@ -1310,9 +1357,10 @@ export function TasksProjects() {
             let output = 0;
             if (totalCount > 0) {
                 const weightedPoints = empTasks.reduce((acc, t) => {
-                    if (t.status === 'Finalized') return acc + 100;
-                    if (t.status === 'Quality Assurance') return acc + 80;
-                    if (t.status === 'In Operations') return acc + 50;
+                    const s = normalizeTaskStatus(t.status);
+                    if (s === 'Finalized') return acc + 100;
+                    if (s === 'Quality Assurance') return acc + 80;
+                    if (s === 'In Operations') return acc + 50;
                     return acc + 25; // Backlog
                 }, 0);
                 output = Math.min(100, Math.max(0, Math.round(weightedPoints / totalCount)));
@@ -1366,8 +1414,11 @@ export function TasksProjects() {
         // Velocity: based on active workflow progression speed
         const relevantTasks = role === 'EMPLOYEE' ? filteredTasks : tasks;
         const totalT = relevantTasks.length;
-        const compT = relevantTasks.filter(t => t.status === 'Finalized').length;
-        const activeT = relevantTasks.filter(t => t.status === 'In Operations' || t.status === 'Quality Assurance').length;
+        const compT = relevantTasks.filter(t => normalizeTaskStatus(t.status) === 'Finalized').length;
+        const activeT = relevantTasks.filter(t => {
+            const s = normalizeTaskStatus(t.status);
+            return s === 'In Operations' || s === 'Quality Assurance';
+        }).length;
         const velocity = totalT > 0
             ? Math.min(100, Math.max(0, Math.round(((compT * 100) + (activeT * 75) + ((totalT - compT - activeT) * 30)) / totalT)))
             : Math.round(avgOutput);
@@ -1416,9 +1467,9 @@ export function TasksProjects() {
         return projects.map((p, idx) => {
             const pTasks = (tasks || []).filter(t => t.projectId === p.id || (t.project && t.project.toLowerCase() === p.name.toLowerCase()));
             const totalTasks = pTasks.length || p.tasks || 0;
-            const completed = pTasks.filter(t => t.status === 'Finalized').length;
-            const inOps = pTasks.filter(t => t.status === 'In Operations').length;
-            const inQA = pTasks.filter(t => t.status === 'Quality Assurance').length;
+            const completed = pTasks.filter(t => normalizeTaskStatus(t.status) === 'Finalized').length;
+            const inOps = pTasks.filter(t => normalizeTaskStatus(t.status) === 'In Operations').length;
+            const inQA = pTasks.filter(t => normalizeTaskStatus(t.status) === 'Quality Assurance').length;
 
             // Tracked time in hours: sum task durations + actual tracked
             const trackedSec = pTasks.reduce((acc, t) => {
@@ -2002,7 +2053,7 @@ export function TasksProjects() {
 
                 {/* 5. CYCLE TIME & BOTTLENECK ANALYTICS VIEW */}
                 {activeTab === 'cycle-time' && (
-                    <CycleTimeAnalyticsView employees={scopedEmployees} projects={projects} />
+                    <CycleTimeAnalyticsView employees={scopedEmployees} projects={projects} role={role} />
                 )}
             </div>
 

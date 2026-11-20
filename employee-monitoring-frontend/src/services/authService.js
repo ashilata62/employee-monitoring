@@ -63,11 +63,18 @@ const authService = {
      */
     logout: async () => {
         try {
-            await api.post("/auth/logout");
+            const token = localStorage.getItem("token");
+            if (token) {
+                await api.post("/auth/logout");
+            }
         } catch (error) {
-            console.error("Logout API failed", error);
+            // Silently swallow 401 during logout as token is expired/invalid anyway
+            if (error.response?.status !== 401) {
+                console.error("Logout API notice:", error.message);
+            }
+        } finally {
+            localStorage.removeItem("token");
         }
-        localStorage.removeItem("token");
     }
 };
 

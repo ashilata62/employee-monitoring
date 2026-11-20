@@ -296,6 +296,14 @@ export function ActivitiesTimeline() {
   const filteredEmployees = useMemo(() => {
     if (!data?.employeeTimelines) return [];
     return data.employeeTimelines.filter(emp => {
+      // Strict RBAC: Employee only sees their own timeline, never managers or admins
+      if (role === 'EMPLOYEE') {
+        const myEmpId = user?.employeeId || user?.id;
+        const myEmail = user?.email;
+        const isMe = (myEmpId && String(emp.id) === String(myEmpId)) || (myEmail && emp.email === myEmail);
+        return Boolean(isMe);
+      }
+
       // Exclude Admin from trackable activities timeline for manager or non-admin view
       if (role === 'MANAGER' && ((emp.role || '').toUpperCase() === 'ADMIN' || (emp.name || '').toLowerCase().includes('admin demo'))) {
         return false;
@@ -312,12 +320,12 @@ export function ActivitiesTimeline() {
 
       return matchesSearch && matchesTeam && matchesLate;
     });
-  }, [data, searchQuery, filterTeam, filterShiftStatus, role]);
+  }, [data, searchQuery, filterTeam, filterShiftStatus, role, user]);
 
-  // Derived logs data for 'Logs' tab
+  // Derived logs data for 'Logs' tab (Scoped to filteredEmployees for RBAC security)
   const activityLogs = useMemo(() => {
     const logs = [];
-    (data?.employeeTimelines || []).forEach(emp => {
+    (filteredEmployees || []).forEach(emp => {
       (emp.segments || []).forEach((seg, sIdx) => {
         logs.push({
           id: seg.id || `${emp.id}-seg-${sIdx}`,
@@ -332,7 +340,7 @@ export function ActivitiesTimeline() {
       });
     });
     return logs;
-  }, [data]);
+  }, [filteredEmployees]);
 
   const handleExport = (type = 'csv') => {
     const headers = ['Employee Name', 'Team', 'Active Time', 'Late for Work', 'Scheduled Start', 'Scheduled End'];

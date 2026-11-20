@@ -11,11 +11,11 @@ const buildReportFilter = (organizationId, startDate, endDate, params = {}) => {
     if (startDate || endDate) {
         where.timestamp = {};
         if (startDate) {
-            const parsedStart = new Date(startDate);
+            const parsedStart = new Date(typeof startDate === 'string' && startDate.length === 10 ? `${startDate}T00:00:00.000Z` : startDate);
             where.timestamp.gte = isNaN(parsedStart.getTime()) ? startDate : parsedStart;
         }
         if (endDate) {
-            const parsedEnd = new Date(endDate);
+            const parsedEnd = new Date(typeof endDate === 'string' && endDate.length === 10 ? `${endDate}T23:59:59.999Z` : endDate);
             where.timestamp.lte = isNaN(parsedEnd.getTime()) ? endDate : parsedEnd;
         }
     }
@@ -108,12 +108,18 @@ function formatPrettyDate(d) {
  * and Comparison periods with hover popovers).
  */
 const getWorkTypeByCategory = async (organizationId, startDate, endDate, params = {}) => {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
+    const startStr = typeof startDate === 'string' && startDate.length === 10 ? `${startDate}T00:00:00.000Z` : startDate;
+    const endStr = typeof endDate === 'string' && endDate.length === 10 ? `${endDate}T23:59:59.999Z` : endDate;
+    const start = new Date(startStr);
+    const end = new Date(endStr);
     const durationMs = Math.max(86400000, end.getTime() - start.getTime() + 1);
 
-    const compEnd = params.compareEndDate ? new Date(params.compareEndDate) : new Date(start.getTime() - 1);
-    const compStart = params.compareStartDate ? new Date(params.compareStartDate) : new Date(compEnd.getTime() - durationMs + 1);
+    const compEnd = params.compareEndDate 
+        ? new Date(typeof params.compareEndDate === 'string' && params.compareEndDate.length === 10 ? `${params.compareEndDate}T23:59:59.999Z` : params.compareEndDate)
+        : new Date(start.getTime() - 1);
+    const compStart = params.compareStartDate 
+        ? new Date(typeof params.compareStartDate === 'string' && params.compareStartDate.length === 10 ? `${params.compareStartDate}T00:00:00.000Z` : params.compareStartDate)
+        : new Date(compEnd.getTime() - durationMs + 1);
 
     const currentWhere = buildReportFilter(organizationId, start, end, params);
     const compWhere = buildReportFilter(organizationId, compStart, compEnd, params);
@@ -197,7 +203,6 @@ const getWorkTypeByCategory = async (organizationId, startDate, endDate, params 
 
     // Aggregate Current Period
     currentLogs.forEach(l => processItem(l, false));
-    // If app logs were minimal, aggregate active work sessions from activityLog
     if (currentLogs.length === 0) {
         currentActivity.forEach(a => processItem(a, false));
     }
@@ -224,51 +229,59 @@ const getWorkTypeByCategory = async (organizationId, startDate, endDate, params 
         }
 
         // Current Location breakdown
-        const curLocTotal = cur.totalSeconds || 1;
-        const curOfficePct = Math.round((cur.officeSeconds / curLocTotal) * 100);
-        const curRemotePct = 100 - curOfficePct;
-        const curDominantLoc = curOfficePct >= curRemotePct ? 'Office' : 'Remote';
-        const curDominantLocPct = curDominantLoc === 'Office' ? curOfficePct : curRemotePct;
+        const curLocTotal = cur.totalSeconds;
+        const curOfficePct = curLocTotal > 0 ? Math.round((cur.officeSeconds / curLocTotal) * 100) : 0;
+        const curRemotePct = curLocTotal > 0 ? 100 - curOfficePct : 0;
+        const curDominantLoc = curLocTotal > 0 ? (curOfficePct >= curRemotePct ? 'Office' : 'Remote') : '-';
+        const curDominantLocPct = curDominantLoc === 'Office' ? curOfficePct : (curDominantLoc === 'Remote' ? curRemotePct : 0);
 
         // Current Productivity breakdown
-        const curProdTotal = cur.totalSeconds || 1;
-        const curProdPct = Math.round((cur.productiveSeconds / curProdTotal) * 100);
-        const curUnprodPct = Math.round((cur.unproductiveSeconds / curProdTotal) * 100);
-        const curNeutPct = Math.max(0, 100 - curProdPct - curUnprodPct);
+        const curProdTotal = cur.totalSeconds;
+        const curProdPct = curProdTotal > 0 ? Math.round((cur.productiveSeconds / curProdTotal) * 100) : 0;
+        const curUnprodPct = curProdTotal > 0 ? Math.round((cur.unproductiveSeconds / curProdTotal) * 100) : 0;
+        const curNeutPct = curProdTotal > 0 ? Math.max(0, 100 - curProdPct - curUnprodPct) : 0;
 
-        let curDominantProd = 'Productive';
-        let curDominantProdSec = cur.productiveSeconds;
-        if (cur.unproductiveSeconds > curDominantProdSec) {
-            curDominantProd = 'Unproductive';
-            curDominantProdSec = cur.unproductiveSeconds;
-        }
-        if (cur.neutralSeconds > curDominantProdSec) {
-            curDominantProd = 'Neutral';
-            curDominantProdSec = cur.neutralSeconds;
+        let curDominantProd = '-';
+        let curDominantProdSec = 0;
+        if (curProdTotal > 0) {
+            curDominantProd = 'Productive';
+            curDominantProdSec = cur.productiveSeconds;
+            if (cur.unproductiveSeconds > curDominantProdSec) {
+                curDominantProd = 'Unproductive';
+                curDominantProdSec = cur.unproductiveSeconds;
+            }
+            if (cur.neutralSeconds > curDominantProdSec) {
+                curDominantProd = 'Neutral';
+                curDominantProdSec = cur.neutralSeconds;
+            }
         }
 
         // Comparison Location breakdown
-        const compLocTotal = comp.totalSeconds || 1;
-        const compOfficePct = Math.round((comp.officeSeconds / compLocTotal) * 100);
-        const compRemotePct = 100 - compOfficePct;
-        const compDominantLoc = compOfficePct >= compRemotePct ? 'Office' : 'Remote';
-        const compDominantLocPct = compDominantLoc === 'Office' ? compOfficePct : compRemotePct;
+        const compLocTotal = comp.totalSeconds;
+        const compOfficePct = compLocTotal > 0 ? Math.round((comp.officeSeconds / compLocTotal) * 100) : 0;
+        const compRemotePct = compLocTotal > 0 ? 100 - compOfficePct : 0;
+        const compDominantLoc = compLocTotal > 0 ? (compOfficePct >= compRemotePct ? 'Office' : 'Remote') : '-';
+        const compDominantLocPct = compDominantLoc === 'Office' ? compOfficePct : (compDominantLoc === 'Remote' ? compRemotePct : 0);
 
         // Comparison Productivity breakdown
-        const compProdTotal = comp.totalSeconds || 1;
-        const compProdPct = Math.round((comp.productiveSeconds / compProdTotal) * 100);
-        const compUnprodPct = Math.round((comp.unproductiveSeconds / compProdTotal) * 100);
-        const compNeutPct = Math.max(0, 100 - compProdPct - compUnprodPct);
+        const compProdTotal = comp.totalSeconds;
+        const compProdPct = compProdTotal > 0 ? Math.round((comp.productiveSeconds / compProdTotal) * 100) : 0;
+        const compUnprodPct = compProdTotal > 0 ? Math.round((comp.unproductiveSeconds / compProdTotal) * 100) : 0;
+        const compNeutPct = compProdTotal > 0 ? Math.max(0, 100 - compProdPct - compUnprodPct) : 0;
 
-        let compDominantProd = 'Productive';
-        let compDominantProdSec = comp.productiveSeconds;
-        if (comp.unproductiveSeconds > compDominantProdSec) {
-            compDominantProd = 'Unproductive';
-            compDominantProdSec = comp.unproductiveSeconds;
-        }
-        if (comp.neutralSeconds > compDominantProdSec) {
-            compDominantProd = 'Neutral';
-            compDominantProdSec = comp.neutralSeconds;
+        let compDominantProd = '-';
+        let compDominantProdSec = 0;
+        if (compProdTotal > 0) {
+            compDominantProd = 'Productive';
+            compDominantProdSec = comp.productiveSeconds;
+            if (comp.unproductiveSeconds > compDominantProdSec) {
+                compDominantProd = 'Unproductive';
+                compDominantProdSec = comp.unproductiveSeconds;
+            }
+            if (comp.neutralSeconds > compDominantProdSec) {
+                compDominantProd = 'Neutral';
+                compDominantProdSec = comp.neutralSeconds;
+            }
         }
 
         return {
@@ -284,7 +297,7 @@ const getWorkTypeByCategory = async (organizationId, startDate, endDate, params 
                     officePct: curOfficePct,
                     remotePct: curRemotePct,
                     dominant: curDominantLoc,
-                    dominantLabel: `${curDominantLocPct}% ${curDominantLoc}`
+                    dominantLabel: curLocTotal > 0 ? `${curDominantLocPct}% ${curDominantLoc}` : '-'
                 },
                 productivity: {
                     productiveSeconds: cur.productiveSeconds,
@@ -297,7 +310,7 @@ const getWorkTypeByCategory = async (organizationId, startDate, endDate, params 
                     unproductivePct: curUnprodPct,
                     neutralPct: curNeutPct,
                     dominant: curDominantProd,
-                    dominantLabel: `${formatHM(curDominantProdSec)} ${curDominantProd}`
+                    dominantLabel: curProdTotal > 0 ? `${formatHM(curDominantProdSec)} ${curDominantProd}` : '-'
                 }
             },
             comparison: {
@@ -311,7 +324,7 @@ const getWorkTypeByCategory = async (organizationId, startDate, endDate, params 
                     officePct: compOfficePct,
                     remotePct: compRemotePct,
                     dominant: compDominantLoc,
-                    dominantLabel: `${compDominantLocPct}% ${compDominantLoc}`
+                    dominantLabel: compLocTotal > 0 ? `${compDominantLocPct}% ${compDominantLoc}` : '-'
                 },
                 productivity: {
                     productiveSeconds: comp.productiveSeconds,
@@ -324,7 +337,7 @@ const getWorkTypeByCategory = async (organizationId, startDate, endDate, params 
                     unproductivePct: compUnprodPct,
                     neutralPct: compNeutPct,
                     dominant: compDominantProd,
-                    dominantLabel: `${formatHM(compDominantProdSec)} ${compDominantProd}`
+                    dominantLabel: compProdTotal > 0 ? `${formatHM(compDominantProdSec)} ${compDominantProd}` : '-'
                 }
             }
         };
@@ -335,8 +348,12 @@ const getWorkTypeByCategory = async (organizationId, startDate, endDate, params 
 
     // Compute relative width percentage for visual bars
     categoriesArray.forEach(c => {
-        c.current.barWidthPct = maxCategorySeconds > 0 ? Math.max(4, Math.round((c.current.totalSeconds / maxCategorySeconds) * 100)) : 0;
-        c.comparison.barWidthPct = maxCategorySeconds > 0 ? Math.max(4, Math.round((c.comparison.totalSeconds / maxCategorySeconds) * 100)) : 0;
+        c.current.barWidthPct = (maxCategorySeconds > 0 && c.current.totalSeconds > 0)
+            ? Math.max(4, Math.round((c.current.totalSeconds / maxCategorySeconds) * 100))
+            : 0;
+        c.comparison.barWidthPct = (maxCategorySeconds > 0 && c.comparison.totalSeconds > 0)
+            ? Math.max(4, Math.round((c.comparison.totalSeconds / maxCategorySeconds) * 100))
+            : 0;
     });
 
     // Return standard object structure with categories array, summary, and dateRanges
@@ -347,7 +364,7 @@ const getWorkTypeByCategory = async (organizationId, startDate, endDate, params 
             totalSeconds: grandTotalSeconds,
             formattedTotal: formatHM(grandTotalSeconds),
             productivityScore: grandTotalSeconds > 0 ? Math.round((grandProductiveSeconds / grandTotalSeconds) * 100) : 0,
-            trackedAppsCount: uniqueApps.size || 1
+            trackedAppsCount: uniqueApps.size || (grandTotalSeconds > 0 ? 1 : 0)
         },
         dateRanges: {
             current: {

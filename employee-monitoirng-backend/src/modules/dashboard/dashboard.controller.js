@@ -1,4 +1,5 @@
 const dashboardService = require('./dashboard.service');
+const prisma = require('../../config/db');
 
 const getAdminDashboard = async (req, res) => {
   try {
@@ -49,7 +50,34 @@ const getManagerDashboard = async (req, res) => {
 
 const getEmployeeDashboard = async (req, res) => {
   try {
-    const { organizationId, employeeId } = req.user;
+    let { organizationId, employeeId } = req.user;
+
+    // Guaranteed resolution: fallback to user record or employee table by email
+    if (!employeeId && (req.user.userId || req.user.id)) {
+      const user = await prisma.user.findUnique({
+        where: { id: req.user.userId || req.user.id },
+        select: { employeeId: true, organizationId: true }
+      });
+      if (user?.employeeId) {
+        employeeId = user.employeeId;
+        if (!organizationId) organizationId = user.organizationId;
+      }
+    }
+    if (!employeeId && req.user.email) {
+      const emp = await prisma.employee.findFirst({
+        where: { email: req.user.email },
+        select: { id: true, organizationId: true }
+      });
+      if (emp) {
+        employeeId = emp.id;
+        if (!organizationId) organizationId = emp.organizationId;
+      }
+    }
+
+    if (!employeeId) {
+      return res.status(404).json({ message: 'Employee profile not found' });
+    }
+
     const { startDate, endDate, compareStartDate, compareEndDate } = req.query;
     const data = await dashboardService.getEmployeeDashboard(organizationId, employeeId, startDate, endDate, compareStartDate, compareEndDate);
     res.json(data);

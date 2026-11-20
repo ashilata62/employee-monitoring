@@ -895,10 +895,10 @@ const EmployeeRow = ({ employee, onEdit, onDelete, onTransparencyClick, visibleC
                                     <span className={cn(
                                         "px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider border",
                                         (employee.role || 'EMPLOYEE').toUpperCase() === 'ADMIN'
-                                            ? "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 border-purple-200 dark:border-purple-800"
+                                            ? "bg-[#30382B] text-[#D3B98D] border-[#3C4536] dark:bg-[#30382B] dark:text-[#D3B98D] dark:border-[#44503C]"
                                             : (employee.role || 'EMPLOYEE').toUpperCase() === 'MANAGER'
-                                            ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800"
-                                            : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700"
+                                            ? "bg-[#B9955B]/15 text-[#B9955B] dark:text-[#D3B98D] border-[#B9955B]/30"
+                                            : "bg-[#EEE8DD] text-[#777367] dark:bg-[#1E2419] dark:text-[#B8B3A7] border-[#D6CDBC] dark:border-[#384232]"
                                     )}>
                                         {(employee.role || 'EMPLOYEE').toUpperCase()}
                                     </span>
@@ -975,7 +975,7 @@ const EmployeeRow = ({ employee, onEdit, onDelete, onTransparencyClick, visibleC
                 {visibleColumns.includes('User') && (
                     <td className="px-6 py-4">
                         <div className="flex items-center gap-3.5">
-                            <div className="h-10 w-10 shrink-0 rounded-xl bg-[#EEE8DD] text-[#30382B] border border-[#E5DED2] flex items-center justify-center font-bold text-xs tracking-wider">
+                            <div className="h-10 w-10 shrink-0 rounded-xl bg-[#EEE8DD] dark:bg-[#1E2419] text-[#30382B] dark:text-[#D3B98D] border border-[#D6CDBC] dark:border-[#384232] flex items-center justify-center font-bold text-xs tracking-wider shadow-warm-xs">
                                 {employee.avatar && !employee.avatar.includes('ui-avatars.com') ? (
                                     <img src={employee.avatar} className="h-full w-full object-cover rounded-xl" alt="" />
                                 ) : (
@@ -988,22 +988,22 @@ const EmployeeRow = ({ employee, onEdit, onDelete, onTransparencyClick, visibleC
                                     <span className={cn(
                                         "px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border",
                                         (employee.role || 'EMPLOYEE').toUpperCase() === 'ADMIN'
-                                            ? "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 border-purple-200 dark:border-purple-800"
+                                            ? "bg-[#30382B] text-[#D3B98D] border-[#3C4536] dark:bg-[#30382B] dark:text-[#D3B98D] dark:border-[#44503C]"
                                             : (employee.role || 'EMPLOYEE').toUpperCase() === 'MANAGER'
-                                            ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800"
-                                            : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700"
+                                            ? "bg-[#B9955B]/15 text-[#B9955B] dark:text-[#D3B98D] border-[#B9955B]/30"
+                                            : "bg-[#EEE8DD] text-[#777367] dark:bg-[#1E2419] dark:text-[#B8B3A7] border-[#D6CDBC] dark:border-[#384232]"
                                     )}>
                                         {(employee.role || 'EMPLOYEE').toUpperCase()}
                                     </span>
                                 </div>
-                                <p className="text-[11px] font-medium text-[#777367]">{employee.email}</p>
+                                <p className="text-[11px] font-medium text-[#777367] dark:text-[#B8B3A7]">{employee.email}</p>
                             </div>
                         </div>
                     </td>
                 )}
                 {visibleColumns.includes('Team') && (
                     <td className="px-6 py-4">
-                        <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-[#EEE8DD]/60 text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9]">
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-[#EEE8DD]/60 dark:bg-[#1E2419] border border-[#D6CDBC]/60 dark:border-[#384232] text-xs font-semibold text-[#30382B] dark:text-[#E8E2D5] shadow-2xs">
                             {typeof employee.team === 'object' ? (employee.team?.name || 'No Team') : (employee.team || 'No Team')}
                         </span>
                     </td>
@@ -1038,7 +1038,7 @@ const EmployeeRow = ({ employee, onEdit, onDelete, onTransparencyClick, visibleC
                     <div className="flex items-center justify-end gap-1.5">
                         <button
                             onClick={(e) => { e.stopPropagation(); navigate(`${rolePath}/employees/${employee.id}`); }}
-                            className="h-8 w-8 rounded-lg bg-[#EEE8DD]/60 text-[#777367] hover:text-[#30382B] hover:bg-[#EEE8DD] flex items-center justify-center transition-all shadow-warm-xs cursor-pointer"
+                            className="h-8 w-8 rounded-lg bg-[#F5F1E9] dark:bg-[#1E2419] border border-[#D6CDBC]/70 dark:border-[#384232] text-[#777367] dark:text-[#B8B3A7] hover:text-[#30382B] dark:hover:text-[#F5F1E9] hover:bg-[#EEE8DD] dark:hover:bg-[#2E362A] flex items-center justify-center transition-all shadow-warm-xs cursor-pointer"
                             title="View Profile"
                         >
                             <Eye size={15} />
@@ -1048,7 +1048,7 @@ const EmployeeRow = ({ employee, onEdit, onDelete, onTransparencyClick, visibleC
                             <>
                                 <button
                                     onClick={(e) => { e.stopPropagation(); onEdit(employee); }}
-                                    className="h-8 w-8 rounded-lg bg-[#EEE8DD]/60 text-[#777367] hover:text-[#B9955B] hover:bg-[#EEE8DD] flex items-center justify-center transition-all shadow-warm-xs cursor-pointer"
+                                    className="h-8 w-8 rounded-lg bg-[#F5F1E9] dark:bg-[#1E2419] border border-[#D6CDBC]/70 dark:border-[#384232] text-[#777367] dark:text-[#B8B3A7] hover:text-[#B9955B] dark:hover:text-[#D3B98D] hover:bg-[#EEE8DD] dark:hover:bg-[#2E362A] flex items-center justify-center transition-all shadow-warm-xs cursor-pointer"
                                     title="Edit Employee"
                                 >
                                     <Edit size={15} />
@@ -1056,7 +1056,7 @@ const EmployeeRow = ({ employee, onEdit, onDelete, onTransparencyClick, visibleC
 
                                 <button
                                     onClick={(e) => { e.stopPropagation(); onDelete(employee); }}
-                                    className="h-8 w-8 rounded-lg bg-[#EEE8DD]/60 text-[#777367] hover:text-[#A84B4B] hover:bg-[#FAF3F2] flex items-center justify-center transition-all shadow-warm-xs cursor-pointer"
+                                    className="h-8 w-8 rounded-lg bg-[#F5F1E9] dark:bg-[#1E2419] border border-[#D6CDBC]/70 dark:border-[#384232] text-[#777367] dark:text-[#B8B3A7] hover:text-[#A84B4B] hover:bg-[#FAF3F2] dark:hover:bg-rose-950/20 flex items-center justify-center transition-all shadow-warm-xs cursor-pointer"
                                     title="Delete Employee"
                                 >
                                     <Trash2 size={15} />
