@@ -180,6 +180,7 @@ export function ProductivityStackedChart({
                                 tickFormatter={(val) => `${val}h`}
                             />
                             <Tooltip
+                                formatter={(value, name) => [`${value} h`, name]}
                                 contentStyle={{
                                     backgroundColor: '#30382B',
                                     borderRadius: '12px',

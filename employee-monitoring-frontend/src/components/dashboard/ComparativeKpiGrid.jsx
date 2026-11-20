@@ -241,10 +241,10 @@ export function ComparativeKpiGrid({ sec, stats, deltas, role, isToday = true, l
             />
 
             <KpiCard
-                title="Utilization"
+                title={role?.toUpperCase() === 'ADMIN' ? 'Utilization' : 'Productivity'}
                 displayValue={effectiveProductivity}
                 delta={d.utilization || d.productivity}
-                icon={Activity}
+                icon={role?.toUpperCase() === 'ADMIN' ? Activity : TrendingUp}
             />
         </div>
     );
