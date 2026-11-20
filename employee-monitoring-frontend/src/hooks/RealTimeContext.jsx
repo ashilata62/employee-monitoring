@@ -623,6 +623,12 @@ export function RealTimeProvider({ children }) {
 
         const handleAdminIdleAlert = (data) => {
             console.log('RealTimeContext: Admin Inactivity Alert:', data);
+            // Ignore idle alerts for admin or manager accounts
+            const name = (data.employeeName || '').toLowerCase();
+            const alertRole = (data.employeeRole || data.role || '').toUpperCase();
+            if (alertRole === 'ADMIN' || alertRole === 'MANAGER' || name.includes('admin')) {
+                return;
+            }
             playAlertChime();
             toast.warning(`Inactivity Alert: ${data.employeeName || 'Employee'} has been inactive for 10 minutes.`);
             setState(prev => ({

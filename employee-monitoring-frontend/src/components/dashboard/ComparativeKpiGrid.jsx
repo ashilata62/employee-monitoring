@@ -5,9 +5,9 @@ import {
     MonitorOff,
     Clock,
     TrendingUp,
-    Award,
     Activity,
-    PieChart
+    Zap,
+    MoreHorizontal
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { useSessionTimer } from '../../hooks/useLiveTime';
@@ -18,6 +18,21 @@ const formatSecondsToHoursMins = (secs) => {
     const h = Math.floor(secs / 3600);
     const m = Math.floor((secs % 3600) / 60);
     return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')} h`;
+};
+
+const formatToHMHour = (val) => {
+    if (!val) return '00:00 h';
+    if (typeof val === 'number') {
+        return formatSecondsToHoursMins(val);
+    }
+    if (typeof val === 'string') {
+        if (/^\d+:\d{2}\s*h$/.test(val)) return val;
+        const match = val.match(/^(\d+)h\s*(\d+)m/);
+        if (match) {
+            return `${String(match[1]).padStart(2, '0')}:${String(match[2]).padStart(2, '0')} h`;
+        }
+    }
+    return val;
 };
 
 const FormattedDisplayValue = ({ value }) => {
@@ -137,34 +152,34 @@ export function ComparativeKpiGrid({ sec, stats, deltas, role, isToday = true, l
     // When Employee or Manager is viewing Today:
     // If clocked out: ALL cards reset to 00h 00m 00s and 0% immediately with zero latency!
     // If clocked in: session timer ticks live from 00h 00m 00s upwards in sync with top pill timer!
-    // For Admin: Displays genuine workforce/team aggregate metrics from stats.summary!
+    // For Admin: Displays genuine workforce/team aggregate metrics formatted as HH:MM h (e.g. 192:16 h)!
     const effectiveWorkTime = isSessionUser && isToday
         ? (isClockedIn ? formatSecondsToHMS(sessionSeconds) : '00h 00m 00s')
-        : (stats?.summary?.workTime || formatSecondsToHMS(sec?.workTime));
+        : formatToHMHour(stats?.summary?.workTime || sec?.workTime);
 
     const effectiveActiveTime = isSessionUser && isToday
         ? (isClockedIn ? formatSecondsToHMS(sessionSeconds) : '00h 00m 00s')
-        : (stats?.summary?.activeTime || formatSecondsToHMS(sec?.activeTime));
-
-    const effectiveProductiveTime = isSessionUser && isToday
-        ? (isClockedIn ? formatSecondsToHMS(sessionSeconds) : '00h 00m 00s')
-        : (stats?.summary?.productiveTime || formatSecondsToHMS(sec?.productiveTime));
+        : formatToHMHour(stats?.summary?.activeTime || sec?.activeTime);
 
     const effectiveIdleTime = isSessionUser && isToday
         ? '00h 00m 00s'
-        : (stats?.summary?.idleTime || formatSecondsToHMS(sec?.idleTime));
+        : formatToHMHour(stats?.summary?.idleTime || sec?.idleTime);
 
     const effectiveManualTime = isSessionUser && isToday
         ? '00h 00m 00s'
-        : (stats?.summary?.manualTime || formatSecondsToHMS(sec?.manualTime));
+        : formatToHMHour(stats?.summary?.manualTime || sec?.manualTime);
+
+    const effectiveProductiveTime = isSessionUser && isToday
+        ? (isClockedIn ? formatSecondsToHMS(sessionSeconds) : '00h 00m 00s')
+        : formatToHMHour(stats?.summary?.productiveTime || sec?.productiveTime);
 
     const effectiveUnproductiveTime = isSessionUser && isToday
         ? '00h 00m 00s'
-        : (stats?.summary?.unproductiveTime || formatSecondsToHMS(sec?.unproductiveTime));
+        : formatToHMHour(stats?.summary?.unproductiveTime || sec?.unproductiveTime);
 
     const effectiveNeutralTime = isSessionUser && isToday
         ? '00h 00m 00s'
-        : (stats?.summary?.neutralTime || formatSecondsToHMS(sec?.neutralTime));
+        : formatToHMHour(stats?.summary?.neutralTime || sec?.neutralTime);
 
     const effectiveProductivity = isSessionUser && isToday
         ? (isClockedIn ? '100%' : '0%')
@@ -207,7 +222,7 @@ export function ComparativeKpiGrid({ sec, stats, deltas, role, isToday = true, l
                 title="Productive Time"
                 displayValue={effectiveProductiveTime}
                 delta={d.productiveTime}
-                icon={Award}
+                icon={TrendingUp}
             />
 
             <KpiCard
@@ -215,21 +230,21 @@ export function ComparativeKpiGrid({ sec, stats, deltas, role, isToday = true, l
                 displayValue={effectiveUnproductiveTime}
                 delta={d.unproductiveTime}
                 inverse={true}
-                icon={Activity}
+                icon={Zap}
             />
 
             <KpiCard
                 title="Neutral Time"
                 displayValue={effectiveNeutralTime}
                 delta={d.neutralTime}
-                icon={PieChart}
+                icon={MoreHorizontal}
             />
 
             <KpiCard
-                title="Productivity"
+                title="Utilization"
                 displayValue={effectiveProductivity}
-                delta={d.productivity || d.utilization}
-                icon={TrendingUp}
+                delta={d.utilization || d.productivity}
+                icon={Activity}
             />
         </div>
     );

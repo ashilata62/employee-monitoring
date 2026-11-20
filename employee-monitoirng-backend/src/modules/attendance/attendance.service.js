@@ -175,8 +175,8 @@ const attendanceService = {
         return { ...attendance, openBreak: null, totalBreakSeconds: 0 };
     },
 
-    clockOut: async (employeeId) => {
-        const now = new Date();
+    clockOut: async (employeeId, customClockOutTime = null) => {
+        const now = customClockOutTime ? new Date(customClockOutTime) : new Date();
 
         // Find the most recent active session regardless of date
         const attendance = await prisma.attendance.findFirst({

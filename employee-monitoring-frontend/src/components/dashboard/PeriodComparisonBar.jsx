@@ -157,7 +157,7 @@ export function PeriodComparisonBar({
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h1 className="font-serif text-3xl sm:text-4xl font-normal text-[#29291F] dark:text-[#F5F1E9] tracking-tight">
-                        Overview
+                        Productivity Trends
                     </h1>
                     <p className="text-xs font-medium text-[#777367] dark:text-[#B8B3A7] mt-0.5">
                         Workforce performance & productivity intelligence
@@ -165,6 +165,13 @@ export function PeriodComparisonBar({
                 </div>
 
                 <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => navigate(`${rolePrefix}/employees`)}
+                        className="px-4 py-2 rounded-xl bg-[#5932EA] hover:bg-[#4A28C7] text-white text-xs font-semibold shadow-xs transition flex items-center gap-1.5 cursor-pointer"
+                    >
+                        <span>Add New Employee</span>
+                    </button>
+
                     <button
                         onClick={() => navigate(`${rolePrefix}/alerts`)}
                         className="relative w-10 h-10 rounded-xl bg-[#EEE8DD] dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] flex items-center justify-center text-[#29291F] dark:text-[#F5F1E9] hover:bg-[#E5DED2] transition-colors cursor-pointer"

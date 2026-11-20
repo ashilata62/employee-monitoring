@@ -225,6 +225,7 @@ export function Dashboard() {
     const [compareStartDate, setCompareStartDate] = useState(null);
     const [compareEndDate, setCompareEndDate] = useState(null);
     const [activeFilter, setActiveFilter] = useState({ employeeId: null, teamId: null, role: null });
+    const [adminViewMode, setAdminViewMode] = useState('productivity'); // 'productivity' | 'radar'
     const [activeChartTab, setActiveChartTab] = useState('Activities');
     const [dashboardData, setDashboardData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -501,8 +502,41 @@ export function Dashboard() {
                 );
             })()}
 
+            {/* View Mode Switcher for Admin: Productivity Trends (Client Dashboard) vs Live Staff Radar */}
+            {role === 'ADMIN' && (
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-6 bg-[#EEE8DD] dark:bg-[#252B20] p-1.5 rounded-2xl border border-[#D6CDBC] dark:border-[#384232]">
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => setAdminViewMode('productivity')}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                                adminViewMode === 'productivity'
+                                    ? 'bg-[#30382B] text-white shadow-xs'
+                                    : 'text-[#777367] dark:text-[#B8B3A7] hover:text-[#29291F] dark:hover:text-white'
+                            }`}
+                        >
+                            <Zap size={14} className={adminViewMode === 'productivity' ? 'text-[#D3B98D]' : ''} />
+                            <span>Productivity Trends</span>
+                        </button>
+                        <button
+                            onClick={() => setAdminViewMode('radar')}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                                adminViewMode === 'radar'
+                                    ? 'bg-[#30382B] text-white shadow-xs'
+                                    : 'text-[#777367] dark:text-[#B8B3A7] hover:text-[#29291F] dark:hover:text-white'
+                            }`}
+                        >
+                            <Activity size={14} className={adminViewMode === 'radar' ? 'text-[#00C48C]' : ''} />
+                            <span>Live Staff Radar & Operations</span>
+                        </button>
+                    </div>
+                    <span className="text-[11px] font-medium text-[#777367] dark:text-[#B8B3A7] px-3 hidden sm:inline">
+                        Admin Executive View
+                    </span>
+                </div>
+            )}
+
             {/* Admin vs Manager/Employee View Routing */}
-            {role === 'ADMIN' ? (
+            {role === 'ADMIN' && adminViewMode === 'radar' ? (
                 <AdminExecutiveDashboard
                     stats={stats}
                     dashboardData={dashboardData}
