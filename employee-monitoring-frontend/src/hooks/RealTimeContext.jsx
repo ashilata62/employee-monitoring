@@ -1672,6 +1672,38 @@ export function RealTimeProvider({ children }) {
 
         if (role === 'EMPLOYEE') {
             const filteredEmployees = currentEmployees.filter(e => e.email === targetEmail);
+            const myEmp = filteredEmployees[0];
+            const myName = (myEmp?.fullName || myEmp?.name || user?.fullName || user?.name || '').toLowerCase().trim();
+            const myId = String(myEmp?.id || user?.id || '');
+
+            const employeeFilteredNotifs = mergedNotifications.filter(n => {
+                // Keep all alert-synthesized notifications (they are already scoped to this employee)
+                if (String(n.id).startsWith('alert_') || n.alertId) return true;
+
+                const title = (n.title || '').toLowerCase();
+                const desc = (n.description || '').toLowerCase();
+
+                // If it is a generic status event of other employees, filter out unless it's the current employee
+                const isStatusEvent = title.includes('went online') || title.includes('went offline') ||
+                    title.includes('clocked in') || title.includes('clocked out') ||
+                    title.includes('checked in') || desc.includes('clocked in') || desc.includes('clocked out') ||
+                    title.includes('login successful');
+
+                if (isStatusEvent) {
+                    // Only keep if it explicitly mentions this employee's name or id
+                    if (myName && (title.includes(myName) || desc.includes(myName))) return true;
+                    if (myId && (title.includes(myId) || desc.includes(myId))) return true;
+                    return false;
+                }
+
+                // If description contains a raw UUID of someone else, filter out
+                if (desc.includes('employee ') && !desc.includes(myId) && (!myName || !desc.includes(myName))) {
+                    return false;
+                }
+
+                return true;
+            });
+
             return {
                 employees: filteredEmployees,
                 tasks: state.tasks, // Server already filters tasks for employees, don't double-filter here
@@ -1680,7 +1712,7 @@ export function RealTimeProvider({ children }) {
                 teams: [],
                 activityLogs: state.activityLogs.filter(l => l.employeeId === filteredEmployees[0]?.id),
                 alerts: scopedAlerts,
-                notifications: mergedNotifications
+                notifications: employeeFilteredNotifs
             };
         }
 

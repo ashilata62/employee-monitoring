@@ -33,7 +33,19 @@ const notificationsService = {
                 OR: [
                     ...(userId ? [{ targetUserId: userId }] : []),
                     ...(employeeId ? [{ targetUserId: employeeId }] : []),
-                    { targetUserId: null }
+                    {
+                        targetUserId: null,
+                        NOT: [
+                            { title: { contains: 'went online' } },
+                            { title: { contains: 'went offline' } },
+                            { title: { contains: 'clocked in' } },
+                            { title: { contains: 'clocked out' } },
+                            { title: { contains: 'checked in' } },
+                            { description: { contains: 'clocked in' } },
+                            { description: { contains: 'clocked out' } },
+                            { title: { contains: 'Login successful' } }
+                        ]
+                    }
                 ]
             } : {})
         };
