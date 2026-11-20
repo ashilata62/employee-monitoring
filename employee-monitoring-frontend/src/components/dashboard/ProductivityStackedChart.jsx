@@ -21,8 +21,8 @@ const ProductivityTooltip = ({ active, payload, label }) => {
         : Number(((data.productive || 0) + (data.unproductive || 0) + (data.neutral || 0)).toFixed(2));
 
     return (
-        <div className="bg-[#30382B] text-[#F5F1E9] p-4 rounded-xl shadow-xl border border-[#3C4536] text-xs min-w-[190px]">
-            <div className="font-serif font-bold text-[#D3B98D] pb-2 mb-2 border-b border-[#3C4536] flex items-center justify-between">
+        <div className="bg-[#252B20] text-[#F5F1E9] p-3.5 rounded-xl shadow-xl border border-[#384232] text-xs min-w-[190px]">
+            <div className="font-serif font-bold text-[#D3B98D] pb-1.5 mb-2 border-b border-[#384232] flex items-center justify-between">
                 <span>{label || data.name}</span>
                 <span className="font-sans font-bold text-white">{total} h total</span>
             </div>
@@ -106,8 +106,8 @@ export function ProductivityStackedChart({
                         onClick={() => setActiveTab('Activities')}
                         className={`px-3 sm:px-3.5 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                             activeTab === 'Activities'
-                                ? 'bg-[#30382B] text-white shadow-xs'
-                                : 'text-[#777367] hover:text-[#29291F]'
+                                ? 'bg-[#30382B] text-[#FDFBF7] dark:bg-[#C9A96E] dark:text-[#161C14] shadow-xs'
+                                : 'text-[#777367] hover:text-[#29291F] dark:hover:text-[#F5F1E9]'
                         }`}
                     >
                         Activities
@@ -116,8 +116,8 @@ export function ProductivityStackedChart({
                         onClick={() => setActiveTab('Productivity')}
                         className={`px-3 sm:px-3.5 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                             activeTab === 'Productivity'
-                                ? 'bg-[#B9955B] text-white shadow-xs'
-                                : 'text-[#777367] hover:text-[#29291F]'
+                                ? 'bg-[#B9955B] text-[#FDFBF7] shadow-xs'
+                                : 'text-[#777367] hover:text-[#29291F] dark:hover:text-[#F5F1E9]'
                         }`}
                     >
                         Productivity
@@ -138,7 +138,7 @@ export function ProductivityStackedChart({
                     {activeTab === 'Productivity' ? (
                         displayData.length > 0 ? (
                             <BarChart data={displayData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5DED2" className="dark:stroke-[#384232]" opacity={0.6} />
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(185, 149, 91, 0.15)" />
                                 <XAxis
                                     dataKey="name"
                                     axisLine={false}
@@ -152,10 +152,10 @@ export function ProductivityStackedChart({
                                     tick={{ fontSize: 11, fill: '#777367', fontWeight: 600 }}
                                     tickFormatter={(val) => `${val}h`}
                                 />
-                                <Tooltip content={<ProductivityTooltip />} />
-                                <Bar dataKey="productive" name="Productive Time" stackId="a" fill="#00C48C" maxBarSize={28} />
-                                <Bar dataKey="unproductive" name="Unproductive Time" stackId="a" fill="#F46A6A" maxBarSize={28} />
-                                <Bar dataKey="neutral" name="Neutral Time" stackId="a" fill="#CBD5E1" radius={[4, 4, 0, 0]} maxBarSize={28} />
+                                <Tooltip content={<ProductivityTooltip />} cursor={{ fill: 'rgba(185, 149, 91, 0.08)' }} />
+                                <Bar dataKey="productive" name="Productive Time" stackId="a" fill="#5E7D64" maxBarSize={28} />
+                                <Bar dataKey="unproductive" name="Unproductive Time" stackId="a" fill="#A84B4B" maxBarSize={28} />
+                                <Bar dataKey="neutral" name="Neutral Time" stackId="a" fill="#D3B98D" radius={[4, 4, 0, 0]} maxBarSize={28} />
                             </BarChart>
                         ) : (
                             <div className="h-full flex flex-col items-center justify-center text-[#777367]">
@@ -165,7 +165,7 @@ export function ProductivityStackedChart({
                         )
                     ) : (
                         <ComposedChart data={hasIntradayData ? intradayData : []} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5DED2" className="dark:stroke-[#384232]" opacity={0.6} />
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(185, 149, 91, 0.15)" />
                             <XAxis
                                 dataKey="name"
                                 axisLine={false}
@@ -180,10 +180,11 @@ export function ProductivityStackedChart({
                                 tickFormatter={(val) => `${val}h`}
                             />
                             <Tooltip
+                                cursor={{ fill: 'rgba(185, 149, 91, 0.08)' }}
                                 contentStyle={{
-                                    backgroundColor: '#30382B',
+                                    backgroundColor: '#252B20',
                                     borderRadius: '12px',
-                                    border: '1px solid #3C4536',
+                                    border: '1px solid #384232',
                                     color: '#F5F1E9',
                                     fontWeight: 600,
                                     fontSize: '12px'
@@ -194,13 +195,13 @@ export function ProductivityStackedChart({
                                     type="monotone"
                                     dataKey="active"
                                     name="Active Hours"
-                                    stroke="#30382B"
-                                    fill="#D0DAC9"
+                                    stroke="#B9955B"
+                                    fill="rgba(185, 149, 91, 0.2)"
                                     strokeWidth={2.5}
                                 />
                             ) : (
                                 <>
-                                    <Bar dataKey="active" name="Active Time" stackId="act" fill="#30382B" maxBarSize={18} />
+                                    <Bar dataKey="active" name="Active Time" stackId="act" fill="#5E7D64" maxBarSize={18} />
                                     <Bar dataKey="idle" name="Idle Time" stackId="act" fill="#D3B98D" maxBarSize={18} />
                                     <Bar dataKey="break" name="Break Time" stackId="act" fill="#C98A3C" maxBarSize={18} />
                                     <Bar dataKey="manual" name="Manual Time" stackId="act" fill="#B9955B" radius={[2, 2, 0, 0]} maxBarSize={18} />
@@ -216,17 +217,17 @@ export function ProductivityStackedChart({
                 {activeTab === 'Productivity' ? (
                     <>
                         <span className="flex items-center gap-1.5">
-                            <span className="w-2.5 h-2.5 rounded-full bg-[#00C48C]" />
+                            <span className="w-2.5 h-2.5 rounded-full bg-[#5E7D64]" />
                             <span>Productive Time</span>
                             <HelpCircle size={13} className="text-[#9E988A] cursor-help" />
                         </span>
                         <span className="flex items-center gap-1.5">
-                            <span className="w-2.5 h-2.5 rounded-full bg-[#F46A6A]" />
+                            <span className="w-2.5 h-2.5 rounded-full bg-[#A84B4B]" />
                             <span>Unproductive Time</span>
                             <HelpCircle size={13} className="text-[#9E988A] cursor-help" />
                         </span>
                         <span className="flex items-center gap-1.5">
-                            <span className="w-2.5 h-2.5 rounded-full bg-[#CBD5E1]" />
+                            <span className="w-2.5 h-2.5 rounded-full bg-[#D3B98D]" />
                             <span>Neutral Time</span>
                             <HelpCircle size={13} className="text-[#9E988A] cursor-help" />
                         </span>
@@ -234,7 +235,7 @@ export function ProductivityStackedChart({
                 ) : (
                     <>
                         <span className="flex items-center gap-1.5">
-                            <span className="w-2.5 h-2.5 rounded-full bg-[#30382B]" />
+                            <span className="w-2.5 h-2.5 rounded-full bg-[#5E7D64]" />
                             <span>Active Time</span>
                             <HelpCircle size={13} className="text-[#9E988A] cursor-help" />
                         </span>

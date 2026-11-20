@@ -64,8 +64,8 @@ export function PeriodComparisonBar({
                 type="button"
                 onClick={handleToggleExport}
                 className={`p-2.5 rounded-xl border transition-all shadow-warm-xs active:scale-95 cursor-pointer ${showExportMenu
-                        ? 'bg-[#B9955B] text-white border-[#B9955B]'
-                        : 'bg-[#EEE8DD] dark:bg-[#252B20] border-[#D6CDBC] dark:border-[#384232] text-[#777367] hover:text-[#29291F] dark:hover:text-[#F5F1E9]'
+                    ? 'bg-[#B9955B] text-white border-[#B9955B]'
+                    : 'bg-[#EEE8DD] dark:bg-[#252B20] border-[#D6CDBC] dark:border-[#384232] text-[#777367] hover:text-[#29291F] dark:hover:text-[#F5F1E9]'
                     }`}
                 title="Download / Export Report"
             >
@@ -226,14 +226,15 @@ export function PeriodComparisonBar({
                     <div className="flex items-center gap-3">
                         <button
                             onClick={() => navigate(`${rolePrefix}/employees`)}
-                            className="px-4 py-2 rounded-xl bg-[#5932EA] hover:bg-[#4A28C7] text-white text-xs font-semibold shadow-xs transition flex items-center gap-1.5 cursor-pointer"
+                            className="h-10 px-4 rounded-xl bg-[#30382B] hover:bg-[#3C4536] text-[#FDFBF7] dark:bg-[#C9A96E] dark:hover:bg-[#d8b87d] dark:text-[#161C14] text-xs font-semibold uppercase tracking-wider shadow-warm-xs transition-all flex items-center gap-2 cursor-pointer active:scale-95 whitespace-nowrap"
                         >
+                            <Plus size={14} strokeWidth={2.5} className="text-[#D3B98D] dark:text-[#161C14]" />
                             <span>Add New Employee</span>
                         </button>
 
                         <button
                             onClick={() => navigate(`${rolePrefix}/alerts`)}
-                            className="relative w-10 h-10 rounded-xl bg-[#EEE8DD] dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] flex items-center justify-center text-[#29291F] dark:text-[#F5F1E9] hover:bg-[#E5DED2] transition-colors cursor-pointer"
+                            className="relative w-10 h-10 rounded-xl bg-[#EEE8DD] dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] flex items-center justify-center text-[#29291F] dark:text-[#F5F1E9] hover:bg-[#E5DED2] dark:hover:bg-[#2E362A] transition-colors cursor-pointer"
                             title="Alerts & Notifications"
                         >
                             <Bell size={17} className="text-[#777367]" />
@@ -334,8 +335,8 @@ export function PeriodComparisonBar({
                             <button
                                 onClick={() => setShowFilterPopover(!showFilterPopover)}
                                 className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all shadow-warm-xs cursor-pointer ${isFilterActive
-                                        ? 'bg-[#B9955B] text-white shadow-sm'
-                                        : 'bg-[#EEE8DD] dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] text-[#29291F] dark:text-[#F5F1E9] hover:bg-[#EEE8DD]'
+                                    ? 'bg-[#B9955B] text-white shadow-sm'
+                                    : 'bg-[#EEE8DD] dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] text-[#29291F] dark:text-[#F5F1E9] hover:bg-[#EEE8DD]'
                                     }`}
                             >
                                 <Plus size={13} strokeWidth={2.5} className={isFilterActive ? 'text-white' : 'text-[#B9955B]'} />
@@ -446,8 +447,8 @@ export function PeriodComparisonBar({
                                         onClick={handleToggleBreak}
                                         disabled={isSessionLoading}
                                         className={`flex items-center gap-1.5 px-3.5 py-2 ${isOnBreak
-                                                ? 'bg-[#5E7D64] hover:bg-[#4A6B53]'
-                                                : 'bg-[#B9955B] hover:bg-[#A17D45]'
+                                            ? 'bg-[#5E7D64] hover:bg-[#4A6B53]'
+                                            : 'bg-[#B9955B] hover:bg-[#A17D45]'
                                             } text-white rounded-xl text-xs font-bold shadow-warm-xs transition-all hover:scale-[1.02] active:scale-95 cursor-pointer disabled:opacity-50`}
                                     >
                                         <Clock size={13} />
@@ -459,8 +460,8 @@ export function PeriodComparisonBar({
                                         <Clock size={13} className={isOnBreak ? 'text-amber-500' : 'text-[#B9955B] animate-pulse'} />
                                         <span>{formatSecondsToHMS(sessionSeconds)}</span>
                                         <span className={`text-[9px] uppercase px-1.5 py-0.5 rounded-md font-bold ${isOnBreak
-                                                ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-400'
-                                                : 'bg-[#5E7D64]/15 text-[#5E7D64] dark:text-[#A4C2A8]'
+                                            ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-400'
+                                            : 'bg-[#5E7D64]/15 text-[#5E7D64] dark:text-[#A4C2A8]'
                                             }`}>
                                             {isOnBreak ? 'Paused' : 'Active'}
                                         </span>

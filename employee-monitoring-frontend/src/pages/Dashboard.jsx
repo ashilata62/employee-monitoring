@@ -660,7 +660,7 @@ export function Dashboard() {
                                     : 'text-[#777367] dark:text-[#B8B3A7] hover:text-[#29291F] dark:hover:text-white'
                             }`}
                         >
-                            <Activity size={14} className={adminViewMode === 'radar' ? 'text-[#00C48C]' : ''} />
+                            <Activity size={14} className={adminViewMode === 'radar' ? 'text-[#B9955B]' : ''} />
                             <span>Live Staff Radar & Operations</span>
                         </button>
                     </div>

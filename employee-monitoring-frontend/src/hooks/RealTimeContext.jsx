@@ -42,13 +42,24 @@ const formatTime = (totalSeconds) => {
     return `${h}:${m}:${s}`;
 };
 
-const mapStatus = (status) => {
-    const s = status?.toUpperCase();
-    if (s === 'BACKLOG') return 'Backlog';
-    if (s === 'IN_OPERATIONS') return 'In Operations';
-    if (s === 'QUALITY_ASSURANCE') return 'Quality Assurance';
-    if (s === 'FINALIZED') return 'Finalized';
-    return status;
+export const mapStatus = (status) => {
+    if (!status) return 'Backlog';
+    const s = String(status).toUpperCase().replace(/\s+/g, '_');
+    if (s === 'BACKLOG' || s === 'TO_DO' || s === 'TODO') return 'Backlog';
+    if (s === 'IN_OPERATIONS' || s === 'IN_OPERATION' || s === 'OPERATIONS' || s === 'IN_PROGRESS' || s === 'WORKING_ON_IT') return 'In Operations';
+    if (s === 'QUALITY_ASSURANCE' || s === 'QA' || s === 'IN_REVIEW') return 'Quality Assurance';
+    if (s === 'FINALIZED' || s === 'DONE' || s === 'COMPLETED') return 'Finalized';
+    return 'Backlog';
+};
+
+export const statusToBackend = (status) => {
+    if (!status) return 'BACKLOG';
+    const s = String(status).toUpperCase().replace(/\s+/g, '_');
+    if (s === 'BACKLOG' || s === 'TO_DO' || s === 'TODO') return 'BACKLOG';
+    if (s === 'IN_OPERATIONS' || s === 'IN_OPERATION' || s === 'OPERATIONS' || s === 'IN_PROGRESS' || s === 'WORKING_ON_IT') return 'IN_OPERATIONS';
+    if (s === 'QUALITY_ASSURANCE' || s === 'QA' || s === 'IN_REVIEW') return 'QUALITY_ASSURANCE';
+    if (s === 'FINALIZED' || s === 'DONE' || s === 'COMPLETED') return 'FINALIZED';
+    return 'BACKLOG';
 };
 
 // Web Audio API Synthesized Chime for Critical & Warning Alerts
@@ -1349,14 +1360,7 @@ export function RealTimeProvider({ children }) {
 
     const updateTaskStatus = useCallback(async (taskId, status, progress) => {
         try {
-            const statusMap = {
-                'Backlog': 'BACKLOG',
-                'In Operations': 'IN_OPERATIONS',
-                'Quality Assurance': 'QUALITY_ASSURANCE',
-                'Finalized': 'FINALIZED'
-            };
-
-            const backendStatus = statusMap[status] || 'BACKLOG';
+            const backendStatus = statusToBackend(status);
             const isFinalized = backendStatus === 'FINALIZED';
             if (isFinalized) {
                 const timerState = useTaskStore.getState();
@@ -1367,12 +1371,13 @@ export function RealTimeProvider({ children }) {
             const res = await taskService.updateTaskStatus(taskId, backendStatus);
 
             if (res.success) {
+                const displayStatus = mapStatus(backendStatus);
                 setState(prev => {
                     const task = prev.tasks.find(t => t.id === taskId);
                     if (!task) return prev;
 
                     let updatedEmployees = prev.employees;
-                    if (status === 'Finalized' && task.status !== 'Finalized') {
+                    if (displayStatus === 'Finalized' && task.status !== 'Finalized') {
                         updatedEmployees = prev.employees.map(e => {
                             if (e.id === task.assigneeId || e.name === task.assignee) {
                                 const newScore = Math.min(99, (e.productivityScore || 85) + 2);
@@ -1387,12 +1392,12 @@ export function RealTimeProvider({ children }) {
                         employees: updatedEmployees,
                         tasks: prev.tasks.map(t => t.id === taskId ? {
                             ...t,
-                            status: mapStatus(status),
-                            progress: progress ?? (status === 'Finalized' ? 100 : (status === 'Quality Assurance' ? 80 : (status === 'In Operations' ? 40 : 0)))
+                            status: displayStatus,
+                            progress: progress ?? (displayStatus === 'Finalized' ? 100 : (displayStatus === 'Quality Assurance' ? 80 : (displayStatus === 'In Operations' ? 40 : 0)))
                         } : t)
                     };
                 });
-                if (status === 'Finalized') {
+                if (backendStatus === 'FINALIZED') {
                     addNotification(`Task finalized! Productivity score increased for assignee.`, 'success');
                 }
             }
@@ -1416,21 +1421,11 @@ export function RealTimeProvider({ children }) {
 
     const updateTask = useCallback(async (id, taskData) => {
         try {
-            const statusMap = {
-                'Backlog': 'BACKLOG',
-                'In Operations': 'IN_OPERATIONS',
-                'Quality Assurance': 'QUALITY_ASSURANCE',
-                'Finalized': 'FINALIZED',
-                // Also accept uppercase as keys
-                'BACKLOG': 'BACKLOG',
-                'IN_OPERATIONS': 'IN_OPERATIONS',
-                'QUALITY_ASSURANCE': 'QUALITY_ASSURANCE',
-                'FINALIZED': 'FINALIZED'
-            };
+            const backendStatus = statusToBackend(taskData.status);
             const backendPayload = {
                 name: taskData.title,
                 priority: taskData.priority?.toUpperCase() || 'MEDIUM',
-                status: statusMap[taskData.status] || taskData.status || undefined,
+                status: backendStatus,
                 dueDate: taskData.dueDate && taskData.dueDate !== 'No Date' ? new Date(taskData.dueDate).toISOString() : undefined,
                 employeeId: taskData.assigneeId || undefined,
             };
@@ -1443,16 +1438,16 @@ export function RealTimeProvider({ children }) {
             }
             const res = await taskService.updateTask(id, backendPayload);
             if (res.success) {
+                const displayStatus = mapStatus(backendStatus);
                 setState(prev => ({
                     ...prev,
                     tasks: prev.tasks.map(t => {
                         if (t.id === id) {
-                            const updatedStatus = mapStatus(taskData.status || t.status);
                             return {
                                 ...t,
                                 ...taskData,
-                                status: updatedStatus,
-                                progress: taskData.progress ?? (updatedStatus === 'Finalized' ? 100 : (updatedStatus === 'Quality Assurance' ? 80 : (updatedStatus === 'In Operations' ? 40 : t.progress)))
+                                status: displayStatus,
+                                progress: taskData.progress ?? (displayStatus === 'Finalized' ? 100 : (displayStatus === 'Quality Assurance' ? 80 : (displayStatus === 'In Operations' ? 40 : t.progress)))
                             };
                         }
                         return t;

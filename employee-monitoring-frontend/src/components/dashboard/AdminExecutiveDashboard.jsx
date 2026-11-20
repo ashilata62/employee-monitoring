@@ -55,19 +55,19 @@ const CustomStackedTooltip = ({ active, payload, label }) => {
             <div className="space-y-1.5 font-medium">
                 <div className="flex items-center justify-between gap-3 text-[#A4C2A8]">
                     <span className="flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-[#00C48C]" /> Productive:
+                        <span className="w-2 h-2 rounded-full bg-[#5E7D64]" /> Productive:
                     </span>
                     <span className="font-bold">{data.productive || 0}h</span>
                 </div>
-                <div className="flex items-center justify-between gap-3 text-[#F87171]">
+                <div className="flex items-center justify-between gap-3 text-[#E8A5A5]">
                     <span className="flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-[#F46A6A]" /> Unproductive:
+                        <span className="w-2 h-2 rounded-full bg-[#A84B4B]" /> Unproductive:
                     </span>
                     <span className="font-bold">{data.unproductive || 0}h</span>
                 </div>
-                <div className="flex items-center justify-between gap-3 text-[#CBD5E1]">
+                <div className="flex items-center justify-between gap-3 text-[#D5CDBC]">
                     <span className="flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-[#CBD5E1]" /> Neutral:
+                        <span className="w-2 h-2 rounded-full bg-[#D3B98D]" /> Neutral:
                     </span>
                     <span className="font-bold">{data.neutral || 0}h</span>
                 </div>
@@ -929,12 +929,12 @@ export function AdminExecutiveDashboard({
                                     allowDecimals={true}
                                     domain={[0, 'auto']}
                                 />
-                                <Tooltip content={<CustomStackedTooltip />} />
+                                <Tooltip content={<CustomStackedTooltip />} cursor={{ fill: 'rgba(185, 149, 91, 0.08)' }} />
                                 {chartTab === 'Productivity' ? (
                                     <>
-                                        <Bar dataKey="productive" name="Productive Time" stackId="stack" fill="#00C48C" maxBarSize={28} />
-                                        <Bar dataKey="unproductive" name="Unproductive Time" stackId="stack" fill="#F46A6A" maxBarSize={28} />
-                                        <Bar dataKey="neutral" name="Neutral Time" stackId="stack" fill="#CBD5E1" radius={[4, 4, 0, 0]} maxBarSize={28} />
+                                        <Bar dataKey="productive" name="Productive Time" stackId="stack" fill="#5E7D64" maxBarSize={28} />
+                                        <Bar dataKey="unproductive" name="Unproductive Time" stackId="stack" fill="#A84B4B" maxBarSize={28} />
+                                        <Bar dataKey="neutral" name="Neutral Time" stackId="stack" fill="#D3B98D" radius={[4, 4, 0, 0]} maxBarSize={28} />
                                     </>
                                 ) : (
                                     <>
@@ -952,17 +952,17 @@ export function AdminExecutiveDashboard({
                         {chartTab === 'Productivity' ? (
                             <>
                                 <span className="flex items-center gap-1.5">
-                                    <span className="w-3 h-3 rounded-full bg-[#00C48C]" />
+                                    <span className="w-3 h-3 rounded-full bg-[#5E7D64]" />
                                     <span className="font-semibold text-[#29291F] dark:text-[#E8E2D5]">Productive Time</span>
                                     <HelpCircle size={13} className="text-[#9E988A] cursor-help" />
                                 </span>
                                 <span className="flex items-center gap-1.5">
-                                    <span className="w-3 h-3 rounded-full bg-[#F46A6A]" />
+                                    <span className="w-3 h-3 rounded-full bg-[#A84B4B]" />
                                     <span className="font-semibold text-[#29291F] dark:text-[#E8E2D5]">Unproductive Time</span>
                                     <HelpCircle size={13} className="text-[#9E988A] cursor-help" />
                                 </span>
                                 <span className="flex items-center gap-1.5">
-                                    <span className="w-3 h-3 rounded-full bg-[#CBD5E1]" />
+                                    <span className="w-3 h-3 rounded-full bg-[#D3B98D]" />
                                     <span className="font-semibold text-[#29291F] dark:text-[#E8E2D5]">Neutral Time</span>
                                     <HelpCircle size={13} className="text-[#9E988A] cursor-help" />
                                 </span>

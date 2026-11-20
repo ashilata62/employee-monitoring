@@ -65,21 +65,31 @@ import {
 
 const cn = (...inputs) => twMerge(clsx(inputs));
 
+export const normalizeTaskStatus = (status) => {
+    if (!status) return 'Backlog';
+    const s = String(status).toUpperCase().replace(/\s+/g, '_');
+    if (s === 'BACKLOG' || s === 'TO_DO' || s === 'TODO') return 'Backlog';
+    if (s === 'IN_OPERATIONS' || s === 'IN_OPERATION' || s === 'OPERATIONS' || s === 'IN_PROGRESS' || s === 'WORKING_ON_IT') return 'In Operations';
+    if (s === 'QUALITY_ASSURANCE' || s === 'QA' || s === 'IN_REVIEW') return 'Quality Assurance';
+    if (s === 'FINALIZED' || s === 'DONE' || s === 'COMPLETED') return 'Finalized';
+    return 'Backlog';
+};
+
 // --- Modals (Tasks & Objectives) ---
-const CreateTaskModal = ({ isOpen, onClose, onSave, defaultStatus = 'To Do', employees = [], projects = [] }) => {
+const CreateTaskModal = ({ isOpen, onClose, onSave, defaultStatus = 'Backlog', employees = [], projects = [] }) => {
     const { role } = useAuthStore();
     const [title, setTitle] = useState('');
     const [assignee, setAssignee] = useState('');
     const [priority, setPriority] = useState('Medium');
     const [dueDate, setDueDate] = useState('');
-    const [status, setStatus] = useState(defaultStatus);
+    const [status, setStatus] = useState(() => normalizeTaskStatus(defaultStatus));
     const [selectedProjectId, setSelectedProjectId] = useState('');
     const [assigneeId, setAssigneeId] = useState('');
     const [estimatedHours, setEstimatedHours] = useState('');
     const [showSuggestions, setShowSuggestions] = useState(false);
 
     useEffect(() => {
-        setStatus(defaultStatus);
+        setStatus(normalizeTaskStatus(defaultStatus));
     }, [defaultStatus, isOpen]);
 
     useEffect(() => {
@@ -115,7 +125,7 @@ const CreateTaskModal = ({ isOpen, onClose, onSave, defaultStatus = 'To Do', emp
             assigneeId: finalAssigneeId,
             priority,
             dueDate,
-            status,
+            status: normalizeTaskStatus(status),
             estimatedHours: estNum,
             project: project ? project.name : 'Internal',
             projectId: selectedProjectId
@@ -216,11 +226,11 @@ const CreateTaskModal = ({ isOpen, onClose, onSave, defaultStatus = 'To Do', emp
                     <div className="grid grid-cols-2 gap-3">
                         <div>
                             <label className="block text-[10px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-[0.14em] mb-1.5">Status</label>
-                            <select value={status} onChange={e => setStatus(e.target.value)} className="w-full h-11 px-3 rounded-xl bg-[#EEE8DD]/70 dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] outline-none focus:border-[#B9955B] focus:ring-1 focus:ring-[#B9955B] transition-all cursor-pointer">
-                                <option value="BACKLOG">Backlog</option>
-                                <option value="IN_OPERATIONS">In Operations</option>
-                                <option value="QUALITY_ASSURANCE">Quality Assurance</option>
-                                <option value="FINALIZED">Finalized</option>
+                            <select value={normalizeTaskStatus(status)} onChange={e => setStatus(e.target.value)} className="w-full h-11 px-3 rounded-xl bg-[#EEE8DD]/70 dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] outline-none focus:border-[#B9955B] focus:ring-1 focus:ring-[#B9955B] transition-all cursor-pointer">
+                                <option value="Backlog">Backlog</option>
+                                <option value="In Operations">In Operations</option>
+                                <option value="Quality Assurance">Quality Assurance</option>
+                                <option value="Finalized">Finalized</option>
                             </select>
                         </div>
                         <div>
@@ -399,7 +409,7 @@ const EditTaskModal = ({ isOpen, onClose, onSave, task, employees = [], projects
     const [assigneeId, setAssigneeId] = useState(task?.assigneeId || '');
     const [priority, setPriority] = useState(task?.priority || 'Medium');
     const [dueDate, setDueDate] = useState(task?.dueDate && task?.dueDate !== 'No Date' ? task.dueDate : '');
-    const [status, setStatus] = useState(task?.status || 'Backlog');
+    const [status, setStatus] = useState(() => normalizeTaskStatus(task?.status));
     const [estimatedHours, setEstimatedHours] = useState(task?.estimatedHours || '');
     const [showSuggestions, setShowSuggestions] = useState(false);
 
@@ -411,7 +421,7 @@ const EditTaskModal = ({ isOpen, onClose, onSave, task, employees = [], projects
             setAssigneeId(task.assigneeId || '');
             setPriority(task.priority || 'Medium');
             setDueDate(task.dueDate && task.dueDate !== 'No Date' ? task.dueDate : '');
-            setStatus(task.status || 'Backlog');
+            setStatus(normalizeTaskStatus(task.status));
             setEstimatedHours(task.estimatedHours || '');
         }
     }, [task]);
@@ -448,7 +458,7 @@ const EditTaskModal = ({ isOpen, onClose, onSave, task, employees = [], projects
             assigneeId: finalAssigneeId, 
             priority, 
             dueDate, 
-            status,
+            status: normalizeTaskStatus(status),
             estimatedHours: estNum 
         });
         onClose();
@@ -535,11 +545,11 @@ const EditTaskModal = ({ isOpen, onClose, onSave, task, employees = [], projects
                     <div className="grid grid-cols-2 gap-3">
                         <div>
                             <label className="block text-[10px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-[0.14em] mb-1.5">Status</label>
-                            <select value={status} onChange={e => setStatus(e.target.value)} className="w-full h-11 px-3 rounded-xl bg-[#EEE8DD]/70 dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] outline-none focus:border-[#B9955B] focus:ring-1 focus:ring-[#B9955B] transition-all cursor-pointer">
-                                <option value="BACKLOG">Backlog</option>
-                                <option value="IN_OPERATIONS">In Operations</option>
-                                <option value="QUALITY_ASSURANCE">Quality Assurance</option>
-                                <option value="FINALIZED">Finalized</option>
+                            <select value={normalizeTaskStatus(status)} onChange={e => setStatus(e.target.value)} className="w-full h-11 px-3 rounded-xl bg-[#EEE8DD]/70 dark:bg-[#252B20] border border-[#D6CDBC] dark:border-[#384232] text-xs font-semibold text-[#29291F] dark:text-[#F5F1E9] outline-none focus:border-[#B9955B] focus:ring-1 focus:ring-[#B9955B] transition-all cursor-pointer">
+                                <option value="Backlog">Backlog</option>
+                                <option value="In Operations">In Operations</option>
+                                <option value="Quality Assurance">Quality Assurance</option>
+                                <option value="Finalized">Finalized</option>
                             </select>
                         </div>
                         <div>
@@ -775,9 +785,9 @@ const KanbanColumn = ({ title, tasks, status, color, onAdd, updateTaskStatus, on
                         }
                     };
 
-                    const isManagerOrAdmin = role?.toUpperCase() === 'ADMIN' || role?.toUpperCase() === 'MANAGER';
-                    const isFinalized = status === 'FINALIZED' || task.status === 'FINALIZED' || task.status === 'Finalized' || task.stage === 'FINALIZED' || task.stage === 'Finalized';
-                    const canEdit = !isFinalized || isManagerOrAdmin;
+                    const isManager = role?.toUpperCase() === 'MANAGER';
+                    const canEdit = isManager;
+                    const canDelete = isManager;
 
                     return (
                         <div
@@ -825,13 +835,15 @@ const KanbanColumn = ({ title, tasks, status, color, onAdd, updateTaskStatus, on
                                                 <Edit2 size={10} strokeWidth={2.5} />
                                             </button>
                                         )}
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); onDelete && onDelete(task.id); }}
-                                            className="h-5 w-5 flex items-center justify-center rounded bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
-                                            title="Delete Task"
-                                        >
-                                            <Trash2 size={10} strokeWidth={2.5} />
-                                        </button>
+                                        {canDelete && (
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); onDelete && onDelete(task.id); }}
+                                                className="h-5 w-5 flex items-center justify-center rounded bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                                                title="Delete Task"
+                                            >
+                                                <Trash2 size={10} strokeWidth={2.5} />
+                                            </button>
+                                        )}
                                     </div>
 
                                     {/* Priority Badge */}
@@ -1146,11 +1158,10 @@ export function TasksProjects() {
         addProject(projectData);
     };
 
-    // Edit / Delete handlers
+    // Edit / Delete handlers (Exclusive to MANAGER)
     const handleEditTask = (task) => {
-        const isManagerOrAdmin = role?.toUpperCase() === 'ADMIN' || role?.toUpperCase() === 'MANAGER';
-        const isFinalized = task.status === 'FINALIZED' || task.status === 'Finalized' || task.stage === 'FINALIZED' || task.stage === 'Finalized';
-        if (!isManagerOrAdmin && isFinalized) {
+        const isManager = role?.toUpperCase() === 'MANAGER';
+        if (!isManager) {
             return;
         }
         setEditingTask(task);
@@ -1158,18 +1169,27 @@ export function TasksProjects() {
     };
 
     const handleDeleteTask = async (taskId) => {
+        const isManager = role?.toUpperCase() === 'MANAGER';
+        if (!isManager) {
+            return;
+        }
         if (window.confirm('Delete this task? This cannot be undone.')) {
             await deleteTask(taskId);
         }
     };
 
     const handleUpdateTask = async (id, taskData) => {
-        if (taskData.status === 'FINALIZED' || taskData.status === 'Finalized') {
+        const isManager = role?.toUpperCase() === 'MANAGER';
+        if (!isManager) {
+            return;
+        }
+        const normStatus = normalizeTaskStatus(taskData.status);
+        if (normStatus === 'Finalized') {
             if (timer.isRunning && timer.currentTask === id) {
                 await stopTask();
             }
         }
-        await updateTask(id, taskData);
+        await updateTask(id, { ...taskData, status: normStatus });
     };
 
     // Filtered data — respects role-based assignment, search, calendar date range, and employee/team filter
@@ -1216,7 +1236,7 @@ export function TasksProjects() {
         });
     }, [tasks, searchQuery, quickFilter, dateRange, selectedEmployee, selectedTeam, employees, role, user]);
 
-    const getTasksByStatus = (status) => filteredTasks.filter(t => t.status === status);
+    const getTasksByStatus = (status) => filteredTasks.filter(t => normalizeTaskStatus(t.status) === normalizeTaskStatus(status));
 
     // 1. Calculate dynamic performance metrics
 
@@ -1224,7 +1244,7 @@ export function TasksProjects() {
     const derivedStats = useMemo(() => {
         const relevantTasks = role === 'EMPLOYEE' ? filteredTasks : tasks;
         const totalTasks = relevantTasks.length;
-        const completedTasks = relevantTasks.filter(t => t.status === 'Finalized').length;
+        const completedTasks = relevantTasks.filter(t => normalizeTaskStatus(t.status) === 'Finalized').length;
 
         // 1. Dynamic Task Completion Rate
         const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
@@ -1259,17 +1279,7 @@ export function TasksProjects() {
         }, 0);
         const taskHours = taskSeconds / 3600;
 
-        // Sum from activity / attendance logs
-        let logHours = 0;
-        if (role === 'EMPLOYEE') {
-            const currentEmpId = user?.employeeId || employees?.find(e => e.email === user?.email)?.id;
-            const myMetric = stats?.empMetrics?.find(e => e.id === currentEmpId || e.email === user?.email);
-            logHours = myMetric ? (myMetric.totalWorkHours || myMetric.activeHours || myMetric.productiveHours || 0) : 0;
-        } else {
-            logHours = stats?.empMetrics?.reduce((acc, emp) => acc + (emp.totalWorkHours || emp.activeHours || emp.productiveHours || 0), 0) || 0;
-        }
-
-        const totalHours = Math.max(taskHours, logHours);
+        const totalHours = taskHours;
         const formattedBillable = totalHours.toFixed(1);
         // Trend is work progress % towards standard 8h workday
         const billableProgress = totalHours > 0 ? Math.min(100, Math.round((totalHours / 8) * 100)) : null;
@@ -1305,8 +1315,11 @@ export function TasksProjects() {
             const empMetric = stats?.empMetrics?.find(m => m.id === emp.id || m.email === emp.email);
             const empTasks = (tasks || []).filter(t => t.assigneeId === emp.id || t.assignee === emp.name || t.assignee === emp.fullName);
             const totalCount = empTasks.length;
-            const completedTasks = empTasks.filter(t => t.status === 'Finalized');
-            const inOpsTasks = empTasks.filter(t => t.status === 'In Operations' || t.status === 'Quality Assurance');
+            const completedTasks = empTasks.filter(t => normalizeTaskStatus(t.status) === 'Finalized');
+            const inOpsTasks = empTasks.filter(t => {
+                const s = normalizeTaskStatus(t.status);
+                return s === 'In Operations' || s === 'Quality Assurance';
+            });
 
             // Overdue check
             const overdueTasks = empTasks.filter(t => {
@@ -1314,14 +1327,17 @@ export function TasksProjects() {
                 const d = new Date(t.dueDate);
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
-                return d < today && t.status !== 'Finalized';
+                return d < today && normalizeTaskStatus(t.status) !== 'Finalized';
             });
 
             // 1. Quality: Tasks progressing cleanly without overdue, plus QA achievements
             let quality = 0;
             if (totalCount > 0) {
-                const goodTasks = empTasks.filter(t => !overdueTasks.includes(t) && (t.status === 'Quality Assurance' || t.status === 'Finalized'));
-                const okTasks = empTasks.filter(t => !overdueTasks.includes(t) && t.status === 'In Operations');
+                const goodTasks = empTasks.filter(t => {
+                    const s = normalizeTaskStatus(t.status);
+                    return !overdueTasks.includes(t) && (s === 'Quality Assurance' || s === 'Finalized');
+                });
+                const okTasks = empTasks.filter(t => !overdueTasks.includes(t) && normalizeTaskStatus(t.status) === 'In Operations');
                 quality = Math.min(100, Math.max(0, Math.round(((goodTasks.length * 100) + (okTasks.length * 75) + ((totalCount - overdueTasks.length - goodTasks.length - okTasks.length) * 40)) / totalCount)));
             } else if (empMetric?.productivity) {
                 quality = Math.round(empMetric.productivity);
@@ -1341,9 +1357,10 @@ export function TasksProjects() {
             let output = 0;
             if (totalCount > 0) {
                 const weightedPoints = empTasks.reduce((acc, t) => {
-                    if (t.status === 'Finalized') return acc + 100;
-                    if (t.status === 'Quality Assurance') return acc + 80;
-                    if (t.status === 'In Operations') return acc + 50;
+                    const s = normalizeTaskStatus(t.status);
+                    if (s === 'Finalized') return acc + 100;
+                    if (s === 'Quality Assurance') return acc + 80;
+                    if (s === 'In Operations') return acc + 50;
                     return acc + 25; // Backlog
                 }, 0);
                 output = Math.min(100, Math.max(0, Math.round(weightedPoints / totalCount)));
@@ -1397,8 +1414,11 @@ export function TasksProjects() {
         // Velocity: based on active workflow progression speed
         const relevantTasks = role === 'EMPLOYEE' ? filteredTasks : tasks;
         const totalT = relevantTasks.length;
-        const compT = relevantTasks.filter(t => t.status === 'Finalized').length;
-        const activeT = relevantTasks.filter(t => t.status === 'In Operations' || t.status === 'Quality Assurance').length;
+        const compT = relevantTasks.filter(t => normalizeTaskStatus(t.status) === 'Finalized').length;
+        const activeT = relevantTasks.filter(t => {
+            const s = normalizeTaskStatus(t.status);
+            return s === 'In Operations' || s === 'Quality Assurance';
+        }).length;
         const velocity = totalT > 0
             ? Math.min(100, Math.max(0, Math.round(((compT * 100) + (activeT * 75) + ((totalT - compT - activeT) * 30)) / totalT)))
             : Math.round(avgOutput);
@@ -1447,9 +1467,9 @@ export function TasksProjects() {
         return projects.map((p, idx) => {
             const pTasks = (tasks || []).filter(t => t.projectId === p.id || (t.project && t.project.toLowerCase() === p.name.toLowerCase()));
             const totalTasks = pTasks.length || p.tasks || 0;
-            const completed = pTasks.filter(t => t.status === 'Finalized').length;
-            const inOps = pTasks.filter(t => t.status === 'In Operations').length;
-            const inQA = pTasks.filter(t => t.status === 'Quality Assurance').length;
+            const completed = pTasks.filter(t => normalizeTaskStatus(t.status) === 'Finalized').length;
+            const inOps = pTasks.filter(t => normalizeTaskStatus(t.status) === 'In Operations').length;
+            const inQA = pTasks.filter(t => normalizeTaskStatus(t.status) === 'Quality Assurance').length;
 
             // Tracked time in hours: sum task durations + actual tracked
             const trackedSec = pTasks.reduce((acc, t) => {
