@@ -769,8 +769,14 @@ const KanbanColumn = ({ title, tasks, status, color, onAdd, updateTaskStatus, on
                         }
                     };
 
+                    const isManager = role?.toUpperCase() === 'MANAGER';
+                    const canEdit = isManager;
+                    const canDelete = isManager;
+                    const canMove = isManager;
+
                     const handleAdvanceStage = async (e) => {
                         e.stopPropagation();
+                        if (!canMove) return;
                         const nextStageMap = {
                             'BACKLOG': 'In Operations',
                             'IN_OPERATIONS': 'Quality Assurance',
@@ -784,10 +790,6 @@ const KanbanColumn = ({ title, tasks, status, color, onAdd, updateTaskStatus, on
                             await updateTaskStatus(task.id, targetStage);
                         }
                     };
-
-                    const isManager = role?.toUpperCase() === 'MANAGER';
-                    const canEdit = isManager;
-                    const canDelete = isManager;
 
                     return (
                         <div
@@ -816,10 +818,10 @@ const KanbanColumn = ({ title, tasks, status, color, onAdd, updateTaskStatus, on
                                 <div className="flex items-center gap-1 shrink-0">
                                     {/* Action Buttons (visible on hover) */}
                                     <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        {status !== 'FINALIZED' && (
+                                        {canMove && status !== 'FINALIZED' && (
                                             <button
                                                 onClick={handleAdvanceStage}
-                                                className="h-5 px-1.5 flex items-center gap-0.5 rounded bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 text-[8px] font-bold uppercase transition-all cursor-pointer"
+                                                className="h-5 px-1.5 flex items-center gap-0.5 rounded bg-[#B9955B]/15 hover:bg-[#B9955B]/25 text-[#B9955B] dark:text-[#D3B98D] border border-[#B9955B]/30 text-[8px] font-bold uppercase transition-all cursor-pointer"
                                                 title="Move to next stage"
                                             >
                                                 <span>Move</span>
@@ -829,7 +831,7 @@ const KanbanColumn = ({ title, tasks, status, color, onAdd, updateTaskStatus, on
                                         {canEdit && (
                                             <button
                                                 onClick={(e) => { e.stopPropagation(); onEdit && onEdit(task); }}
-                                                className="h-5 w-5 flex items-center justify-center rounded bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors cursor-pointer"
+                                                className="h-5 w-5 flex items-center justify-center rounded bg-[#F5F1E9] dark:bg-[#1E2419] border border-[#D6CDBC]/70 dark:border-[#384232] text-[#777367] dark:text-[#B8B3A7] hover:text-[#B9955B] hover:bg-[#EEE8DD] dark:hover:bg-[#2E362A] transition-colors cursor-pointer"
                                                 title="Edit Task"
                                             >
                                                 <Edit2 size={10} strokeWidth={2.5} />
@@ -838,7 +840,7 @@ const KanbanColumn = ({ title, tasks, status, color, onAdd, updateTaskStatus, on
                                         {canDelete && (
                                             <button
                                                 onClick={(e) => { e.stopPropagation(); onDelete && onDelete(task.id); }}
-                                                className="h-5 w-5 flex items-center justify-center rounded bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                                                className="h-5 w-5 flex items-center justify-center rounded bg-[#F5F1E9] dark:bg-[#1E2419] border border-[#D6CDBC]/70 dark:border-[#384232] text-[#777367] dark:text-[#B8B3A7] hover:text-[#A84B4B] hover:bg-[#FAF3F2] dark:hover:bg-rose-950/20 transition-colors cursor-pointer"
                                                 title="Delete Task"
                                             >
                                                 <Trash2 size={10} strokeWidth={2.5} />
