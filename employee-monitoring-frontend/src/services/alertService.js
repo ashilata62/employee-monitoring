@@ -44,6 +44,16 @@ const alertService = {
     dismissAllAlerts: async () => {
         const response = await api.patch("/alerts/dismiss-all");
         return response.data;
+    },
+
+    deleteAlert: async (id) => {
+        const response = await api.delete(`/alerts/history/${id}`);
+        return response.data;
+    },
+
+    deleteAllAlerts: async () => {
+        const response = await api.delete("/alerts/history");
+        return response.data;
     }
 };
 

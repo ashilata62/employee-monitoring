@@ -503,15 +503,10 @@ export function RealTimeProvider({ children }) {
         try {
             const res = await notificationService.getNotifications({ limit: 50 });
             if (res && res.notifications) {
-                setState(prev => {
-                    const serverIds = new Set(res.notifications.map(n => String(n.id)));
-                    // Preserve unread local notifications that might not yet be returned from the server
-                    const localPending = prev.notifications.filter(n => !serverIds.has(String(n.id)) && n.unread);
-                    return {
-                        ...prev,
-                        notifications: [...localPending, ...res.notifications].slice(0, 50)
-                    };
-                });
+                setState(prev => ({
+                    ...prev,
+                    notifications: res.notifications.slice(0, 50)
+                }));
             }
         } catch (err) {
             console.error('Failed to sync notifications:', err);
@@ -1577,17 +1572,19 @@ export function RealTimeProvider({ children }) {
     }, []);
 
     const deleteNotification = useCallback(async (id) => {
+        const rawAlertId = String(id).startsWith('alert_') ? String(id).replace('alert_', '') : id;
         setState(prev => ({
             ...prev,
-            notifications: prev.notifications.filter(n => n.id !== id),
-            alerts: prev.alerts.filter(a => `alert_${a.id}` !== id && String(a.id) !== String(id))
+            notifications: prev.notifications.filter(n => String(n.id) !== String(id) && String(n.id) !== String(rawAlertId)),
+            alerts: prev.alerts.filter(a => `alert_${a.id}` !== id && String(a.id) !== String(id) && String(a.id) !== String(rawAlertId))
         }));
         try {
             if (String(id).startsWith('alert_')) {
-                const rawAlertId = String(id).replace('alert_', '');
-                await alertService.dismissAlert(rawAlertId);
+                await alertService.deleteAlert(rawAlertId).catch(() => {});
+                await notificationService.deleteNotification(rawAlertId).catch(() => {});
             } else {
-                await notificationService.deleteNotification(id);
+                await notificationService.deleteNotification(id).catch(() => {});
+                await alertService.deleteAlert(id).catch(() => {});
             }
         } catch (e) {
             console.error('Failed to delete notification:', e);
@@ -1595,9 +1592,26 @@ export function RealTimeProvider({ children }) {
     }, []);
 
     const deleteAllNotifications = useCallback(async () => {
-        setState(prev => ({ ...prev, notifications: [] }));
+        setState(prev => ({
+            ...prev,
+            notifications: [],
+            alerts: []
+        }));
         try {
-            await notificationService.deleteAllNotifications();
+            // Also clean local storage cache
+            const cached = localStorage.getItem(STORAGE_KEY);
+            if (cached) {
+                try {
+                    const parsed = JSON.parse(cached);
+                    parsed.notifications = [];
+                    parsed.alerts = [];
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+                } catch (pe) {}
+            }
+            await Promise.allSettled([
+                notificationService.deleteAllNotifications(),
+                alertService.deleteAllAlerts()
+            ]);
         } catch (e) {
             console.error('Failed to delete all notifications:', e);
         }
