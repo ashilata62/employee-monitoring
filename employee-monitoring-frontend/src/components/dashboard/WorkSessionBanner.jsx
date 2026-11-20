@@ -63,9 +63,9 @@ export function WorkSessionBanner() {
         <div className="bg-[#EEE8DD] dark:bg-[#252B20] p-4 sm:p-5 rounded-2xl border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs flex flex-col gap-3.5 mb-6 sm:mb-8 w-full">
 
             {/* ── Row 1: Timer + status ───────────────────────────────────────── */}
-            <div className="flex flex-col md:flex-row items-center gap-4 justify-between p-4 sm:p-5 bg-[#EEE8DD]/50 dark:bg-[#1E2419] rounded-xl border border-[#D6CDBC] dark:border-[#384232]">
+            <div className="flex flex-col sm:flex-row items-center sm:items-center justify-between gap-3 sm:gap-4 p-3.5 sm:p-5 bg-[#EEE8DD]/50 dark:bg-[#1E2419] rounded-xl border border-[#D6CDBC] dark:border-[#384232] text-center sm:text-left">
                 {/* Timer */}
-                <div className="flex flex-col items-center md:items-start">
+                <div className="flex flex-col items-center sm:items-start">
                     <span className="text-[10px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-[0.14em] mb-1">
                         {isIdlePaused ? 'Session Paused (Inactivity)' : isOnBreak ? 'Session Paused' : 'Total Work Hours'}
                     </span>
@@ -75,7 +75,7 @@ export function WorkSessionBanner() {
                 </div>
 
                 {/* Status badge */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center flex-wrap justify-center sm:justify-end gap-2">
                     {isAgentActive ? (
                         <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F4F7F4] text-[#5E7D64] border border-[#C8DAC8] text-xs font-bold uppercase tracking-wider">
                             <span className="w-1.5 h-1.5 rounded-full bg-[#5E7D64] animate-pulse" />
@@ -103,14 +103,14 @@ export function WorkSessionBanner() {
             </div>
 
             {/* ── Row 2: Action Buttons ───────────────────────────────────────── */}
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
 
                 {/* Clock In / Out */}
                 {!isClockedIn ? (
                     <button
                         onClick={handleClockIn}
                         disabled={isLoading}
-                        className="flex items-center gap-2 px-5 py-2.5 bg-[#30382B] hover:bg-[#3C4536] disabled:opacity-50 text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-warm-xs transition-all hover:scale-[1.02] active:scale-95 cursor-pointer"
+                        className="flex-1 xs:flex-none justify-center flex items-center gap-2 px-4 sm:px-5 py-2.5 bg-[#30382B] hover:bg-[#3C4536] disabled:opacity-50 text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-warm-xs transition-all hover:scale-[1.02] active:scale-95 cursor-pointer whitespace-nowrap"
                     >
                         <LogIn size={15} className="text-[#D3B98D]" />
                         Clock In
@@ -119,7 +119,7 @@ export function WorkSessionBanner() {
                     <button
                         onClick={handleClockOut}
                         disabled={isLoading}
-                        className="flex items-center gap-2 px-5 py-2.5 bg-[#A84B4B] hover:bg-[#8E3B3B] disabled:opacity-50 text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-warm-xs transition-all hover:scale-[1.02] active:scale-95 cursor-pointer"
+                        className="flex-1 xs:flex-none justify-center flex items-center gap-2 px-4 sm:px-5 py-2.5 bg-[#A84B4B] hover:bg-[#8E3B3B] disabled:opacity-50 text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-warm-xs transition-all hover:scale-[1.02] active:scale-95 cursor-pointer whitespace-nowrap"
                     >
                         <LogOut size={15} />
                         Clock Out
@@ -140,11 +140,11 @@ export function WorkSessionBanner() {
                             }
                         }}
                         disabled={isLoading}
-                        className={`flex items-center gap-2 px-5 py-2.5 ${
+                        className={`flex-1 xs:flex-none justify-center flex items-center gap-2 px-4 sm:px-5 py-2.5 ${
                             isOnBreak
                                 ? 'bg-[#5E7D64] hover:bg-[#4A6B53]'
                                 : 'bg-[#B9955B] hover:bg-[#A17D45]'
-                        } disabled:opacity-50 text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-warm-xs transition-all hover:scale-[1.02] active:scale-95 cursor-pointer`}
+                        } disabled:opacity-50 text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-warm-xs transition-all hover:scale-[1.02] active:scale-95 cursor-pointer whitespace-nowrap`}
                     >
                         <Clock size={15} />
                         {isOnBreak ? 'Resume Work' : 'Take a Break'}
@@ -155,7 +155,7 @@ export function WorkSessionBanner() {
                 {!isAgentActive ? (
                     <button
                         onClick={handleStartTracker}
-                        className="flex items-center gap-2 px-5 py-2.5 bg-[#5E7D64] hover:bg-[#4A6B53] text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-warm-xs transition-all hover:scale-[1.02] active:scale-95 cursor-pointer"
+                        className="flex-1 xs:flex-none justify-center flex items-center gap-2 px-4 sm:px-5 py-2.5 bg-[#5E7D64] hover:bg-[#4A6B53] text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-warm-xs transition-all hover:scale-[1.02] active:scale-95 cursor-pointer whitespace-nowrap"
                     >
                         <MonitorCheck size={15} />
                         Start Tracker
@@ -164,7 +164,7 @@ export function WorkSessionBanner() {
                 ) : (
                     <button
                         onClick={handleStopTracker}
-                        className="flex items-center gap-2 px-5 py-2.5 bg-[#A84B4B] hover:bg-[#8E3B3B] text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-warm-xs transition-all hover:scale-[1.02] active:scale-95 cursor-pointer"
+                        className="flex-1 xs:flex-none justify-center flex items-center gap-2 px-4 sm:px-5 py-2.5 bg-[#A84B4B] hover:bg-[#8E3B3B] text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-warm-xs transition-all hover:scale-[1.02] active:scale-95 cursor-pointer whitespace-nowrap"
                     >
                         <MonitorOff size={15} />
                         Stop Tracker

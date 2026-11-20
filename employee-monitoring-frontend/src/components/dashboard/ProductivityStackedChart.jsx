@@ -87,7 +87,7 @@ export function ProductivityStackedChart({
     return (
         <div className="bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl border border-[#D6CDBC] dark:border-[#384232] shadow-warm-xs mb-8 overflow-hidden">
             {/* Header with Subtabs & Export button */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-[#D6CDBC] dark:border-[#384232]">
+            <div className="flex flex-wrap items-center justify-between gap-3 px-4 sm:px-6 py-3 sm:py-4 border-b border-[#D6CDBC] dark:border-[#384232]">
                 <button
                     onClick={() => setActiveTab('Timeline')}
                     className={`font-serif text-sm font-semibold transition-colors cursor-pointer ${
@@ -103,7 +103,7 @@ export function ProductivityStackedChart({
                 <div className="flex items-center p-1 bg-[#EEE8DD] dark:bg-[#1E2419] rounded-xl border border-[#D6CDBC] dark:border-[#384232]">
                     <button
                         onClick={() => setActiveTab('Activities')}
-                        className={`px-3.5 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                        className={`px-3 sm:px-3.5 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                             activeTab === 'Activities'
                                 ? 'bg-[#30382B] text-white shadow-xs'
                                 : 'text-[#777367] hover:text-[#29291F]'
@@ -113,7 +113,7 @@ export function ProductivityStackedChart({
                     </button>
                     <button
                         onClick={() => setActiveTab('Productivity')}
-                        className={`px-3.5 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                        className={`px-3 sm:px-3.5 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                             activeTab === 'Productivity'
                                 ? 'bg-[#B9955B] text-white shadow-xs'
                                 : 'text-[#777367] hover:text-[#29291F]'
@@ -132,7 +132,7 @@ export function ProductivityStackedChart({
             </div>
 
             {/* Chart Area */}
-            <div className="p-3 sm:p-6 h-64 sm:h-80 w-full">
+            <div className="p-2 sm:p-6 h-64 sm:h-80 w-full min-w-0">
                 <ResponsiveContainer width="100%" height="100%">
                     {activeTab === 'Productivity' ? (
                         displayData.length > 0 ? (
