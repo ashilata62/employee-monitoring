@@ -103,7 +103,7 @@ function resolveServerUrl() {
             }
         }
     } catch (e) {}
-    return 'https://insight-pool-production.up.railway.app';
+    return 'https://insight-pool-production.up.railway.app/api';
 }
 
 const API_URL = resolveServerUrl();
