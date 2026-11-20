@@ -1950,10 +1950,6 @@ export function RealTimeProvider({ children }) {
 
                 return false;
             });
-                }
-
-                return false;
-            });
 
             return {
                 employees: currentEmployees.filter(e => myTeamIds.has(String(e.id)) || String(e.id) === String(currentEmpId) || String(e.email) === String(user?.email)),
@@ -1985,8 +1981,6 @@ export function RealTimeProvider({ children }) {
             alerts: scopedAlerts,
             notifications: adminFilteredNotifs
         };
-
-        return { ...state, employees: currentEmployees, alerts: scopedAlerts, notifications: mergedNotifications };
     }, [state.alerts, state.notifications, state.tasks, state.projects, state.goals, state.teams, state.activityLogs, role, isAuthenticated, stats.empMetrics, user]);
 
     const contextValue = useMemo(() => ({
