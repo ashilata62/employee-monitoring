@@ -101,9 +101,7 @@ export function AddEmployeeModal({ isOpen, onClose, initialTab = 'single' }) {
         setSingleForm(prev => ({ ...prev, password: retVal }));
     };
 
-    const liveBackendUrl = (API_BASE_URL && !API_BASE_URL.includes('localhost'))
-        ? `${API_BASE_URL}/agent/download`
-        : 'https://insight-pool-production.up.railway.app/api/agent/download';
+    const liveBackendUrl = 'https://raw.githubusercontent.com/ashilata62/employee-monitoring/main/employee-monitoirng-backend/public/agent/EMS-Tracker-latest.exe';
     const downloadAgentUrl = liveBackendUrl;
 
     const handleCopy = () => {

@@ -1503,27 +1503,50 @@ export function RealTimeProvider({ children }) {
 
     // Notifications
     const markAllNotificationsRead = useCallback(async () => {
-        setState(prev => ({ ...prev, notifications: prev.notifications.map(n => ({ ...n, unread: false })) }));
+        setState(prev => ({
+            ...prev,
+            notifications: prev.notifications.map(n => ({ ...n, unread: false })),
+            alerts: prev.alerts.map(a => ({ ...a, read: true }))
+        }));
         try {
             await notificationService.markAllAsRead();
+            await alertService.dismissAllAlerts();
         } catch (e) {
             console.error('Failed to mark all notifications read:', e);
         }
     }, []);
 
     const markNotificationAsRead = useCallback(async (id) => {
-        setState(prev => ({ ...prev, notifications: prev.notifications.map(n => n.id === id ? { ...n, unread: false } : n) }));
+        setState(prev => ({
+            ...prev,
+            notifications: prev.notifications.map(n => n.id === id ? { ...n, unread: false } : n),
+            alerts: prev.alerts.map(a => (`alert_${a.id}` === id || String(a.id) === String(id)) ? { ...a, read: true } : a)
+        }));
         try {
-            await notificationService.markAsRead(id);
+            if (String(id).startsWith('alert_')) {
+                const rawAlertId = String(id).replace('alert_', '');
+                await alertService.dismissAlert(rawAlertId);
+            } else {
+                await notificationService.markAsRead(id);
+            }
         } catch (e) {
             console.error('Failed to mark notification read:', e);
         }
     }, []);
 
     const deleteNotification = useCallback(async (id) => {
-        setState(prev => ({ ...prev, notifications: prev.notifications.filter(n => n.id !== id) }));
+        setState(prev => ({
+            ...prev,
+            notifications: prev.notifications.filter(n => n.id !== id),
+            alerts: prev.alerts.filter(a => `alert_${a.id}` !== id && String(a.id) !== String(id))
+        }));
         try {
-            await notificationService.deleteNotification(id);
+            if (String(id).startsWith('alert_')) {
+                const rawAlertId = String(id).replace('alert_', '');
+                await alertService.dismissAlert(rawAlertId);
+            } else {
+                await notificationService.deleteNotification(id);
+            }
         } catch (e) {
             console.error('Failed to delete notification:', e);
         }
@@ -1590,6 +1613,49 @@ export function RealTimeProvider({ children }) {
     // Filtered data based on role
     const filteredData = useMemo(() => {
         const currentEmployees = stats.empMetrics;
+        const targetEmail = user?.email;
+        const currentEmpId = user?.employeeId || user?.id;
+        const currentEmpName = (user?.fullName || user?.name || '').toLowerCase().trim();
+
+        // 1. Scoped alerts: for EMPLOYEE, only include alerts that belong to this employee!
+        let scopedAlerts = state.alerts || [];
+        if (role === 'EMPLOYEE') {
+            scopedAlerts = scopedAlerts.filter(a => {
+                if (currentEmpId && String(a.employeeId) === String(currentEmpId)) return true;
+                if (targetEmail && a.employeeEmail === targetEmail) return true;
+                if (currentEmpName) {
+                    const aName = (a.employeeName || '').toLowerCase().trim();
+                    if (aName && aName === currentEmpName) return true;
+                    if (a.message && a.message.toLowerCase().includes(currentEmpName)) return true;
+                }
+                return false;
+            });
+        }
+
+        // 2. Synthesize alert notifications so all alert messages appear in the Header Bell dropdown
+        const alertNotifications = scopedAlerts.map(a => ({
+            id: `alert_${a.id}`,
+            alertId: a.id,
+            title: a.title || (a.severity === 'critical' ? 'Critical Alert' : (a.severity === 'warning' ? 'Inactivity Alert' : 'System Alert')),
+            description: a.message || `Employee ${a.employeeName || 'Staff'} alert notification.`,
+            type: a.severity === 'critical' ? 'alert' : (a.severity === 'warning' ? 'warning' : 'info'),
+            time: a.date || (a.createdAt ? new Date(a.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now'),
+            unread: !a.read,
+            link: role === 'EMPLOYEE' ? null : '/alerts',
+            createdAt: a.createdAt || a.date || new Date().toISOString()
+        }));
+
+        // 3. Merge alerts with state.notifications and deduplicate
+        const combinedNotifs = [...alertNotifications, ...(state.notifications || [])];
+        const seenNotif = new Set();
+        const mergedNotifications = [];
+        for (const n of combinedNotifs) {
+            const key = n.id ? String(n.id) : `${n.title}_${n.description}`;
+            if (!seenNotif.has(key)) {
+                seenNotif.add(key);
+                mergedNotifications.push(n);
+            }
+        }
 
         if (!isAuthenticated || role === 'ADMIN' || role === 'MANAGER') {
             return {
@@ -1599,11 +1665,12 @@ export function RealTimeProvider({ children }) {
                 goals: state.goals,
                 teams: state.teams,
                 activityLogs: state.activityLogs,
+                alerts: scopedAlerts,
+                notifications: mergedNotifications
             };
         }
 
         if (role === 'EMPLOYEE') {
-            const targetEmail = user?.email;
             const filteredEmployees = currentEmployees.filter(e => e.email === targetEmail);
             return {
                 employees: filteredEmployees,
@@ -1612,11 +1679,13 @@ export function RealTimeProvider({ children }) {
                 goals: state.goals.filter(g => g.stakeholders?.some(s => s.employeeId === filteredEmployees[0]?.id)),
                 teams: [],
                 activityLogs: state.activityLogs.filter(l => l.employeeId === filteredEmployees[0]?.id),
+                alerts: scopedAlerts,
+                notifications: mergedNotifications
             };
         }
 
-        return { ...state, employees: currentEmployees };
-    }, [state, role, isAuthenticated, stats.empMetrics, user]);
+        return { ...state, employees: currentEmployees, alerts: scopedAlerts, notifications: mergedNotifications };
+    }, [state.alerts, state.notifications, state.tasks, state.projects, state.goals, state.teams, state.activityLogs, role, isAuthenticated, stats.empMetrics, user]);
 
     const contextValue = useMemo(() => ({
         // State
