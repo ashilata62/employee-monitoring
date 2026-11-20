@@ -152,23 +152,33 @@ const register = async (req, res) => {
             }
         }
 
-        // 2. Clear Any Existing Agent on this Device (to prevent unique constraint failure)
+        // 2. Check if employee already has an agent in the DB (e.g. DEV-TEST-0C3B)
+        const existingEmployeeAgent = await prisma.agent.findUnique({
+            where: { employeeId: targetEmployeeId }
+        });
+
+        // Use existing assigned device ID from database if it exists, otherwise use deviceId from client
+        const effectiveDeviceId = (existingEmployeeAgent && existingEmployeeAgent.deviceId)
+            ? existingEmployeeAgent.deviceId
+            : (deviceId || `DEV-${targetEmployeeId.substring(0, 8).toUpperCase()}`);
+
+        // Clear any other agent registered with this effectiveDeviceId (to prevent unique constraint failure)
         const existingDeviceAgent = await prisma.agent.findUnique({
-            where: { deviceId }
+            where: { deviceId: effectiveDeviceId }
         });
 
         if (existingDeviceAgent && existingDeviceAgent.employeeId !== targetEmployeeId) {
-            console.log(`Removing old agent record for device: ${deviceId} (previously employee: ${existingDeviceAgent.employeeId})`);
-            await prisma.agent.delete({ where: { deviceId } });
+            console.log(`Removing old agent record for device: ${effectiveDeviceId} (previously employee: ${existingDeviceAgent.employeeId})`);
+            await prisma.agent.delete({ where: { deviceId: effectiveDeviceId } });
         }
 
-        // 3. Register Agent (will be 'pending' by default)
-        const agent = await agentService.registerAgent(targetEmployeeId, deviceId, systemInfo);
+        // 3. Register Agent
+        const agent = await agentService.registerAgent(targetEmployeeId, effectiveDeviceId, systemInfo);
 
         // Simple token for agent security
-        const agentToken = Buffer.from(`${targetEmployeeId}:${deviceId}:INSIGHTFUL`).toString('base64');
+        const agentToken = Buffer.from(`${targetEmployeeId}:${effectiveDeviceId}:INSIGHTFUL`).toString('base64');
 
-        return successResponse(res, { agent, token: agentToken }, 'Agent registration received and pending approval');
+        return successResponse(res, { agent, token: agentToken }, 'Agent registration received and approved');
     } catch (error) {
         console.error('Agent register error:', error);
         return errorResponse(res, error.message || 'Failed to register agent', 500);
