@@ -56,17 +56,35 @@ try {
     const canonicalPath = path.join(backendAgentDir, 'EMS-Tracker-latest.exe');
     const frontendCanonicalPath = path.join(frontendAgentDir, 'EMS-Tracker-latest.exe');
 
+    // Expected production installer named outputs
+    const setupDistPath = path.join(distDir, 'EMS-Tracker-Setup.exe');
+    const setupBackendPath = path.join(backendAgentDir, 'EMS-Tracker-Setup.exe');
+    const setupFrontendPath = path.join(frontendAgentDir, 'EMS-Tracker-Setup.exe');
+
     console.log('Found latest exe:', latest.path);
     console.log('Copying to backend agent folder:', destPath);
     fs.copyFileSync(latest.path, destPath);
 
-    // Also write canonical name for easy download URL
+    const frontendDestPath = path.join(frontendAgentDir, destName);
+    console.log('Copying to frontend agent folder:', frontendDestPath);
+    fs.copyFileSync(latest.path, frontendDestPath);
+
+    // Also write canonical names for easy download URL & production output
     try {
         fs.copyFileSync(latest.path, canonicalPath);
         console.log('Copied canonical latest to backend:', canonicalPath);
 
         fs.copyFileSync(latest.path, frontendCanonicalPath);
         console.log('Copied canonical latest to frontend:', frontendCanonicalPath);
+
+        fs.copyFileSync(latest.path, setupDistPath);
+        console.log('Created EMS-Tracker-Setup.exe in dist:', setupDistPath);
+
+        fs.copyFileSync(latest.path, setupBackendPath);
+        console.log('Copied EMS-Tracker-Setup.exe to backend:', setupBackendPath);
+
+        fs.copyFileSync(latest.path, setupFrontendPath);
+        console.log('Copied EMS-Tracker-Setup.exe to frontend:', setupFrontendPath);
 
         // Create zip file
         const canonicalZipPath = path.join(backendAgentDir, 'EMS-Tracker-latest.zip');

@@ -1,6 +1,6 @@
 {
   "name": "insightful-agent",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Insightful Employee Monitoring Desktop Agent",
   "author": "Employee Monitoring System <support@company.com>",
   "main": "main.js",
@@ -37,7 +37,8 @@
     ],
     "asar": true,
     "asarUnpack": [
-      "scripts/**/*"
+      "scripts/**/*",
+      "node_modules/screenshot-desktop/**/*"
     ],
     "extraResources": [
       "server-config.json"
@@ -108,6 +109,7 @@
     },
     "nsis": {
       "oneClick": false,
+      "perMachine": false,
       "allowToChangeInstallationDirectory": true,
       "runAfterFinish": true,
       "shortcutName": "Insightful Agent",

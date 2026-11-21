@@ -21,13 +21,20 @@ function fetchActiveWindow() {
             const scriptPath = path.join(scriptsDir, 'get-active-window.ps1');
             exec(`powershell -NoProfile -ExecutionPolicy Bypass -File "${scriptPath}"`, { timeout: 3500 }, (error, stdout) => {
                 if (error) {
-                    return resolve({ appName: 'Desktop', windowTitle: 'Desktop' });
+                    return resolve({ appName: 'Desktop', windowTitle: 'Desktop', title: 'Desktop', processId: 0, timestamp: new Date().toISOString() });
                 }
                 try {
                     const parsed = JSON.parse(stdout.trim());
-                    resolve(parsed);
+                    const windowTitle = parsed.windowTitle || parsed.title || 'Desktop';
+                    resolve({
+                        appName: parsed.appName || 'Desktop',
+                        windowTitle: windowTitle,
+                        title: windowTitle,
+                        processId: parsed.pid || parsed.processId || 0,
+                        timestamp: new Date().toISOString()
+                    });
                 } catch {
-                    resolve({ appName: 'Desktop', windowTitle: 'Desktop' });
+                    resolve({ appName: 'Desktop', windowTitle: 'Desktop', title: 'Desktop', processId: 0, timestamp: new Date().toISOString() });
                 }
             });
         } else if (platform === 'darwin') {

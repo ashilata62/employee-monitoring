@@ -103,7 +103,7 @@ function resolveServerUrl() {
             }
         }
     } catch (e) {}
-    return 'https://insight-pool-production.up.railway.app/api';
+    return 'https://insight-pool-production.up.railway.app';
 }
 
 const API_URL = resolveServerUrl();
@@ -262,9 +262,10 @@ try {
     if (savedConfig) {
         if (savedConfig.employeeId) agentState.employeeId = savedConfig.employeeId;
         if (savedConfig.agentToken) agentState.agentToken = savedConfig.agentToken;
+        if (savedConfig.deviceId) agentState.deviceId = savedConfig.deviceId;
         if (savedConfig.status) agentState.status = savedConfig.status;
         if (savedConfig.permissionsCompleted !== undefined) agentState.permissionsCompleted = savedConfig.permissionsCompleted;
-        console.log(`[Desktop Agent] Restored session from AppData: Employee=${agentState.employeeId || 'None'}, Status=${agentState.status}`);
+        console.log(`[Desktop Agent] Restored session from AppData: Employee=${agentState.employeeId || 'None'}, Device=${agentState.deviceId || 'None'}, Status=${agentState.status}`);
     }
 } catch (e) {
     console.warn('[Desktop Agent] Could not restore saved session:', e.message);
@@ -416,13 +417,20 @@ async function syncProjectsFromBackend() {
 async function getActiveWindowInfo() {
     try {
         const result = await fetchActiveWindow();
-        if (result && result.appName) {
-            return result;
+        if (result && (result.appName || result.windowTitle || result.title)) {
+            const windowTitle = result.windowTitle || result.title || 'Desktop';
+            return {
+                appName: result.appName || 'Desktop',
+                windowTitle: windowTitle,
+                title: windowTitle,
+                processId: result.processId || result.pid || 0,
+                timestamp: result.timestamp || new Date().toISOString()
+            };
         }
     } catch (e) {
         // Fallback
     }
-    return { appName: 'Desktop', windowTitle: 'Desktop' };
+    return { appName: 'Desktop', windowTitle: 'Desktop', title: 'Desktop', processId: 0, timestamp: new Date().toISOString() };
 }
 
 /**
@@ -452,7 +460,7 @@ function captureScreenBase64() {
             Write-Output "data:image/jpeg;base64,$base64"
             `;
 
-            exec(`powershell -NoProfile -NonInteractive -Command "${script.replace(/\r?\n/g, ' ')}"`, { maxBuffer: 10 * 1024 * 1024, timeout: 8000 }, (err, stdout) => {
+            exec(`powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command "${script.replace(/\r?\n/g, ' ')}"`, { maxBuffer: 10 * 1024 * 1024, timeout: 8000 }, (err, stdout) => {
                 if (!err && stdout && stdout.trim().startsWith('data:image/')) {
                     return resolve(stdout.trim());
                 }
@@ -1130,6 +1138,7 @@ const gotSingleInstanceLock = (app && typeof app.requestSingleInstanceLock === '
 if (!gotSingleInstanceLock) {
     console.log('[Desktop Agent] Another instance is already running. Quitting.');
     if (app && typeof app.quit === 'function') app.quit();
+    process.exit(0);
 } else {
     if (app && typeof app.on === 'function') {
         app.on('second-instance', () => {

@@ -135,7 +135,11 @@
 <body>
     <div class="container" id="setup-view">
         <h1>Insightful</h1>
-        <p>Complete setup to start monitoring.</p>
+        <p style="margin-bottom: 0.75rem;">Complete setup to start monitoring.</p>
+        <div style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.2rem 0.65rem; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 9999px; margin-bottom: 1.5rem; font-size: 0.72rem; color: #10b981; font-weight: 600;">
+            <span style="width: 7px; height: 7px; background: #10b981; border-radius: 50%; display: inline-block;"></span>
+            <span>Live Server Connected</span>
+        </div>
         
         <div class="form-group">
             <label>Employee Name</label>
@@ -157,6 +161,7 @@
             <span>I agree to the tracking of my screen, active windows, and idle time for work monitoring purposes.</span>
         </label>
 
+        <div id="setup-validation-msg" style="color: #f87171; font-size: 0.75rem; min-height: 1.1rem; margin-bottom: 0.75rem; text-align: left; display: none;"></div>
         <button id="submit-btn" disabled>Complete Setup</button>
 
         <div class="footer">
@@ -341,6 +346,51 @@
         const consentCheckbox = document.getElementById('consent');
         const submitBtn = document.getElementById('submit-btn');
         const deviceIdSpan = document.getElementById('device-id');
+        const validationMsg = document.getElementById('setup-validation-msg');
+
+        function validateRegistration() {
+            if (!nameInput || !emailInput || !passwordInput || !submitBtn) return;
+            const name = (nameInput.value || '').trim();
+            const email = (emailInput.value || '').trim();
+            const password = passwordInput.value || '';
+            const consent = Boolean(consentCheckbox && consentCheckbox.checked);
+
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            const isEmailValid = emailRegex.test(email) && !email.includes('..');
+            const isNameValid = name.length >= 2;
+            const isPasswordValid = password.length >= 6;
+            const isConsentValid = consent === true;
+
+            const isFormValid = isNameValid && isEmailValid && isPasswordValid && isConsentValid;
+            submitBtn.disabled = !isFormValid;
+
+            // Update user-facing validation hint dynamically
+            if (validationMsg) {
+                const hasStarted = name.length > 0 || email.length > 0 || password.length > 0 || consent;
+                if (!hasStarted) {
+                    validationMsg.style.display = 'none';
+                    validationMsg.textContent = '';
+                } else if (!isNameValid && name.length > 0) {
+                    validationMsg.textContent = 'Employee name must be at least 2 characters.';
+                    validationMsg.style.display = 'block';
+                } else if (!isEmailValid && email.length > 0) {
+                    validationMsg.textContent = 'Please enter a valid work email address.';
+                    validationMsg.style.display = 'block';
+                } else if (!isPasswordValid && password.length > 0) {
+                    validationMsg.textContent = 'Password must be at least 6 characters.';
+                    validationMsg.style.display = 'block';
+                } else if (!isConsentValid && (isNameValid && isEmailValid && isPasswordValid)) {
+                    validationMsg.textContent = 'Please check the consent box to proceed with monitoring setup.';
+                    validationMsg.style.display = 'block';
+                } else if (!isFormValid) {
+                    validationMsg.textContent = 'Please fill all required fields and accept consent.';
+                    validationMsg.style.display = 'block';
+                } else {
+                    validationMsg.style.display = 'none';
+                    validationMsg.textContent = '';
+                }
+            }
+        }
 
         const permissions = {
             screen: false,
@@ -386,6 +436,9 @@
             });
             const target = document.getElementById(viewId);
             if (target) target.style.display = 'block';
+            if (viewId === 'setup-view') {
+                validateRegistration();
+            }
         };
 
         // Check initial status
@@ -446,9 +499,16 @@
         if (healthBackBtn) healthBackBtn.onclick = () => {
             if (window.agentAPI?.getApprovalStatus) {
                 window.agentAPI.getApprovalStatus().then(status => {
-                    if (status === 'approved') clearTimeout(loadingTimeout); showView('success-view');
-                    else if (status === 'pending') clearTimeout(loadingTimeout); showView('pending-view');
-                    else clearTimeout(loadingTimeout); showView('setup-view');
+                    if (status === 'approved') {
+                        clearTimeout(loadingTimeout);
+                        showView('success-view');
+                    } else if (status === 'pending') {
+                        clearTimeout(loadingTimeout);
+                        showView('pending-view');
+                    } else {
+                        clearTimeout(loadingTimeout);
+                        showView('setup-view');
+                    }
                 }).catch(() => showView('setup-view'));
             } else {
                 clearTimeout(loadingTimeout); showView('setup-view');
@@ -476,24 +536,30 @@
             }
         });
 
-        const validateRegistration = () => {
-            const isEmailValid = emailInput.value.includes('@') && emailInput.value.includes('.');
-            submitBtn.disabled = !(nameInput.value.length >= 2 && isEmailValid && passwordInput.value.length >= 6 && consentCheckbox.checked);
-        };
 
-        nameInput.oninput = validateRegistration;
-        emailInput.oninput = validateRegistration;
-        passwordInput.oninput = validateRegistration;
-        consentCheckbox.onchange = validateRegistration;
+
+        // Attach listeners across all lifecycle events without duplicate bindings
+        const regEvents = ['input', 'change', 'keyup', 'paste', 'blur'];
+        [nameInput, emailInput, passwordInput, consentCheckbox].forEach(el => {
+            if (el) {
+                regEvents.forEach(evt => el.addEventListener(evt, validateRegistration));
+            }
+        });
+
+        // Synchronize on window focus and DOM ready
+        window.addEventListener('focus', validateRegistration);
+        document.addEventListener('DOMContentLoaded', validateRegistration);
 
         submitBtn.onclick = async () => {
+            validateRegistration();
+            if (submitBtn.disabled) return;
             submitBtn.disabled = true;
             submitBtn.textContent = 'Saving...';
             
             const result = await window.agentAPI.completeSetup({
-                name: nameInput.value,
-                email: emailInput.value,
-                password: passwordInput.value,
+                name: (nameInput.value || '').trim(),
+                email: (emailInput.value || '').trim(),
+                password: passwordInput.value || '',
                 inviteToken: inviteToken
             });
 
