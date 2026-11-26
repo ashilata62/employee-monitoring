@@ -38,6 +38,15 @@ async function onAgentPulse(employeeId, organizationId) {
 
     await touchAgentLastSeen(employeeId);
 
+    // Keep existing open session running without closing or splitting it
+    const existingOpen = await prisma.attendance.findFirst({
+        where: { employeeId, clockOut: null },
+        select: { id: true }
+    });
+    if (existingOpen) {
+        return existingOpen;
+    }
+
     try {
         await attendanceService.clockIn(employeeId, organizationId || 'default-org-id');
     } catch (err) {

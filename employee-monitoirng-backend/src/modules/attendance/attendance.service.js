@@ -17,7 +17,7 @@ const attendanceService = {
         // Set today to noon to prevent timezone shifts from changing the calendar date in MySQL
         const today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0);
 
-        // Check if there is an active (unclosed) session - auto-close previous open session if re-clocking in
+        // Check if there is already an active (unclosed) session — keep it running instead of splitting
         const active = await prisma.attendance.findFirst({
             where: {
                 employeeId,
@@ -25,19 +25,11 @@ const attendanceService = {
             },
             orderBy: { clockIn: 'desc' }
         });
-        
+
         if (active) {
-            console.log(`[Attendance] Auto-closing previous unclosed session ${active.id} for employee ${employeeId}`);
-            const prevClockIn = new Date(active.clockIn);
-            const durationSec = Math.max(0, Math.floor((now.getTime() - prevClockIn.getTime()) / 1000));
-            const cappedDuration = Math.min(durationSec, 8 * 3600);
-            await prisma.attendance.update({
-                where: { id: active.id },
-                data: {
-                    clockOut: new Date(prevClockIn.getTime() + cappedDuration * 1000),
-                    duration: cappedDuration
-                }
-            });
+            const err = new Error('Already clocked in');
+            err.statusCode = 409;
+            throw err;
         }
 
         // Guard: Prevent clocking in if a PAST period's timesheet is already approved and locked

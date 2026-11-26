@@ -1,6 +1,6 @@
 const { APPS } = require('../modules/productivity/productivity.service');
 
-const HEARTBEAT_SECONDS = 30;
+const HEARTBEAT_SECONDS = 60;
 
 /**
  * Map raw agent window/app strings to clean names and productivity.
