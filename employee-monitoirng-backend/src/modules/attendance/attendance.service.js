@@ -29,6 +29,7 @@ const attendanceService = {
         if (active) {
             const err = new Error('Already clocked in');
             err.statusCode = 409;
+            err.data = active;
             throw err;
         }
 

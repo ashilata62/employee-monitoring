@@ -57,17 +57,68 @@ async function onAgentPulse(employeeId, organizationId) {
 }
 
 /**
- * Auto Clock-Out disabled: Employees remain in AFK/IDLE during shift so idle and unproductive time continue to accumulate.
+ * Auto clock-out stale open sessions when no heartbeat or activity has been received for 30+ minutes.
  */
+const AUTO_CLOCK_OUT_MS = 30 * 60 * 1000;
+
 async function processStaleAttendanceForEmployee(employeeId, openAttendance = null) {
+    if (!employeeId) return false;
+
+    const activeAtt = openAttendance || await prisma.attendance.findFirst({
+        where: { employeeId, clockOut: null },
+        orderBy: { clockIn: 'desc' }
+    });
+    if (!activeAtt) return false;
+
+    const [emp, agent] = await Promise.all([
+        prisma.employee.findUnique({
+            where: { id: employeeId },
+            select: { status: true, lastActiveAt: true }
+        }),
+        prisma.agent.findUnique({
+            where: { employeeId },
+            select: { lastSeen: true }
+        })
+    ]);
+
+    const timestamps = [
+        activeAtt.clockIn ? new Date(activeAtt.clockIn).getTime() : 0,
+        emp?.lastActiveAt ? new Date(emp.lastActiveAt).getTime() : 0,
+        agent?.lastSeen ? new Date(agent.lastSeen).getTime() : 0
+    ];
+    const lastPulseMs = Math.max(...timestamps);
+
+    if (lastPulseMs > 0 && (Date.now() - lastPulseMs) > AUTO_CLOCK_OUT_MS) {
+        try {
+            await attendanceService.clockOut(employeeId, new Date(lastPulseMs));
+            return true;
+        } catch (err) {
+            if (!err.message?.includes('No active clock-in')) {
+                console.error(`[AttendanceSession] Auto clock-out failed for ${employeeId}:`, err.message);
+            }
+        }
+    }
     return false;
 }
 
 /**
- * Background sweep — auto clock-out disabled.
+ * Background sweep — closes stale open sessions with no pulse for 30+ minutes.
  */
 async function processAllStaleSessions() {
-    return 0;
+    const openSessions = await prisma.attendance.findMany({
+        where: { clockOut: null },
+        orderBy: { clockIn: 'desc' }
+    });
+
+    let closedCount = 0;
+    const seenEmployees = new Set();
+    for (const session of openSessions) {
+        if (seenEmployees.has(session.employeeId)) continue;
+        seenEmployees.add(session.employeeId);
+        const closed = await processStaleAttendanceForEmployee(session.employeeId, session);
+        if (closed) closedCount++;
+    }
+    return closedCount;
 }
 
 module.exports = {

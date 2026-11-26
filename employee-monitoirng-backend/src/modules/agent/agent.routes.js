@@ -91,7 +91,7 @@ router.post('/idle-activity', agentController.handleIdleActivity);
 router.post('/idle-response', agentController.handleIdleResponse);
 router.get('/idle-sessions/:employeeId', combinedAuth, agentController.getIdleSessions);
 router.get('/activity-summary/:employeeId', combinedAuth, agentController.getActivitySummary);
-router.post('/stop-tracking', agentController.stopTracking);
+router.post('/stop-tracking', combinedAuth, agentController.stopTracking);
 
 // Authenticated status and management
 router.get('/status', combinedAuth, agentController.getStatus);

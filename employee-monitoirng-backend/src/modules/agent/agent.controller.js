@@ -497,7 +497,8 @@ const remove = async (req, res) => {
 
 const stopTracking = async (req, res) => {
     try {
-        const { employeeId } = req.body;
+        const isSelfScoped = req.user?.role === 'AGENT' || req.user?.role === 'EMPLOYEE';
+        const employeeId = isSelfScoped ? req.user.employeeId : (req.body.employeeId || req.user?.employeeId);
         if (!employeeId) return errorResponse(res, 'Employee ID is required', 400);
 
         await agentService.stopTracking(employeeId);

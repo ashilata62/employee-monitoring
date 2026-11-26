@@ -14,11 +14,12 @@ const attendanceController = {
             return successResponse(res, attendance, 'Clocked in successfully');
         } catch (error) {
             const status = error.statusCode || (error.message.includes('Already clocked in') ? 400 : 500);
-            if (error.code) {
+            if (error.code || error.data) {
                 return res.status(status).json({
                     success: false,
                     message: error.message,
-                    code: error.code
+                    ...(error.code ? { code: error.code } : {}),
+                    ...(error.data ? { data: error.data } : {})
                 });
             }
             return errorResponse(res, error.message, status);

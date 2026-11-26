@@ -128,13 +128,25 @@ export const useAuthStore = create(
                 } catch (error) {
                     const errMsg = error.response?.data?.message || error.message || '';
                     if (errMsg.toLowerCase().includes('already clocked in')) {
-                        // User has an existing active session in DB: seamlessly sync to clocked in!
-                        const nowIso = new Date().toISOString();
-                        const existingAttendance = get().activeAttendance?.clockIn ? get().activeAttendance : {
-                            clockIn: nowIso,
-                            openBreak: null,
-                            totalBreakSeconds: 0
-                        };
+                        // User has an existing active session in DB: use real clockIn from backend error data or /auth/me
+                        let existingAttendance = error.response?.data?.data || (get().activeAttendance?.clockIn ? get().activeAttendance : null);
+                        if (!existingAttendance?.clockIn) {
+                            try {
+                                const { default: authService } = await import('../services/authService');
+                                const meRes = await authService.getCurrentUser();
+                                const meUser = meRes?.data?.user || meRes?.user || meRes?.data;
+                                if (meUser?.activeAttendance?.clockIn) {
+                                    existingAttendance = meUser.activeAttendance;
+                                }
+                            } catch { /* fallback below */ }
+                        }
+                        if (!existingAttendance?.clockIn) {
+                            existingAttendance = {
+                                clockIn: new Date().toISOString(),
+                                openBreak: null,
+                                totalBreakSeconds: 0
+                            };
+                        }
                         set({
                             activeAttendance: existingAttendance,
                             isClockedIn: true,
@@ -168,7 +180,19 @@ export const useAuthStore = create(
             clockOut: async () => {
                 const { default: attendanceService } = await import('../services/attendanceService');
                 const empId = get().user?.employeeId || get().user?.employee?.id || get().user?.id;
-                // Immediate synchronous reset so UI cards & buttons reset with 0 latency
+
+                let response = null;
+                try {
+                    response = await attendanceService.clockOut();
+                } catch (error) {
+                    const errMsg = (error.response?.data?.message || error.message || '').toLowerCase();
+                    if (!errMsg.includes('no active clock-in')) {
+                        toast.error(error.response?.data?.message || error.message || 'Failed to clock out. Please try again.');
+                        throw error;
+                    }
+                }
+
+                // Reset local state only after backend confirms clock-out (or no active session exists)
                 set({
                     activeAttendance: null,
                     isClockedIn: false,
@@ -195,15 +219,8 @@ export const useAuthStore = create(
                 if (typeof window !== 'undefined') {
                     window.dispatchEvent(new Event('stop-web-tracker'));
                 }
-                try {
-                    const response = await attendanceService.clockOut();
-                    toast.success('Work session ended');
-                    return response;
-                } catch (error) {
-                    // Gracefully handled - local session already reset
-                    toast.success('Work session ended');
-                    return { success: true };
-                }
+                toast.success('Work session ended');
+                return response || { success: true };
             },
 
             toggleBreak: async () => {
