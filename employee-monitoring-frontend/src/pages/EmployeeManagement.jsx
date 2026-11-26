@@ -481,39 +481,6 @@ const DeleteConfirmationModal = ({ isOpen, onClose, employee, onConfirm }) => {
     );
 };
 
-const NotificationsPanel = ({ isOpen, onClose }) => {
-    const notifications = [
-        { id: 1, title: 'New Employee Added', time: '2 mins ago', icon: <UserPlus size={16} /> },
-        { id: 2, title: 'Merge Request Completed', time: '1 hour ago', icon: <Shield size={16} /> },
-        { id: 3, title: 'Agent Offline: Robert Fox', time: '3 hours ago', icon: <Info size={16} /> },
-    ];
-
-    if (!isOpen) return null;
-
-    return (
-        <div className="absolute top-16 right-0 z-[120] w-80 bg-[#EEE8DD] dark:bg-[#252B20] rounded-2xl shadow-2xl border border-[#D6CDBC] dark:border-[#384232] p-6 animate-in fade-in slide-in-from-top-4 duration-300">
-            <div className="flex items-center justify-between mb-6">
-                <h4 className="text-xs font-bold text-[#29291F] dark:text-[#F5F1E9] uppercase tracking-wider">Notifications</h4>
-                <button onClick={onClose} className="text-[10px] font-bold text-[#B9955B] uppercase tracking-wider cursor-pointer">Mark all as read</button>
-            </div>
-            <div className="space-y-3">
-                {notifications.map(n => (
-                    <div key={n.id} className="flex gap-4 p-3 rounded-xl hover:bg-[#F5F1E9] dark:hover:bg-[#1E2419] transition-all group cursor-pointer">
-                        <div className="h-10 w-10 shrink-0 rounded-xl bg-[#F5F1E9] dark:bg-[#1E2419] flex items-center justify-center text-[#777367] group-hover:text-[#B9955B] transition-colors">
-                            {n.icon}
-                        </div>
-                        <div>
-                            <p className="text-[11px] font-bold text-[#29291F] dark:text-[#F5F1E9]">{n.title}</p>
-                            <p className="text-[10px] font-medium text-[#777367] dark:text-[#B8B3A7] mt-0.5">{n.time}</p>
-                        </div>
-                    </div>
-                ))}
-            </div>
-            <button className="w-full mt-6 py-3 border-t border-[#D6CDBC] dark:border-[#384232] text-[10px] font-bold text-[#777367] dark:text-[#B8B3A7] uppercase tracking-wider hover:text-[#29291F] dark:hover:text-[#F5F1E9] transition-all cursor-pointer">View All Activity</button>
-        </div>
-    );
-};
-
 const EmployeeActionsDrawer = ({ isOpen, onClose, employee, onUpdateStatus }) => {
     if (!isOpen || !employee) return null;
 

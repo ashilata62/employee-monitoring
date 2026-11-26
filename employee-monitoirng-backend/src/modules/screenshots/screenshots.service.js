@@ -27,8 +27,17 @@ class ScreenshotsService {
                 employee: {
                     select: {
                         fullName: true,
+                        role: true,
                         team: {
                             select: { name: true }
+                        },
+                        tasks: {
+                            take: 1,
+                            orderBy: { updatedAt: 'desc' },
+                            select: {
+                                name: true,
+                                project: { select: { name: true } }
+                            }
                         }
                     }
                 }

@@ -101,10 +101,7 @@ export function AddEmployeeModal({ isOpen, onClose, initialTab = 'single' }) {
         setSingleForm(prev => ({ ...prev, password: retVal }));
     };
 
-    const liveBackendUrl = (API_BASE_URL && !API_BASE_URL.includes('localhost'))
-        ? `${API_BASE_URL}/agent/download`
-        : 'https://insight-pool-production.up.railway.app/api/agent/download';
-    const downloadAgentUrl = liveBackendUrl;
+    const downloadAgentUrl = `${API_BASE_URL}/agent/download`;
 
     const handleCopy = () => {
         navigator.clipboard.writeText(downloadAgentUrl);
