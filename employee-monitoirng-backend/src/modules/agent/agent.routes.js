@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const agentController = require('./agent.controller');
 const authenticate = require('../../middlewares/auth');
+const roleMiddleware = require('../../middlewares/role.middleware');
 const { verifyToken } = require('../../utils/jwt');
 const { errorResponse } = require('../../utils/response');
 
@@ -96,11 +97,11 @@ router.post('/stop-tracking', agentController.stopTracking);
 router.get('/status', combinedAuth, agentController.getStatus);
 router.get('/status/:employeeId', combinedAuth, agentController.getStatus);
 router.get('/projects', combinedAuth, agentController.getAgentProjects);
-router.get('/list', authenticate, agentController.listAgents);
+router.get('/list', authenticate, roleMiddleware(['ADMIN', 'MANAGER']), agentController.listAgents);
 
 // Admin/Manager only management routes
-router.patch('/status/:id', authenticate, agentController.updateStatus);
-router.patch('/:id', authenticate, agentController.update);
-router.delete('/:id', authenticate, agentController.remove);
+router.patch('/status/:id', authenticate, roleMiddleware(['ADMIN', 'MANAGER']), agentController.updateStatus);
+router.patch('/:id', authenticate, roleMiddleware(['ADMIN', 'MANAGER']), agentController.update);
+router.delete('/:id', authenticate, roleMiddleware(['ADMIN', 'MANAGER']), agentController.remove);
 
 module.exports = router;

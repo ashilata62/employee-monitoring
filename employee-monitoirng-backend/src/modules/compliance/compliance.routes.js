@@ -8,12 +8,12 @@ const roleMiddleware = require('../../middlewares/role.middleware');
 router.use(authMiddleware);
 
 // Get compliance settings - Admin and Manager can see
-router.get('/settings', complianceController.getSettings);
+router.get('/settings', roleMiddleware(['ADMIN', 'MANAGER']), complianceController.getSettings);
 
 // Update compliance settings - Admin only
 router.post('/settings', roleMiddleware(['ADMIN']), complianceController.updateSettings);
 
 // Get audit logs - Admin and Manager can see
-router.get('/audit-logs', complianceController.getAuditLogs);
+router.get('/audit-logs', roleMiddleware(['ADMIN', 'MANAGER']), complianceController.getAuditLogs);
 
 module.exports = router;

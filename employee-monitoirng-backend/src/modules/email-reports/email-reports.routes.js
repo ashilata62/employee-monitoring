@@ -2,8 +2,10 @@ const express = require('express');
 const router = express.Router();
 const emailReportsController = require('./email-reports.controller');
 const authMiddleware = require('../../middlewares/auth.middleware');
+const roleMiddleware = require('../../middlewares/role.middleware');
 
 router.use(authMiddleware);
+router.use(roleMiddleware(['ADMIN', 'MANAGER']));
 
 router.post('/', emailReportsController.createReport);
 router.get('/', emailReportsController.getReports);

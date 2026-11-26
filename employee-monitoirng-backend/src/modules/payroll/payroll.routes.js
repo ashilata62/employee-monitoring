@@ -4,8 +4,10 @@ const payrollController = require('./payroll.controller');
 const invoiceController = require('./invoice.controller');
 const cloudPayrollController = require('./cloudPayroll.controller');
 const authMiddleware = require('../../middlewares/auth.middleware');
+const roleMiddleware = require('../../middlewares/role.middleware');
 
 router.use(authMiddleware);
+router.use(roleMiddleware(['ADMIN', 'MANAGER']));
 
 router.get('/summary', payrollController.getPayrollSummary);
 router.get('/records', payrollController.getPayrollRecords);

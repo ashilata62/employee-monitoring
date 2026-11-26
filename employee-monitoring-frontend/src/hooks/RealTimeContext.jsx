@@ -1121,33 +1121,21 @@ export function RealTimeProvider({ children }) {
             const totalWorkHours = log?.workHours ?? (emp.totalWorkHours || (activeHours + idleHours + manualHours));
 
             let productivityScore = 0;
-            if (log && log.productivityPct !== undefined && log.productivityPct > 0) {
+            if (log && log.productivityPct !== undefined && log.productivityPct !== null) {
                 productivityScore = log.productivityPct;
-            } else if (emp.productivityScore !== undefined && emp.productivityScore > 0) {
+            } else if (emp.productivityScore !== undefined && emp.productivityScore !== null) {
                 productivityScore = emp.productivityScore;
-            } else if (status === 'online') {
-                productivityScore = 92;
-            } else if (status === 'idle') {
-                productivityScore = 70;
-            } else {
-                productivityScore = 80;
             }
 
             let utilizationScore = 0;
-            if (log && log.utilizationPct !== undefined && log.utilizationPct > 0) {
+            if (log && log.utilizationPct !== undefined && log.utilizationPct !== null) {
                 utilizationScore = log.utilizationPct;
-            } else if (emp.utilizationScore !== undefined && emp.utilizationScore > 0) {
+            } else if (emp.utilizationScore !== undefined && emp.utilizationScore !== null) {
                 utilizationScore = emp.utilizationScore;
-            } else if (status === 'online') {
-                utilizationScore = 88;
-            } else if (status === 'idle') {
-                utilizationScore = 65;
-            } else {
-                utilizationScore = 75;
             }
 
-            const activeApp = emp.activeApp || log?.appWebsite || (status === 'online' ? 'Visual Studio Code' : 'Offline');
-            const activeWindow = emp.activeWindow || (status === 'online' ? 'Working on Development Task' : 'No recent activity');
+            const activeApp = emp.activeApp || log?.appWebsite || (status === 'online' ? 'Active Session' : 'Offline');
+            const activeWindow = emp.activeWindow || (status === 'online' ? 'Waiting for activity...' : 'No recent activity');
             const location = emp.location && emp.location !== '-' ? emp.location : (emp.workMode ? emp.workMode : 'Remote');
 
             return {

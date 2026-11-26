@@ -76,8 +76,8 @@ class TasksController {
 
     async updateTask(req, res) {
         try {
-            if (req.user.role !== 'MANAGER') {
-                return res.status(403).json({ success: false, message: "Only managers can edit tasks" });
+            if (!['ADMIN', 'MANAGER'].includes(req.user.role)) {
+                return res.status(403).json({ success: false, message: "Only admins and managers can edit tasks" });
             }
             const { id } = req.params;
             const task = await tasksService.updateTask(id, req.body);
@@ -89,8 +89,8 @@ class TasksController {
 
     async updateTaskStatus(req, res) {
         try {
-            if (req.user.role !== 'MANAGER') {
-                return res.status(403).json({ success: false, message: "Only managers can update task status" });
+            if (!['ADMIN', 'MANAGER'].includes(req.user.role)) {
+                return res.status(403).json({ success: false, message: "Only admins and managers can update task status" });
             }
             const { id } = req.params;
             const { status } = req.body;
@@ -103,8 +103,8 @@ class TasksController {
 
     async deleteTask(req, res) {
         try {
-            if (req.user.role !== 'MANAGER') {
-                return res.status(403).json({ success: false, message: "Only managers can delete tasks" });
+            if (!['ADMIN', 'MANAGER'].includes(req.user.role)) {
+                return res.status(403).json({ success: false, message: "Only admins and managers can delete tasks" });
             }
             const { id } = req.params;
             await tasksService.deleteTask(id);

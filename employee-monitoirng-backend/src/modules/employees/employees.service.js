@@ -74,6 +74,7 @@ const getEmployees = async (organizationId, filter = {}) => {
 
         const logsToUse = todayLogs.length > 0 ? todayLogs : (emp.activityLogs || []);
 
+        let loggedActivitySec = 0;
         logsToUse.forEach(log => {
             const dur = log.duration || 0;
             if (log.activityType === 'ACTIVE') activeSec += dur;
@@ -82,6 +83,8 @@ const getEmployees = async (organizationId, filter = {}) => {
 
             if (log.productivity === 'PRODUCTIVE') productiveSec += dur;
             else if (log.productivity === 'UNPRODUCTIVE') unproductiveSec += dur;
+
+            if (dur > 0) loggedActivitySec += dur;
         });
 
         let attendanceDuration = 0;
@@ -95,9 +98,7 @@ const getEmployees = async (organizationId, filter = {}) => {
         });
 
         if (attendanceDuration > activeSec) {
-            const diff = attendanceDuration - activeSec;
             activeSec = attendanceDuration;
-            productiveSec += diff;
         }
 
         const totalWorkSec = activeSec + idleSec + manualSec;
@@ -125,31 +126,13 @@ const getEmployees = async (organizationId, filter = {}) => {
             liveStatus = 'offline';
         }
 
-        let productivityScore = 0;
-        if (activeSec > 0) {
-            productivityScore = Math.min(100, Math.round((productiveSec / activeSec) * 100));
-            if (productivityScore === 0) productivityScore = isOnline ? 92 : 82;
-        } else if (isOnline) {
-            productivityScore = 92;
-        } else if (emp.activityLogs && emp.activityLogs.length > 0) {
-            const allProd = emp.activityLogs.filter(l => l.productivity === 'PRODUCTIVE').reduce((a, b) => a + (b.duration || 0), 0);
-            const allAct = emp.activityLogs.filter(l => l.activityType === 'ACTIVE').reduce((a, b) => a + (b.duration || 0), 0);
-            productivityScore = allAct > 0 ? Math.min(100, Math.round((allProd / allAct) * 100)) : 85;
-        } else {
-            productivityScore = emp.status === 'OFFLINE' ? 76 : 88;
-        }
+        const productivityScore = loggedActivitySec > 0
+            ? Math.min(100, Math.round((productiveSec / loggedActivitySec) * 100))
+            : 0;
 
-        let utilizationScore = 0;
-        if (totalWorkSec > 0) {
-            utilizationScore = Math.min(100, Math.round((activeSec / Math.max(totalWorkSec, 8 * 3600)) * 100));
-            if (utilizationScore === 0 && activeSec > 0) {
-                utilizationScore = Math.min(100, Math.round((activeSec / totalWorkSec) * 100));
-            }
-        } else if (isOnline) {
-            utilizationScore = 86;
-        } else {
-            utilizationScore = emp.status === 'OFFLINE' ? 68 : 80;
-        }
+        const utilizationScore = activeSec > 0
+            ? Math.min(100, Math.round((activeSec / Math.max(totalWorkSec, 8 * 3600)) * 100))
+            : 0;
 
         const liveAct = emp.liveActivities?.[0];
         const activeTask = emp.tasks?.[0];
@@ -161,8 +144,8 @@ const getEmployees = async (organizationId, filter = {}) => {
                 activeApp = activeTask.project?.name || 'Project Work';
                 activeWindow = activeTask.name;
             } else if (isOnline) {
-                activeApp = 'Visual Studio Code';
-                activeWindow = 'Working on Development Task';
+                activeApp = 'Active Session';
+                activeWindow = 'Waiting for activity...';
             } else {
                 activeApp = 'Offline';
                 activeWindow = 'No recent activity';
