@@ -41,10 +41,25 @@ import { useRealTime } from '../../hooks/RealTimeContext';
 import { timesheetService, fmtMoney, fmtH } from '../../services/timesheetService';
 import { toast } from '../../utils/toastManager';
 
-const CustomStackedTooltip = ({ active, payload, label }) => {
+const CustomStackedTooltip = ({ active, payload, label, chartTab }) => {
     if (!active || !payload || !payload.length) return null;
     const data = payload[0]?.payload || {};
-    const total = data.total !== undefined ? data.total : Number(((data.productive || 0) + (data.unproductive || 0) + (data.neutral || 0)).toFixed(2));
+    const isActivities = chartTab === 'Activities';
+    const total = isActivities
+        ? Number(((data.active || 0) + (data.idle || 0) + (data.breakTime || 0)).toFixed(2))
+        : (data.total !== undefined ? data.total : Number(((data.productive || 0) + (data.unproductive || 0) + (data.neutral || 0)).toFixed(2)));
+
+    const rows = isActivities
+        ? [
+            { label: 'Active:', value: data.active || 0, dot: 'bg-[#5E7D64]', text: 'text-[#A4C2A8]' },
+            { label: 'Idle:', value: data.idle || 0, dot: 'bg-[#D3B98D]', text: 'text-[#D5CDBC]' },
+            { label: 'Break:', value: data.breakTime || 0, dot: 'bg-[#C98A3C]', text: 'text-[#E8C089]' },
+        ]
+        : [
+            { label: 'Productive:', value: data.productive || 0, dot: 'bg-[#5E7D64]', text: 'text-[#A4C2A8]' },
+            { label: 'Unproductive:', value: data.unproductive || 0, dot: 'bg-[#A84B4B]', text: 'text-[#E8A5A5]' },
+            { label: 'Neutral:', value: data.neutral || 0, dot: 'bg-[#D3B98D]', text: 'text-[#D5CDBC]' },
+        ];
 
     return (
         <div className="bg-[#252B20] text-[#F5F1E9] p-3.5 rounded-xl shadow-xl border border-[#384232] text-xs min-w-[190px]">
@@ -53,24 +68,14 @@ const CustomStackedTooltip = ({ active, payload, label }) => {
                 <span className="font-sans font-bold text-white">{total}h total</span>
             </div>
             <div className="space-y-1.5 font-medium">
-                <div className="flex items-center justify-between gap-3 text-[#A4C2A8]">
-                    <span className="flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-[#5E7D64]" /> Productive:
-                    </span>
-                    <span className="font-bold">{data.productive || 0}h</span>
-                </div>
-                <div className="flex items-center justify-between gap-3 text-[#E8A5A5]">
-                    <span className="flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-[#A84B4B]" /> Unproductive:
-                    </span>
-                    <span className="font-bold">{data.unproductive || 0}h</span>
-                </div>
-                <div className="flex items-center justify-between gap-3 text-[#D5CDBC]">
-                    <span className="flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-[#D3B98D]" /> Neutral:
-                    </span>
-                    <span className="font-bold">{data.neutral || 0}h</span>
-                </div>
+                {rows.map((r) => (
+                    <div key={r.label} className={`flex items-center justify-between gap-3 ${r.text}`}>
+                        <span className="flex items-center gap-1.5">
+                            <span className={`w-2 h-2 rounded-full ${r.dot}`} /> {r.label}
+                        </span>
+                        <span className="font-bold">{r.value}h</span>
+                    </div>
+                ))}
             </div>
         </div>
     );
@@ -285,7 +290,6 @@ export function AdminExecutiveDashboard({
 
         const list = [];
         const cur = new Date(start);
-        const todayStr = new Date().toISOString().split('T')[0];
 
         while (cur <= end) {
             const dateStr = cur.toISOString().split('T')[0];
@@ -299,26 +303,20 @@ export function AdminExecutiveDashboard({
                 const p = Number((found.productive || 0).toFixed(2));
                 const u = Number((found.unproductive || 0).toFixed(2));
                 const n = Number((found.neutral || 0).toFixed(2));
+                const act = Number((found.active || 0).toFixed(2));
+                const idl = Number((found.idle || 0).toFixed(2));
+                const brk = Number((found.breakTime || 0).toFixed(2));
                 list.push({
                     date: dateStr,
                     name: label,
                     productive: p,
                     unproductive: u,
                     neutral: n,
-                    total: Number((p + u + n).toFixed(2))
-                });
-            } else if (dateStr === todayStr) {
-                const todayHours = Number(stats?.summary?.totalWorkHours || dashboardData?.workHours || 0);
-                const p = todayHours > 0 ? Number((todayHours * 0.85).toFixed(2)) : 0;
-                const u = todayHours > 0 ? Number((todayHours * 0.10).toFixed(2)) : 0;
-                const n = todayHours > 0 ? Number((todayHours * 0.05).toFixed(2)) : 0;
-                list.push({
-                    date: dateStr,
-                    name: label,
-                    productive: p,
-                    unproductive: u,
-                    neutral: n,
-                    total: Number(todayHours.toFixed(2))
+                    total: Number((p + u + n).toFixed(2)),
+                    active: act,
+                    idle: idl,
+                    breakTime: brk,
+                    activityTotal: Number((act + idl + brk).toFixed(2))
                 });
             } else {
                 list.push({
@@ -327,7 +325,11 @@ export function AdminExecutiveDashboard({
                     productive: 0,
                     unproductive: 0,
                     neutral: 0,
-                    total: 0
+                    total: 0,
+                    active: 0,
+                    idle: 0,
+                    breakTime: 0,
+                    activityTotal: 0
                 });
             }
             cur.setDate(cur.getDate() + 1);
@@ -914,7 +916,7 @@ export function AdminExecutiveDashboard({
                                     allowDecimals={true}
                                     domain={[0, 'auto']}
                                 />
-                                <Tooltip content={<CustomStackedTooltip />} cursor={{ fill: 'rgba(185, 149, 91, 0.08)' }} />
+                                <Tooltip content={<CustomStackedTooltip chartTab={chartTab} />} cursor={{ fill: 'rgba(185, 149, 91, 0.08)' }} />
                                 {chartTab === 'Productivity' ? (
                                     <>
                                         <Bar dataKey="productive" name="Productive Time" stackId="stack" fill="#5E7D64" maxBarSize={28} />
@@ -923,9 +925,9 @@ export function AdminExecutiveDashboard({
                                     </>
                                 ) : (
                                     <>
-                                        <Bar dataKey="productive" name="Active Time" stackId="stack" fill="#5E7D64" maxBarSize={28} />
-                                        <Bar dataKey="neutral" name="Idle Time" stackId="stack" fill="#D3B98D" maxBarSize={28} />
-                                        <Bar dataKey="unproductive" name="Break Time" stackId="stack" fill="#C98A3C" radius={[4, 4, 0, 0]} maxBarSize={28} />
+                                        <Bar dataKey="active" name="Active Time" stackId="stack" fill="#5E7D64" maxBarSize={28} />
+                                        <Bar dataKey="idle" name="Idle Time" stackId="stack" fill="#D3B98D" maxBarSize={28} />
+                                        <Bar dataKey="breakTime" name="Break Time" stackId="stack" fill="#C98A3C" radius={[4, 4, 0, 0]} maxBarSize={28} />
                                     </>
                                 )}
                             </BarChart>
