@@ -1300,6 +1300,8 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
 
             export function ScreenshotMonitoring() {
     const {user, role} = useAuthStore();
+            const [searchParams, setSearchParams] = useSearchParams();
+            const employeeParam = searchParams.get('employee');
             const {socket, employees: contextEmployees, teams: contextTeams, projects: contextProjects, screenshots: contextScreenshots, deleteScreenshot, addNotification } = useRealTime();
 
             // Live Monitoring State
@@ -1347,7 +1349,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
             const [videoRecordings, setVideoRecordings] = useState([]);
             const [loadingVideos, setLoadingVideos] = useState(false);
             const [activeMainTab, setActiveMainTab] = useState('screenshots'); // 'screenshots' | 'videos'
-            const [videoEmployeeFilter, setVideoEmployeeFilter] = useState('All');
+            const [videoEmployeeFilter, setVideoEmployeeFilter] = useState(employeeParam || 'All');
             const [videoDateFilter, setVideoDateFilter] = useState('');
             const [videoSearchQuery, setVideoSearchQuery] = useState('');
             const [activePlaybackVideo, setActivePlaybackVideo] = useState(null);
@@ -1583,7 +1585,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
 
             // Selected Filters State (Stores IDs)
             const [selectedFilters, setSelectedFilters] = useState({
-              employees: [],
+              employees: employeeParam ? [employeeParam] : [],
             teams: [],
             projects: [],
             apps: [],
@@ -1592,6 +1594,17 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
             productivityTypes: [],
             category: []
   });
+
+  // Sync URL ?employee= query param with selectedFilters and video filter
+  useEffect(() => {
+    if (employeeParam) {
+      setSelectedFilters(prev => {
+        if (prev.employees.length === 1 && prev.employees[0] === employeeParam) return prev;
+        return { ...prev, employees: [employeeParam] };
+      });
+      setVideoEmployeeFilter(employeeParam);
+    }
+  }, [employeeParam]);
 
   // Unified fetcher for both live and historical screenshots
   const fetchScreenshots = useCallback(async (pageNum = 0, isPolling = false) => {
@@ -2177,6 +2190,15 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
       ...prev,
       [type]: selectedIds
     }));
+    if (type === 'employees') {
+      const nextParams = new URLSearchParams(searchParams);
+      if (selectedIds.length === 1) {
+        nextParams.set('employee', selectedIds[0]);
+      } else {
+        nextParams.delete('employee');
+      }
+      setSearchParams(nextParams, { replace: true });
+    }
   };
 
   const handleClearFilter = (type) => {
@@ -2184,6 +2206,11 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
       ...prev,
       [type]: []
     }));
+    if (type === 'employees' && searchParams.has('employee')) {
+      const nextParams = new URLSearchParams(searchParams);
+      nextParams.delete('employee');
+      setSearchParams(nextParams, { replace: true });
+    }
   };
 
   const getEmptyMessage = (type) => {

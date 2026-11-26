@@ -2,7 +2,6 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { DashboardLayout } from './layouts/DashboardLayout';
 import { Dashboard } from './pages/Dashboard';
 import { TimeAndAttendance } from './pages/TimeAndAttendance';
-import { ActivityMonitoring } from './pages/ActivityMonitoring';
 import { ActivitiesTimeline } from './pages/ActivitiesTimeline';
 import { ScreenshotMonitoring } from './pages/ScreenshotMonitoring';
 import { EmployeeManagement } from './pages/EmployeeManagement';
@@ -133,7 +132,6 @@ function App() {
                                         <Route path="real-time" element={<RealTimeInsights />} />
                                         <Route path="time-attendance" element={<TimeAndAttendance />} />
                                         <Route path="activities" element={<ActivitiesTimeline />} />
-                                        <Route path="monitoring" element={<ActivityMonitoring />} />
                                         <Route path="screenshots" element={
                                             <RoleRoute allowedRoles={['ADMIN', 'MANAGER']}>
                                                 <ScreenshotMonitoring />

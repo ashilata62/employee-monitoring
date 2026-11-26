@@ -51,6 +51,10 @@
       "icon": "icon.png",
       "publisherName": "Employee Monitoring System"
     },
+    "nsis": {
+      "deleteAppDataOnUninstall": true,
+      "include": "build/installer.nsh"
+    },
     "mac": {
       "target": [
         "dmg",

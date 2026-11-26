@@ -846,25 +846,6 @@ export function AdminExecutiveDashboard({
                             )}
                         </div>
                     </div>
-
-                    {/* Quick Admin Policy & Agent Health Callout */}
-                    <div className="mt-4 p-4 rounded-2xl bg-[#30382B] text-white flex items-center justify-between gap-3 shadow-warm-xs">
-                        <div>
-                            <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
-                                <Monitor size={14} className="text-[#D3B98D]" />
-                                Desktop Monitoring Client
-                            </h4>
-                            <p className="text-[10px] text-[#B8C2B3] mt-0.5">
-                                Automated screen capture and activity sync active across organization
-                            </p>
-                        </div>
-                        <button
-                            onClick={() => navigate('/admin/monitoring-agents')}
-                            className="px-3 py-1.5 rounded-xl bg-[#B9955B] hover:bg-[#A17D45] text-white text-[10px] font-bold uppercase tracking-wider transition cursor-pointer shrink-0"
-                        >
-                            Agent Status
-                        </button>
-                    </div>
                 </div>
             </div>
 

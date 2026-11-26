@@ -243,14 +243,18 @@ const EditEmployeeModal = ({ isOpen, onClose, employee, onUpdate }) => {
             if (employee.location && !employee.location.startsWith('—')) {
                 initialLocation = employee.location;
             }
+            const rawStatus = (employee.accountStatus || employee.status || 'ACTIVE').toUpperCase();
+            const allowedStatuses = ['INVITED', 'ACTIVE', 'OFFLINE', 'IDLE', 'DEACTIVATED'];
+            const normalizedStatus = allowedStatuses.includes(rawStatus) ? rawStatus : 'ACTIVE';
+
             setFormData({
                 fullName: employee.name || employee.fullName || '',
                 email: employee.email || '',
-                role: employee.role || 'EMPLOYEE',
+                role: (employee.role || 'EMPLOYEE').toUpperCase(),
                 teamId: employee.teamId || '',
                 location: initialLocation,
                 hourlyRate: employee.hourlyRate || 0,
-                status: (employee.status || 'ACTIVE').toUpperCase(),
+                status: normalizedStatus,
                 password: ''
             });
         }
