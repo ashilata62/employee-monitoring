@@ -1045,7 +1045,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
             <Clock size={11} /> {time}
           </span>
           <span className="flex items-center gap-1 text-slate-500 dark:text-slate-400 truncate max-w-[130px]">
-            <Briefcase size={11} /> {project || task || 'Design System'}
+            <Briefcase size={11} /> {project || task || 'General Work'}
           </span>
         </div>
         <div className="flex items-center justify-between pt-1 border-t border-slate-50 dark:border-slate-800/50">
@@ -1053,7 +1053,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
             {employee || 'Unknown'}
           </span>
           <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-100 dark:border-slate-700">
-            {team || 'Designers'}
+            {team || 'General'}
           </span>
         </div>
       </div>
@@ -1771,7 +1771,10 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
               ...s,
               id: s.id,
             employee: s.employee?.fullName || s.employee || 'Unknown',
+            employeeRole: (s.employee?.role || '').toUpperCase(),
             team: s.employee?.team?.name || 'General',
+            project: s.project || s.employee?.tasks?.[0]?.project?.name || '',
+            task: s.task || s.employee?.tasks?.[0]?.name || '',
             image: s.imageUrl?.startsWith('/') ? `${API_BASE_URL.replace(/\/api\/?$/, '')}${s.imageUrl}` : s.imageUrl,
             timestamp: s.capturedAt || s.createdAt,
             time: new Date(s.capturedAt || s.createdAt).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit' }),
@@ -1792,13 +1795,9 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
             // Functional states for modals
             const [showRestrictedApps, setShowRestrictedApps] = useState(false);
             const [showCaptureRules, setShowCaptureRules] = useState(false);
-            const [restrictedApps, setRestrictedApps] = useState(['Telegram', 'WhatsApp', 'Facebook', 'Steam']);
+            const [restrictedApps, setRestrictedApps] = useState([]);
             const [newApp, setNewApp] = useState('');
-            const [rules, setRules] = useState([
-            {id: 1, name: 'Work Hours Only', enabled: true, desc: '9 AM - 6 PM' },
-            {id: 2, name: 'Keypad Monitoring', enabled: false, desc: 'Capture on activity' },
-            {id: 3, name: 'Idle Timeout', enabled: true, desc: 'Pause after 5m idle' },
-            ]);
+            const [rules, setRules] = useState([]);
 
             // Detail View & Selection State
             const [selectedScreenshot, setSelectedScreenshot] = useState(null);
@@ -1859,7 +1858,7 @@ const ScreenshotCard = memo(({ id, employeeId, employee, timestamp, image, isBlu
             if (selectedEmployee !== 'All' && s.employee !== selectedEmployee) return false;
             if (activeFilter === 'Flagged' && !s.isBlurred) return false;
             if (activeFilter === 'Idle' && s.productivity !== 'idle') return false;
-            if (excludeSensitive && s.employee === 'John Doe') return false;
+            if (excludeSensitive && s.employeeRole === 'ADMIN') return false;
 
             return true;
     });

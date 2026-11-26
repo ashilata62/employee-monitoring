@@ -112,7 +112,7 @@ export function RealTimeProvider({ children }) {
         checkIns: [],
         travelStats: { totalDistance: '0 km', avgSpeed: '0 km/h', topSpeed: '0 km/h', totalTrips: 0 },
         timer: { isRunning: false, startTime: null, seconds: 0, currentTask: null },
-        currentUser: { id: 0, name: 'Admin User', role: 'Admin' },
+        currentUser: null,
         // Compliance
         complianceSettings: {
             twoFA: false,
