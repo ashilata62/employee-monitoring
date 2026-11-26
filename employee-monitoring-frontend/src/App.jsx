@@ -129,7 +129,11 @@ function App() {
                                 <DashboardLayout>
                                     <Routes>
                                         <Route path="/" element={<Dashboard />} />
-                                        <Route path="real-time" element={<RealTimeInsights />} />
+                                        <Route path="real-time" element={
+                                            <RoleRoute allowedRoles={['ADMIN', 'MANAGER']}>
+                                                <RealTimeInsights />
+                                            </RoleRoute>
+                                        } />
                                         <Route path="time-attendance" element={<TimeAndAttendance />} />
                                         <Route path="activities" element={<ActivitiesTimeline />} />
                                         <Route path="screenshots" element={
@@ -137,10 +141,18 @@ function App() {
                                                 <ScreenshotMonitoring />
                                             </RoleRoute>
                                         } />
-                                        <Route path="location" element={<LocationTracking />} />
+                                        <Route path="location" element={
+                                            <RoleRoute allowedRoles={['ADMIN', 'MANAGER']}>
+                                                <LocationTracking />
+                                            </RoleRoute>
+                                        } />
                                         <Route path="tasks" element={<TasksProjects />} />
 
-                                        <Route path="reports" element={<Reports />}>
+                                        <Route path="reports" element={
+                                            <RoleRoute allowedRoles={['ADMIN', 'MANAGER']}>
+                                                <Reports />
+                                            </RoleRoute>
+                                        }>
                                             <Route index element={<Navigate to="work-type" replace />} />
                                             <Route path="work-type" element={<WorkType />} />
                                             <Route path="schedule-adherence" element={<ScheduleAdherence />} />
@@ -159,9 +171,21 @@ function App() {
                                                 <Alerts />
                                             </RoleRoute>
                                         } />
-                                        <Route path="employees" element={<EmployeeManagement />} />
-                                        <Route path="employees/:id" element={<EmployeeProfile />} />
-                                        <Route path="teams" element={<Teams />} />
+                                        <Route path="employees" element={
+                                            <RoleRoute allowedRoles={['ADMIN', 'MANAGER']}>
+                                                <EmployeeManagement />
+                                            </RoleRoute>
+                                        } />
+                                        <Route path="employees/:id" element={
+                                            <RoleRoute allowedRoles={['ADMIN', 'MANAGER']}>
+                                                <EmployeeProfile />
+                                            </RoleRoute>
+                                        } />
+                                        <Route path="teams" element={
+                                            <RoleRoute allowedRoles={['ADMIN', 'MANAGER']}>
+                                                <Teams />
+                                            </RoleRoute>
+                                        } />
                                         <Route path="projects" element={<Projects />} />
                                         <Route path="agents" element={
                                             <RoleRoute allowedRoles={['ADMIN']}>
@@ -173,37 +197,105 @@ function App() {
                                                 <Settings />
                                             </RoleRoute>
                                         } />
-                                        <Route path="settings/reports/workload-distribution" element={<WorkloadDistributionSettings />} />
-                                        <Route path="settings/reports/location-insights" element={<LocationInsightsSettings />} />
+                                        <Route path="settings/reports/workload-distribution" element={
+                                            <RoleRoute allowedRoles={['ADMIN']}>
+                                                <WorkloadDistributionSettings />
+                                            </RoleRoute>
+                                        } />
+                                        <Route path="settings/reports/location-insights" element={
+                                            <RoleRoute allowedRoles={['ADMIN']}>
+                                                <LocationInsightsSettings />
+                                            </RoleRoute>
+                                        } />
 
-                                        <Route path="settings/alerts" element={<AlertsLayout />}>
+                                        <Route path="settings/alerts" element={
+                                            <RoleRoute allowedRoles={['ADMIN']}>
+                                                <AlertsLayout />
+                                            </RoleRoute>
+                                        }>
                                             <Route index element={<Navigate to="attendance" replace />} />
                                             <Route path="attendance" element={<AttendanceAlerts />} />
                                             <Route path="security" element={<SecurityAlerts />} />
                                             <Route path="shift-scheduling" element={<ShiftScheduling />} />
                                             <Route path="other" element={<OtherAlerts />} />
                                         </Route>
-                                        <Route path="settings/productivity/apps" element={<ProductivityApps />} />
+                                        <Route path="settings/productivity/apps" element={
+                                            <RoleRoute allowedRoles={['ADMIN']}>
+                                                <ProductivityApps />
+                                            </RoleRoute>
+                                        } />
 
-                                        <Route path="settings/audit-logs" element={<AuditLogs />} />
-                                        <Route path="settings/email-reports" element={<EmailReports />} />
-                                        <Route path="settings/manual-time" element={<ManualTime />} />
-                                        <Route path="settings/organization" element={<Organization />} />
+                                        <Route path="settings/audit-logs" element={
+                                            <RoleRoute allowedRoles={['ADMIN']}>
+                                                <AuditLogs />
+                                            </RoleRoute>
+                                        } />
+                                        <Route path="settings/email-reports" element={
+                                            <RoleRoute allowedRoles={['ADMIN']}>
+                                                <EmailReports />
+                                            </RoleRoute>
+                                        } />
+                                        <Route path="settings/manual-time" element={
+                                            <RoleRoute allowedRoles={['ADMIN']}>
+                                                <ManualTime />
+                                            </RoleRoute>
+                                        } />
+                                        <Route path="settings/organization" element={
+                                            <RoleRoute allowedRoles={['ADMIN']}>
+                                                <Organization />
+                                            </RoleRoute>
+                                        } />
                                         <Route path="settings/personal" element={<PersonalSettings />} />
-                                        <Route path="settings/security" element={<SecurityLanding />} />
-                                        <Route path="settings/security/saml" element={<SamlWizard />} />
-                                        <Route path="settings/tracking" element={<TrackingSettings />} />
-                                        <Route path="settings/tracking/advanced" element={<><TrackingSettings /><AdvancedTrackingSettings /></>} />
-                                        <Route path="settings/user-management/users" element={<ManageUsers />} />
-                                        <Route path="settings/user-management/org-groups" element={<ManageOrgGroups />} />
-                                        <Route path="settings/utilization" element={<Utilization />} />
-                                        <Route path="settings/privacy" element={<Privacy />}>
+                                        <Route path="settings/security" element={
+                                            <RoleRoute allowedRoles={['ADMIN']}>
+                                                <SecurityLanding />
+                                            </RoleRoute>
+                                        } />
+                                        <Route path="settings/security/saml" element={
+                                            <RoleRoute allowedRoles={['ADMIN']}>
+                                                <SamlWizard />
+                                            </RoleRoute>
+                                        } />
+                                        <Route path="settings/tracking" element={
+                                            <RoleRoute allowedRoles={['ADMIN']}>
+                                                <TrackingSettings />
+                                            </RoleRoute>
+                                        } />
+                                        <Route path="settings/tracking/advanced" element={
+                                            <RoleRoute allowedRoles={['ADMIN']}>
+                                                <><TrackingSettings /><AdvancedTrackingSettings /></>
+                                            </RoleRoute>
+                                        } />
+                                        <Route path="settings/user-management/users" element={
+                                            <RoleRoute allowedRoles={['ADMIN']}>
+                                                <ManageUsers />
+                                            </RoleRoute>
+                                        } />
+                                        <Route path="settings/user-management/org-groups" element={
+                                            <RoleRoute allowedRoles={['ADMIN']}>
+                                                <ManageOrgGroups />
+                                            </RoleRoute>
+                                        } />
+                                        <Route path="settings/utilization" element={
+                                            <RoleRoute allowedRoles={['ADMIN']}>
+                                                <Utilization />
+                                            </RoleRoute>
+                                        } />
+                                        <Route path="settings/privacy" element={
+                                            <RoleRoute allowedRoles={['ADMIN']}>
+                                                <Privacy />
+                                            </RoleRoute>
+                                        }>
                                             <Route index element={<Navigate to="overview" replace />} />
                                             <Route path="overview" element={<PrivacyOverview />} />
                                             <Route path="compliance" element={<PrivacyCompliance />} />
                                         </Route>
 
-                                        <Route path="settings/billing" element={<BillingLayout />}>
+                                        <Route path="settings/billing" element={
+                                            <RoleRoute allowedRoles={['ADMIN']}>
+                                                <BillingLayout />
+                                            </RoleRoute>
+                                        }>
                                             <Route index element={<Navigate to="plans" replace />} />
                                             <Route path="plans" element={<Plans />} />
                                             <Route path="add-ons" element={<AddOns />} />

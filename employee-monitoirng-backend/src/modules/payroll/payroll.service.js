@@ -118,6 +118,20 @@ const getPayrollSummary = async (organizationId, params = {}) => {
         : 0;
 
     // Calculate real monthly earnings trend for the last 6 months from Prisma database records
+    const trendStart = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+    trendStart.setHours(0, 0, 0, 0);
+    const trendEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+    const trendStartStr = trendStart.toISOString().split('T')[0];
+    const trendEndStr = trendEnd.toISOString().split('T')[0];
+
+    const trendTimesheets = await prisma.timesheet.findMany({
+        where: {
+            status: 'APPROVED',
+            weekStart: { gte: trendStartStr, lte: trendEndStr },
+            employee: employeeWhere
+        }
+    });
+
     const monthlyTrends = [];
     for (let i = 5; i >= 0; i--) {
         const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
@@ -125,7 +139,7 @@ const getPayrollSummary = async (organizationId, params = {}) => {
         const mEnd = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59, 999);
         const mLabel = d.toLocaleString('en-US', { month: 'short' });
 
-        const mTimesheets = employees.flatMap(e => e.timesheets || []).filter(t => {
+        const mTimesheets = trendTimesheets.filter(t => {
             const td = new Date(t.weekStart);
             return td >= mStart && td <= mEnd;
         });
