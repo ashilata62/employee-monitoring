@@ -879,7 +879,7 @@ function startMonitoringLoops() {
     idleMonitoringInterval = setInterval(checkIdleActivity, idleConfig.checkIntervalMs);
     checkIdleActivity(); // Immediate first check
 
-    // 3. Routine Screenshot & Activity Log (every 3 minutes)
+    // 3. Routine Screenshot & Activity Log (every 1 minute)
     routineScreenshotInterval = setInterval(async () => {
         try {
             const { appName, windowTitle } = await getActiveWindowInfo();
@@ -897,7 +897,7 @@ function startMonitoringLoops() {
         } catch (err) {
             console.error('[Routine Screenshot Error]:', err.message);
         }
-    }, 3 * 60 * 1000);
+    }, 1 * 60 * 1000);
 
     // 4. Heartbeat (every 60 seconds)
     heartbeatInterval = setInterval(sendHeartbeat, 60 * 1000);
