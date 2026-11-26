@@ -526,20 +526,26 @@ const getAppsReport = async (organizationId, startDate, endDate, params) => {
         if (employeeId) appMap[name].employees.add(employeeId);
     };
 
-    // If appLogs exist, use them
+    // Use AppUsageLog as primary source for active app usage; only fall back to ActivityLog if no AppUsageLogs exist
     if (appLogs.length > 0) {
         appLogs.forEach(l => processEntry(l.appName, l.category, l.productivity, l.duration, l.employeeId, l.timestamp));
+        // Include idle time from ActivityLog without double-counting active apps
+        actLogs.forEach(l => {
+            if (l.appWebsite === 'Away from Computer' || l.appWebsite === 'Away from Computer (Idle)') {
+                totalSec += (l.duration || 0);
+                unprodSec += (l.duration || 0);
+            }
+        });
+    } else {
+        actLogs.forEach(l => {
+            if (l.appWebsite === 'Away from Computer' || l.appWebsite === 'Away from Computer (Idle)') {
+                totalSec += (l.duration || 0);
+                unprodSec += (l.duration || 0);
+                return;
+            }
+            processEntry(l.appWebsite, null, l.productivity, l.duration, l.employeeId, l.timestamp);
+        });
     }
-    // Also merge activityLogs to ensure all tracked software is represented
-    actLogs.forEach(l => {
-        // Skip idle marker from app rankings
-        if (l.appWebsite === 'Away from Computer' || l.appWebsite === 'Away from Computer (Idle)') {
-            totalSec += (l.duration || 0);
-            unprodSec += (l.duration || 0);
-            return;
-        }
-        processEntry(l.appWebsite, null, l.productivity, l.duration, l.employeeId, l.timestamp);
-    });
 
     const activeDaysCount = Math.max(daysSet.size, 1);
     const avgSec = Math.round(totalSec / activeDaysCount);

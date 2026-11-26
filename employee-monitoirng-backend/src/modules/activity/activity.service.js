@@ -586,27 +586,37 @@ const activityService = {
 
             const appDurationMap = {};
 
+            const activeIntervals = [];
+            const idleIntervals = [];
+
             const segments = empLogs.map(log => {
-                const dur = log.duration || 300;
+                const dur = typeof log.duration === 'number' && log.duration > 0 ? log.duration : 0;
                 const logTime = new Date(log.timestamp);
+                const startMs = logTime.getTime();
                 const startMins = logTime.getHours() * 60 + logTime.getMinutes();
-                const durMins = Math.max(5, Math.round(dur / 60));
+                const durMins = dur > 0 ? Math.max(1, Math.round(dur / 60)) : 0;
                 const startPercent = Math.min(99.5, Math.max(0, (startMins / 1440) * 100));
                 const widthPercent = Math.min(100 - startPercent, Math.max(0.6, (durMins / 1440) * 100));
 
-                if (log.activityType === 'ACTIVE') activeSeconds += dur;
-                else if (log.activityType === 'IDLE') idleSeconds += dur;
-                else if (log.activityType === 'MANUAL') manualSeconds += dur;
+                if (dur > 0) {
+                    if (log.activityType === 'ACTIVE') {
+                        activeIntervals.push([startMs, startMs + dur * 1000]);
+                    } else if (log.activityType === 'IDLE') {
+                        idleIntervals.push([startMs, startMs + dur * 1000]);
+                    } else if (log.activityType === 'MANUAL') {
+                        manualSeconds += dur;
+                    }
 
-                if (log.productivity === 'PRODUCTIVE') productiveSeconds += dur;
-                else if (log.productivity === 'UNPRODUCTIVE') unproductiveSeconds += dur;
-                else neutralSeconds += dur;
+                    if (log.productivity === 'PRODUCTIVE') productiveSeconds += dur;
+                    else if (log.productivity === 'UNPRODUCTIVE') unproductiveSeconds += dur;
+                    else neutralSeconds += dur;
 
-                const app = log.appWebsite || 'General Software';
-                if (!appDurationMap[app]) {
-                    appDurationMap[app] = { name: app, duration: 0, productivity: log.productivity || 'PRODUCTIVE' };
+                    const app = log.appWebsite || 'General Software';
+                    if (!appDurationMap[app]) {
+                        appDurationMap[app] = { name: app, duration: 0, productivity: log.productivity || 'PRODUCTIVE' };
+                    }
+                    appDurationMap[app].duration += dur;
                 }
-                appDurationMap[app].duration += dur;
 
                 let segmentType = 'ACTIVE';
                 if (log.activityType === 'IDLE') segmentType = 'IDLE';
@@ -661,10 +671,30 @@ const activityService = {
                 }
             });
 
-            if (attendanceDurationSeconds > activeSeconds) {
-                const diff = attendanceDurationSeconds - activeSeconds;
+            const mergeIntervalsSeconds = (intervals) => {
+                if (intervals.length === 0) return 0;
+                const sorted = [...intervals].sort((a, b) => a[0] - b[0]);
+                let totalMs = 0;
+                let [curStart, curEnd] = sorted[0];
+                for (let i = 1; i < sorted.length; i++) {
+                    const [s, e] = sorted[i];
+                    if (s <= curEnd) {
+                        curEnd = Math.max(curEnd, e);
+                    } else {
+                        totalMs += curEnd - curStart;
+                        curStart = s;
+                        curEnd = e;
+                    }
+                }
+                totalMs += curEnd - curStart;
+                return Math.round(totalMs / 1000);
+            };
+
+            activeSeconds = mergeIntervalsSeconds(activeIntervals);
+            idleSeconds = mergeIntervalsSeconds(idleIntervals);
+
+            if (attendanceDurationSeconds > 0 && activeSeconds > attendanceDurationSeconds) {
                 activeSeconds = attendanceDurationSeconds;
-                productiveSeconds += diff;
             }
 
             const topApps = Object.values(appDurationMap)
@@ -691,7 +721,10 @@ const activityService = {
             const workMinutes = Math.floor((totalWorkSeconds % 3600) / 60);
             const workHoursFormatted = `${String(workHours).padStart(2, '0')}:${String(workMinutes).padStart(2, '0')} h`;
 
-            const productivityPct = activeSeconds > 0 ? Math.min(100, Math.round((productiveSeconds / activeSeconds) * 100)) : (attendanceDurationSeconds > 0 ? 100 : 0);
+            const totalTrackedForProductivity = productiveSeconds + unproductiveSeconds + neutralSeconds;
+            const productivityPct = totalTrackedForProductivity > 0
+                ? Math.min(100, Math.round((productiveSeconds / totalTrackedForProductivity) * 100))
+                : 0;
 
             // Shift timings from real attendance or logs
             const firstAttendance = empAttendances[0];
@@ -710,7 +743,7 @@ const activityService = {
             if (lastAttendance) {
                 endShift = lastAttendance.clockOut ? new Date(lastAttendance.clockOut).toTimeString().substring(0, 5) : 'Working Now';
             } else if (lastLog) {
-                endShift = new Date(new Date(lastLog.timestamp).getTime() + (lastLog.duration || 300) * 1000).toTimeString().substring(0, 5);
+                endShift = new Date(new Date(lastLog.timestamp).getTime() + (typeof lastLog.duration === 'number' ? lastLog.duration : 0) * 1000).toTimeString().substring(0, 5);
             }
             
             const isLate = firstAttendance?.clockIn
