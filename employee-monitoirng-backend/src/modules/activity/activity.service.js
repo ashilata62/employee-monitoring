@@ -750,12 +750,20 @@ const activityService = {
                 ? (new Date(firstAttendance.clockIn).getHours() > 9 || (new Date(firstAttendance.clockIn).getHours() === 9 && new Date(firstAttendance.clockIn).getMinutes() > 15))
                 : (firstLog ? (new Date(firstLog.timestamp).getHours() > 9 || (new Date(firstLog.timestamp).getHours() === 9 && new Date(firstLog.timestamp).getMinutes() > 15)) : false);
 
+            const hasOpenAttendance = empAttendances.some(att => att.clockIn && !att.clockOut);
+            const rawEmpStatus = (emp.status || 'OFFLINE').toUpperCase();
+            let liveStatus = 'OFFLINE';
+            if (rawEmpStatus === 'BREAK') liveStatus = 'BREAK';
+            else if (rawEmpStatus === 'IDLE') liveStatus = 'IDLE';
+            else if (hasOpenAttendance || rawEmpStatus === 'ACTIVE' || rawEmpStatus === 'ONLINE') liveStatus = 'ACTIVE';
+
             return {
                 id: emp.id,
                 name: emp.fullName || emp.user?.email || 'Employee',
                 initials: (emp.fullName || 'E').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase(),
                 team: emp.team?.name || 'General Team',
                 role: emp.role || emp.user?.role || 'EMPLOYEE',
+                status: liveStatus,
                 designation: emp.designation || 'Specialist',
                 activeHoursFormatted,
                 workHoursFormatted,

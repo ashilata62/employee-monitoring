@@ -335,7 +335,7 @@ export function ActivitiesTimeline() {
           team: emp.team,
           app: seg.appWebsite || 'System',
           classification: seg.type === 'ACTIVE' ? 'Productive' : seg.type.includes('BREAK') ? 'Neutral' : 'Unproductive',
-          durationMinutes: seg.durationMinutes || 30
+          durationMinutes: seg.durationMinutes ?? 0
         });
       });
     });
@@ -707,9 +707,9 @@ export function ActivitiesTimeline() {
             <div className="min-w-[850px]">
               {/* Top Hourly Workforce Activity Density Histogram */}
           <div className="pt-3.5 px-6 pb-2.5 border-b border-[#D6CDBC] dark:border-[#384232] bg-[#E5DDCF]/55 dark:bg-[#1E2419]">
-            <div className="flex items-end h-11 w-full pl-[260px] pr-6 gap-1.5 relative">
-              {/* Left Indicator Label in the 260px space */}
-              <div className="absolute left-0 bottom-0.5 flex flex-col justify-end pointer-events-none">
+            <div className="flex items-end w-full">
+              {/* Left Indicator Label aligned with 180px + 80px columns */}
+              <div className="w-[260px] shrink-0 flex flex-col justify-end pb-0.5 pointer-events-none">
                 <div className="flex items-center gap-1.5 text-[10px] font-bold text-[#29291F] dark:text-[#F5F1E9] uppercase tracking-wider">
                   <Activity size={13} className="text-[#B9955B]" />
                   <span>Hourly Density</span>
@@ -718,6 +718,8 @@ export function ActivitiesTimeline() {
                   24h Active Workforce
                 </span>
               </div>
+
+              <div className="flex-1 mx-2 flex items-end h-11 gap-1 relative">
 
               {data?.hourlyDistribution?.map((bucket, idx) => {
                 const maxEmployees = Math.max(1, bucket.totalEmployees || 4);
@@ -775,6 +777,7 @@ export function ActivitiesTimeline() {
                   </div>
                 );
               })}
+              </div>
             </div>
           </div>
 
@@ -923,7 +926,31 @@ export function ActivitiesTimeline() {
                     <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#EAE2D3] to-[#D8CEBC] dark:from-[#2A3324] dark:to-[#1E2419] border border-[#D6CDBC] dark:border-[#384232] shadow-sm flex items-center justify-center font-serif font-bold text-sm text-[#30382B] dark:text-[#E8D4B8]">
                       {hoveredEmployee.initials}
                     </div>
-                    <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-[#FAF8F5] dark:border-[#1E2419]" title="Active" />
+                    {(() => {
+                      const st = (hoveredEmployee.status || 'OFFLINE').toUpperCase();
+                      const dotClass =
+                        st === 'ACTIVE' || st === 'ONLINE'
+                          ? 'bg-emerald-500'
+                          : st === 'IDLE'
+                            ? 'bg-amber-500'
+                            : st === 'BREAK'
+                              ? 'bg-sky-500'
+                              : 'bg-slate-400';
+                      const dotTitle =
+                        st === 'ACTIVE' || st === 'ONLINE'
+                          ? 'Active'
+                          : st === 'IDLE'
+                            ? 'Idle'
+                            : st === 'BREAK'
+                              ? 'On Break'
+                              : 'Offline';
+                      return (
+                        <span
+                          className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full ${dotClass} border-2 border-[#FAF8F5] dark:border-[#1E2419]`}
+                          title={dotTitle}
+                        />
+                      );
+                    })()}
                   </div>
                   <div className="truncate">
                     <h4 className="font-serif text-sm font-bold text-[#29291F] dark:text-[#F5F1E9] leading-tight truncate">
